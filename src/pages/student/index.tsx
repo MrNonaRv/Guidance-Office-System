@@ -3,25 +3,22 @@ import { Outlet, Link, useNavigate } from 'react-router-dom';
 import { cn } from '../../lib/utils';
 import { LogOut, Upload, CheckCircle2, ChevronDown, View } from 'lucide-react';
 
-import backgroundImg from '../../assets/BI.png';
-import logoImg from '../../assets/capsu-logo.png';
-
 export function StudentLogin() {
   const navigate = useNavigate();
   const [isLogin, setIsLogin] = useState(true);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-cover bg-center p-4 font-sans relative" style={{ backgroundImage: `url(${backgroundImg})` }}>
+    <div className="min-h-screen flex items-center justify-center bg-[url('/BI.png')] bg-cover bg-center p-4 font-sans relative">
       <div className="absolute inset-0 bg-black/20 backdrop-blur-md"></div>
       <div className="bg-gradient-to-b from-[#87c4ff] to-[#e4f2ff] rounded-[40px] shadow-2xl flex flex-col md:flex-row w-full max-w-[850px] min-h-[500px] p-2 relative z-10 border-4 border-white/20">
         {/* Image side */}
-        <div className="hidden md:block md:w-1/2 relative bg-cover bg-center rounded-[32px] overflow-hidden" style={{ backgroundImage: `url(${backgroundImg})` }}>
+        <div className="hidden md:block md:w-1/2 relative bg-cover bg-center rounded-[32px] overflow-hidden" style={{ backgroundImage: "url('/BI.png')" }}>
         </div>
         
         {/* Form side */}
         <div className="w-full md:w-1/2 p-6 md:p-8 flex flex-col justify-center">
           <div className="mx-auto h-16 flex items-center justify-center mb-3">
-            <img src={logoImg} alt="Logo" className="h-full object-contain drop-shadow-md" />
+            <img src="/capsu-logo.png" alt="Logo" className="h-full object-contain drop-shadow-md" />
           </div>
           
           <h1 className="text-lg md:text-xl font-bold text-center text-[#0f2e60] mb-2 leading-tight">Web-Based Scholarship Submission<br/>Alert System</h1>

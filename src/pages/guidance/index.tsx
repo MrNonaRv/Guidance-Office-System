@@ -5,16 +5,13 @@ import { LayoutDashboard, FileText, Bell, Mail, BarChart2, Settings, LogOut, Fil
 import { cn } from '../../lib/utils';
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 
-import backgroundImg from '../../assets/BI.png';
-import logoImg from '../../assets/capsu-logo.png';
-
 export function GuidanceLogin() {
   const navigate = useNavigate();
   return (
-    <div className="min-h-screen flex items-center justify-center bg-cover bg-center p-4" style={{ backgroundImage: `url(${backgroundImg})` }}>
+    <div className="min-h-screen flex items-center justify-center bg-[url('/BI.png')] bg-cover bg-center p-4">
       <div className="relative bg-[#a5d8ff] p-8 rounded-[32px] shadow-2xl w-full max-w-[380px] text-center">
         <div className="mx-auto h-16 flex items-center justify-center mb-3">
-          <img src={logoImg} alt="Logo" className="h-full object-contain" />
+          <img src="/capsu-logo.png" alt="Logo" className="h-full object-contain" />
         </div>
         <h1 className="text-lg font-bold text-[#0f2e60] mb-3 leading-snug">Web-Based Scholarship Submission<br/>Alert System</h1>
         <div className="inline-block bg-[#5daef5] text-white px-5 py-1 rounded-full text-[11px] font-semibold mb-6 shadow-sm tracking-wide">
