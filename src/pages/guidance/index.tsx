@@ -34,6 +34,8 @@ export function GuidanceLogin() {
       console.error(err);
       if (err?.code === 'auth/popup-closed-by-user') {
         setError('Sign-in cancelled. Please try again.');
+      } else if (err?.code === 'auth/unauthorized-domain') {
+        setError('Domain not authorized in Firebase. Add this URL to Firebase Auth settings.');
       } else {
         setError('Failed to sign in. If previewing, try opening in a new tab.');
       }
