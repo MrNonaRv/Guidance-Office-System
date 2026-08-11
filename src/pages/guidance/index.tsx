@@ -10,6 +10,7 @@ import { signInWithGoogle } from '../../lib/firebase';
 
 export function GuidanceLogin() {
   const navigate = useNavigate();
+  const [error, setError] = useState('');
 
   const handleGoogleLogin = async () => {
     try {
@@ -29,8 +30,13 @@ export function GuidanceLogin() {
       sessionStorage.setItem('adminAuth', 'true');
       sessionStorage.setItem('adminEmail', fbUser.email || '');
       navigate('/admin/dashboard');
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
+      if (err?.code === 'auth/popup-closed-by-user') {
+        setError('Sign-in cancelled. Please try again.');
+      } else {
+        setError('Failed to sign in. If previewing, try opening in a new tab.');
+      }
     }
   };
 
@@ -50,6 +56,7 @@ export function GuidanceLogin() {
           sessionStorage.setItem('adminAuth', 'true');
           navigate('/admin/dashboard'); 
         }}>
+          {error && <div className="text-red-500 text-xs text-center mb-2">{error}</div>}
           <div className="text-left">
             <label className="block text-[11px] font-medium text-[#0f2e60] mb-1 ml-1">Gmail</label>
             <input type="email" defaultValue="guidancestaff@capsu.edu" className="w-full px-4 py-2.5 bg-white rounded text-sm focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 outline-none transition-all shadow-sm" />

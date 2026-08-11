@@ -34,9 +34,13 @@ export function StudentLogin() {
       sessionStorage.setItem('studentAuth', 'true');
       sessionStorage.setItem('studentUser', JSON.stringify(user));
       navigate('/student/dashboard');
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      setError('Failed to sign in with Google');
+      if (err?.code === 'auth/popup-closed-by-user') {
+        setError('Sign-in cancelled. Please try again.');
+      } else {
+        setError('Failed to sign in. If previewing, try opening in a new tab.');
+      }
     }
   };
 
