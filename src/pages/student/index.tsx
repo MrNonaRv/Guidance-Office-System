@@ -2,10 +2,77 @@ import React, { useState } from 'react';
 import { Outlet, Link, useNavigate } from 'react-router-dom';
 import { cn } from '../../lib/utils';
 import { LogOut, Upload, CheckCircle2, ChevronDown, View } from 'lucide-react';
+import { db } from '../../lib/db';
+
+import { signInWithGoogle } from '../../lib/firebase';
 
 export function StudentLogin() {
   const navigate = useNavigate();
   const [isLogin, setIsLogin] = useState(true);
+  
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [error, setError] = useState('');
+
+  const handleGoogleLogin = async () => {
+    try {
+      const fbUser = await signInWithGoogle();
+      
+      let user = await db.users.findByEmail(fbUser.email || '');
+      if (!user) {
+        user = {
+          id: fbUser.uid,
+          email: fbUser.email || '',
+          firstName: fbUser.displayName?.split(' ')[0] || 'User',
+          lastName: fbUser.displayName?.split(' ').slice(1).join(' ') || '',
+          role: 'student' as const
+        };
+        await db.users.set(user.id, user);
+      }
+      sessionStorage.setItem('studentAuth', 'true');
+      sessionStorage.setItem('studentUser', JSON.stringify(user));
+      navigate('/student/dashboard');
+    } catch (err) {
+      console.error(err);
+      setError('Failed to sign in with Google');
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    
+    if (isLogin) {
+      const user = await db.users.findByEmail(email);
+      if (user && user.password === password) {
+        sessionStorage.setItem('studentAuth', 'true');
+        sessionStorage.setItem('studentUser', JSON.stringify(user));
+        navigate('/student/dashboard');
+      } else {
+        setError('Invalid email or password');
+      }
+    } else {
+      const existing = await db.users.findByEmail(email);
+      if (existing) {
+        setError('Email already exists');
+        return;
+      }
+      const newUser = {
+        id: Date.now().toString(),
+        email,
+        password,
+        firstName,
+        lastName,
+        role: 'student' as const
+      };
+      await db.users.set(newUser.id, newUser);
+      sessionStorage.setItem('studentAuth', 'true');
+      sessionStorage.setItem('studentUser', JSON.stringify(newUser));
+      navigate('/student/dashboard');
+    }
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[url('/BI.png')] bg-cover bg-center p-4 font-sans relative">
@@ -28,45 +95,45 @@ export function StudentLogin() {
           
           <div className="flex bg-white/50 backdrop-blur-sm rounded-full p-1 mb-5 shadow-sm border border-white/40">
             <button 
+              type="button"
               className={cn("flex-1 py-1.5 text-[13px] font-semibold rounded-full transition-all", !isLogin ? "bg-[#3984be] text-white shadow-md" : "text-[#0f2e60] hover:bg-white/50")}
-              onClick={() => setIsLogin(false)}
+              onClick={() => { setIsLogin(false); setError(''); }}
             >
               Register
             </button>
             <button 
+              type="button"
               className={cn("flex-1 py-1.5 text-[13px] font-semibold rounded-full transition-all", isLogin ? "bg-[#3984be] text-white shadow-md" : "text-[#0f2e60] hover:bg-white/50")}
-              onClick={() => setIsLogin(true)}
+              onClick={() => { setIsLogin(true); setError(''); }}
             >
               Log In
             </button>
           </div>
           
-          <form className="space-y-3" onSubmit={(e) => { 
-            e.preventDefault(); 
-            sessionStorage.setItem('studentAuth', 'true');
-            navigate('/student/dashboard'); 
-          }}>
+          {error && <div className="text-red-500 text-xs text-center mb-2">{error}</div>}
+          
+          <form className="space-y-3" onSubmit={handleSubmit}>
             {!isLogin && (
               <div className="flex gap-3">
                 <div className="flex-1">
                   <label className="block text-[11px] font-medium text-[#0f2e60] mb-1 ml-2">First name</label>
-                  <input type="text" placeholder="First name" className="w-full px-4 py-2.5 bg-white border border-white/50 shadow-sm rounded-xl text-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all" />
+                  <input type="text" value={firstName} onChange={e => setFirstName(e.target.value)} required={!isLogin} placeholder="First name" className="w-full px-4 py-2.5 bg-white border border-white/50 shadow-sm rounded-xl text-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all" />
                 </div>
                 <div className="flex-1">
                   <label className="block text-[11px] font-medium text-[#0f2e60] mb-1 ml-2">Last name</label>
-                  <input type="text" placeholder="Last name" className="w-full px-4 py-2.5 bg-white border border-white/50 shadow-sm rounded-xl text-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all" />
+                  <input type="text" value={lastName} onChange={e => setLastName(e.target.value)} required={!isLogin} placeholder="Last name" className="w-full px-4 py-2.5 bg-white border border-white/50 shadow-sm rounded-xl text-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all" />
                 </div>
               </div>
             )}
             
             <div>
               <label className="block text-[11px] font-medium text-[#0f2e60] mb-1 ml-2">Email</label>
-              <input type="email" placeholder="student@gmail.com" className="w-full px-4 py-2.5 bg-white border border-white/50 shadow-sm rounded-xl text-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all" />
+              <input type="email" value={email} onChange={e => setEmail(e.target.value)} required placeholder="student@gmail.com" className="w-full px-4 py-2.5 bg-white border border-white/50 shadow-sm rounded-xl text-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all" />
             </div>
             
             <div className="relative">
               <label className="block text-[11px] font-medium text-[#0f2e60] mb-1 ml-2">Password</label>
-              <input type="password" placeholder="********" className="w-full px-4 py-2.5 bg-white border border-white/50 shadow-sm rounded-xl text-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all" />
+              <input type="password" value={password} onChange={e => setPassword(e.target.value)} required placeholder="********" className="w-full px-4 py-2.5 bg-white border border-white/50 shadow-sm rounded-xl text-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all" />
               <button type="button" className="absolute right-4 top-[26px] text-gray-400 hover:text-gray-600">
                 <View className="w-4 h-4" />
               </button>
@@ -90,7 +157,10 @@ export function StudentLogin() {
               <div className="relative flex justify-center text-[10px]"><span className="px-3 bg-transparent text-[#0f2e60]/60 uppercase font-bold">or</span></div>
             </div>
             
-            <button type="button" className="w-full bg-[#1877f2] text-white py-2.5 rounded-full font-medium hover:bg-blue-600 transition-colors flex items-center justify-center gap-2 shadow-md shadow-blue-600/20 text-[13px]">
+            <button 
+              type="button" 
+              onClick={handleGoogleLogin}
+              className="w-full bg-[#1877f2] text-white py-2.5 rounded-full font-medium hover:bg-blue-600 transition-colors flex items-center justify-center gap-2 shadow-md shadow-blue-600/20 text-[13px]">
               <div className="bg-white p-1 rounded-full">
                 <svg className="w-3.5 h-3.5" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
               </div>
@@ -103,8 +173,19 @@ export function StudentLogin() {
   );
 }
 
+import { logOut } from '../../lib/firebase';
+
 export function StudentLayout() {
   const navigate = useNavigate();
+  const [user, setUser] = useState<{email?: string} | null>(null);
+
+  React.useEffect(() => {
+    const sessionStr = sessionStorage.getItem('studentUser');
+    if (sessionStr) {
+      setUser(JSON.parse(sessionStr));
+    }
+  }, []);
+
   return (
     <div className="min-h-screen bg-[#F4F7FC] font-sans">
       {/* Top Navbar */}
@@ -123,12 +204,14 @@ export function StudentLayout() {
         <div className="flex items-center gap-6">
           <div className="hidden sm:flex items-center gap-2 text-sm text-blue-200 bg-white/10 px-3 py-1.5 rounded-full">
             <div className="w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center text-white overflow-hidden">
-               <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=student" alt="Avatar" />
+               <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.email || 'student'}`} alt="Avatar" />
             </div>
-            student@gmail.com
+            {user?.email || 'student@gmail.com'}
           </div>
-          <button onClick={() => {
+          <button onClick={async () => {
+              await logOut();
               sessionStorage.removeItem('studentAuth');
+              sessionStorage.removeItem('studentUser');
               navigate('/student/login');
           }} className="text-sm text-gray-300 hover:text-white flex items-center gap-2 transition-colors">
             <span className="hidden sm:inline">Log out</span>
@@ -146,14 +229,49 @@ export function StudentLayout() {
 
 export function StudentDashboard() {
   const navigate = useNavigate();
+  const [user, setUser] = useState<{id: string, firstName: string, lastName: string} | null>(null);
+  const [submissions, setSubmissions] = useState<any[]>([]);
+
+  React.useEffect(() => {
+    const sessionStr = sessionStorage.getItem('studentUser');
+    if (sessionStr) {
+      const parsedUser = JSON.parse(sessionStr);
+      setUser(parsedUser);
+      db.submissions.listByStudent(parsedUser.id).then(subs => setSubmissions(subs));
+    }
+  }, []);
   
   return (
     <div className="space-y-6">
       <div className="bg-gradient-to-r from-blue-600 to-[#0f2e60] rounded-2xl p-8 text-white shadow-lg relative overflow-hidden">
         <div className="absolute top-0 right-0 w-64 h-64 bg-white opacity-5 rounded-full -translate-y-1/2 translate-x-1/3"></div>
         <div className="absolute bottom-0 left-0 w-40 h-40 bg-blue-400 opacity-20 rounded-full translate-y-1/3 -translate-x-1/4 blur-2xl"></div>
-        <h2 className="text-3xl font-bold relative z-10">Hello, Anna Santos!</h2>
+        <h2 className="text-3xl font-bold relative z-10">Hello, {user ? `${user.firstName} ${user.lastName}` : 'Student'}!</h2>
       </div>
+
+      {submissions.length > 0 && (
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+          <h3 className="text-lg font-bold text-gray-900 mb-4">Your Recent Submissions</h3>
+          <div className="space-y-3">
+            {submissions.map(sub => (
+              <div key={sub.id} className="flex justify-between items-center p-4 border border-gray-100 rounded-xl bg-gray-50/50">
+                <div>
+                  <h4 className="font-semibold text-gray-800">{sub.scholarshipType}</h4>
+                  <p className="text-xs text-gray-500 mt-1">Submitted on {new Date(sub.submittedAt).toLocaleDateString()}</p>
+                </div>
+                <span className={cn(
+                  "px-3 py-1 text-xs font-medium rounded-full border",
+                  sub.status === 'Approved' ? "bg-green-50 text-green-700 border-green-200"
+                  : sub.status === 'Rejected' ? "bg-red-50 text-red-700 border-red-200"
+                  : "bg-yellow-50 text-yellow-700 border-yellow-200"
+                )}>
+                  {sub.status}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="space-y-4">
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 hover:shadow-md transition-shadow">
@@ -197,6 +315,40 @@ export function StudentSubmissionForm() {
   const [step, setStep] = useState(1);
   const navigate = useNavigate();
 
+  const [formData, setFormData] = useState({
+    familyName: '',
+    middleName: '',
+    firstName: '',
+    birthdate: '',
+    age: '',
+    sex: 'Female',
+    course: ''
+  });
+
+  const [files, setFiles] = useState<{
+    picture?: { name: string, data: string };
+    studentId?: { name: string, data: string };
+    rf?: { name: string, data: string };
+    gwa?: { name: string, data: string };
+  }>({});
+
+  const handleFileChange = (key: keyof typeof files, e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      setFiles(prev => ({
+        ...prev,
+        [key]: {
+          name: file.name,
+          data: event.target?.result as string
+        }
+      }));
+    };
+    reader.readAsDataURL(file);
+  };
+
   const handleNext = () => {
     if (step < 3) setStep(step + 1);
   };
@@ -207,7 +359,22 @@ export function StudentSubmissionForm() {
   };
   
   const [showSuccess, setShowSuccess] = useState(false);
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
+    const sessionStr = sessionStorage.getItem('studentUser');
+    if (!sessionStr) return;
+    const user = JSON.parse(sessionStr);
+
+    const submission = {
+      id: Date.now().toString(),
+      studentId: user.id,
+      studentName: `${formData.firstName} ${formData.familyName}`,
+      scholarshipType: 'Standard Scholarship',
+      status: 'Pending' as const,
+      submittedAt: new Date().toISOString(),
+      files: Object.values(files).filter(f => f !== undefined) as {name: string, type: string, data: string}[]
+    };
+
+    await db.submissions.set(submission.id, submission);
     setShowSuccess(true);
   };
 
@@ -288,40 +455,51 @@ export function StudentSubmissionForm() {
               
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-start">
                 <div className="md:col-span-1">
-                  <div className="aspect-square bg-gray-50 border-2 border-dashed border-gray-300 rounded-xl flex flex-col items-center justify-center text-gray-400 hover:bg-gray-100 transition-colors cursor-pointer">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mb-2"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
-                    <span className="text-xs font-medium">2 x 2 Picture</span>
-                  </div>
+                  <label className="relative aspect-square bg-gray-50 border-2 border-dashed border-gray-300 rounded-xl flex flex-col items-center justify-center text-gray-400 hover:bg-gray-100 transition-colors cursor-pointer overflow-hidden block">
+                    <input type="file" accept="image/*" className="hidden" onChange={e => handleFileChange('picture', e)} />
+                    {files.picture ? (
+                      <img src={files.picture.data} alt="2x2" className="w-full h-full object-cover" />
+                    ) : (
+                      <>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mb-2"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+                        <span className="text-xs font-medium text-center px-2">2 x 2 Picture</span>
+                      </>
+                    )}
+                  </label>
                 </div>
                 
                 <div className="md:col-span-3 grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="space-y-1">
                     <label className="text-xs font-semibold text-gray-700">Family Name</label>
-                    <input type="text" className="w-full p-2 border border-gray-200 rounded-lg text-sm" placeholder="e.g. Dela Cruz" defaultValue="Santos" />
+                    <input type="text" className="w-full p-2 border border-gray-200 rounded-lg text-sm" placeholder="e.g. Dela Cruz" value={formData.familyName} onChange={e => setFormData({...formData, familyName: e.target.value})} />
                   </div>
                   <div className="space-y-1">
                     <label className="text-xs font-semibold text-gray-700">Middle Name</label>
-                    <input type="text" className="w-full p-2 border border-gray-200 rounded-lg text-sm" placeholder="e.g. Santos" defaultValue="Abelardo" />
+                    <input type="text" className="w-full p-2 border border-gray-200 rounded-lg text-sm" placeholder="e.g. Santos" value={formData.middleName} onChange={e => setFormData({...formData, middleName: e.target.value})} />
                   </div>
                   <div className="space-y-1">
                     <label className="text-xs font-semibold text-gray-700">First Name</label>
-                    <input type="text" className="w-full p-2 border border-gray-200 rounded-lg text-sm" placeholder="e.g. Juan" defaultValue="Anna Marie" />
+                    <input type="text" className="w-full p-2 border border-gray-200 rounded-lg text-sm" placeholder="e.g. Juan" value={formData.firstName} onChange={e => setFormData({...formData, firstName: e.target.value})} />
                   </div>
                   
                   <div className="space-y-1">
                     <label className="text-xs font-semibold text-gray-700">Birthdate</label>
-                    <input type="date" className="w-full p-2 border border-gray-200 rounded-lg text-sm" defaultValue="2007-06-14" />
+                    <input type="date" className="w-full p-2 border border-gray-200 rounded-lg text-sm" value={formData.birthdate} onChange={e => setFormData({...formData, birthdate: e.target.value})} />
                   </div>
                   <div className="space-y-1">
                     <label className="text-xs font-semibold text-gray-700">Age</label>
-                    <input type="number" className="w-full p-2 border border-gray-200 rounded-lg text-sm" placeholder="e.g. 18" defaultValue="19" />
+                    <input type="number" className="w-full p-2 border border-gray-200 rounded-lg text-sm" placeholder="e.g. 18" value={formData.age} onChange={e => setFormData({...formData, age: e.target.value})} />
                   </div>
                   <div className="space-y-1">
                     <label className="text-xs font-semibold text-gray-700 block mb-2">Sex</label>
                     <div className="flex gap-4">
-                      <label className="flex items-center gap-1.5 text-sm"><input type="radio" name="sex" className="text-blue-600" /> Male</label>
-                      <label className="flex items-center gap-1.5 text-sm"><input type="radio" name="sex" className="text-blue-600" defaultChecked /> Female</label>
+                      <label className="flex items-center gap-1.5 text-sm"><input type="radio" name="sex" className="text-blue-600" checked={formData.sex === 'Male'} onChange={() => setFormData({...formData, sex: 'Male'})} /> Male</label>
+                      <label className="flex items-center gap-1.5 text-sm"><input type="radio" name="sex" className="text-blue-600" checked={formData.sex === 'Female'} onChange={() => setFormData({...formData, sex: 'Female'})} /> Female</label>
                     </div>
+                  </div>
+                  <div className="space-y-1 md:col-span-3">
+                    <label className="text-xs font-semibold text-gray-700">Course</label>
+                    <input type="text" className="w-full p-2 border border-gray-200 rounded-lg text-sm" placeholder="e.g. BSIT" value={formData.course} onChange={e => setFormData({...formData, course: e.target.value})} />
                   </div>
                 </div>
               </div>
@@ -342,30 +520,48 @@ export function StudentSubmissionForm() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
               <div className="flex flex-col items-center">
-                <div className="w-48 h-32 bg-gray-50 border-2 border-dashed border-gray-300 rounded-2xl flex flex-col items-center justify-center text-gray-400 hover:bg-gray-100 transition-colors cursor-pointer group mb-3 relative overflow-hidden">
-                   <img src="https://images.unsplash.com/photo-1628155930542-3c7a64e2c833?auto=format&fit=crop&w=400&q=80" className="absolute inset-0 w-full h-full object-cover opacity-60" alt="ID" />
+                <label className="w-48 h-32 bg-gray-50 border-2 border-dashed border-gray-300 rounded-2xl flex flex-col items-center justify-center text-gray-400 hover:bg-gray-100 transition-colors cursor-pointer group mb-3 relative overflow-hidden">
+                   <input type="file" accept="image/*,.pdf" className="hidden" onChange={e => handleFileChange('studentId', e)} />
+                   {files.studentId ? (
+                     <img src={files.studentId.data} className="absolute inset-0 w-full h-full object-cover opacity-60" alt="ID" />
+                   ) : (
+                     <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mb-2"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+                   )}
                    <div className="absolute inset-0 bg-blue-600/10 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                      <span className="bg-blue-600 text-white text-xs px-3 py-1 rounded-full font-medium shadow-md">Change</span>
                    </div>
-                </div>
+                </label>
                 <p className="text-sm font-bold text-gray-700">Student ID</p>
               </div>
               
               <div className="flex flex-col items-center">
-                <div className="w-48 h-32 bg-gray-50 border-2 border-dashed border-gray-300 rounded-2xl flex flex-col items-center justify-center text-gray-400 hover:bg-gray-100 transition-colors cursor-pointer group mb-3 relative overflow-hidden">
-                  <img src="https://images.unsplash.com/photo-1586281380349-632531db7ed4?auto=format&fit=crop&w=400&q=80" className="absolute inset-0 w-full h-full object-cover opacity-60" alt="RF" />
+                <label className="w-48 h-32 bg-gray-50 border-2 border-dashed border-gray-300 rounded-2xl flex flex-col items-center justify-center text-gray-400 hover:bg-gray-100 transition-colors cursor-pointer group mb-3 relative overflow-hidden">
+                  <input type="file" accept="image/*,.pdf" className="hidden" onChange={e => handleFileChange('rf', e)} />
+                  {files.rf ? (
+                    <img src={files.rf.data} className="absolute inset-0 w-full h-full object-cover opacity-60" alt="RF" />
+                  ) : (
+                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mb-2"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+                  )}
                    <div className="absolute inset-0 bg-blue-600/10 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                      <span className="bg-blue-600 text-white text-xs px-3 py-1 rounded-full font-medium shadow-md">Change</span>
                    </div>
-                </div>
+                </label>
                 <p className="text-sm font-bold text-gray-700">RF</p>
                 <p className="text-xs text-gray-500 italic">Registration Form</p>
               </div>
               
               <div className="flex flex-col items-center sm:col-span-2">
-                <div className="w-48 h-32 bg-gray-50 border-2 border-dashed border-gray-300 rounded-2xl flex flex-col items-center justify-center text-gray-400 hover:bg-gray-100 transition-colors cursor-pointer group mb-3 relative overflow-hidden">
-                   <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mb-2"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
-                </div>
+                <label className="w-48 h-32 bg-gray-50 border-2 border-dashed border-gray-300 rounded-2xl flex flex-col items-center justify-center text-gray-400 hover:bg-gray-100 transition-colors cursor-pointer group mb-3 relative overflow-hidden">
+                   <input type="file" accept="image/*,.pdf" className="hidden" onChange={e => handleFileChange('gwa', e)} />
+                   {files.gwa ? (
+                     <img src={files.gwa.data} className="absolute inset-0 w-full h-full object-cover opacity-60" alt="GWA" />
+                   ) : (
+                     <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mb-2"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+                   )}
+                   <div className="absolute inset-0 bg-blue-600/10 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                     <span className="bg-blue-600 text-white text-xs px-3 py-1 rounded-full font-medium shadow-md">Change</span>
+                   </div>
+                </label>
                 <p className="text-sm font-bold text-gray-700">GWA</p>
                 <p className="text-xs text-gray-500 italic">General Weighted Average</p>
               </div>
@@ -392,15 +588,15 @@ export function StudentSubmissionForm() {
               <div className="divide-y divide-gray-100 text-sm">
                 <div className="grid grid-cols-3 p-3">
                   <div className="font-semibold text-gray-600">Family Name</div>
-                  <div className="col-span-2 text-gray-900">Santos</div>
+                  <div className="col-span-2 text-gray-900">{formData.familyName || '-'}</div>
                 </div>
                 <div className="grid grid-cols-3 p-3 bg-gray-50/50">
                   <div className="font-semibold text-gray-600">First Name</div>
-                  <div className="col-span-2 text-gray-900">Anna Marie</div>
+                  <div className="col-span-2 text-gray-900">{formData.firstName || '-'}</div>
                 </div>
                 <div className="grid grid-cols-3 p-3">
                   <div className="font-semibold text-gray-600">Course</div>
-                  <div className="col-span-2 text-gray-900">BAEL</div>
+                  <div className="col-span-2 text-gray-900">{formData.course || '-'}</div>
                 </div>
               </div>
             </div>
