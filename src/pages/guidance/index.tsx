@@ -3,7 +3,7 @@ import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { mockStudents } from '../../types';
 import { LayoutDashboard, FileText, Bell, Mail, BarChart2, Settings, LogOut, Filter, ChevronDown, View, User, X } from 'lucide-react';
 import { cn } from '../../lib/utils';
-import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
+import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Legend } from 'recharts';
 import { db } from '../../lib/db';
 
 import { signInWithGoogle } from '../../lib/firebase';
@@ -596,13 +596,251 @@ export function GuidanceSubmissions() {
   );
 }
 
-export function GuidancePlaceholder({ title }: { title: string }) {
+export function GuidanceNotifications() {
+  const [submissions, setSubmissions] = useState<any[]>([]);
+
+  useEffect(() => {
+    db.submissions.listAll().then(subs => {
+      setSubmissions(subs);
+    });
+  }, []);
+
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold text-[#0f2e60]">{title}</h1>
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 text-center text-gray-500">
-        <p className="mb-4">This section is part of the Guidance Portal.</p>
-        <p className="text-sm">For a full implementation, you would see complex interactive components here matching the design specification.</p>
+      <h1 className="text-3xl font-bold text-[#0f2e60]">Notifications</h1>
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+        <h2 className="text-lg font-bold text-gray-900 mb-4">Recent Activity</h2>
+        <div className="space-y-4">
+          {submissions.length === 0 ? (
+            <p className="text-gray-500">No new notifications</p>
+          ) : (
+            submissions.map(s => (
+              <div key={s.id} className="flex gap-4 items-start border-b border-gray-50 pb-4 last:border-0 last:pb-0">
+                <div className="w-10 h-10 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+                  <Bell className="w-5 h-5" />
+                </div>
+                <div>
+                  <p className="text-sm text-gray-800">
+                    <span className="font-semibold">{s.studentName}</span> submitted a scholarship requirement for <span className="font-medium text-blue-600">{s.scholarshipType}</span>.
+                  </p>
+                  <p className="text-xs text-gray-400 mt-1">{new Date(s.submittedAt).toLocaleString()}</p>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export function GuidanceCommunications() {
+  const [messages, setMessages] = useState<any[]>([
+    { id: 1, to: 'student@example.com', subject: 'Missing Requirements', date: new Date(Date.now() - 86400000).toISOString(), body: 'Please submit your missing requirements by Friday.' },
+    { id: 2, to: 'johndoe@example.com', subject: 'Application Approved', date: new Date(Date.now() - 172800000).toISOString(), body: 'Congratulations! Your scholarship application has been approved.' }
+  ]);
+  const [isComposing, setIsComposing] = useState(false);
+
+  return (
+    <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <h1 className="text-3xl font-bold text-[#0f2e60]">Communications</h1>
+        <button onClick={() => setIsComposing(true)} className="px-4 py-2 bg-[#1864db] text-white rounded-lg font-medium hover:bg-[#124b9f] shadow-sm transition-colors flex items-center gap-2">
+          <Mail className="w-4 h-4" />
+          Compose Email
+        </button>
+      </div>
+
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <div className="p-6 border-b border-gray-100">
+          <h2 className="text-lg font-bold text-gray-900">Sent Messages</h2>
+        </div>
+        <div className="divide-y divide-gray-100">
+          {messages.map(m => (
+            <div key={m.id} className="p-6 hover:bg-gray-50 transition-colors">
+              <div className="flex justify-between items-start mb-2">
+                <h3 className="font-semibold text-gray-900">{m.subject}</h3>
+                <span className="text-xs text-gray-500">{new Date(m.date).toLocaleDateString()}</span>
+              </div>
+              <p className="text-sm text-gray-600 mb-2">To: <span className="font-medium">{m.to}</span></p>
+              <p className="text-sm text-gray-800">{m.body}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {isComposing && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-2xl w-full max-w-xl shadow-2xl overflow-hidden flex flex-col">
+            <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+              <h3 className="text-lg font-bold text-gray-900">Compose Message</h3>
+              <button onClick={() => setIsComposing(false)} className="text-gray-400 hover:text-gray-600">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <form onSubmit={(e) => {
+              e.preventDefault();
+              const form = e.target as HTMLFormElement;
+              const to = (form.elements.namedItem('to') as HTMLInputElement).value;
+              const subject = (form.elements.namedItem('subject') as HTMLInputElement).value;
+              const body = (form.elements.namedItem('body') as HTMLTextAreaElement).value;
+              setMessages([{ id: Date.now(), to, subject, body, date: new Date().toISOString() }, ...messages]);
+              setIsComposing(false);
+            }} className="p-6 space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 uppercase mb-1">To (Email)</label>
+                <input type="email" name="to" required className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 uppercase mb-1">Subject</label>
+                <input type="text" name="subject" required className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 uppercase mb-1">Message</label>
+                <textarea name="body" required rows={5} className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"></textarea>
+              </div>
+              <div className="pt-2 flex justify-end gap-3">
+                <button type="button" onClick={() => setIsComposing(false)} className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg text-sm font-medium transition-colors">Cancel</button>
+                <button type="submit" className="px-6 py-2 bg-[#1864db] text-white rounded-lg text-sm font-medium hover:bg-[#124b9f] transition-colors">Send Message</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export function GuidanceReports() {
+  const [submissions, setSubmissions] = useState<any[]>([]);
+
+  useEffect(() => {
+    db.submissions.listAll().then(subs => {
+      setSubmissions(subs);
+    });
+  }, []);
+
+  const completeCount = submissions.filter(s => s.status === 'Complete' || s.status === 'Approved').length;
+  const rejectedCount = submissions.filter(s => s.status === 'Rejected').length;
+  const pendingCount = submissions.filter(s => s.status === 'Pending').length;
+
+  const statusData = [
+    { name: 'Approved', value: completeCount, fill: '#22c55e' },
+    { name: 'Pending', value: pendingCount, fill: '#eab308' },
+    { name: 'Rejected', value: rejectedCount, fill: '#ef4444' }
+  ];
+
+  return (
+    <div className="space-y-6">
+      <h1 className="text-3xl font-bold text-[#0f2e60]">Reports & Analytics</h1>
+      
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+          <h3 className="text-lg font-bold text-gray-900 mb-6">Submissions by Status</h3>
+          <div className="h-64">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie data={statusData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={60} outerRadius={80} paddingAngle={5}>
+                  {statusData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.fill} />
+                  ))}
+                </Pie>
+                <Tooltip />
+                <Legend />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+          <h3 className="text-lg font-bold text-gray-900 mb-6">Overview Overview</h3>
+          <div className="h-64">
+             <ResponsiveContainer width="100%" height="100%">
+               <BarChart data={statusData}>
+                 <XAxis dataKey="name" />
+                 <YAxis />
+                 <Tooltip cursor={{fill: 'transparent'}} />
+                 <Bar dataKey="value" radius={[4, 4, 0, 0]}>
+                   {statusData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.fill} />
+                   ))}
+                 </Bar>
+               </BarChart>
+             </ResponsiveContainer>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export function GuidanceSettings() {
+  const [adminEmail, setAdminEmail] = useState<string>('aguilas.relie@capsu.edu');
+  const [displayName, setDisplayName] = useState<string>('');
+  
+  useEffect(() => {
+    const email = sessionStorage.getItem('adminEmail');
+    if (email) {
+      setAdminEmail(email);
+      setDisplayName(email.split('@')[0]);
+    }
+  }, []);
+
+  return (
+    <div className="space-y-6 max-w-3xl">
+      <h1 className="text-3xl font-bold text-[#0f2e60]">Settings</h1>
+      
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <div className="p-6 border-b border-gray-100">
+          <h2 className="text-lg font-bold text-gray-900">Profile Settings</h2>
+          <p className="text-sm text-gray-500 mt-1">Manage your administrator profile</p>
+        </div>
+        
+        <div className="p-6 space-y-6">
+          <div className="flex items-center gap-6">
+            <div className="w-20 h-20 rounded-full border-2 border-gray-200 flex items-center justify-center text-xl overflow-hidden bg-gray-50">
+              <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${displayName}`} alt="Avatar" />
+            </div>
+            <div>
+              <button className="px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors shadow-sm">
+                Change Avatar
+              </button>
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-semibold text-gray-700 uppercase mb-1">Email Address</label>
+              <input type="email" disabled value={adminEmail} className="w-full px-4 py-2.5 bg-gray-100 border border-gray-200 rounded-lg text-sm text-gray-500" />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-gray-700 uppercase mb-1">Display Name</label>
+              <input type="text" value={displayName} onChange={(e) => setDisplayName(e.target.value)} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            </div>
+          </div>
+          
+          <div className="pt-4 border-t border-gray-100">
+            <button className="px-6 py-2 bg-[#1864db] text-white rounded-lg font-medium hover:bg-[#124b9f] shadow-sm transition-colors">
+              Save Changes
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <div className="p-6 border-b border-gray-100">
+          <h2 className="text-lg font-bold text-gray-900">Notification Preferences</h2>
+        </div>
+        <div className="p-6 space-y-4">
+          <label className="flex items-center gap-3">
+            <input type="checkbox" defaultChecked className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500" />
+            <span className="text-sm text-gray-700">Email me when a new scholarship requirement is submitted</span>
+          </label>
+          <label className="flex items-center gap-3">
+            <input type="checkbox" defaultChecked className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500" />
+            <span className="text-sm text-gray-700">Daily summary of pending submissions</span>
+          </label>
+        </div>
       </div>
     </div>
   );
