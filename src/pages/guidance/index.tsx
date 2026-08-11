@@ -203,6 +203,9 @@ export function GuidanceDashboard() {
     });
   }, []);
 
+  const completeCount = submissions.filter(s => s.status === 'Complete' || s.status === 'Approved').length;
+  const incompleteCount = submissions.filter(s => s.status === 'Pending' || s.status === 'Rejected').length;
+
   return (
     <div className="space-y-6">
       <h1 className="text-3xl font-bold text-[#0f2e60]">Dashboard</h1>
@@ -215,8 +218,8 @@ export function GuidanceDashboard() {
               <FileText className="w-5 h-5 text-white" />
             </div>
           </div>
-          <p className="text-4xl font-bold mb-1">213</p>
-          <p className="text-sm text-blue-200">â 4 this week</p>
+          <p className="text-4xl font-bold mb-1">{submissions.length}</p>
+          <p className="text-sm text-blue-200">Total in system</p>
         </div>
         
         <div className="bg-gradient-to-br from-green-500 to-green-600 p-6 rounded-2xl text-white shadow-lg shadow-green-500/20">
@@ -226,19 +229,19 @@ export function GuidanceDashboard() {
               <FileText className="w-5 h-5 text-white" />
             </div>
           </div>
-          <p className="text-4xl font-bold mb-1">150</p>
-          <p className="text-sm text-green-200">â 3 new today</p>
+          <p className="text-4xl font-bold mb-1">{completeCount}</p>
+          <p className="text-sm text-green-200">Approved / Complete</p>
         </div>
         
         <div className="bg-gradient-to-br from-yellow-500 to-yellow-600 p-6 rounded-2xl text-white shadow-lg shadow-yellow-500/20">
           <div className="flex justify-between items-start mb-4">
-            <h3 className="text-yellow-100 font-medium">Incomplete Submissions</h3>
+            <h3 className="text-yellow-100 font-medium">Pending Submissions</h3>
             <div className="p-2 bg-white/20 rounded-lg">
               <FileText className="w-5 h-5 text-white" />
             </div>
           </div>
-          <p className="text-4xl font-bold mb-1">63</p>
-          <p className="text-sm text-yellow-200">â 4 this month</p>
+          <p className="text-4xl font-bold mb-1">{incompleteCount}</p>
+          <p className="text-sm text-yellow-200">Pending review</p>
         </div>
       </div>
 
@@ -259,6 +262,11 @@ export function GuidanceDashboard() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
+                {submissions.length === 0 && (
+                  <tr>
+                    <td colSpan={4} className="p-8 text-center text-gray-500">No submissions yet</td>
+                  </tr>
+                )}
                 {submissions.slice(0, 5).map(s => (
                   <tr key={s.id} className="hover:bg-gray-50/50 transition-colors">
                     <td className="p-4 text-sm font-medium text-gray-900 flex items-center gap-3">
@@ -274,9 +282,11 @@ export function GuidanceDashboard() {
                         "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border",
                         s.status === 'Complete' || s.status === 'Approved'
                           ? "bg-green-50 text-green-700 border-green-200" 
+                          : s.status === 'Rejected'
+                          ? "bg-red-50 text-red-700 border-red-200"
                           : "bg-yellow-50 text-yellow-700 border-yellow-200"
                       )}>
-                        <span className={cn("w-1.5 h-1.5 rounded-full", s.status === 'Complete' || s.status === 'Approved' ? "bg-green-500" : "bg-yellow-500")}></span>
+                        <span className={cn("w-1.5 h-1.5 rounded-full", s.status === 'Complete' || s.status === 'Approved' ? "bg-green-500" : s.status === 'Rejected' ? "bg-red-500" : "bg-yellow-500")}></span>
                         {s.status}
                       </span>
                     </td>
@@ -300,18 +310,8 @@ export function GuidanceDashboard() {
                   <span className="font-medium text-gray-700">Submissions Status Distribution</span>
                 </div>
                 <div className="h-4 w-full bg-gray-100 rounded-full overflow-hidden flex">
-                  <div className="h-full bg-green-500" style={{ width: '70%' }}></div>
-                  <div className="h-full bg-yellow-400" style={{ width: '30%' }}></div>
-                </div>
-              </div>
-              
-              <div>
-                <div className="flex justify-between text-sm mb-2">
-                  <span className="font-medium text-gray-700">Gender Status Distribution</span>
-                </div>
-                <div className="h-4 w-full bg-gray-100 rounded-full overflow-hidden flex">
-                  <div className="h-full bg-blue-500" style={{ width: '55%' }}></div>
-                  <div className="h-full bg-pink-400" style={{ width: '45%' }}></div>
+                  <div className="h-full bg-green-500 transition-all" style={{ width: submissions.length ? `${(completeCount / submissions.length) * 100}%` : '0%' }}></div>
+                  <div className="h-full bg-yellow-400 transition-all" style={{ width: submissions.length ? `${(incompleteCount / submissions.length) * 100}%` : '0%' }}></div>
                 </div>
               </div>
             </div>
@@ -323,14 +323,16 @@ export function GuidanceDashboard() {
               <span className="w-2 h-2 rounded-full bg-red-500"></span>
             </div>
             <div className="space-y-4">
-              {[1,2,3].map(i => (
-                <div key={i} className="flex gap-3 items-start border-b border-gray-50 pb-3 last:border-0 last:pb-0">
+              {submissions.length === 0 ? (
+                <p className="text-sm text-gray-500">No new notifications</p>
+              ) : submissions.slice(0, 3).map(s => (
+                <div key={s.id} className="flex gap-3 items-start border-b border-gray-50 pb-3 last:border-0 last:pb-0">
                   <div className="w-8 h-8 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 mt-0.5">
                     <Bell className="w-4 h-4" />
                   </div>
                   <div>
-                    <p className="text-sm text-gray-800"><span className="font-semibold">Anna Marie A. Santos</span> submitted scholarship requirements.</p>
-                    <p className="text-xs text-gray-400 mt-1">Today, 1:03 PM</p>
+                    <p className="text-sm text-gray-800"><span className="font-semibold">{s.studentName}</span> submitted a scholarship requirement.</p>
+                    <p className="text-xs text-gray-400 mt-1">{new Date(s.submittedAt).toLocaleDateString()}</p>
                   </div>
                 </div>
               ))}
@@ -355,6 +357,10 @@ export function GuidanceSubmissions() {
   const [filterOpen, setFilterOpen] = useState(false);
   const [submissions, setSubmissions] = useState<any[]>([]);
   const [selectedSubmission, setSelectedSubmission] = useState<any | null>(null);
+  
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterStatus, setFilterStatus] = useState('All status');
+  const [filterCourse, setFilterCourse] = useState('All courses');
 
   const fetchSubmissions = () => {
     db.submissions.listAll().then(subs => {
@@ -377,6 +383,13 @@ export function GuidanceSubmissions() {
       }
     }
   };
+
+  const filteredSubmissions = submissions.filter(s => {
+    const matchesSearch = s.studentName.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesStatus = filterStatus === 'All status' || s.status === filterStatus;
+    const matchesCourse = filterCourse === 'All courses' || s.scholarshipType.includes(filterCourse); // assuming scholarshipType has course or something similar
+    return matchesSearch && matchesStatus && matchesCourse;
+  });
   
   return (
     <div className="space-y-6">
@@ -385,12 +398,14 @@ export function GuidanceSubmissions() {
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
         <div className="flex flex-col md:flex-row justify-between gap-4 mb-6 relative">
           <div className="flex-1 max-w-md">
-            <h2 className="text-lg font-bold text-gray-900 mb-2">No. of Submissions ({submissions.length})</h2>
+            <h2 className="text-lg font-bold text-gray-900 mb-2">No. of Submissions ({filteredSubmissions.length})</h2>
             <div className="relative">
               <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
               <input 
                 type="text" 
-                placeholder="Search by student" 
+                placeholder="Search by student"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-shadow"
               />
             </div>
@@ -409,15 +424,25 @@ export function GuidanceSubmissions() {
                 <div className="space-y-4">
                   <div>
                     <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1.5">By Status</label>
-                    <select className="w-full text-sm border border-gray-200 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 outline-none">
+                    <select 
+                      value={filterStatus}
+                      onChange={(e) => setFilterStatus(e.target.value)}
+                      className="w-full text-sm border border-gray-200 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 outline-none"
+                    >
                       <option>All status</option>
                       <option>Complete</option>
-                      <option>Incomplete</option>
+                      <option>Pending</option>
+                      <option>Approved</option>
+                      <option>Rejected</option>
                     </select>
                   </div>
                   <div>
                     <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1.5">By Course</label>
-                    <select className="w-full text-sm border border-gray-200 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 outline-none">
+                    <select 
+                      value={filterCourse}
+                      onChange={(e) => setFilterCourse(e.target.value)}
+                      className="w-full text-sm border border-gray-200 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 outline-none"
+                    >
                       <option>All courses</option>
                       <option>BAEL</option>
                       <option>BSCS</option>
@@ -425,12 +450,13 @@ export function GuidanceSubmissions() {
                       <option>BSOA</option>
                     </select>
                   </div>
-                  <div>
-                    <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1.5">By Date</label>
-                    <input type="date" className="w-full text-sm border border-gray-200 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 outline-none" />
-                  </div>
                   <div className="flex justify-end gap-2 pt-2 border-t border-gray-100">
-                    <button onClick={() => setFilterOpen(false)} className="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-900 font-medium">Reset</button>
+                    <button 
+                      onClick={() => { setFilterStatus('All status'); setFilterCourse('All courses'); setFilterOpen(false); }} 
+                      className="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-900 font-medium"
+                    >
+                      Reset
+                    </button>
                     <button onClick={() => setFilterOpen(false)} className="px-3 py-1.5 text-sm bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700">Apply</button>
                   </div>
                 </div>
@@ -451,7 +477,12 @@ export function GuidanceSubmissions() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {submissions.map(s => (
+              {filteredSubmissions.length === 0 && (
+                <tr>
+                  <td colSpan={5} className="p-8 text-center text-gray-500">No submissions found matching your filters.</td>
+                </tr>
+              )}
+              {filteredSubmissions.map(s => (
                 <tr key={s.id} className="hover:bg-blue-50/30 transition-colors">
                   <td className="p-4 text-sm font-medium text-gray-900 flex items-center gap-3">
                     <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center border border-gray-200">
@@ -464,11 +495,13 @@ export function GuidanceSubmissions() {
                   <td className="p-4">
                     <span className={cn(
                       "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border",
-                      s.status === 'Complete' 
+                      s.status === 'Complete' || s.status === 'Approved'
                         ? "bg-green-50 text-green-700 border-green-200" 
+                        : s.status === 'Rejected'
+                        ? "bg-red-50 text-red-700 border-red-200"
                         : "bg-yellow-50 text-yellow-700 border-yellow-200"
                     )}>
-                      <span className={cn("w-1.5 h-1.5 rounded-full", s.status === 'Complete' ? "bg-green-500" : "bg-yellow-500")}></span>
+                      <span className={cn("w-1.5 h-1.5 rounded-full", s.status === 'Complete' || s.status === 'Approved' ? "bg-green-500" : s.status === 'Rejected' ? "bg-red-500" : "bg-yellow-500")}></span>
                       {s.status}
                     </span>
                   </td>
