@@ -9,14 +9,28 @@ export interface User {
   role: 'student' | 'admin';
 }
 
+export interface ScholarshipForm {
+  id: string;
+  title: string;
+  description: string;
+  deadline: string;
+  status: 'Active' | 'Draft' | 'Closed';
+  fields: { id: string; label: string; type: string; required: boolean }[];
+  documents: { id: string; label: string; description: string; required: boolean }[];
+  createdAt: string;
+}
+
 export interface Submission {
   id: string;
   studentId: string;
   studentName: string;
-  scholarshipType: string;
+  scholarshipType: string; // Could also map to formId
+  formId?: string;
   status: 'Pending' | 'Approved' | 'Rejected';
   submittedAt: string;
+  answers?: Record<string, string>;
   files: {
+    id?: string;
     name: string;
     type: string;
     data: string; // base64
@@ -25,6 +39,7 @@ export interface Submission {
 
 const usersDb = localforage.createInstance({ name: 'scholarship-app', storeName: 'users' });
 const submissionsDb = localforage.createInstance({ name: 'scholarship-app', storeName: 'submissions' });
+const formsDb = localforage.createInstance({ name: 'scholarship-app', storeName: 'forms' });
 
 export const db = {
   users: {
@@ -41,6 +56,26 @@ export const db = {
         if (user && user.email === email) return user;
       }
       return null;
+    }
+  },
+  forms: {
+    async get(id: string): Promise<ScholarshipForm | null> {
+      return await formsDb.getItem(id);
+    },
+    async set(id: string, form: ScholarshipForm): Promise<void> {
+      await formsDb.setItem(id, form);
+    },
+    async listAll(): Promise<ScholarshipForm[]> {
+      const keys = await formsDb.keys();
+      const forms: ScholarshipForm[] = [];
+      for (const key of keys) {
+        const form = await formsDb.getItem<ScholarshipForm>(key);
+        if (form) forms.push(form);
+      }
+      return forms.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    },
+    async delete(id: string): Promise<void> {
+      await formsDb.removeItem(id);
     }
   },
   submissions: {

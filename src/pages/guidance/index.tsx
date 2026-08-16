@@ -5,6 +5,7 @@ import { LayoutDashboard, FileText, Bell, Mail, BarChart2, Settings, LogOut, Fil
 import { cn } from '../../lib/utils';
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Legend } from 'recharts';
 import { db } from '../../lib/db';
+import { motion } from 'framer-motion';
 
 import { signInWithGoogle } from '../../lib/firebase';
 
@@ -32,8 +33,10 @@ export function GuidanceLogin() {
       navigate('/admin/dashboard');
     } catch (err: any) {
       console.error(err);
-      if (err?.code === 'auth/popup-closed-by-user') {
+      if (err?.code === 'auth/popup-closed-by-user' || err?.code === 'auth/cancelled-popup-request') {
         setError('Sign-in cancelled. Please try again.');
+      } else if (err?.code === 'auth/popup-blocked') {
+        setError('Sign-in popup was blocked by your browser. Please allow popups for this site.');
       } else if (err?.code === 'auth/unauthorized-domain') {
         setError('Domain not authorized in Firebase. Add this URL to Firebase Auth settings.');
       } else {
@@ -44,7 +47,12 @@ export function GuidanceLogin() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[url('/BI.png')] bg-cover bg-center p-4">
-      <div className="relative bg-[#a5d8ff] p-8 rounded-[32px] shadow-2xl w-full max-w-[380px] text-center">
+      <motion.div 
+        initial={{ y: 50, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ type: "spring", stiffness: 100, damping: 20 }}
+        className="relative bg-[#a5d8ff] p-8 rounded-[32px] shadow-2xl w-full max-w-[380px] text-center"
+      >
         <div className="mx-auto h-16 flex items-center justify-center mb-3">
           <img src="/capsu-logo.png" alt="Logo" className="h-full object-contain" />
         </div>
@@ -97,7 +105,7 @@ export function GuidanceLogin() {
             Continue with Google
           </button>
         </form>
-      </div>
+      </motion.div>
     </div>
   );
 }
@@ -105,6 +113,7 @@ export function GuidanceLogin() {
 const navItems = [
   { icon: LayoutDashboard, label: 'Dashboard', path: '/admin/dashboard' },
   { icon: FileText, label: 'Submissions', path: '/admin/submissions' },
+  { icon: FileText, label: 'Forms', path: '/admin/forms' },
   { icon: Bell, label: 'Notifications', path: '/admin/notifications' },
   { icon: Mail, label: 'Communications', path: '/admin/communications' },
   { icon: BarChart2, label: 'Reports', path: '/admin/reports' },
@@ -842,6 +851,227 @@ export function GuidanceSettings() {
           </label>
         </div>
       </div>
+    </div>
+  );
+}
+
+export function GuidanceForms() {
+  const [forms, setForms] = useState<any[]>([]);
+  const [isCreating, setIsCreating] = useState(false);
+  const [newForm, setNewForm] = useState({
+    title: '', description: '', deadline: '', status: 'Active' as const, fields: [], documents: []
+  });
+
+  useEffect(() => {
+    loadForms();
+  }, []);
+
+  const loadForms = () => {
+    db.forms.listAll().then(setForms);
+  };
+
+  const handleSaveForm = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const id = Date.now().toString();
+    await db.forms.set(id, { id, ...newForm, createdAt: new Date().toISOString() });
+    setIsCreating(false);
+    setNewForm({ title: '', description: '', deadline: '', status: 'Active', fields: [], documents: [] });
+    loadForms();
+  };
+
+  const addCustomField = () => {
+    setNewForm(prev => ({
+      ...prev,
+      fields: [...prev.fields, { id: Date.now().toString(), label: '', type: 'text', required: true }]
+    }));
+  };
+
+  const updateField = (index: number, key: string, value: any) => {
+    const updated = [...newForm.fields];
+    updated[index] = { ...updated[index], [key]: value };
+    setNewForm(prev => ({ ...prev, fields: updated }));
+  };
+
+  const addDocument = () => {
+    setNewForm(prev => ({
+      ...prev,
+      documents: [...prev.documents, { id: Date.now().toString(), label: '', description: '', required: true }]
+    }));
+  };
+
+  const updateDocument = (index: number, key: string, value: any) => {
+    const updated = [...newForm.documents];
+    updated[index] = { ...updated[index], [key]: value };
+    setNewForm(prev => ({ ...prev, documents: updated }));
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h1 className="text-3xl font-bold text-[#0f2e60]">Scholarship Forms</h1>
+        <button 
+          onClick={() => setIsCreating(true)}
+          className="px-4 py-2 bg-[#1864db] text-white rounded-lg font-medium hover:bg-[#124b9f] transition-colors shadow-sm"
+        >
+          Create New Form
+        </button>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {forms.map(form => (
+          <div key={form.id} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex flex-col">
+            <div className="flex justify-between items-start mb-4">
+              <h3 className="font-bold text-lg text-gray-900">{form.title}</h3>
+              <span className={cn("px-2.5 py-1 rounded-full text-xs font-medium border", form.status === 'Active' ? "bg-green-50 text-green-700 border-green-200" : "bg-gray-100 text-gray-700 border-gray-200")}>
+                {form.status}
+              </span>
+            </div>
+            <p className="text-sm text-gray-600 mb-4 flex-1 line-clamp-3">{form.description}</p>
+            <div className="space-y-2 mb-4 text-sm text-gray-500">
+              <p><strong>Deadline:</strong> {form.deadline || 'No deadline'}</p>
+              <p><strong>Custom Fields:</strong> {form.fields.length}</p>
+              <p><strong>Required Docs:</strong> {form.documents.length}</p>
+            </div>
+            <div className="flex justify-end gap-2 border-t border-gray-100 pt-4">
+              <button 
+                onClick={async () => {
+                  if (confirm('Delete this form?')) {
+                    await db.forms.delete(form.id);
+                    loadForms();
+                  }
+                }}
+                className="text-red-500 hover:text-red-700 text-sm font-medium"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        ))}
+        {forms.length === 0 && !isCreating && (
+          <div className="col-span-full p-12 text-center bg-white rounded-2xl border border-gray-100 border-dashed text-gray-500">
+            No scholarship forms created yet. Click "Create New Form" to build one.
+          </div>
+        )}
+      </div>
+
+      {isCreating && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50 overflow-y-auto">
+          <div className="bg-white rounded-2xl w-full max-w-3xl shadow-2xl overflow-hidden flex flex-col my-8">
+            <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50 sticky top-0 z-10">
+              <h2 className="text-xl font-bold text-gray-900">Create Scholarship Form</h2>
+              <button onClick={() => setIsCreating(false)} className="text-gray-400 hover:text-gray-600">
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+            <div className="p-6 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 200px)' }}>
+              <form id="createForm" onSubmit={handleSaveForm} className="space-y-6">
+                
+                {/* Basic Info */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold text-gray-800 border-b pb-2">Basic Information</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="md:col-span-2">
+                      <label className="block text-xs font-semibold text-gray-700 uppercase mb-1">Scholarship Title</label>
+                      <input required type="text" value={newForm.title} onChange={e => setNewForm({...newForm, title: e.target.value})} className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="e.g., Academic Excellence Scholarship" />
+                    </div>
+                    <div className="md:col-span-2">
+                      <label className="block text-xs font-semibold text-gray-700 uppercase mb-1">Description</label>
+                      <textarea required value={newForm.description} onChange={e => setNewForm({...newForm, description: e.target.value})} className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-y" rows={3} placeholder="Provide details about the scholarship requirements and benefits..."></textarea>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-700 uppercase mb-1">Deadline</label>
+                      <input type="date" value={newForm.deadline} onChange={e => setNewForm({...newForm, deadline: e.target.value})} className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-700 uppercase mb-1">Status</label>
+                      <select value={newForm.status} onChange={e => setNewForm({...newForm, status: e.target.value as 'Active'})} className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="Active">Active</option>
+                        <option value="Draft">Draft</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Custom Fields */}
+                <div className="space-y-4">
+                  <div className="flex justify-between items-end border-b pb-2">
+                    <h3 className="text-lg font-semibold text-gray-800">Custom Questions</h3>
+                    <button type="button" onClick={addCustomField} className="text-sm text-blue-600 font-medium hover:text-blue-800">+ Add Question</button>
+                  </div>
+                  {newForm.fields.length === 0 && <p className="text-sm text-gray-500 italic">No custom questions added. (Standard info like Name and Student ID are automatically collected)</p>}
+                  {newForm.fields.map((field: any, index) => (
+                    <div key={field.id} className="bg-gray-50 p-4 rounded-xl border border-gray-200 flex gap-4 items-start">
+                      <div className="flex-1 space-y-3">
+                        <div>
+                          <label className="block text-xs font-semibold text-gray-700 mb-1">Question Label</label>
+                          <input required type="text" value={field.label} onChange={e => updateField(index, 'label', e.target.value)} className="w-full px-3 py-1.5 bg-white border border-gray-300 rounded-md text-sm" placeholder="e.g., Annual Household Income" />
+                        </div>
+                        <div className="flex gap-4">
+                          <div className="flex-1">
+                            <label className="block text-xs font-semibold text-gray-700 mb-1">Input Type</label>
+                            <select value={field.type} onChange={e => updateField(index, 'type', e.target.value)} className="w-full px-3 py-1.5 bg-white border border-gray-300 rounded-md text-sm">
+                              <option value="text">Short Text</option>
+                              <option value="number">Number</option>
+                            </select>
+                          </div>
+                          <div className="flex items-center pt-5">
+                            <label className="flex items-center gap-2 cursor-pointer">
+                              <input type="checkbox" checked={field.required} onChange={e => updateField(index, 'required', e.target.checked)} className="rounded border-gray-300" />
+                              <span className="text-sm text-gray-700">Required</span>
+                            </label>
+                          </div>
+                        </div>
+                      </div>
+                      <button type="button" onClick={() => setNewForm(prev => ({ ...prev, fields: prev.fields.filter((_, i) => i !== index) }))} className="text-red-500 hover:bg-red-50 p-1.5 rounded-lg mt-5">
+                        <X className="w-5 h-5" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Required Documents */}
+                <div className="space-y-4">
+                  <div className="flex justify-between items-end border-b pb-2">
+                    <h3 className="text-lg font-semibold text-gray-800">Required Documents</h3>
+                    <button type="button" onClick={addDocument} className="text-sm text-blue-600 font-medium hover:text-blue-800">+ Add Document</button>
+                  </div>
+                  {newForm.documents.length === 0 && <p className="text-sm text-gray-500 italic">No required documents added.</p>}
+                  {newForm.documents.map((doc: any, index) => (
+                    <div key={doc.id} className="bg-gray-50 p-4 rounded-xl border border-gray-200 flex gap-4 items-start">
+                      <div className="flex-1 space-y-3">
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-xs font-semibold text-gray-700 mb-1">Document Name</label>
+                            <input required type="text" value={doc.label} onChange={e => updateDocument(index, 'label', e.target.value)} className="w-full px-3 py-1.5 bg-white border border-gray-300 rounded-md text-sm" placeholder="e.g., Certificate of Indigency" />
+                          </div>
+                          <div className="flex items-center pt-5">
+                            <label className="flex items-center gap-2 cursor-pointer">
+                              <input type="checkbox" checked={doc.required} onChange={e => updateDocument(index, 'required', e.target.checked)} className="rounded border-gray-300" />
+                              <span className="text-sm text-gray-700">Required</span>
+                            </label>
+                          </div>
+                        </div>
+                        <div>
+                          <label className="block text-xs font-semibold text-gray-700 mb-1">Description / Instructions</label>
+                          <input type="text" value={doc.description} onChange={e => updateDocument(index, 'description', e.target.value)} className="w-full px-3 py-1.5 bg-white border border-gray-300 rounded-md text-sm text-gray-500" placeholder="e.g., Must be issued within the last 6 months" />
+                        </div>
+                      </div>
+                      <button type="button" onClick={() => setNewForm(prev => ({ ...prev, documents: prev.documents.filter((_, i) => i !== index) }))} className="text-red-500 hover:bg-red-50 p-1.5 rounded-lg mt-5">
+                        <X className="w-5 h-5" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+
+              </form>
+            </div>
+            <div className="p-6 border-t border-gray-100 bg-gray-50 flex justify-end gap-3 rounded-b-2xl">
+              <button type="button" onClick={() => setIsCreating(false)} className="px-5 py-2 text-gray-600 hover:bg-gray-200 rounded-lg font-medium transition-colors">Cancel</button>
+              <button type="submit" form="createForm" className="px-6 py-2 bg-[#1864db] text-white rounded-lg font-medium hover:bg-[#124b9f] transition-colors shadow-sm">Save Form</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
