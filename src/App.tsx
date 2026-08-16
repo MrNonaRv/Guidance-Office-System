@@ -1,3 +1,5 @@
+import { useEffect } from "react";
+import { seedDatabase } from "../seed";
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
@@ -33,6 +35,10 @@ const StudentAuthGuard = () => {
 };
 
 export default function App() {
+  useEffect(() => {
+    seedDatabase().catch(console.error);
+  }, []);
+
   return (
     <BrowserRouter>
       <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-gray-50"><div className="w-8 h-8 border-4 border-[#0f2e60] border-t-transparent rounded-full animate-spin"></div></div>}>
