@@ -1,10 +1,19 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut } from 'firebase/auth';
+import { getFirestore, Firestore } from 'firebase/firestore';
 import firebaseConfig from '../../firebase-applet-config.json';
 
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
+
+let firestoreInstance: Firestore | null = null;
+try {
+  firestoreInstance = getFirestore(app);
+} catch (e) {
+  console.warn("Firestore initialization notice:", e);
+}
+export const firestoreDb = firestoreInstance;
 
 export const signInWithGoogle = async () => {
   try {
@@ -28,3 +37,4 @@ export const logOut = async () => {
     throw error;
   }
 };
+

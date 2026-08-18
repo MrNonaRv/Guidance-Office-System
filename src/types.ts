@@ -26,6 +26,65 @@ export interface AcademicYear {
   endDate?: string;
 }
 
+export interface ScholarshipItem {
+  id: string;
+  name: string;
+  type: string;
+  category: string;
+  status: 'Active' | 'Inactive';
+  description?: string;
+  requirements?: string[];
+  slots?: number;
+  deadline?: string;
+}
+
+export const defaultScholarships: ScholarshipItem[] = [
+  {
+    id: 'scholarship-academic-excellence',
+    name: 'Academic Excellence Scholarship',
+    type: 'Internally-Funded',
+    category: 'Institutional',
+    status: 'Active',
+    description: 'For students with GWA of 1.75 or higher and no failing grade in any academic subject.',
+    requirements: ['Certificate of Grades / Transcript of Records', 'Certificate of Good Moral Character', 'Valid Student ID'],
+    slots: 50,
+    deadline: '2026-09-30'
+  },
+  {
+    id: 'scholarship-deans-list',
+    name: "Dean's Lister Grant",
+    type: 'Internally-Funded',
+    category: 'Institutional',
+    status: 'Active',
+    description: 'Grant awarded to top academic achievers in each program and year level.',
+    requirements: ['Certificate of Matriculation', 'Latest Official Semester Grade Slip', 'Certificate of Good Moral Character'],
+    slots: 100,
+    deadline: '2026-09-30'
+  },
+  {
+    id: 'scholarship-ched-tdp',
+    name: 'CHED Tulong Dunong Program (TDP-TES)',
+    type: 'Externally-Funded',
+    category: 'Government / CHED',
+    status: 'Active',
+    description: 'Government subsidy supporting qualified tertiary education students.',
+    requirements: ['Certificate of Registration / Enrollment', 'Certificate of Indigency / ITR of Parents', 'Valid Government / Student ID'],
+    slots: 200,
+    deadline: '2026-10-15'
+  },
+  {
+    id: 'scholarship-tes',
+    name: 'Tertiary Education Subsidy (TES)',
+    type: 'Externally-Funded',
+    category: 'Government / UNIFAST',
+    status: 'Active',
+    description: 'Financial assistance for Filipino students enrolled in undergraduate programs under RA 10931.',
+    requirements: ['UNIFAST Application Form', 'Certificate of Registration', 'Barangay Certificate of Indigency'],
+    slots: 300,
+    deadline: '2026-10-31'
+  }
+];
+
 export const defaultCourses: Course[] = [
   { id: 'course-bscs', code: 'BSCS', name: 'Bachelor of Science in Computer Science', department: 'College of Information and Communications Technology', status: 'Active' },
   { id: 'course-bael', code: 'BAEL', name: 'Bachelor of Arts in English Language', department: 'College of Arts and Letters', status: 'Active' },

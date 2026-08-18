@@ -1,0 +1,67 @@
+{
+  "entities": {
+    "scholarships": {
+      "title": "Scholarship",
+      "description": "Scholarships available in the institution",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "type": { "type": "string" },
+        "category": { "type": "string" },
+        "status": { "type": "string" },
+        "description": { "type": "string" },
+        "requirements": { "type": "array", "items": { "type": "string" } },
+        "slots": { "type": "number" },
+        "deadline": { "type": "string" }
+      },
+      "required": ["id", "name", "type", "category", "status"]
+    },
+    "courses": {
+      "title": "Course",
+      "description": "Registered academic courses and degree programs",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "code": { "type": "string" },
+        "name": { "type": "string" },
+        "department": { "type": "string" },
+        "status": { "type": "string" }
+      },
+      "required": ["id", "code", "name", "status"]
+    },
+    "academicYears": {
+      "title": "Academic Year",
+      "description": "Academic school years and terms",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "year": { "type": "string" },
+        "semester": { "type": "string" },
+        "label": { "type": "string" },
+        "status": { "type": "string" },
+        "isDefault": { "type": "boolean" },
+        "startDate": { "type": "string" },
+        "endDate": { "type": "string" }
+      },
+      "required": ["id", "year", "semester", "label", "status"]
+    },
+    "submissions": {
+      "title": "Submission",
+      "description": "Student scholarship applications",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "studentId": { "type": "string" },
+        "studentName": { "type": "string" },
+        "scholarshipType": { "type": "string" },
+        "status": { "type": "string" },
+        "submittedAt": { "type": "string" },
+        "data": { "type": "object" },
+        "files": { "type": "array" }
+      },
+      "required": ["id", "studentId", "studentName", "status", "submittedAt"]
+    }
+  },
+  "firestoreRules": "firestore.rules"
+}

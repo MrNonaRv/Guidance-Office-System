@@ -1,0 +1,43 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    match /scholarships/{id} {
+      allow read: if true;
+      allow write: if true;
+    }
+
+    match /courses/{id} {
+      allow read: if true;
+      allow write: if true;
+    }
+
+    match /academicYears/{id} {
+      allow read: if true;
+      allow write: if true;
+    }
+
+    match /forms/{id} {
+      allow read: if true;
+      allow write: if true;
+    }
+
+    match /submissions/{id} {
+      allow read: if true;
+      allow write: if true;
+    }
+
+    match /users/{id} {
+      allow read: if true;
+      allow write: if true;
+    }
+
+    match /{document=**} {
+      allow read, write: if true;
+    }
+  }
+}

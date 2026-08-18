@@ -3,7 +3,7 @@ import { Outlet, Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { cn } from '../../lib/utils';
 import { LogOut, Upload, CheckCircle2, ChevronDown, View, FileText, Award, GraduationCap } from 'lucide-react';
 import { db } from '../../lib/db';
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 
 import { signInWithGoogle } from '../../lib/firebase';
 
@@ -36,7 +36,6 @@ export function StudentLogin() {
       sessionStorage.setItem('studentUser', JSON.stringify(user));
       navigate('/student/dashboard');
     } catch (err: any) {
-      console.error(err);
       if (err?.code === 'auth/popup-closed-by-user' || err?.code === 'auth/cancelled-popup-request') {
         setError('Sign-in cancelled. Please try again.');
       } else if (err?.code === 'auth/popup-blocked') {
@@ -44,6 +43,7 @@ export function StudentLogin() {
       } else if (err?.code === 'auth/unauthorized-domain') {
         setError('Domain not authorized in Firebase. Add this URL to Firebase Auth settings.');
       } else {
+        console.error("Student login error", err);
         setError('Failed to sign in. If previewing, try opening in a new tab.');
       }
     }

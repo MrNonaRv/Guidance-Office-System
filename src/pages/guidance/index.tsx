@@ -5,7 +5,7 @@ import { Award, Upload, LayoutDashboard, FileText, Bell, Mail, BarChart2, Settin
 import { cn } from '../../lib/utils';
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Legend } from 'recharts';
 import { db } from '../../lib/db';
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 
 import { signInWithGoogle } from '../../lib/firebase';
 
@@ -32,7 +32,6 @@ export function GuidanceLogin() {
       sessionStorage.setItem('adminEmail', fbUser.email || '');
       navigate('/admin/dashboard');
     } catch (err: any) {
-      console.error(err);
       if (err?.code === 'auth/popup-closed-by-user' || err?.code === 'auth/cancelled-popup-request') {
         setError('Sign-in cancelled. Please try again.');
       } else if (err?.code === 'auth/popup-blocked') {
@@ -40,6 +39,7 @@ export function GuidanceLogin() {
       } else if (err?.code === 'auth/unauthorized-domain') {
         setError('Domain not authorized in Firebase. Add this URL to Firebase Auth settings.');
       } else {
+        console.error("Admin login error", err);
         setError('Failed to sign in. If previewing, try opening in a new tab.');
       }
     }

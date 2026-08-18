@@ -1,12 +1,6 @@
-import { useEffect } from "react";
-import { seedDatabase } from "../seed";
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- */
-
-import { lazy, Suspense } from 'react';
+import { useEffect, lazy, Suspense } from "react";
 import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom';
+import { seedDatabase } from "./lib/seed";
 import { Home } from './pages/Home';
 
 const GuidanceLogin = lazy(() => import('./pages/guidance').then(module => ({ default: module.GuidanceLogin })));
