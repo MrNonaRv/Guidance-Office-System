@@ -20,8 +20,12 @@ export const signInWithGoogle = async () => {
     const result = await signInWithPopup(auth, googleProvider);
     return result.user;
   } catch (error: any) {
-    if (error?.code === 'auth/popup-closed-by-user' || error?.code === 'auth/cancelled-popup-request') {
-      // User dismissed or closed the popup window
+    if (
+      error?.code === 'auth/popup-closed-by-user' || 
+      error?.code === 'auth/cancelled-popup-request' ||
+      error?.code === 'auth/popup-blocked'
+    ) {
+      // User dismissed or browser blocked popup, handled by calling UI
       throw error;
     }
     console.error("Error signing in with Google", error);
