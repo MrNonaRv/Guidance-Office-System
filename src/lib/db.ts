@@ -1,5 +1,5 @@
 import localforage from 'localforage';
-
+import { Course, AcademicYear, defaultCourses, defaultAcademicYears } from '../types';
 
 export interface Scholarship {
   id: string;
@@ -14,6 +14,8 @@ export interface Scholarship {
 }
 
 const scholarshipsDb = localforage.createInstance({ name: 'scholarship-app', storeName: 'scholarships' });
+const coursesDb = localforage.createInstance({ name: 'scholarship-app', storeName: 'courses' });
+const academicYearsDb = localforage.createInstance({ name: 'scholarship-app', storeName: 'academicYears' });
 
 export interface User {
   id: string;
@@ -193,6 +195,113 @@ export const db = {
     },
     async delete(id: string): Promise<void> {
       await submissionsDb.removeItem(id);
+    }
+  },
+  courses: {
+    async get(id: string): Promise<Course | null> {
+      return await coursesDb.getItem(id);
+    },
+    async set(id: string, course: Course): Promise<void> {
+      await coursesDb.setItem(id, course);
+    },
+    async create(course: Omit<Course, 'id'> & { id?: string }): Promise<Course> {
+      const id = course.id || `course-${course.code.toLowerCase().replace(/\s+/g, '-')}-${Date.now()}`;
+      const newCourse: Course = { ...course, id };
+      await coursesDb.setItem(id, newCourse);
+      return newCourse;
+    },
+    async update(id: string, course: Partial<Course>): Promise<Course | null> {
+      const existing = await coursesDb.getItem<Course>(id);
+      if (!existing) return null;
+      const updated = { ...existing, ...course, id };
+      await coursesDb.setItem(id, updated);
+      return updated;
+    },
+    async listAll(): Promise<Course[]> {
+      const keys = await coursesDb.keys();
+      if (keys.length === 0) {
+        // Seed default 4 courses: BSCS, BAEL, BSFT, BSOA
+        for (const c of defaultCourses) {
+          await coursesDb.setItem(c.id, c);
+        }
+        return [...defaultCourses];
+      }
+      const items: Course[] = [];
+      for (const key of keys) {
+        const item = await coursesDb.getItem<Course>(key);
+        if (item) items.push(item);
+      }
+      return items;
+    },
+    async delete(id: string): Promise<void> {
+      await coursesDb.removeItem(id);
+    }
+  },
+  academicYears: {
+    async get(id: string): Promise<AcademicYear | null> {
+      return await academicYearsDb.getItem(id);
+    },
+    async set(id: string, ay: AcademicYear): Promise<void> {
+      await academicYearsDb.setItem(id, ay);
+    },
+    async create(ay: Omit<AcademicYear, 'id'> & { id?: string }): Promise<AcademicYear> {
+      const id = ay.id || `ay-${Date.now()}`;
+      const newAy: AcademicYear = { ...ay, id };
+      // If marked default, unset default on others
+      if (newAy.isDefault) {
+        const all = await this.listAll();
+        for (const item of all) {
+          if (item.isDefault) {
+            await academicYearsDb.setItem(item.id, { ...item, isDefault: false });
+          }
+        }
+      }
+      await academicYearsDb.setItem(id, newAy);
+      return newAy;
+    },
+    async update(id: string, ay: Partial<AcademicYear>): Promise<AcademicYear | null> {
+      const existing = await academicYearsDb.getItem<AcademicYear>(id);
+      if (!existing) return null;
+      if (ay.isDefault) {
+        const all = await this.listAll();
+        for (const item of all) {
+          if (item.id !== id && item.isDefault) {
+            await academicYearsDb.setItem(item.id, { ...item, isDefault: false });
+          }
+        }
+      }
+      const updated = { ...existing, ...ay, id };
+      await academicYearsDb.setItem(id, updated);
+      return updated;
+    },
+    async setDefault(id: string): Promise<void> {
+      const all = await this.listAll();
+      for (const item of all) {
+        await academicYearsDb.setItem(item.id, { ...item, isDefault: item.id === id });
+      }
+    },
+    async listAll(): Promise<AcademicYear[]> {
+      const keys = await academicYearsDb.keys();
+      if (keys.length === 0) {
+        // Seed default academic years
+        for (const ay of defaultAcademicYears) {
+          await academicYearsDb.setItem(ay.id, ay);
+        }
+        return [...defaultAcademicYears];
+      }
+      const items: AcademicYear[] = [];
+      for (const key of keys) {
+        const item = await academicYearsDb.getItem<AcademicYear>(key);
+        if (item) items.push(item);
+      }
+      return items.sort((a, b) => b.year.localeCompare(a.year) || a.semester.localeCompare(b.semester));
+    },
+    async getDefault(): Promise<AcademicYear | null> {
+      const all = await this.listAll();
+      return all.find(a => a.isDefault) || all.find(a => a.status === 'Active') || all[0] || null;
+    },
+    async delete(id: string): Promise<void> {
+      await academicYearsDb.removeItem(id);
     }
   }
 };

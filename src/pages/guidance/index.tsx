@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { mockStudents } from '../../types';
-import { Award, Upload, LayoutDashboard, FileText, Bell, Mail, BarChart2, Settings, LogOut, Filter, ChevronDown, View, User, X, Search, Type, Paperclip, Link2, Smile, Triangle, Image as ImageIcon, Lock, Pen, MoreVertical, Trash2, ChevronRight, Calendar, GraduationCap, Users, Image, Plus, GripVertical, Printer } from 'lucide-react';
+import { Award, Upload, LayoutDashboard, FileText, Bell, Mail, BarChart2, Settings, LogOut, Filter, ChevronDown, View, User, X, Search, Type, Paperclip, Link2, Smile, Triangle, Image as ImageIcon, Lock, Pen, MoreVertical, Trash2, ChevronRight, Calendar, GraduationCap, Users, Image, Plus, GripVertical, Printer, Star, Check } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Legend } from 'recharts';
 import { db } from '../../lib/db';
@@ -372,6 +372,9 @@ export function GuidanceSubmissions() {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState('All status');
   const [filterCourse, setFilterCourse] = useState('All courses');
+  const [filterAcademicYear, setFilterAcademicYear] = useState('All academic years');
+  const [coursesList, setCoursesList] = useState<any[]>([]);
+  const [academicYearsList, setAcademicYearsList] = useState<any[]>([]);
 
   const fetchSubmissions = () => {
     db.submissions.listAll().then(subs => {
@@ -381,6 +384,8 @@ export function GuidanceSubmissions() {
 
   useEffect(() => {
     fetchSubmissions();
+    db.courses.listAll().then(setCoursesList);
+    db.academicYears.listAll().then(setAcademicYearsList);
   }, []);
 
   const handleStatusChange = async (id: string, status: string) => {
@@ -396,10 +401,14 @@ export function GuidanceSubmissions() {
   };
 
   const filteredSubmissions = submissions.filter(s => {
-    const matchesSearch = s.studentName.toLowerCase().includes(searchQuery.toLowerCase());
+    const studentFullName = s.studentName || `${s.data?.firstName || ''} ${s.data?.familyName || ''}`.trim();
+    const matchesSearch = studentFullName.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesStatus = filterStatus === 'All status' || s.status === filterStatus;
-    const matchesCourse = filterCourse === 'All courses' || s.scholarshipType.includes(filterCourse); // assuming scholarshipType has course or something similar
-    return matchesSearch && matchesStatus && matchesCourse;
+    const subCourse = s.data?.course || s.answers?.course || (s.scholarshipType.includes('BS') || s.scholarshipType.includes('BA') ? s.scholarshipType.split(' ')[0] : '');
+    const matchesCourse = filterCourse === 'All courses' || subCourse === filterCourse || s.scholarshipType.includes(filterCourse);
+    const subAY = s.data?.academicYear || s.answers?.academicYear || 'A.Y. 2025-2026 - 1st Semester';
+    const matchesAY = filterAcademicYear === 'All academic years' || subAY === filterAcademicYear || subAY.includes(filterAcademicYear);
+    return matchesSearch && matchesStatus && matchesCourse && matchesAY;
   });
   
   return (
@@ -455,15 +464,27 @@ export function GuidanceSubmissions() {
                         className="w-full text-sm border border-gray-200 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 outline-none"
                       >
                         <option>All courses</option>
-                        <option>BAEL</option>
-                        <option>BSCS</option>
-                        <option>BSFT</option>
-                        <option>BSOA</option>
+                        {coursesList.map(c => (
+                          <option key={c.id} value={c.code}>{c.code} - {c.name}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1.5">By Academic Year</label>
+                      <select 
+                        value={filterAcademicYear}
+                        onChange={(e) => setFilterAcademicYear(e.target.value)}
+                        className="w-full text-sm border border-gray-200 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 outline-none"
+                      >
+                        <option>All academic years</option>
+                        {academicYearsList.map(ay => (
+                          <option key={ay.id} value={ay.label}>{ay.label} {ay.isDefault ? '(Current)' : ''}</option>
+                        ))}
                       </select>
                     </div>
                     <div className="flex justify-end gap-2 pt-2 border-t border-gray-100">
                       <button 
-                        onClick={() => { setFilterStatus('All status'); setFilterCourse('All courses'); setFilterOpen(false); }} 
+                        onClick={() => { setFilterStatus('All status'); setFilterCourse('All courses'); setFilterAcademicYear('All academic years'); setFilterOpen(false); }} 
                         className="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-900 font-medium transition-all duration-300 hover:scale-[1.02]"
                       >
                         Reset
@@ -1003,7 +1024,9 @@ export function GuidanceSubmissions() {
 }
 
 export function GuidanceSettings() {
-  const [activeTab, setActiveTab] = useState('scholarships');
+  const [activeTab, setActiveTab] = useState<'scholarships' | 'courses' | 'academic-years'>('scholarships');
+  
+  // Scholarships state
   const [scholarships, setScholarships] = useState<any[]>([]);
   const [showScholarshipModal, setShowScholarshipModal] = useState(false);
   const [editingScholarship, setEditingScholarship] = useState<any>(null);
@@ -1012,8 +1035,31 @@ export function GuidanceSettings() {
     status: 'Active', slots: 0, deadline: '', description: ''
   });
 
+  // Courses state (BSCS, BAEL, BSFT, BSOA)
+  const [courses, setCourses] = useState<any[]>([]);
+  const [showCourseModal, setShowCourseModal] = useState(false);
+  const [editingCourse, setEditingCourse] = useState<any>(null);
+  const [courseForm, setCourseForm] = useState({
+    code: '', name: '', department: '', status: 'Active' as 'Active' | 'Inactive'
+  });
+
+  // Academic Years state
+  const [academicYears, setAcademicYears] = useState<any[]>([]);
+  const [showAcademicYearModal, setShowAcademicYearModal] = useState(false);
+  const [editingAcademicYear, setEditingAcademicYear] = useState<any>(null);
+  const [academicYearForm, setAcademicYearForm] = useState({
+    year: '2025-2026',
+    semester: '1st Semester' as '1st Semester' | '2nd Semester' | 'Summer',
+    status: 'Active' as 'Active' | 'Upcoming' | 'Closed',
+    isDefault: false,
+    startDate: '',
+    endDate: ''
+  });
+
   useEffect(() => {
     loadScholarships();
+    loadCourses();
+    loadAcademicYears();
   }, []);
 
   const loadScholarships = async () => {
@@ -1021,6 +1067,17 @@ export function GuidanceSettings() {
     setScholarships(list);
   };
 
+  const loadCourses = async () => {
+    const list = await db.courses.listAll();
+    setCourses(list);
+  };
+
+  const loadAcademicYears = async () => {
+    const list = await db.academicYears.listAll();
+    setAcademicYears(list);
+  };
+
+  // Scholarship Handlers
   const handleSaveScholarship = async () => {
     if (editingScholarship) {
       await db.scholarships.update(editingScholarship.id, scholarshipForm);
@@ -1038,9 +1095,93 @@ export function GuidanceSettings() {
   };
 
   const handleDelete = async (id: string) => {
-    if (confirm("Are you sure?")) {
+    if (confirm("Are you sure you want to delete this scholarship?")) {
       await db.scholarships.delete(id);
       loadScholarships();
+    }
+  };
+
+  // Course Handlers
+  const handleSaveCourse = async () => {
+    if (!courseForm.code.trim() || !courseForm.name.trim()) {
+      alert("Please enter both Course Code (e.g. BSCS) and Course Name.");
+      return;
+    }
+    if (editingCourse) {
+      await db.courses.update(editingCourse.id, courseForm);
+    } else {
+      await db.courses.create(courseForm);
+    }
+    setShowCourseModal(false);
+    loadCourses();
+  };
+
+  const handleEditCourse = (c: any) => {
+    setEditingCourse(c);
+    setCourseForm({
+      code: c.code,
+      name: c.name,
+      department: c.department || '',
+      status: c.status || 'Active'
+    });
+    setShowCourseModal(true);
+  };
+
+  const handleDeleteCourse = async (id: string) => {
+    if (confirm("Are you sure you want to delete this course?")) {
+      await db.courses.delete(id);
+      loadCourses();
+    }
+  };
+
+  const handleToggleCourseStatus = async (c: any) => {
+    const nextStatus = c.status === 'Active' ? 'Inactive' : 'Active';
+    await db.courses.update(c.id, { status: nextStatus });
+    loadCourses();
+  };
+
+  // Academic Year Handlers
+  const handleSaveAcademicYear = async () => {
+    if (!academicYearForm.year.trim()) {
+      alert("Please specify the academic year (e.g. 2025-2026).");
+      return;
+    }
+    const label = `A.Y. ${academicYearForm.year} - ${academicYearForm.semester}`;
+    const payload = {
+      ...academicYearForm,
+      label
+    };
+    if (editingAcademicYear) {
+      await db.academicYears.update(editingAcademicYear.id, payload);
+    } else {
+      await db.academicYears.create(payload);
+    }
+    setShowAcademicYearModal(false);
+    loadAcademicYears();
+  };
+
+  const handleEditAcademicYear = (ay: any) => {
+    setEditingAcademicYear(ay);
+    setAcademicYearForm({
+      year: ay.year || '2025-2026',
+      semester: ay.semester || '1st Semester',
+      status: ay.status || 'Active',
+      isDefault: !!ay.isDefault,
+      startDate: ay.startDate || '',
+      endDate: ay.endDate || ''
+    });
+    setShowAcademicYearModal(true);
+  };
+
+  const handleSetDefaultAcademicYear = async (id: string) => {
+    await db.academicYears.setDefault(id);
+    loadAcademicYears();
+  };
+
+  const handleDeleteAcademicYear = async (id: string) => {
+    if (confirm("Are you sure you want to delete this academic year?")) {
+      await db.academicYears.delete(id);
+      loadAcademicYears();
     }
   };
   
@@ -1053,24 +1194,28 @@ export function GuidanceSettings() {
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
         <div className="border-b border-gray-100 flex gap-4 px-6 pt-4">
           <button className={`pb-4 text-sm font-bold border-b-2 transition-colors ${activeTab === 'scholarships' ? 'border-[#1864db] text-[#1864db]' : 'border-transparent text-gray-500 hover:text-gray-900'}`} onClick={() => setActiveTab('scholarships')}>Scholarships Management</button>
-          <button className={`pb-4 text-sm font-bold border-b-2 transition-colors ${activeTab === 'courses' ? 'border-[#1864db] text-[#1864db]' : 'border-transparent text-gray-500 hover:text-gray-900'}`} onClick={() => setActiveTab('courses')}>Courses</button>
+          <button className={`pb-4 text-sm font-bold border-b-2 transition-colors ${activeTab === 'courses' ? 'border-[#1864db] text-[#1864db]' : 'border-transparent text-gray-500 hover:text-gray-900'}`} onClick={() => setActiveTab('courses')}>Courses (BSCS, BAEL, BSFT, BSOA)</button>
           <button className={`pb-4 text-sm font-bold border-b-2 transition-colors ${activeTab === 'academic-years' ? 'border-[#1864db] text-[#1864db]' : 'border-transparent text-gray-500 hover:text-gray-900'}`} onClick={() => setActiveTab('academic-years')}>Academic Years</button>
         </div>
 
         <div className="p-6">
+          {/* TAB 1: SCHOLARSHIPS */}
           {activeTab === 'scholarships' && (
             <div className="space-y-4">
               <div className="flex justify-between items-center">
-                <h3 className="text-lg font-bold text-gray-900">Scholarship Registry</h3>
+                <div>
+                  <h3 className="text-lg font-bold text-gray-900">Scholarship Registry</h3>
+                  <p className="text-xs text-gray-500">Manage internal and external scholarship offerings.</p>
+                </div>
                 <button 
                   onClick={() => {
                     setEditingScholarship(null);
                     setScholarshipForm({ name: '', type: 'Internally-Funded', category: '', status: 'Active', slots: 0, deadline: '', description: '' });
                     setShowScholarshipModal(true);
                   }}
-                  className="bg-[#1864db] text-white px-4 py-2 rounded-lg font-bold text-sm hover:bg-[#124b9f]"
+                  className="bg-[#1864db] text-white px-4 py-2 rounded-lg font-bold text-sm hover:bg-[#124b9f] flex items-center gap-2"
                 >
-                  + Add Scholarship
+                  <Plus className="w-4 h-4" /> Add Scholarship
                 </button>
               </div>
 
@@ -1111,71 +1256,351 @@ export function GuidanceSettings() {
               </div>
             </div>
           )}
+
+          {/* TAB 2: COURSES */}
           {activeTab === 'courses' && (
-            <div className="text-gray-500 text-sm">Course management coming soon...</div>
+            <div className="space-y-4">
+              <div className="flex justify-between items-center">
+                <div>
+                  <h3 className="text-lg font-bold text-gray-900">Registered Degree Programs</h3>
+                  <p className="text-xs text-gray-500">Official academic courses available for scholarship applications.</p>
+                </div>
+                <button 
+                  onClick={() => {
+                    setEditingCourse(null);
+                    setCourseForm({ code: '', name: '', department: '', status: 'Active' });
+                    setShowCourseModal(true);
+                  }}
+                  className="bg-[#1864db] text-white px-4 py-2 rounded-lg font-bold text-sm hover:bg-[#124b9f] flex items-center gap-2"
+                >
+                  <Plus className="w-4 h-4" /> Add Course
+                </button>
+              </div>
+
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm text-left">
+                  <thead className="bg-gray-50 text-gray-500 uppercase text-xs">
+                    <tr>
+                      <th className="px-6 py-3 font-bold">Course Code</th>
+                      <th className="px-6 py-3 font-bold">Degree Title</th>
+                      <th className="px-6 py-3 font-bold">College / Department</th>
+                      <th className="px-6 py-3 font-bold">Status</th>
+                      <th className="px-6 py-3 font-bold text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">
+                    {courses.map(c => (
+                      <tr key={c.id} className="hover:bg-gray-50/50">
+                        <td className="px-6 py-4">
+                          <span className="px-2.5 py-1 bg-blue-50 text-[#1864db] font-bold rounded-md text-xs border border-blue-200">
+                            {c.code}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 font-bold text-gray-900">{c.name}</td>
+                        <td className="px-6 py-4 text-gray-600">{c.department || 'N/A'}</td>
+                        <td className="px-6 py-4">
+                          <button 
+                            onClick={() => handleToggleCourseStatus(c)}
+                            className={`px-3 py-1 rounded-full text-xs font-bold cursor-pointer transition-colors ${c.status === 'Active' ? 'bg-green-100 text-green-700 hover:bg-green-200' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+                          >
+                            {c.status}
+                          </button>
+                        </td>
+                        <td className="px-6 py-4 text-right space-x-3">
+                          <button onClick={() => handleEditCourse(c)} className="text-blue-600 hover:text-blue-800 font-medium">Edit</button>
+                          <button onClick={() => handleDeleteCourse(c.id)} className="text-red-600 hover:text-red-800 font-medium">Delete</button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
           )}
+
+          {/* TAB 3: ACADEMIC YEARS */}
           {activeTab === 'academic-years' && (
-            <div className="text-gray-500 text-sm">Academic year management coming soon...</div>
+            <div className="space-y-4">
+              <div className="flex justify-between items-center">
+                <div>
+                  <h3 className="text-lg font-bold text-gray-900">Academic Year Management</h3>
+                  <p className="text-xs text-gray-500">Configure academic school terms, active terms, and application periods.</p>
+                </div>
+                <button 
+                  onClick={() => {
+                    setEditingAcademicYear(null);
+                    setAcademicYearForm({ year: '2025-2026', semester: '1st Semester', status: 'Active', isDefault: false, startDate: '', endDate: '' });
+                    setShowAcademicYearModal(true);
+                  }}
+                  className="bg-[#1864db] text-white px-4 py-2 rounded-lg font-bold text-sm hover:bg-[#124b9f] flex items-center gap-2"
+                >
+                  <Plus className="w-4 h-4" /> Add Academic Year
+                </button>
+              </div>
+
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm text-left">
+                  <thead className="bg-gray-50 text-gray-500 uppercase text-xs">
+                    <tr>
+                      <th className="px-6 py-3 font-bold">Academic Year & Term</th>
+                      <th className="px-6 py-3 font-bold">School Year</th>
+                      <th className="px-6 py-3 font-bold">Semester</th>
+                      <th className="px-6 py-3 font-bold">Term Duration</th>
+                      <th className="px-6 py-3 font-bold">Status</th>
+                      <th className="px-6 py-3 font-bold">Current Term</th>
+                      <th className="px-6 py-3 font-bold text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">
+                    {academicYears.map(ay => (
+                      <tr key={ay.id} className={`hover:bg-gray-50/50 ${ay.isDefault ? 'bg-blue-50/40' : ''}`}>
+                        <td className="px-6 py-4 font-bold text-gray-900 flex items-center gap-2">
+                          <Calendar className="w-4 h-4 text-blue-600" />
+                          {ay.label}
+                        </td>
+                        <td className="px-6 py-4 text-gray-700">{ay.year}</td>
+                        <td className="px-6 py-4 text-gray-700">{ay.semester}</td>
+                        <td className="px-6 py-4 text-gray-500 text-xs">
+                          {ay.startDate && ay.endDate ? `${ay.startDate} to ${ay.endDate}` : 'No date specified'}
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className={`px-3 py-1 rounded-full text-xs font-bold ${
+                            ay.status === 'Active' ? 'bg-green-100 text-green-700' :
+                            ay.status === 'Upcoming' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-700'
+                          }`}>
+                            {ay.status}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4">
+                          {ay.isDefault ? (
+                            <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-amber-100 text-amber-800 text-xs font-bold rounded-full">
+                              <Star className="w-3 h-3 fill-amber-500 text-amber-500" /> Current Term
+                            </span>
+                          ) : (
+                            <button
+                              onClick={() => handleSetDefaultAcademicYear(ay.id)}
+                              className="text-xs text-gray-500 hover:text-[#1864db] font-semibold flex items-center gap-1"
+                            >
+                              <Star className="w-3 h-3" /> Set Current
+                            </button>
+                          )}
+                        </td>
+                        <td className="px-6 py-4 text-right space-x-3">
+                          <button onClick={() => handleEditAcademicYear(ay)} className="text-blue-600 hover:text-blue-800 font-medium">Edit</button>
+                          <button onClick={() => handleDeleteAcademicYear(ay.id)} className="text-red-600 hover:text-red-800 font-medium">Delete</button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
           )}
         </div>
       </div>
       
-      {/* Modal */}
-        {showScholarshipModal && (
-          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <div className="bg-white rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden">
-              <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
-                <h3 className="font-bold text-lg text-gray-900">{editingScholarship ? 'Edit Scholarship' : 'Add New Scholarship'}</h3>
-                <button onClick={() => setShowScholarshipModal(false)} className="text-gray-400 hover:text-gray-600">×</button>
+      {/* Modal for Scholarships */}
+      {showScholarshipModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden">
+            <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+              <h3 className="font-bold text-lg text-gray-900">{editingScholarship ? 'Edit Scholarship' : 'Add New Scholarship'}</h3>
+              <button onClick={() => setShowScholarshipModal(false)} className="text-gray-400 hover:text-gray-600">×</button>
+            </div>
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Scholarship Name</label>
+                <input type="text" value={scholarshipForm.name} onChange={e => setScholarshipForm({...scholarshipForm, name: e.target.value})} className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#1864db]" placeholder="e.g. Tulong Dunong" />
               </div>
-              <div className="p-6 space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Description</label>
+                <textarea value={scholarshipForm.description} onChange={e => setScholarshipForm({...scholarshipForm, description: e.target.value})} className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#1864db]" placeholder="Short description..." rows={2} />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Scholarship Name</label>
-                  <input type="text" value={scholarshipForm.name} onChange={e => setScholarshipForm({...scholarshipForm, name: e.target.value})} className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#1864db]" placeholder="e.g. Tulong Dunong" />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Description</label>
-                  <textarea value={scholarshipForm.description} onChange={e => setScholarshipForm({...scholarshipForm, description: e.target.value})} className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#1864db]" placeholder="Short description..." rows={2} />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Funding Type</label>
-                    <select value={scholarshipForm.type} onChange={e => setScholarshipForm({...scholarshipForm, type: e.target.value})} className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#1864db]">
-                      <option>Internally-Funded</option>
-                      <option>Externally-Funded</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Category / Tag</label>
-                    <input type="text" value={scholarshipForm.category} onChange={e => setScholarshipForm({...scholarshipForm, category: e.target.value})} className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#1864db]" placeholder="e.g. Entrance, CHED" />
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Status</label>
-                    <select value={scholarshipForm.status} onChange={e => setScholarshipForm({...scholarshipForm, status: e.target.value})} className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#1864db]">
-                      <option>Active</option>
-                      <option>Inactive</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Slots</label>
-                    <input type="number" value={isNaN(scholarshipForm.slots) || scholarshipForm.slots === 0 ? '' : scholarshipForm.slots} onChange={e => setScholarshipForm({...scholarshipForm, slots: e.target.value === '' ? 0 : (parseInt(e.target.value, 10) || 0)})} className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#1864db]" placeholder="0" />
-                  </div>
+                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Funding Type</label>
+                  <select value={scholarshipForm.type} onChange={e => setScholarshipForm({...scholarshipForm, type: e.target.value})} className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#1864db]">
+                    <option>Internally-Funded</option>
+                    <option>Externally-Funded</option>
+                  </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Deadline</label>
-                  <input type="date" value={scholarshipForm.deadline} onChange={e => setScholarshipForm({...scholarshipForm, deadline: e.target.value})} className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#1864db]" />
+                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Category / Tag</label>
+                  <input type="text" value={scholarshipForm.category} onChange={e => setScholarshipForm({...scholarshipForm, category: e.target.value})} className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#1864db]" placeholder="e.g. Entrance, CHED" />
                 </div>
               </div>
-              <div className="px-6 py-4 border-t border-gray-100 bg-gray-50 flex justify-end gap-3">
-                <button onClick={() => setShowScholarshipModal(false)} className="px-4 py-2 font-bold text-sm text-gray-600 hover:bg-gray-200 rounded-lg">Cancel</button>
-                <button onClick={handleSaveScholarship} className="px-6 py-2 bg-[#1864db] text-white rounded-lg font-bold text-sm hover:bg-[#124b9f]">Save Scholarship</button>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Status</label>
+                  <select value={scholarshipForm.status} onChange={e => setScholarshipForm({...scholarshipForm, status: e.target.value})} className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#1864db]">
+                    <option>Active</option>
+                    <option>Inactive</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Slots</label>
+                  <input type="number" value={isNaN(scholarshipForm.slots) || scholarshipForm.slots === 0 ? '' : scholarshipForm.slots} onChange={e => setScholarshipForm({...scholarshipForm, slots: e.target.value === '' ? 0 : (parseInt(e.target.value, 10) || 0)})} className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#1864db]" placeholder="0" />
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Deadline</label>
+                <input type="date" value={scholarshipForm.deadline} onChange={e => setScholarshipForm({...scholarshipForm, deadline: e.target.value})} className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#1864db]" />
               </div>
             </div>
+            <div className="px-6 py-4 border-t border-gray-100 bg-gray-50 flex justify-end gap-3">
+              <button onClick={() => setShowScholarshipModal(false)} className="px-4 py-2 font-bold text-sm text-gray-600 hover:bg-gray-200 rounded-lg">Cancel</button>
+              <button onClick={handleSaveScholarship} className="px-6 py-2 bg-[#1864db] text-white rounded-lg font-bold text-sm hover:bg-[#124b9f]">Save Scholarship</button>
+            </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
+
+      {/* Modal for Courses */}
+      {showCourseModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden">
+            <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+              <h3 className="font-bold text-lg text-gray-900">{editingCourse ? 'Edit Course' : 'Add New Course'}</h3>
+              <button onClick={() => setShowCourseModal(false)} className="text-gray-400 hover:text-gray-600">×</button>
+            </div>
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Course Code</label>
+                <input 
+                  type="text" 
+                  value={courseForm.code} 
+                  onChange={e => setCourseForm({...courseForm, code: e.target.value.toUpperCase()})} 
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#1864db]" 
+                  placeholder="e.g. BSCS, BAEL, BSFT, BSOA" 
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Full Degree Title</label>
+                <input 
+                  type="text" 
+                  value={courseForm.name} 
+                  onChange={e => setCourseForm({...courseForm, name: e.target.value})} 
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#1864db]" 
+                  placeholder="e.g. Bachelor of Science in Computer Science" 
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">College / Department</label>
+                <input 
+                  type="text" 
+                  value={courseForm.department} 
+                  onChange={e => setCourseForm({...courseForm, department: e.target.value})} 
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#1864db]" 
+                  placeholder="e.g. College of Information and Communications Technology" 
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Status</label>
+                <select 
+                  value={courseForm.status} 
+                  onChange={e => setCourseForm({...courseForm, status: e.target.value as any})} 
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#1864db]"
+                >
+                  <option value="Active">Active</option>
+                  <option value="Inactive">Inactive</option>
+                </select>
+              </div>
+            </div>
+            <div className="px-6 py-4 border-t border-gray-100 bg-gray-50 flex justify-end gap-3">
+              <button onClick={() => setShowCourseModal(false)} className="px-4 py-2 font-bold text-sm text-gray-600 hover:bg-gray-200 rounded-lg">Cancel</button>
+              <button onClick={handleSaveCourse} className="px-6 py-2 bg-[#1864db] text-white rounded-lg font-bold text-sm hover:bg-[#124b9f]">Save Course</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal for Academic Years */}
+      {showAcademicYearModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden">
+            <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+              <h3 className="font-bold text-lg text-gray-900">{editingAcademicYear ? 'Edit Academic Year' : 'Add Academic Year'}</h3>
+              <button onClick={() => setShowAcademicYearModal(false)} className="text-gray-400 hover:text-gray-600">×</button>
+            </div>
+            <div className="p-6 space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">School Year</label>
+                  <input 
+                    type="text" 
+                    value={academicYearForm.year} 
+                    onChange={e => setAcademicYearForm({...academicYearForm, year: e.target.value})} 
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#1864db]" 
+                    placeholder="e.g. 2025-2026" 
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Semester / Term</label>
+                  <select 
+                    value={academicYearForm.semester} 
+                    onChange={e => setAcademicYearForm({...academicYearForm, semester: e.target.value as any})} 
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#1864db]"
+                  >
+                    <option value="1st Semester">1st Semester</option>
+                    <option value="2nd Semester">2nd Semester</option>
+                    <option value="Summer">Summer</option>
+                  </select>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Status</label>
+                  <select 
+                    value={academicYearForm.status} 
+                    onChange={e => setAcademicYearForm({...academicYearForm, status: e.target.value as any})} 
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#1864db]"
+                  >
+                    <option value="Active">Active</option>
+                    <option value="Upcoming">Upcoming</option>
+                    <option value="Closed">Closed</option>
+                  </select>
+                </div>
+                <div className="flex items-center pt-5">
+                  <label className="flex items-center gap-2 cursor-pointer text-sm font-semibold text-gray-700">
+                    <input 
+                      type="checkbox" 
+                      checked={academicYearForm.isDefault} 
+                      onChange={e => setAcademicYearForm({...academicYearForm, isDefault: e.target.checked})} 
+                      className="w-4 h-4 text-[#1864db] rounded focus:ring-blue-500" 
+                    />
+                    <span>Set as Current Term</span>
+                  </label>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Start Date</label>
+                  <input 
+                    type="date" 
+                    value={academicYearForm.startDate} 
+                    onChange={e => setAcademicYearForm({...academicYearForm, startDate: e.target.value})} 
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#1864db]" 
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">End Date</label>
+                  <input 
+                    type="date" 
+                    value={academicYearForm.endDate} 
+                    onChange={e => setAcademicYearForm({...academicYearForm, endDate: e.target.value})} 
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#1864db]" 
+                  />
+                </div>
+              </div>
+            </div>
+            <div className="px-6 py-4 border-t border-gray-100 bg-gray-50 flex justify-end gap-3">
+              <button onClick={() => setShowAcademicYearModal(false)} className="px-4 py-2 font-bold text-sm text-gray-600 hover:bg-gray-200 rounded-lg">Cancel</button>
+              <button onClick={handleSaveAcademicYear} className="px-6 py-2 bg-[#1864db] text-white rounded-lg font-bold text-sm hover:bg-[#124b9f]">Save Academic Year</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
 export * from './reports';

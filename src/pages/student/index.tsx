@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Outlet, Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { cn } from '../../lib/utils';
-import { LogOut, Upload, CheckCircle2, ChevronDown, View, FileText, Award } from 'lucide-react';
+import { LogOut, Upload, CheckCircle2, ChevronDown, View, FileText, Award, GraduationCap } from 'lucide-react';
 import { db } from '../../lib/db';
 import { motion } from 'framer-motion';
 
@@ -345,6 +345,9 @@ export function StudentSubmissionForm() {
 
   // Comprehensive Form State matching the physical forms
   const [formData, setFormData] = useState<Record<string, any>>({
+    // Academic Year
+    academicYear: 'A.Y. 2025-2026 - 1st Semester',
+    
     // A. Personal Demographics & Record
     familyName: '', firstName: '', middleName: '',
     course: '', yearLevel: '', section: '',
@@ -382,8 +385,28 @@ export function StudentSubmissionForm() {
 
   const [files, setFiles] = useState<{name: string, data: string, type: string}[]>([]);
   const [user, setUser] = useState<any>(null);
+  const [coursesList, setCoursesList] = useState<any[]>([]);
+  const [academicYearsList, setAcademicYearsList] = useState<any[]>([]);
 
   React.useEffect(() => {
+    // Load courses
+    db.courses.listAll().then(courses => {
+      const active = courses.filter((c: any) => c.status === 'Active');
+      setCoursesList(active.length > 0 ? active : courses);
+    });
+
+    // Load academic years
+    db.academicYears.listAll().then(ays => {
+      setAcademicYearsList(ays);
+      const def = ays.find((a: any) => a.isDefault) || ays.find((a: any) => a.status === 'Active') || ays[0];
+      if (def) {
+        setFormData(prev => ({
+          ...prev,
+          academicYear: prev.academicYear || def.label
+        }));
+      }
+    });
+
     const sessionStr = sessionStorage.getItem('studentUser');
     if (sessionStr) {
       const parsedUser = JSON.parse(sessionStr);
@@ -504,6 +527,37 @@ export function StudentSubmissionForm() {
                 <p className="text-sm text-gray-500">Please provide your basic information.</p>
               </div>
               
+              <div className="bg-blue-50/60 p-4 rounded-2xl border border-blue-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                <div className="flex items-center gap-2">
+                  <GraduationCap className="w-5 h-5 text-[#1864db]" />
+                  <div>
+                    <div className="text-xs font-bold text-[#0f2e60] uppercase tracking-wider">Application Academic Term</div>
+                    <div className="text-sm font-semibold text-gray-700">Select the applicable academic year and term for this application</div>
+                  </div>
+                </div>
+                <div className="w-full sm:w-auto">
+                  <select 
+                    value={formData.academicYear} 
+                    onChange={e => setFormData({...formData, academicYear: e.target.value})}
+                    className="w-full sm:w-auto px-4 py-2 bg-white border border-blue-200 rounded-xl text-sm font-bold text-[#0f2e60] focus:ring-2 focus:ring-blue-500 outline-none"
+                  >
+                    {academicYearsList.length > 0 ? (
+                      academicYearsList.map(ay => (
+                        <option key={ay.id} value={ay.label}>
+                          {ay.label} {ay.isDefault ? '(Current Term)' : ''}
+                        </option>
+                      ))
+                    ) : (
+                      <>
+                        <option>A.Y. 2025-2026 - 1st Semester</option>
+                        <option>A.Y. 2025-2026 - 2nd Semester</option>
+                        <option>A.Y. 2024-2025 - 2nd Semester</option>
+                      </>
+                    )}
+                  </select>
+                </div>
+              </div>
+
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div>
                   <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Family Name</label>
@@ -524,10 +578,18 @@ export function StudentSubmissionForm() {
                   <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Course</label>
                   <select value={formData.course} onChange={e => setFormData({...formData, course: e.target.value})} className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-[#1864db] outline-none transition-all">
                     <option value="">Select...</option>
-                    <option>BSCS</option>
-                    <option>BSFT</option>
-                    <option>BSOA</option>
-                    <option>BAEL</option>
+                    {coursesList.length > 0 ? (
+                      coursesList.map(c => (
+                        <option key={c.id} value={c.code}>{c.code} - {c.name}</option>
+                      ))
+                    ) : (
+                      <>
+                        <option value="BSCS">BSCS - Bachelor of Science in Computer Science</option>
+                        <option value="BAEL">BAEL - Bachelor of Arts in English Language</option>
+                        <option value="BSFT">BSFT - Bachelor of Science in Food Technology</option>
+                        <option value="BSOA">BSOA - Bachelor of Science in Office Administration</option>
+                      </>
+                    )}
                   </select>
                 </div>
                 <div>
