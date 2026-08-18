@@ -1,15 +1,6 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut } from 'firebase/auth';
-
-const firebaseConfig = {
-  apiKey: "AIzaSyDIxNzVfx_gaAVKKQ3En8BvH0mnzg66nUU",
-  authDomain: "mathquest-new.firebaseapp.com",
-  projectId: "mathquest-new",
-  storageBucket: "mathquest-new.firebasestorage.app",
-  messagingSenderId: "752407989664",
-  appId: "1:752407989664:web:7c7e66d18362f8fc9268c5",
-  measurementId: "G-477FKVYCPK"
-};
+import firebaseConfig from '../../firebase-applet-config.json';
 
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);

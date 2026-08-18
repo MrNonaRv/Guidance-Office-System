@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Outlet, Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { cn } from '../../lib/utils';
-import { LogOut, Upload, CheckCircle2, ChevronDown, View, FileText } from 'lucide-react';
+import { LogOut, Upload, CheckCircle2, ChevronDown, View, FileText, Award } from 'lucide-react';
 import { db } from '../../lib/db';
 import { motion } from 'framer-motion';
 
@@ -245,7 +245,7 @@ export function StudentDashboard() {
   const navigate = useNavigate();
   const [user, setUser] = useState<{id: string, firstName: string, lastName: string} | null>(null);
   const [submissions, setSubmissions] = useState<any[]>([]);
-  const [forms, setForms] = useState<any[]>([]);
+  const [scholarships, setScholarships] = useState<any[]>([]);
 
   React.useEffect(() => {
     const sessionStr = sessionStorage.getItem('studentUser');
@@ -254,34 +254,37 @@ export function StudentDashboard() {
       setUser(parsedUser);
       db.submissions.listByStudent(parsedUser.id).then(subs => setSubmissions(subs));
     }
-    db.forms.listAll().then(allForms => {
-      setForms(allForms.filter(f => f.status === 'Active'));
+    
+    // @ts-ignore
+    db.scholarships.listAll().then(items => {
+      setScholarships(items.filter((s: any) => s.status === 'Active'));
     });
   }, []);
   
   return (
     <div className="space-y-6">
-      <div className="bg-gradient-to-r from-blue-600 to-[#0f2e60] rounded-2xl p-8 text-white shadow-lg relative overflow-hidden">
+      <div className="bg-gradient-to-r from-[#1864db] to-[#0f2e60] rounded-2xl p-8 text-white shadow-lg relative overflow-hidden">
         <div className="absolute top-0 right-0 w-64 h-64 bg-white opacity-5 rounded-full -translate-y-1/2 translate-x-1/3"></div>
         <div className="absolute bottom-0 left-0 w-40 h-40 bg-blue-400 opacity-20 rounded-full translate-y-1/3 -translate-x-1/4 blur-2xl"></div>
-        <h2 className="text-3xl font-bold relative z-10">Hello, {user ? `${user.firstName} ${user.lastName}` : 'Student'}!</h2>
+        <h2 className="text-3xl font-bold relative z-10">Hello, {user ? `${user.firstName}` : 'Student'}!</h2>
+        <p className="text-blue-100 mt-2 relative z-10 max-w-lg">Welcome to the Student Scholarship Portal. Here you can browse available scholarships, submit your applications, and track your progress.</p>
       </div>
 
       {submissions.length > 0 && (
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-          <h3 className="text-lg font-bold text-gray-900 mb-4">Your Recent Submissions</h3>
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+          <h3 className="text-lg font-bold text-[#0f2e60] mb-4">Your Recent Applications</h3>
           <div className="space-y-3">
             {submissions.map(sub => (
-              <div key={sub.id} className="flex justify-between items-center p-4 border border-gray-100 rounded-xl bg-gray-50/50">
+              <div key={sub.id} className="flex justify-between items-center p-4 border border-gray-100 rounded-xl bg-gray-50/50 hover:bg-gray-50 transition-colors">
                 <div>
-                  <h4 className="font-semibold text-gray-800">{sub.scholarshipType}</h4>
+                  <h4 className="font-bold text-gray-800">{sub.scholarshipType}</h4>
                   <p className="text-xs text-gray-500 mt-1">Submitted on {new Date(sub.submittedAt).toLocaleDateString()}</p>
                 </div>
                 <span className={cn(
-                  "px-3 py-1 text-xs font-medium rounded-full border",
-                  sub.status === 'Approved' ? "bg-green-50 text-green-700 border-green-200"
-                  : sub.status === 'Rejected' ? "bg-red-50 text-red-700 border-red-200"
-                  : "bg-yellow-50 text-yellow-700 border-yellow-200"
+                  "px-4 py-1.5 text-xs font-bold uppercase tracking-wider rounded-full",
+                  sub.status === 'Approved' ? "bg-green-100 text-green-700"
+                  : sub.status === 'Rejected' ? "bg-red-100 text-red-700"
+                  : "bg-amber-100 text-amber-700"
                 )}>
                   {sub.status}
                 </span>
@@ -291,498 +294,565 @@ export function StudentDashboard() {
         </div>
       )}
 
-      <div className="space-y-4">
+      <div className="space-y-4 pt-4">
         <h3 className="text-xl font-bold text-[#0f2e60]">Available Scholarships</h3>
-        {forms.length === 0 ? (
-          <div className="bg-white rounded-2xl border border-gray-100 p-8 text-center text-gray-500 shadow-sm">
-            No active scholarship forms available at the moment.
+        {scholarships.length === 0 ? (
+          <div className="bg-white rounded-2xl border border-gray-200 p-12 text-center text-gray-500 shadow-sm flex flex-col items-center justify-center">
+            <View className="w-12 h-12 text-gray-300 mb-3" />
+            <p className="font-medium text-gray-600">No active scholarships available right now.</p>
+            <p className="text-sm mt-1 text-gray-400">Please check back later.</p>
           </div>
         ) : (
-          forms.map(form => (
-            <div key={form.id} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 hover:shadow-md transition-shadow">
-              <div className="flex-1">
-                <h3 className="text-lg font-bold text-gray-900 mb-1">{form.title}</h3>
-                <p className="text-sm text-gray-500 line-clamp-2 mb-2">{form.description}</p>
-                {form.deadline && (
-                  <p className="text-xs font-medium text-red-500">Deadline: {new Date(form.deadline).toLocaleDateString()}</p>
-                )}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {scholarships.map(s => (
+              <div key={s.id} className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 flex flex-col gap-4 hover:shadow-md transition-all hover:border-[#1864db]">
+                <div>
+                  <div className="flex justify-between items-start mb-2">
+                    <span className="text-[10px] font-bold uppercase tracking-wider bg-blue-50 text-blue-700 px-2.5 py-1 rounded-md">{s.type}</span>
+                    {s.deadline && <span className="text-xs font-semibold text-red-600 bg-red-50 px-2.5 py-1 rounded-md border border-red-100">Due {new Date(s.deadline).toLocaleDateString()}</span>}
+                  </div>
+                  <h3 className="text-lg font-bold text-gray-900 leading-tight">{s.name}</h3>
+                  <p className="text-sm text-gray-500 mt-2 font-medium">{s.category} Category</p>
+                  {s.description && <p className="text-sm text-gray-600 mt-3 line-clamp-2">{s.description}</p>}
+                </div>
+                <div className="mt-auto pt-4 flex justify-between items-center border-t border-gray-50">
+                  <span className="text-xs font-semibold text-gray-500">{s.slots ? `${s.slots} Slots Available` : 'Open Slots'}</span>
+                  <button 
+                    onClick={() => navigate(`/student/submission?scholarshipId=${s.id}`)}
+                    className="px-6 py-2.5 bg-[#1864db] text-white rounded-full font-bold text-sm hover:bg-[#124b9f] transition-colors shadow-sm"
+                  >
+                    Apply Now
+                  </button>
+                </div>
               </div>
-              <button 
-                onClick={() => navigate(`/student/submission?formId=${form.id}`)}
-                className="px-8 py-2.5 bg-blue-600 text-white rounded-full font-medium text-sm hover:bg-blue-700 transition-colors shadow-md shadow-blue-500/20 whitespace-nowrap w-full sm:w-auto"
-              >
-                Apply
-              </button>
-            </div>
-          ))
+            ))}
+          </div>
         )}
       </div>
     </div>
   );
 }
 
-
 export function StudentSubmissionForm() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const formId = searchParams.get('formId');
-  const [formConfig, setFormConfig] = useState<any>(null);
-
-  React.useEffect(() => {
-    if (formId) {
-      db.forms.get(formId).then(setFormConfig);
-    }
-  }, [formId]);
+  const scholarshipId = searchParams.get('scholarshipId');
+  const [selectedScholarship, setSelectedScholarship] = useState<any>(null);
 
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formError, setFormError] = useState('');
 
-  // Comprehensive Form State
+  // Comprehensive Form State matching the physical forms
   const [formData, setFormData] = useState<Record<string, any>>({
-    // A. Personal Demographics
-    familyName: '',
-    firstName: '',
-    middleName: '',
-    course: 'BAEL',
-    yearLevel: '1st Year',
-    section: '',
-    sex: 'Female',
-    civilStatus: 'Single',
+    // A. Personal Demographics & Record
+    familyName: '', firstName: '', middleName: '',
+    course: '', yearLevel: '', section: '',
+    age: '', sex: '', civilStatus: '',
+    birthdate: '', contactNo: '', permanentAddress: '',
     
     // B. Family Background
-    fatherOccupation: '',
-    motherOccupation: '',
+    fatherName: '', fatherOccupation: '', fatherOffice: '',
+    motherName: '', motherOccupation: '', motherOffice: '',
     guardianOccupation: '',
     parentsEducationalAttainment: '',
     monthlyIncome: '',
-    firstGenCollege: 'No',
+    firstGenCollege: '',
 
     // C. Living Condition
-    livingWith: '',
-    housingType: '',
+    livingWith: '', livingWithSpecify: '',
+    housingType: '', housingTypeSpecify: '',
 
     // D. Access to Resources
-    accessPc: false,
-    accessInternet: false,
-    accessStudySpace: false,
-    accessBooks: false,
-    workingStudent: 'No',
+    accessResources: [] as string[],
+    workingStudent: '',
 
     // E. Student Classification
-    classification: '',
+    classifications: [] as string[],
+    classificationOthersSpecify: '',
+    workingStudentTypeOfWork: '',
+    pwdCondition: '',
+    pdlReason: '',
     
     // F. Scholarship Category
     fundingType: 'Internally-Funded',
-    scholarshipCategory: ''
+    scholarshipCategory: '',
+    scholarshipSpecify: ''
   });
 
-  const [files, setFiles] = useState<Record<string, { name: string, data: string }>>({});
+  const [files, setFiles] = useState<{name: string, data: string, type: string}[]>([]);
+  const [user, setUser] = useState<any>(null);
 
-  const handleFileChange = (key: string, e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      setFiles(prev => ({
+  React.useEffect(() => {
+    const sessionStr = sessionStorage.getItem('studentUser');
+    if (sessionStr) {
+      const parsedUser = JSON.parse(sessionStr);
+      setUser(parsedUser);
+      setFormData(prev => ({
         ...prev,
-        [key]: { name: file.name, data: event.target?.result as string }
+        firstName: parsedUser.firstName || '',
+        familyName: parsedUser.lastName || ''
       }));
-    };
-    reader.readAsDataURL(file);
-  };
-
-  const handleNext = () => {
-    setFormError('');
-    if (step === 1) {
-      if (!formData.familyName || !formData.firstName || !formData.course || !formData.section) {
-        setFormError('Please fill in all required personal details.');
-        return;
-      }
-    } else if (step === 2) {
-      if (!formData.monthlyIncome || !formData.parentsEducationalAttainment) {
-        setFormError('Please complete the family background section.');
-        return;
-      }
-    } else if (step === 3) {
-      if (!formData.classification) {
-        setFormError('Please select your student classification.');
-        return;
-      }
     }
-    setStep(step + 1);
-    window.scrollTo(0, 0);
+
+    if (scholarshipId) {
+      // @ts-ignore
+      db.scholarships.get(scholarshipId).then(s => {
+        if (s) {
+          setSelectedScholarship(s);
+          setFormData(prev => ({
+            ...prev,
+            fundingType: s.type,
+            scholarshipCategory: s.category + ' - ' + s.name
+          }));
+        }
+      });
+    }
+  }, [scholarshipId]);
+
+  const handleNext = () => setStep(s => Math.min(s + 1, 4));
+  const handlePrev = () => setStep(s => Math.max(s - 1, 1));
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFiles(prev => [...prev, {
+          name: file.name,
+          type: file.type,
+          data: reader.result as string
+        }]);
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
-  const handleBack = () => {
-    setStep(step - 1);
-    window.scrollTo(0, 0);
+  const handleCheckboxChange = (field: string, value: string) => {
+    setFormData(prev => {
+      const current = prev[field] as string[];
+      if (current.includes(value)) {
+        return { ...prev, [field]: current.filter(item => item !== value) };
+      } else {
+        return { ...prev, [field]: [...current, value] };
+      }
+    });
   };
 
   const handleSubmit = async () => {
+    if (!user) return;
+    setIsSubmitting(true);
+    setFormError('');
     try {
-      setIsSubmitting(true);
-      setFormError('');
-      
-      const userStr = sessionStorage.getItem('studentUser');
-      if (!userStr) throw new Error("Not logged in");
-      const user = JSON.parse(userStr);
-
       const submission: any = {
         id: Date.now().toString(),
         studentId: user.id,
         studentName: formData.firstName + ' ' + formData.familyName,
         scholarshipType: formData.fundingType + ' (' + formData.scholarshipCategory + ')',
-        formId: formId || 'default',
+        formId: scholarshipId || 'default',
         status: 'Pending',
         submittedAt: new Date().toISOString(),
         data: formData,
         files: files
       };
-
+      // @ts-ignore
       await db.submissions.set(submission.id, submission);
-      
       navigate('/student/dashboard');
     } catch (err: any) {
-      setFormError(err.message || 'Failed to submit application.');
-    } finally {
+      setFormError(err.message || 'Failed to submit application');
       setIsSubmitting(false);
     }
   };
 
-  const inputClass = "w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#0f2e60] focus:border-transparent transition-all";
-  const labelClass = "block text-xs font-bold text-[#64748b] uppercase tracking-wide mb-2";
-
   return (
-    <div className="max-w-4xl mx-auto pb-20">
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
-        {/* Header & Progress */}
-        <div className="px-8 py-8 border-b border-gray-100 bg-gray-50/50">
-          <h1 className="text-2xl font-bold text-[#0f2e60] mb-6">Scholarship Application Form</h1>
-          
-          <div className="flex items-center justify-between relative">
-            <div className="absolute left-0 top-1/2 -translate-y-1/2 w-full h-1 bg-gray-200 rounded-full"></div>
-            <div 
-              className="absolute left-0 top-1/2 -translate-y-1/2 h-1 bg-[#1864db] rounded-full transition-all duration-300"
-              style={{ width: `${((step - 1) / 3) * 100}%` }}
-            ></div>
-            
-            {[1, 2, 3, 4].map((num) => (
-              <div key={num} className={cn(
-                "relative z-10 w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-colors duration-300",
-                step >= num ? "bg-[#1864db] text-white" : "bg-white text-gray-400 border-2 border-gray-200"
-              )}>
-                {step > num ? <CheckCircle2 className="w-5 h-5" /> : num}
-              </div>
-            ))}
-          </div>
-          <div className="flex justify-between mt-2 text-xs font-bold text-gray-500 uppercase tracking-wide">
-            <span>Demographics</span>
-            <span>Family</span>
-            <span>Classification</span>
-            <span>Attachments</span>
-          </div>
+    <div className="max-w-4xl mx-auto space-y-8">
+      <div className="flex items-center justify-between mb-8">
+        <div>
+          <h2 className="text-3xl font-bold text-[#0f2e60]">Scholarship Application</h2>
+          <p className="text-gray-500 mt-2">Complete the form below to submit your application.</p>
         </div>
+      </div>
 
-        {/* Form Body */}
+      {/* Progress Steps */}
+      <div className="flex justify-between items-center relative mb-12 px-4">
+        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-full h-1 bg-gray-200 -z-10 rounded-full"></div>
+        <div className="absolute left-0 top-1/2 -translate-y-1/2 h-1 bg-[#1864db] -z-10 rounded-full transition-all duration-300" style={{ width: `${((step - 1) / 3) * 100}%` }}></div>
+        
+        {[1, 2, 3, 4].map((s) => (
+          <div key={s} className={cn(
+            "w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-all shadow-sm",
+            step >= s ? "bg-[#1864db] text-white border-2 border-white" : "bg-white text-gray-400 border-2 border-gray-200"
+          )}>
+            {step > s ? <CheckCircle2 className="w-5 h-5" /> : s}
+          </div>
+        ))}
+      </div>
+
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
         <div className="p-8">
           {formError && (
-            <div className="mb-6 p-4 bg-red-50 text-red-600 rounded-xl text-sm font-medium border border-red-100 flex items-center gap-3">
-              <div className="w-2 h-2 rounded-full bg-red-600"></div>
+            <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-600 rounded-lg text-sm font-medium">
               {formError}
             </div>
           )}
 
           {/* STEP 1: DEMOGRAPHICS */}
           {step === 1 && (
-            <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-8">
-              <h2 className="text-lg font-bold text-[#0f2e60] flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center text-blue-600">A</div>
-                Personal Demographics
-              </h2>
+            <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
+              <div className="border-b border-gray-100 pb-4 mb-6">
+                <h3 className="text-xl font-bold text-gray-900">Personal Demographics & Record</h3>
+                <p className="text-sm text-gray-500">Please provide your basic information.</p>
+              </div>
               
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div>
-                  <label className={labelClass}>Family Name *</label>
-                  <input type="text" value={formData.familyName} onChange={e => setFormData({...formData, familyName: e.target.value})} className={inputClass} placeholder="e.g. Dela Cruz" />
+                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Family Name</label>
+                  <input type="text" value={formData.familyName} onChange={e => setFormData({...formData, familyName: e.target.value})} className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-[#1864db] focus:ring-2 focus:ring-blue-100 outline-none transition-all" />
                 </div>
                 <div>
-                  <label className={labelClass}>First Name *</label>
-                  <input type="text" value={formData.firstName} onChange={e => setFormData({...formData, firstName: e.target.value})} className={inputClass} placeholder="e.g. Juan" />
+                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">First Name</label>
+                  <input type="text" value={formData.firstName} onChange={e => setFormData({...formData, firstName: e.target.value})} className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-[#1864db] focus:ring-2 focus:ring-blue-100 outline-none transition-all" />
                 </div>
                 <div>
-                  <label className={labelClass}>Middle Name</label>
-                  <input type="text" value={formData.middleName} onChange={e => setFormData({...formData, middleName: e.target.value})} className={inputClass} placeholder="e.g. Santos" />
+                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Middle Name</label>
+                  <input type="text" value={formData.middleName} onChange={e => setFormData({...formData, middleName: e.target.value})} className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-[#1864db] focus:ring-2 focus:ring-blue-100 outline-none transition-all" />
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <div>
-                  <label className={labelClass}>Course *</label>
-                  <select value={formData.course} onChange={e => setFormData({...formData, course: e.target.value})} className={inputClass}>
-                    <option>BAEL</option>
+                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Course</label>
+                  <select value={formData.course} onChange={e => setFormData({...formData, course: e.target.value})} className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-[#1864db] outline-none transition-all">
+                    <option value="">Select...</option>
                     <option>BSCS</option>
                     <option>BSFT</option>
                     <option>BSOA</option>
-                  </select>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className={labelClass}>Year Level *</label>
-                    <select value={formData.yearLevel} onChange={e => setFormData({...formData, yearLevel: e.target.value})} className={inputClass}>
-                      <option>1st Year</option>
-                      <option>2nd Year</option>
-                      <option>3rd Year</option>
-                      <option>4th Year</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className={labelClass}>Section *</label>
-                    <input type="text" value={formData.section} onChange={e => setFormData({...formData, section: e.target.value})} className={inputClass} placeholder="e.g. 1A" />
-                  </div>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className={labelClass}>Sex</label>
-                  <select value={formData.sex} onChange={e => setFormData({...formData, sex: e.target.value})} className={inputClass}>
-                    <option>Female</option>
-                    <option>Male</option>
+                    <option>BAEL</option>
                   </select>
                 </div>
                 <div>
-                  <label className={labelClass}>Civil Status</label>
-                  <select value={formData.civilStatus} onChange={e => setFormData({...formData, civilStatus: e.target.value})} className={inputClass}>
-                    <option>Single</option>
-                    <option>Married</option>
-                    <option>Widowed</option>
-                    <option>Separated</option>
-                  </select>
-                </div>
-              </div>
-            </motion.div>
-          )}
-
-          {/* STEP 2: FAMILY & LIVING */}
-          {step === 2 && (
-            <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-10">
-              {/* Family Background */}
-              <div className="space-y-6">
-                <h2 className="text-lg font-bold text-[#0f2e60] flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-lg bg-green-100 flex items-center justify-center text-green-600">B</div>
-                  Family Background
-                </h2>
-                
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <div>
-                    <label className={labelClass}>Father's Occupation</label>
-                    <input type="text" value={formData.fatherOccupation} onChange={e => setFormData({...formData, fatherOccupation: e.target.value})} className={inputClass} />
-                  </div>
-                  <div>
-                    <label className={labelClass}>Mother's Occupation</label>
-                    <input type="text" value={formData.motherOccupation} onChange={e => setFormData({...formData, motherOccupation: e.target.value})} className={inputClass} />
-                  </div>
-                  <div>
-                    <label className={labelClass}>Guardian's Occupation</label>
-                    <input type="text" value={formData.guardianOccupation} onChange={e => setFormData({...formData, guardianOccupation: e.target.value})} className={inputClass} />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label className={labelClass}>Highest Educational Attainment (Parents)</label>
-                    <select value={formData.parentsEducationalAttainment} onChange={e => setFormData({...formData, parentsEducationalAttainment: e.target.value})} className={inputClass}>
-                      <option value="">Select...</option>
-                      <option>Elementary Level/Graduate</option>
-                      <option>High School Level/Graduate</option>
-                      <option>College Level</option>
-                      <option>College Graduate</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className={labelClass}>Monthly Income Range</label>
-                    <select value={formData.monthlyIncome} onChange={e => setFormData({...formData, monthlyIncome: e.target.value})} className={inputClass}>
-                      <option value="">Select...</option>
-                      <option>Below ₱10,000</option>
-                      <option>₱10,000 - ₱20,000</option>
-                      <option>₱20,001 - ₱30,000</option>
-                      <option>Above ₱30,000</option>
-                    </select>
-                  </div>
-                </div>
-                
-                <div>
-                  <label className={labelClass}>Are you a first-generation college student?</label>
-                  <div className="flex gap-4 mt-2">
-                    <label className="flex items-center gap-2"><input type="radio" name="firstGen" checked={formData.firstGenCollege === 'Yes'} onChange={() => setFormData({...formData, firstGenCollege: 'Yes'})} className="w-4 h-4 text-[#1864db]" /> Yes</label>
-                    <label className="flex items-center gap-2"><input type="radio" name="firstGen" checked={formData.firstGenCollege === 'No'} onChange={() => setFormData({...formData, firstGenCollege: 'No'})} className="w-4 h-4 text-[#1864db]" /> No</label>
-                  </div>
-                </div>
-              </div>
-
-              {/* Living Condition */}
-              <div className="space-y-6 pt-6 border-t border-gray-100">
-                <h2 className="text-lg font-bold text-[#0f2e60] flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-lg bg-orange-100 flex items-center justify-center text-orange-600">C</div>
-                  Living Condition
-                </h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label className={labelClass}>Living With</label>
-                    <select value={formData.livingWith} onChange={e => setFormData({...formData, livingWith: e.target.value})} className={inputClass}>
-                      <option value="">Select...</option>
-                      <option>Parents</option>
-                      <option>Relatives</option>
-                      <option>Boarding House / Dormitory</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className={labelClass}>Housing Type</label>
-                    <select value={formData.housingType} onChange={e => setFormData({...formData, housingType: e.target.value})} className={inputClass}>
-                      <option value="">Select...</option>
-                      <option>Owned</option>
-                      <option>Rented</option>
-                      <option>Mortgaged</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          )}
-
-          {/* STEP 3: RESOURCES & CLASSIFICATION */}
-          {step === 3 && (
-            <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-10">
-              
-              <div className="space-y-6">
-                <h2 className="text-lg font-bold text-[#0f2e60] flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-lg bg-purple-100 flex items-center justify-center text-purple-600">D</div>
-                  Access to Resources
-                </h2>
-                
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <label className="flex items-center gap-3 p-4 border border-gray-200 rounded-xl hover:bg-gray-50 cursor-pointer">
-                    <input type="checkbox" checked={formData.accessPc} onChange={e => setFormData({...formData, accessPc: e.target.checked})} className="w-5 h-5 text-[#1864db] rounded" />
-                    <span className="text-sm font-semibold">PC / Laptop</span>
-                  </label>
-                  <label className="flex items-center gap-3 p-4 border border-gray-200 rounded-xl hover:bg-gray-50 cursor-pointer">
-                    <input type="checkbox" checked={formData.accessInternet} onChange={e => setFormData({...formData, accessInternet: e.target.checked})} className="w-5 h-5 text-[#1864db] rounded" />
-                    <span className="text-sm font-semibold">Internet Connect</span>
-                  </label>
-                  <label className="flex items-center gap-3 p-4 border border-gray-200 rounded-xl hover:bg-gray-50 cursor-pointer">
-                    <input type="checkbox" checked={formData.accessStudySpace} onChange={e => setFormData({...formData, accessStudySpace: e.target.checked})} className="w-5 h-5 text-[#1864db] rounded" />
-                    <span className="text-sm font-semibold">Study Space</span>
-                  </label>
-                  <label className="flex items-center gap-3 p-4 border border-gray-200 rounded-xl hover:bg-gray-50 cursor-pointer">
-                    <input type="checkbox" checked={formData.accessBooks} onChange={e => setFormData({...formData, accessBooks: e.target.checked})} className="w-5 h-5 text-[#1864db] rounded" />
-                    <span className="text-sm font-semibold">Books</span>
-                  </label>
-                </div>
-              </div>
-
-              <div className="space-y-6 pt-6 border-t border-gray-100">
-                <h2 className="text-lg font-bold text-[#0f2e60] flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-lg bg-red-100 flex items-center justify-center text-red-600">E</div>
-                  Student Classification
-                </h2>
-                
-                <div>
-                  <label className={labelClass}>Select Your Classification *</label>
-                  <select value={formData.classification} onChange={e => setFormData({...formData, classification: e.target.value})} className={inputClass}>
+                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Year Level</label>
+                  <select value={formData.yearLevel} onChange={e => setFormData({...formData, yearLevel: e.target.value})} className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-[#1864db] outline-none transition-all">
                     <option value="">Select...</option>
-                    <option>Indigenous People (IPs)</option>
-                    <option>Solo Parent</option>
-                    <option>Person With Disability (PWD)</option>
-                    <option>4Ps Beneficiary</option>
-                    <option>Working Student</option>
-                    <option>Person Deprived of Liberty (PDL)</option>
-                    <option>None of the above</option>
+                    <option>First year</option>
+                    <option>Second year</option>
+                    <option>Third year</option>
+                    <option>Fourth year</option>
                   </select>
                 </div>
+                <div>
+                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Section</label>
+                  <input type="text" value={formData.section} onChange={e => setFormData({...formData, section: e.target.value})} className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-[#1864db] outline-none transition-all" />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Age</label>
+                  <input type="number" value={formData.age} onChange={e => setFormData({...formData, age: e.target.value})} className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-[#1864db] outline-none transition-all" />
+                </div>
+              </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <div>
+                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Sex</label>
+                  <div className="flex gap-4">
+                    <label className="flex items-center gap-2 cursor-pointer"><input type="radio" name="sex" checked={formData.sex === 'Male'} onChange={() => setFormData({...formData, sex: 'Male'})} className="w-4 h-4 text-[#1864db]" /> <span>Male</span></label>
+                    <label className="flex items-center gap-2 cursor-pointer"><input type="radio" name="sex" checked={formData.sex === 'Female'} onChange={() => setFormData({...formData, sex: 'Female'})} className="w-4 h-4 text-[#1864db]" /> <span>Female</span></label>
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Civil Status</label>
+                  <div className="flex gap-4">
+                    <label className="flex items-center gap-2 cursor-pointer"><input type="radio" name="civilStatus" checked={formData.civilStatus === 'Single'} onChange={() => setFormData({...formData, civilStatus: 'Single'})} className="w-4 h-4 text-[#1864db]" /> <span>Single</span></label>
+                    <label className="flex items-center gap-2 cursor-pointer"><input type="radio" name="civilStatus" checked={formData.civilStatus === 'Married'} onChange={() => setFormData({...formData, civilStatus: 'Married'})} className="w-4 h-4 text-[#1864db]" /> <span>Married</span></label>
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Birthdate</label>
+                  <input type="date" value={formData.birthdate} onChange={e => setFormData({...formData, birthdate: e.target.value})} className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-[#1864db] outline-none transition-all" />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Contact No.</label>
+                  <input type="text" value={formData.contactNo} onChange={e => setFormData({...formData, contactNo: e.target.value})} className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-[#1864db] outline-none transition-all" />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Permanent Address</label>
+                <textarea value={formData.permanentAddress} onChange={e => setFormData({...formData, permanentAddress: e.target.value})} rows={2} className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-[#1864db] outline-none transition-all" />
+              </div>
+            </div>
+          )}
+
+          {/* STEP 2: FAMILY BACKGROUND */}
+          {step === 2 && (
+            <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-300">
+              <div className="border-b border-gray-100 pb-4">
+                <h3 className="text-xl font-bold text-gray-900">Family Background & Living Condition</h3>
+              </div>
+
+              {/* Parents Details */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 bg-gray-50 p-6 rounded-2xl border border-gray-100">
+                <div className="space-y-4">
                   <div>
-                    <label className={labelClass}>Scholarship Funding Type</label>
-                    <select value={formData.fundingType} onChange={e => setFormData({...formData, fundingType: e.target.value})} className={inputClass}>
-                      <option>Internally-Funded</option>
-                      <option>Externally-Funded</option>
-                    </select>
+                    <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Father's Name</label>
+                    <input type="text" value={formData.fatherName} onChange={e => setFormData({...formData, fatherName: e.target.value})} className="w-full px-4 py-2 border border-gray-200 rounded-lg outline-none" />
                   </div>
                   <div>
-                    <label className={labelClass}>Target Scholarship Category</label>
-                    <input type="text" value={formData.scholarshipCategory} onChange={e => setFormData({...formData, scholarshipCategory: e.target.value})} className={inputClass} placeholder="e.g. CHED, Merit, Tulong Dunong" />
+                    <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Father's Occupation</label>
+                    <input type="text" value={formData.fatherOccupation} onChange={e => setFormData({...formData, fatherOccupation: e.target.value})} className="w-full px-4 py-2 border border-gray-200 rounded-lg outline-none" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Office (Father)</label>
+                    <input type="text" value={formData.fatherOffice} onChange={e => setFormData({...formData, fatherOffice: e.target.value})} className="w-full px-4 py-2 border border-gray-200 rounded-lg outline-none" />
+                  </div>
+                </div>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Mother's Name</label>
+                    <input type="text" value={formData.motherName} onChange={e => setFormData({...formData, motherName: e.target.value})} className="w-full px-4 py-2 border border-gray-200 rounded-lg outline-none" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Mother's Occupation</label>
+                    <input type="text" value={formData.motherOccupation} onChange={e => setFormData({...formData, motherOccupation: e.target.value})} className="w-full px-4 py-2 border border-gray-200 rounded-lg outline-none" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Office (Mother)</label>
+                    <input type="text" value={formData.motherOffice} onChange={e => setFormData({...formData, motherOffice: e.target.value})} className="w-full px-4 py-2 border border-gray-200 rounded-lg outline-none" />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Guardian's Occupation (If applicable)</label>
+                  <input type="text" value={formData.guardianOccupation} onChange={e => setFormData({...formData, guardianOccupation: e.target.value})} className="w-full px-4 py-2 border border-gray-200 rounded-lg outline-none" />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div>
+                  <label className="block text-sm font-bold text-gray-900 mb-3">Highest Educational Attainment of your Parent/Guardian?</label>
+                  <div className="grid grid-cols-1 gap-2">
+                    {['Elementary Level', 'Elementary Graduate', 'High School Level', 'High school Graduate', 'College Level', 'College Graduate', 'post Graduate level/degree'].map(opt => (
+                      <label key={opt} className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-lg cursor-pointer">
+                        <input type="radio" name="edu" checked={formData.parentsEducationalAttainment === opt} onChange={() => setFormData({...formData, parentsEducationalAttainment: opt})} className="w-4 h-4 text-[#1864db]" />
+                        <span className="text-sm text-gray-700">{opt}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="space-y-6">
+                  <div>
+                    <label className="block text-sm font-bold text-gray-900 mb-3">What is your family's approximate monthly income?</label>
+                    <div className="grid grid-cols-1 gap-2">
+                      {['below Php10,000', 'Php10,001 - 20,000', 'Php20,001 - 30,000', 'Above 30,000'].map(opt => (
+                        <label key={opt} className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-lg cursor-pointer">
+                          <input type="radio" name="income" checked={formData.monthlyIncome === opt} onChange={() => setFormData({...formData, monthlyIncome: opt})} className="w-4 h-4 text-[#1864db]" />
+                          <span className="text-sm text-gray-700">{opt}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-bold text-gray-900 mb-3">Are you the first in the family to attend College?</label>
+                    <div className="flex gap-6">
+                      <label className="flex items-center gap-2 cursor-pointer"><input type="radio" name="firstGen" checked={formData.firstGenCollege === 'Yes'} onChange={() => setFormData({...formData, firstGenCollege: 'Yes'})} className="w-4 h-4 text-[#1864db]" /> <span>Yes</span></label>
+                      <label className="flex items-center gap-2 cursor-pointer"><input type="radio" name="firstGen" checked={formData.firstGenCollege === 'No'} onChange={() => setFormData({...formData, firstGenCollege: 'No'})} className="w-4 h-4 text-[#1864db]" /> <span>No</span></label>
+                    </div>
                   </div>
                 </div>
               </div>
-            </motion.div>
+
+              <div className="border-t border-gray-100 pt-8 grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div>
+                  <label className="block text-sm font-bold text-gray-900 mb-3">With whom do you currently live?</label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {['Parents/Guardians', 'Boarding house', 'Relatives', 'Alone'].map(opt => (
+                      <label key={opt} className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-lg cursor-pointer">
+                        <input type="radio" name="live" checked={formData.livingWith === opt} onChange={() => setFormData({...formData, livingWith: opt})} className="w-4 h-4 text-[#1864db]" />
+                        <span className="text-sm text-gray-700">{opt}</span>
+                      </label>
+                    ))}
+                    <div className="flex items-center gap-3 p-2 col-span-2">
+                      <input type="radio" name="live" checked={formData.livingWith === 'others'} onChange={() => setFormData({...formData, livingWith: 'others'})} className="w-4 h-4 text-[#1864db]" />
+                      <span className="text-sm text-gray-700 whitespace-nowrap">others (specify)</span>
+                      <input type="text" value={formData.livingWithSpecify} onChange={e => setFormData({...formData, livingWithSpecify: e.target.value})} className="border-b border-gray-300 focus:border-[#1864db] outline-none flex-1 bg-transparent px-2 text-sm" disabled={formData.livingWith !== 'others'} />
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-bold text-gray-900 mb-3">Type of Housing</label>
+                  <div className="grid grid-cols-1 gap-2">
+                    {['Own house', 'Rented house or apartment', 'Boarding house'].map(opt => (
+                      <label key={opt} className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-lg cursor-pointer">
+                        <input type="radio" name="housing" checked={formData.housingType === opt} onChange={() => setFormData({...formData, housingType: opt})} className="w-4 h-4 text-[#1864db]" />
+                        <span className="text-sm text-gray-700">{opt}</span>
+                      </label>
+                    ))}
+                    <div className="flex items-center gap-3 p-2">
+                      <input type="radio" name="housing" checked={formData.housingType === 'Others'} onChange={() => setFormData({...formData, housingType: 'Others'})} className="w-4 h-4 text-[#1864db]" />
+                      <span className="text-sm text-gray-700 whitespace-nowrap">Others (specify)</span>
+                      <input type="text" value={formData.housingTypeSpecify} onChange={e => setFormData({...formData, housingTypeSpecify: e.target.value})} className="border-b border-gray-300 focus:border-[#1864db] outline-none flex-1 bg-transparent px-2 text-sm" disabled={formData.housingType !== 'Others'} />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* STEP 3: CLASSIFICATION */}
+          {step === 3 && (
+            <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-300">
+              <div className="border-b border-gray-100 pb-4">
+                <h3 className="text-xl font-bold text-gray-900">Survey & Student Classification</h3>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 bg-gray-50 p-6 rounded-2xl border border-gray-100">
+                <div>
+                  <label className="block text-sm font-bold text-gray-900 mb-3">Do you have access of the following at home?</label>
+                  <div className="space-y-2">
+                    {['Personal Computer/Laptop', 'Internet Connection', 'Study space', 'Textbooks and learning materials'].map(opt => (
+                      <label key={opt} className="flex items-center gap-3 p-2 hover:bg-white rounded-lg cursor-pointer transition-colors">
+                        <input type="checkbox" checked={formData.accessResources.includes(opt)} onChange={() => handleCheckboxChange('accessResources', opt)} className="w-4 h-4 text-[#1864db] rounded border-gray-300" />
+                        <span className="text-sm text-gray-700">{opt}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-bold text-gray-900 mb-3">Do you work while studying?</label>
+                  <div className="flex flex-wrap gap-4">
+                    {['Yes, full-time', 'Yes, part-time', 'No'].map(opt => (
+                      <label key={opt} className="flex items-center gap-2 cursor-pointer p-2 hover:bg-white rounded-lg">
+                        <input type="radio" name="working" checked={formData.workingStudent === opt} onChange={() => setFormData({...formData, workingStudent: opt})} className="w-4 h-4 text-[#1864db]" /> 
+                        <span className="text-sm">{opt}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-bold text-gray-900 mb-4">Which of the following classification best describe your current status? (Multiple responses allowed)</label>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2 text-sm">
+                  {[
+                    'Indigenous Peoples (IPs)', 'Solo Parent', 'Child of a solo parent', 
+                    'Persons with disabilities (PWDs)', 'Child of Person with Disabilities (PWD)',
+                    'Drop out or learner who returned to school', 'Child of drop out or learner who returned to school',
+                    'Rebel returnees', 'Child of a rebel returnees', 'Dependent or child of OFW',
+                    'Member of 4Ps', 'Member of Calamity or Disaster Affected Family',
+                    'Orphan/Child in need of special protection', 'Working Student',
+                    'From geographically isolated & disadvantaged area (GIDA)', 'Muslim Student',
+                    'Low income family/ Economically disadvantaged student', 'Senior Citizen student',
+                    'First Generation student (Parents did not complete a college degree)',
+                    'LGBTQ+ Community', 'Regular student (I do not belong to any of this group classification)'
+                  ].map(opt => (
+                    <label key={opt} className="flex items-start gap-3 p-1 cursor-pointer hover:bg-gray-50 rounded group">
+                      <input type="checkbox" checked={formData.classifications.includes(opt)} onChange={() => handleCheckboxChange('classifications', opt)} className="w-4 h-4 text-[#1864db] rounded border-gray-300 mt-0.5" />
+                      <span className="text-gray-700 leading-tight">{opt}</span>
+                    </label>
+                  ))}
+                </div>
+
+                <div className="mt-6 space-y-4">
+                  <div className="flex items-center gap-3">
+                    <label className="flex items-center gap-3 cursor-pointer">
+                      <input type="checkbox" checked={formData.classifications.includes('others')} onChange={() => handleCheckboxChange('classifications', 'others')} className="w-4 h-4 text-[#1864db] rounded" />
+                      <span className="text-sm text-gray-700 font-medium">others (Please specify)</span>
+                    </label>
+                    <input type="text" value={formData.classificationOthersSpecify} onChange={e => setFormData({...formData, classificationOthersSpecify: e.target.value})} className="border-b border-gray-300 focus:border-[#1864db] outline-none flex-1 bg-transparent px-2 text-sm" disabled={!formData.classifications.includes('others')} />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm text-gray-700 mb-1">If you are working student, please indicate your type of work or source of income:</label>
+                    <input type="text" value={formData.workingStudentTypeOfWork} onChange={e => setFormData({...formData, workingStudentTypeOfWork: e.target.value})} className="w-full border-b border-gray-300 focus:border-[#1864db] outline-none bg-transparent py-1 text-sm" />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm text-gray-700 mb-1">If you are a student with special needs/Person with disability (PWD), please specify your condition or disability:</label>
+                    <input type="text" value={formData.pwdCondition} onChange={e => setFormData({...formData, pwdCondition: e.target.value})} className="w-full border-b border-gray-300 focus:border-[#1864db] outline-none bg-transparent py-1 text-sm" />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm text-gray-700 mb-1">If you are a PDL (Drop out, or learner with interrupted schooling), please state the reason why your schooling was previously interrupted:</label>
+                    <input type="text" value={formData.pdlReason} onChange={e => setFormData({...formData, pdlReason: e.target.value})} className="w-full border-b border-gray-300 focus:border-[#1864db] outline-none bg-transparent py-1 text-sm" />
+                  </div>
+                </div>
+              </div>
+            </div>
           )}
 
           {/* STEP 4: ATTACHMENTS */}
           {step === 4 && (
-            <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-6">
-              <h2 className="text-lg font-bold text-[#0f2e60] flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center text-gray-600">
-                  <FileText className="w-4 h-4" />
-                </div>
-                Attachments
-              </h2>
-              <p className="text-sm text-gray-600 mb-6">Please upload clear copies of the following required documents.</p>
+            <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
+              <div className="border-b border-gray-100 pb-4 mb-6">
+                <h3 className="text-xl font-bold text-gray-900">Scholarship Category & Attachments</h3>
+                <p className="text-sm text-gray-500">Confirm your scholarship category and upload requirements.</p>
+              </div>
               
-              <div className="grid gap-4">
-                {[
-                  { id: 'picture', label: '2x2 ID Picture' },
-                  { id: 'grades', label: 'Certificate of Grades (COG)' },
-                  { id: 'etg', label: 'Completed ETG Survey Form (PDF)' }
-                ].map(item => (
-                  <div key={item.id} className="border border-gray-200 rounded-xl p-6 hover:border-[#1864db] transition-colors bg-gray-50 flex flex-col md:flex-row items-center justify-between gap-4">
-                    <div>
-                      <h3 className="font-bold text-[#0f2e60]">{item.label}</h3>
-                      <p className="text-xs text-gray-500 mt-1">Accepted: PDF, JPG, PNG (Max 5MB)</p>
+              <div className="bg-blue-50/50 rounded-2xl p-6 border border-blue-100 mb-8">
+                <h4 className="font-bold text-[#0f2e60] mb-4 flex items-center gap-2">
+                  <Award className="w-5 h-5 text-[#1864db]" /> 
+                  Selected Scholarship Target
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-xs font-bold text-blue-800 uppercase tracking-wide mb-2">Funding Type</label>
+                    <select value={formData.fundingType} onChange={e => setFormData({...formData, fundingType: e.target.value})} className="w-full px-4 py-3 bg-white border border-blue-200 rounded-xl focus:border-[#1864db] outline-none">
+                      <option value="Internally-Funded">Internally-Funded</option>
+                      <option value="Externally-Funded">Externally-Funded</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-blue-800 uppercase tracking-wide mb-2">Scholarship Category</label>
+                    <input type="text" value={formData.scholarshipCategory} onChange={e => setFormData({...formData, scholarshipCategory: e.target.value})} placeholder="e.g. Entrance - Valedictorian" className="w-full px-4 py-3 bg-white border border-blue-200 rounded-xl focus:border-[#1864db] outline-none" />
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <label className="block text-sm font-bold text-gray-900 mb-2">Required Attachments</label>
+                
+                {['2x2 Picture', 'Certificate of Grades (COG)'].map((docName, idx) => (
+                  <div key={idx} className="border border-dashed border-gray-300 rounded-2xl p-6 flex flex-col items-center justify-center text-center hover:bg-gray-50 hover:border-[#1864db] transition-colors relative group">
+                    <input type="file" onChange={handleFileUpload} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
+                    <div className="w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center mb-3 group-hover:bg-blue-100 transition-colors">
+                      <Upload className="w-6 h-6 text-[#1864db]" />
                     </div>
-                    
-                    <div className="relative">
-                      <input 
-                        type="file" 
-                        id={item.id}
-                        className="hidden"
-                        onChange={(e) => handleFileChange(item.id, e)}
-                        accept=".pdf,.jpg,.jpeg,.png"
-                      />
-                      <label 
-                        htmlFor={item.id}
-                        className={cn(
-                          "cursor-pointer px-6 py-2.5 rounded-full font-bold text-sm flex items-center gap-2 transition-all shadow-sm",
-                          files[item.id] ? "bg-green-100 text-green-700 hover:bg-green-200" : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-50"
-                        )}
-                      >
-                        {files[item.id] ? (
-                          <><CheckCircle2 className="w-4 h-4" /> {files[item.id].name}</>
-                        ) : (
-                          <><Upload className="w-4 h-4" /> Choose File</>
-                        )}
-                      </label>
-                    </div>
+                    <p className="font-bold text-gray-900">{docName}</p>
+                    <p className="text-xs text-gray-500 mt-1">Click or drag file to upload</p>
                   </div>
                 ))}
+
+                {files.length > 0 && (
+                  <div className="mt-6 pt-6 border-t border-gray-100">
+                    <h4 className="text-sm font-bold text-gray-900 mb-3">Uploaded Files</h4>
+                    <div className="space-y-2">
+                      {files.map((f, i) => (
+                        <div key={i} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-100">
+                          <span className="text-sm font-medium text-gray-700">{f.name}</span>
+                          <CheckCircle2 className="w-4 h-4 text-green-500" />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
-            </motion.div>
+            </div>
           )}
         </div>
 
-        {/* Footer Actions */}
-        <div className="px-8 py-6 border-t border-gray-100 bg-gray-50/50 flex items-center justify-between">
+        {/* Navigation */}
+        <div className="p-6 bg-gray-50 border-t border-gray-100 flex justify-between items-center">
           <button 
-            onClick={step === 1 ? () => navigate('/student/dashboard') : handleBack}
-            className="px-6 py-3 font-bold text-gray-600 hover:bg-gray-200 rounded-full text-sm transition-colors"
+            onClick={handlePrev}
+            disabled={step === 1}
+            className="px-6 py-2.5 text-gray-600 font-bold text-sm hover:bg-gray-200 rounded-full transition-colors disabled:opacity-30 disabled:hover:bg-transparent"
           >
-            {step === 1 ? 'Cancel' : 'Back'}
+            Back
           </button>
           
           {step < 4 ? (
             <button 
               onClick={handleNext}
-              className="px-8 py-3 bg-[#1864db] text-white rounded-full font-bold text-sm hover:bg-[#124b9f] transition-all shadow-md hover:shadow-lg flex items-center gap-2"
+              className="px-8 py-3 bg-[#1864db] text-white rounded-full font-bold text-sm hover:bg-[#124b9f] transition-all shadow-md flex items-center gap-2"
             >
               Next Step
             </button>
@@ -790,7 +860,7 @@ export function StudentSubmissionForm() {
             <button 
               onClick={handleSubmit}
               disabled={isSubmitting}
-              className="px-8 py-3 bg-[#0f2e60] text-white rounded-full font-bold text-sm hover:bg-[#0a2044] transition-all shadow-md hover:shadow-lg flex items-center gap-2 disabled:opacity-50"
+              className="px-8 py-3 bg-[#0f2e60] text-white rounded-full font-bold text-sm hover:bg-[#0a2044] transition-all shadow-md flex items-center gap-2 disabled:opacity-50"
             >
               {isSubmitting ? 'Submitting...' : 'Submit Application'}
             </button>

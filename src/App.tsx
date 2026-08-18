@@ -18,6 +18,10 @@ const GuidanceSubmissions = lazy(() => import('./pages/guidance').then(module =>
 
 
 const GuidanceSettings = lazy(() => import('./pages/guidance').then(module => ({ default: module.GuidanceSettings })));
+const GuidanceReports = lazy(() => import('./pages/guidance').then(module => ({ default: module.GuidanceReports })));
+const GuidanceNotifications = lazy(() => import('./pages/guidance').then(module => ({ default: module.GuidanceNotifications })));
+const GuidanceCommunications = lazy(() => import('./pages/guidance').then(module => ({ default: module.GuidanceCommunications })));
+
 
 const StudentLogin = lazy(() => import('./pages/student').then(module => ({ default: module.StudentLogin })));
 const StudentLayout = lazy(() => import('./pages/student').then(module => ({ default: module.StudentLayout })));
@@ -57,6 +61,10 @@ export default function App() {
             
             
             <Route path="settings" element={<GuidanceSettings />} />
+            <Route path="reports" element={<GuidanceReports />} />
+            <Route path="notifications" element={<GuidanceNotifications />} />
+            <Route path="communications" element={<GuidanceCommunications />} />
+
           </Route>
         </Route>
         

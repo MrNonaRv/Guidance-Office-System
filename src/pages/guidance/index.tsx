@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { mockStudents } from '../../types';
-import { Award, Upload, LayoutDashboard, FileText, Bell, Mail, BarChart2, Settings, LogOut, Filter, ChevronDown, View, User, X, Search, Type, Paperclip, Link2, Smile, Triangle, Image as ImageIcon, Lock, Pen, MoreVertical, Trash2, ChevronRight, Calendar, GraduationCap, Users, Image, Plus, GripVertical } from 'lucide-react';
+import { Award, Upload, LayoutDashboard, FileText, Bell, Mail, BarChart2, Settings, LogOut, Filter, ChevronDown, View, User, X, Search, Type, Paperclip, Link2, Smile, Triangle, Image as ImageIcon, Lock, Pen, MoreVertical, Trash2, ChevronRight, Calendar, GraduationCap, Users, Image, Plus, GripVertical, Printer } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Legend } from 'recharts';
 import { db } from '../../lib/db';
@@ -573,67 +573,55 @@ export function GuidanceSubmissions() {
 
             <div className="p-6 flex-1 overflow-y-auto bg-gray-50 print:bg-white print:overflow-visible">
               
-              {/* Form Data Rendering */}
+              
+              {/* Form Data Rendering (Screen Only) */}
+              <div className="print:hidden">
               {selectedSubmission.data && (
-                <div className="space-y-6 mb-8 print:space-y-4">
-                  
+                <div className="space-y-6 mb-8">
                   {/* Demographics */}
-                  <div className="bg-white p-5 rounded-xl border border-gray-200 print:border-none print:p-0 print:border-b print:rounded-none">
-                    <h4 className="text-sm font-bold text-[#0f2e60] uppercase tracking-wider mb-4 print:text-black">A. Personal Demographics</h4>
+                  <div className="bg-white p-5 rounded-xl border border-gray-200">
+                    <h4 className="text-sm font-bold text-[#0f2e60] uppercase tracking-wider mb-4">A. Personal Demographics</h4>
                     <div className="grid grid-cols-2 gap-y-4 gap-x-8 text-sm">
-                      <div><span className="text-gray-500 print:text-gray-700">Course:</span> <strong className="block">{selectedSubmission.data.course}</strong></div>
-                      <div><span className="text-gray-500 print:text-gray-700">Year & Section:</span> <strong className="block">{selectedSubmission.data.yearLevel} - {selectedSubmission.data.section}</strong></div>
-                      <div><span className="text-gray-500 print:text-gray-700">Sex:</span> <strong className="block">{selectedSubmission.data.sex}</strong></div>
-                      <div><span className="text-gray-500 print:text-gray-700">Civil Status:</span> <strong className="block">{selectedSubmission.data.civilStatus}</strong></div>
+                      <div><span className="text-gray-500">Course:</span> <strong className="block">{selectedSubmission.data.course}</strong></div>
+                      <div><span className="text-gray-500">Year & Section:</span> <strong className="block">{selectedSubmission.data.yearLevel} - {selectedSubmission.data.section}</strong></div>
+                      <div><span className="text-gray-500">Sex:</span> <strong className="block">{selectedSubmission.data.sex}</strong></div>
+                      <div><span className="text-gray-500">Civil Status:</span> <strong className="block">{selectedSubmission.data.civilStatus}</strong></div>
+                      <div className="col-span-2"><span className="text-gray-500">Permanent Address:</span> <strong className="block">{selectedSubmission.data.permanentAddress || 'N/A'}</strong></div>
                     </div>
                   </div>
 
                   {/* Family Background */}
-                  <div className="bg-white p-5 rounded-xl border border-gray-200 print:border-none print:p-0 print:border-b print:rounded-none">
-                    <h4 className="text-sm font-bold text-[#0f2e60] uppercase tracking-wider mb-4 print:text-black">B. Family Background</h4>
+                  <div className="bg-white p-5 rounded-xl border border-gray-200">
+                    <h4 className="text-sm font-bold text-[#0f2e60] uppercase tracking-wider mb-4">B. Family Background</h4>
                     <div className="grid grid-cols-2 gap-y-4 gap-x-8 text-sm">
-                      <div><span className="text-gray-500 print:text-gray-700">Father's Occupation:</span> <strong className="block">{selectedSubmission.data.fatherOccupation || 'N/A'}</strong></div>
-                      <div><span className="text-gray-500 print:text-gray-700">Mother's Occupation:</span> <strong className="block">{selectedSubmission.data.motherOccupation || 'N/A'}</strong></div>
-                      <div><span className="text-gray-500 print:text-gray-700">Highest Educ. Attainment:</span> <strong className="block">{selectedSubmission.data.parentsEducationalAttainment || 'N/A'}</strong></div>
-                      <div><span className="text-gray-500 print:text-gray-700">Monthly Income:</span> <strong className="block">{selectedSubmission.data.monthlyIncome || 'N/A'}</strong></div>
-                      <div><span className="text-gray-500 print:text-gray-700">First Generation College:</span> <strong className="block">{selectedSubmission.data.firstGenCollege || 'N/A'}</strong></div>
+                      <div><span className="text-gray-500">Father's Name:</span> <strong className="block">{selectedSubmission.data.fatherName || 'N/A'}</strong></div>
+                      <div><span className="text-gray-500">Mother's Name:</span> <strong className="block">{selectedSubmission.data.motherName || 'N/A'}</strong></div>
+                      <div><span className="text-gray-500">Highest Educ. Attainment:</span> <strong className="block">{selectedSubmission.data.parentsEducationalAttainment || 'N/A'}</strong></div>
+                      <div><span className="text-gray-500">Monthly Income:</span> <strong className="block">{selectedSubmission.data.monthlyIncome || 'N/A'}</strong></div>
                     </div>
                   </div>
-
-                  {/* Living Condition */}
-                  <div className="bg-white p-5 rounded-xl border border-gray-200 print:border-none print:p-0 print:border-b print:rounded-none">
-                    <h4 className="text-sm font-bold text-[#0f2e60] uppercase tracking-wider mb-4 print:text-black">C. Living Condition & Classification</h4>
-                    <div className="grid grid-cols-2 gap-y-4 gap-x-8 text-sm">
-                      <div><span className="text-gray-500 print:text-gray-700">Living With:</span> <strong className="block">{selectedSubmission.data.livingWith || 'N/A'}</strong></div>
-                      <div><span className="text-gray-500 print:text-gray-700">Housing Type:</span> <strong className="block">{selectedSubmission.data.housingType || 'N/A'}</strong></div>
-                      <div><span className="text-gray-500 print:text-gray-700">Student Classification:</span> <strong className="block">{selectedSubmission.data.classification || 'N/A'}</strong></div>
-                    </div>
-                  </div>
-
                 </div>
               )}
 
               {/* Attachments Section */}
-              <h4 className="text-sm font-bold text-[#0f2e60] uppercase tracking-wider mb-4 print:hidden">Submitted Documents</h4>
+              <h4 className="text-sm font-bold text-[#0f2e60] uppercase tracking-wider mb-4">Submitted Documents</h4>
               
               {(!selectedSubmission.files || Object.keys(selectedSubmission.files).length === 0) ? (
-                <div className="text-center p-8 text-gray-500 bg-white rounded-xl border border-gray-200 border-dashed print:hidden">
+                <div className="text-center p-8 text-gray-500 bg-white rounded-xl border border-gray-200 border-dashed">
                   No documents found for this submission.
                 </div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 print:hidden">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {Object.entries(selectedSubmission.files).map(([key, file]: [string, any]) => (
                     <div key={key} className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-                      <div className="p-3 border-b border-gray-100 bg-gray-50/50 flex items-center justify-between">
+                      <div className="p-3 border-b border-gray-100 bg-gray-50 flex items-center justify-between">
                         <span className="font-medium text-sm text-gray-700 truncate">{file.name}</span>
-                        <span className="text-xs bg-gray-200 text-gray-600 px-2 py-0.5 rounded-md font-medium uppercase">{key}</span>
                       </div>
                       <div className="aspect-video bg-gray-100 relative group overflow-hidden">
                         {file.data.startsWith('data:image/') ? (
                           <img src={file.data} alt={file.name} className="w-full h-full object-cover" />
                         ) : (
                           <div className="absolute inset-0 flex flex-col items-center justify-center text-gray-400">
-                            <FileText className="w-12 h-12 mb-2 opacity-50" />
                             <span className="text-sm font-medium">PDF Document</span>
                           </div>
                         )}
@@ -645,44 +633,551 @@ export function GuidanceSubmissions() {
                   ))}
                 </div>
               )}
-              
-              {/* Signature area for print only */}
-              <div className="hidden print:flex justify-between mt-20 pt-8 border-t border-gray-300">
-                <div className="text-center">
-                  <div className="w-48 border-b border-black mb-1"></div>
-                  <span className="text-sm uppercase font-bold">{selectedSubmission.data?.firstName} {selectedSubmission.data?.familyName}</span>
-                  <div className="text-xs text-gray-600">Applicant Signature</div>
-                </div>
-                <div className="text-center">
-                  <div className="w-48 border-b border-black mb-1"></div>
-                  <span className="text-sm uppercase font-bold">Guidance Director</span>
-                  <div className="text-xs text-gray-600">Approved By</div>
-                </div>
               </div>
 
-            </div>
-            
-            <div className="p-6 border-t border-gray-100 bg-white flex justify-between items-center gap-4 print:hidden">
-              <div className="flex items-center gap-3">
-                <span className="text-sm font-medium text-gray-600">Current Status:</span>
-                <span className={cn(
-                  "px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider",
-                  selectedSubmission.status === 'Approved' ? "bg-green-100 text-green-700" :
-                  selectedSubmission.status === 'Rejected' ? "bg-red-100 text-red-700" :
-                  "bg-amber-100 text-amber-700"
-                )}>
-                  {selectedSubmission.status}
-                </span>
-              </div>
-              <div className="flex gap-2">
-                <button onClick={() => updateStatus(selectedSubmission.id, 'Rejected')} className="px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg text-sm font-medium transition-colors">Reject</button>
-                <button onClick={() => updateStatus(selectedSubmission.id, 'Approved')} className="px-6 py-2 bg-green-600 text-white hover:bg-green-700 rounded-lg text-sm font-medium transition-colors shadow-sm">Approve</button>
+              {/* ----------------- EXACT PRINT LAYOUT ----------------- */}
+              <div className="hidden print:block text-black bg-white font-sans">
+                
+                {/* PAGE 1: SCHOLARSHIP RECORD FORM */}
+                <div className="print-page w-[793px] h-[1122px] mx-auto pt-8 break-after-page">
+                  {/* Header Box */}
+                  <div className="border border-black w-full mb-6">
+                    <div className="flex border-b border-black">
+                      <div className="w-1/5 p-2 border-r border-black flex flex-col items-center justify-center">
+                        <div className="w-12 h-12 bg-gray-200 rounded-full mb-1"></div> {/* Logo placeholder */}
+                      </div>
+                      <div className="w-3/5 p-2 border-r border-black flex flex-col items-center justify-center text-center">
+                        <span className="text-[10px]">Document Type:</span>
+                        <strong className="text-xl tracking-widest mt-1 font-serif">FORM</strong>
+                        <span className="text-[8px] mt-1 font-serif">ISO 9001:2015</span>
+                      </div>
+                      <div className="w-1/5 font-serif">
+                        <div className="border-b border-black p-1 text-[10px] flex justify-between"><span>Document Code</span><strong>GCO-F05</strong></div>
+                        <div className="border-b border-black p-1 text-[10px] flex justify-between"><span>Revision No.</span><strong>00</strong></div>
+                        <div className="border-b border-black p-1 text-[10px] flex justify-between"><span>Effective Date</span><strong>June 25, 2018</strong></div>
+                        <div className="p-1 text-[10px] flex justify-between"><span>Page</span><strong>1 of 1</strong></div>
+                      </div>
+                    </div>
+                    <div className="flex font-serif">
+                      <div className="w-1/4 p-2 border-r border-black text-xs flex items-center">Document Title:</div>
+                      <div className="w-3/4 p-2 text-center font-bold text-lg tracking-wider flex items-center justify-center">SCHOLARSHIP RECORD FORM</div>
+                    </div>
+                  </div>
+
+                  {/* Top Profile block */}
+                  <div className="flex gap-4 mb-6 text-sm font-serif">
+                    <div className="flex-1 space-y-3">
+                      <div className="flex items-end gap-2">
+                        <span className="w-12">Name:</span>
+                        <span className="flex-1 border-b border-black text-center">{selectedSubmission.data.familyName}</span>
+                        <span className="flex-1 border-b border-black text-center">{selectedSubmission.data.firstName}</span>
+                        <span className="flex-1 border-b border-black text-center">{selectedSubmission.data.middleName}</span>
+                        <span className="ml-2">Age:</span><span className="w-10 border-b border-black text-center">{selectedSubmission.data.age}</span>
+                        <span className="ml-2">Sex: ( {selectedSubmission.data.sex === 'Male' ? 'x' : ' '} ) Male ( {selectedSubmission.data.sex === 'Female' ? 'x' : ' '} ) Female</span>
+                      </div>
+                      <div className="flex text-xs text-center text-gray-600 mb-2 mt-0">
+                        <span className="w-12"></span>
+                        <span className="flex-1">Family Name</span>
+                        <span className="flex-1">First Name</span>
+                        <span className="flex-1">Middle Name</span>
+                        <span className="w-10"></span><span className="w-48"></span>
+                      </div>
+                      
+                      <div className="flex items-end gap-2">
+                        <span className="w-24">Course & Year:</span>
+                        <span className="flex-1 border-b border-black">{selectedSubmission.data.course} - {selectedSubmission.data.yearLevel}</span>
+                        <span className="w-16">Birthdate:</span>
+                        <span className="flex-1 border-b border-black">{selectedSubmission.data.birthdate}</span>
+                        <span className="w-20">Contact No.:</span>
+                        <span className="flex-1 border-b border-black">{selectedSubmission.data.contactNo}</span>
+                      </div>
+                      <div className="flex items-end gap-2">
+                        <span className="w-36">Permanent Address:</span>
+                        <span className="flex-1 border-b border-black">{selectedSubmission.data.permanentAddress}</span>
+                      </div>
+                      <div className="flex items-end gap-2">
+                        <span className="w-24">Father's Name:</span>
+                        <span className="flex-1 border-b border-black">{selectedSubmission.data.fatherName}</span>
+                        <span className="w-24 pl-4">Mother's Name:</span>
+                        <span className="flex-1 border-b border-black">{selectedSubmission.data.motherName}</span>
+                      </div>
+                      <div className="flex items-end gap-2">
+                        <span className="w-44">Educational Attainment:</span>
+                        <span className="flex-1 border-b border-black">{selectedSubmission.data.parentsEducationalAttainment}</span>
+                        <span className="w-44 pl-4">Educational Attainment:</span>
+                        <span className="flex-1 border-b border-black">{selectedSubmission.data.parentsEducationalAttainment}</span>
+                      </div>
+                      <div className="flex items-end gap-2">
+                        <span className="w-24">Occupation:</span>
+                        <span className="flex-1 border-b border-black">{selectedSubmission.data.fatherOccupation}</span>
+                        <span className="w-24 pl-4">Occupation:</span>
+                        <span className="flex-1 border-b border-black">{selectedSubmission.data.motherOccupation}</span>
+                      </div>
+                      <div className="flex items-end gap-2">
+                        <span className="w-16">Office:</span>
+                        <span className="flex-1 border-b border-black">{selectedSubmission.data.fatherOffice}</span>
+                        <span className="w-16 pl-4">Office:</span>
+                        <span className="flex-1 border-b border-black">{selectedSubmission.data.motherOffice}</span>
+                      </div>
+                    </div>
+                    {/* 2x2 Picture Box */}
+                    <div className="w-32 h-32 border border-black flex items-center justify-center text-center text-xs p-2 shrink-0 font-serif">
+                      Attach<br/>2x2 Picture
+                    </div>
+                  </div>
+
+                  {/* Category */}
+                  <div className="text-center font-bold text-sm mb-4 font-serif">SCHOLARSHIP CATEGORY</div>
+                  <div className="text-sm font-serif">
+                    <strong>A. Internally-Funded</strong>
+                    <div className="pl-6 mt-1">
+                      <em>Entrance</em>
+                      <div className="pl-6 grid grid-cols-2 mt-1 mb-2">
+                        <div>[ {selectedSubmission.data.scholarshipCategory?.includes('Valedictorian') ? 'x' : ' '} ] Valedictorian</div>
+                        <div>[ {selectedSubmission.data.scholarshipCategory?.includes('Salutatorian') ? 'x' : ' '} ] Salutatorian</div>
+                      </div>
+                    </div>
+                    <div className="pl-6 mt-1">
+                      <em>Academic</em>
+                      <div className="pl-6 grid grid-cols-2 mt-1 mb-2 gap-y-1">
+                        <div>[ {selectedSubmission.data.scholarshipCategory?.includes('Full') ? 'x' : ' '} ] Full</div>
+                        <div>[ {selectedSubmission.data.scholarshipCategory?.includes('Partial') ? 'x' : ' '} ] Partial</div>
+                        <div>[ {selectedSubmission.data.scholarshipCategory?.includes('Regional') ? 'x' : ' '} ] Regional</div>
+                        <div>[ {selectedSubmission.data.scholarshipCategory?.includes('National') ? 'x' : ' '} ] National</div>
+                      </div>
+                    </div>
+                    <div className="pl-6 mt-1">
+                      <em>Socio-cultural</em>
+                      <div className="pl-6 grid grid-cols-2 mt-1 mb-2 gap-y-1">
+                        <div>[ {selectedSubmission.data.scholarshipCategory?.includes('Socio-cultural Regional') ? 'x' : ' '} ] Regional</div>
+                        <div>[ {selectedSubmission.data.scholarshipCategory?.includes('Socio-cultural National') ? 'x' : ' '} ] National</div>
+                      </div>
+                    </div>
+                    <div className="pl-6 mt-1">
+                      <em>Institutional</em>
+                      <div className="pl-6 grid grid-cols-2 mt-1 mb-2 gap-y-1">
+                        <div>[ {selectedSubmission.data.scholarshipCategory?.includes('Dependent of Faculty') ? 'x' : ' '} ] Dependent of Faculty or Staff</div>
+                        <div>[ {selectedSubmission.data.scholarshipCategory?.includes('President - SSC') ? 'x' : ' '} ] President - SSC</div>
+                        <div>[ {selectedSubmission.data.scholarshipCategory?.includes('President - FLP') ? 'x' : ' '} ] President - FLP</div>
+                        <div>[ {selectedSubmission.data.scholarshipCategory?.includes('Editor-in-Chief') ? 'x' : ' '} ] Editor-in-Chief (Campus Publication)</div>
+                        <div>[ {selectedSubmission.data.scholarshipCategory?.includes('CapSU Band') ? 'x' : ' '} ] CapSU Band / Chorale</div>
+                        <div className="flex gap-2">[ {selectedSubmission.data.scholarshipCategory?.includes('Institutional Others') ? 'x' : ' '} ] Others (specify) <span className="border-b border-black flex-1"></span></div>
+                      </div>
+                    </div>
+
+                    <strong className="block mt-4 mb-2">B. Externally-Funded</strong>
+                    <div className="pl-6 mt-1">
+                      <em>CHED</em>
+                      <div className="pl-6 grid grid-cols-1 mt-1 mb-2 gap-y-1">
+                        <div className="flex gap-2">[ {selectedSubmission.data.scholarshipCategory?.includes('Congressional') ? 'x' : ' '} ] Congressional District (specify) <span className="border-b border-black w-48"></span></div>
+                        <div className="flex gap-2">[ {selectedSubmission.data.scholarshipCategory?.includes('One Town') ? 'x' : ' '} ] One Town One Scholar (specify) <span className="border-b border-black w-48"></span></div>
+                        <div className="flex gap-2">[ {selectedSubmission.data.scholarshipCategory?.includes('Tulong Dunong') ? 'x' : ' '} ] Tulong Dunong (specify) <span className="border-b border-black w-48"></span></div>
+                        <div>[ {selectedSubmission.data.scholarshipCategory?.includes('ANAC - IP') ? 'x' : ' '} ] ANAC - IP</div>
+                        <div>[ {selectedSubmission.data.scholarshipCategory?.includes('Pag-ulikid') ? 'x' : ' '} ] Pag-ulikid</div>
+                        <div>[ {selectedSubmission.data.scholarshipCategory?.includes('Barangay') ? 'x' : ' '} ] Barangay (Legal dependents of Brgy. Officials)</div>
+                        <div>[ {selectedSubmission.data.scholarshipCategory?.includes('ESGP-PA') ? 'x' : ' '} ] ESGP - PA</div>
+                        <div className="flex gap-2">[ {selectedSubmission.data.scholarshipCategory?.includes('CHED Others') ? 'x' : ' '} ] Others (specify): <span className="border-b border-black w-64"></span></div>
+                      </div>
+                    </div>
+                    <div className="pl-6 mt-1">
+                      <em>Merit</em>
+                      <div className="pl-6 grid grid-cols-2 mt-1 mb-2 gap-y-1">
+                        <div>[ {selectedSubmission.data.scholarshipCategory?.includes('VIC') ? 'x' : ' '} ] VIC</div>
+                        <div>[ {selectedSubmission.data.scholarshipCategory?.includes('Capizeño Circle') ? 'x' : ' '} ] Capizeño Circle</div>
+                        <div>[ {selectedSubmission.data.scholarshipCategory?.includes('DOST') ? 'x' : ' '} ] DOST</div>
+                        <div>[ {selectedSubmission.data.scholarshipCategory?.includes('GRF') ? 'x' : ' '} ] GRF</div>
+                        <div className="col-span-2 flex flex-col gap-1">
+                          <div>[ {selectedSubmission.data.scholarshipCategory?.includes('LGU') ? 'x' : ' '} ] LGU: Barangay, Municipality, Province (Landline) Contact person</div>
+                          <div className="flex gap-2 pl-6">or issuing office: <span className="border-b border-black flex-1"></span></div>
+                        </div>
+                        <div className="col-span-2 flex flex-col gap-1 mt-1">
+                          <div className="flex gap-2">[ {selectedSubmission.data.scholarshipCategory?.includes('DSWD') ? 'x' : ' '} ] DSWD: Municipality <span className="border-b border-black flex-1"></span></div>
+                          <div className="flex gap-2 pl-6">Contact person: <span className="border-b border-black flex-1"></span></div>
+                          <div className="flex gap-2 pl-6">Designation: <span className="border-b border-black flex-1"></span></div>
+                        </div>
+                        <div className="col-span-2 flex gap-2 mt-1">[ {selectedSubmission.data.scholarshipCategory?.includes('Merit Others') ? 'x' : ' '} ] Others (specify): <span className="border-b border-black flex-1"></span></div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="mt-16 flex justify-between text-sm font-serif">
+                    <div className="w-48 text-center">
+                      <div className="border-b border-black text-center">{new Date(selectedSubmission.submittedAt).toLocaleDateString()}</div>
+                      <div className="mt-1">Date Received</div>
+                    </div>
+                    <div className="w-64 text-center">
+                      <div className="border-b border-black h-5 text-center font-bold"></div>
+                      <div className="mt-1">Signature of Applicant</div>
+                    </div>
+                  </div>
+                  
+                  <div className="mt-8 text-xs italic text-gray-700 font-serif">
+                    <p>Note: A student shall enjoy only one scholarship</p>
+                    <p>Submit certificate of grades of previous semester and blue card/ registration form for record</p>
+                  </div>
+                </div>
+
+                {/* PAGE 2: STUDENTS PROFILE AND ETG SURVEY */}
+                <div className="print-page w-[793px] h-[1122px] mx-auto pt-8 break-after-page font-serif">
+                  <div className="text-center mb-8">
+                    <h1 className="italic font-bold text-xl mb-1">Office of the Student Affairs and Services</h1>
+                    <h2 className="font-bold text-base">STUDENTS PROFILE AND ETG SURVEY</h2>
+                    <h3 className="font-bold text-sm mb-2">2nd Sem 2025-2026</h3>
+                    <p className="text-[10px] italic w-[80%] mx-auto">(Data and Personal Information will be kept with utmost confidentiality and will be protected through RA 10173 also known as Data Privacy Act of 2012)</p>
+                  </div>
+
+                  <div className="space-y-6 text-sm">
+                    <strong className="text-base block">A. Personal Demographics</strong>
+                    <div className="pl-4 space-y-4">
+                      <div className="flex gap-2 items-end">
+                        <span className="w-16">Name:</span><span className="flex-1 border-b border-black font-bold pl-2">{selectedSubmission.studentName}</span>
+                      </div>
+                      <div className="flex gap-2 items-start">
+                        <span className="w-16">Course:</span>
+                        <div className="w-32 space-y-1">
+                          <div>( {selectedSubmission.data.course === 'BSCS' ? 'x' : ' '} ) BSCS</div>
+                          <div>( {selectedSubmission.data.course === 'BSFT' ? 'x' : ' '} ) BSFT</div>
+                          <div>( {selectedSubmission.data.course === 'BSOA' ? 'x' : ' '} ) BSOA</div>
+                          <div>( {selectedSubmission.data.course === 'BAEL' ? 'x' : ' '} ) BAEL</div>
+                        </div>
+                        <span className="w-20">Year Level:</span>
+                        <div className="w-36 space-y-1">
+                          <div>( {selectedSubmission.data.yearLevel === 'First year' ? 'x' : ' '} ) First year</div>
+                          <div>( {selectedSubmission.data.yearLevel === 'Second year' ? 'x' : ' '} ) Second year</div>
+                          <div>( {selectedSubmission.data.yearLevel === 'Third year' ? 'x' : ' '} ) Third year</div>
+                          <div>( {selectedSubmission.data.yearLevel === 'Fourth year' ? 'x' : ' '} ) Fourth year</div>
+                        </div>
+                        <div className="flex flex-1 items-start">
+                          <span className="w-16">Section:</span><span className="flex-1 border-b border-black h-5 pl-2">{selectedSubmission.data.section}</span>
+                        </div>
+                      </div>
+                      <div className="flex gap-8 items-center mt-2">
+                        <span>Sex: <span className="ml-2">( {selectedSubmission.data.sex === 'Male' ? 'x' : ' '} ) Male  ( {selectedSubmission.data.sex === 'Female' ? 'x' : ' '} ) Female</span></span>
+                        <span>Civil Status: <span className="ml-2">( {selectedSubmission.data.civilStatus === 'Single' ? 'x' : ' '} ) Single  ( {selectedSubmission.data.civilStatus === 'Married' ? 'x' : ' '} ) Married</span></span>
+                      </div>
+                    </div>
+
+                    <strong className="text-base block mt-8">B. Family Background</strong>
+                    <div className="pl-4 space-y-4">
+                      <div className="flex gap-4">
+                        <span className="w-40">Father's Occupation:</span><span className="flex-1 border-b border-black">{selectedSubmission.data.fatherOccupation}</span>
+                        <span className="w-40 text-right pr-2">Mother's Occupation:</span><span className="flex-1 border-b border-black">{selectedSubmission.data.motherOccupation}</span>
+                      </div>
+                      <div className="flex gap-2">
+                        <span className="w-44">Guardian's Occupation:</span><span className="flex-1 border-b border-black">{selectedSubmission.data.guardianOccupation}</span>
+                      </div>
+                      
+                      <div className="mt-4">Highest Educational Attainment of your Parent/Guardian?</div>
+                      <div className="grid grid-cols-2 pl-12 gap-y-1 mt-2">
+                        <div>( {selectedSubmission.data.parentsEducationalAttainment === 'Elementary Level' ? 'x' : ' '} ) Elementary Level</div>
+                        <div>( {selectedSubmission.data.parentsEducationalAttainment === 'Elementary Graduate' ? 'x' : ' '} ) Elementary Graduate</div>
+                        <div>( {selectedSubmission.data.parentsEducationalAttainment === 'High School Level' ? 'x' : ' '} ) High School Level</div>
+                        <div>( {selectedSubmission.data.parentsEducationalAttainment === 'High school Graduate' ? 'x' : ' '} ) High school Graduate</div>
+                        <div>( {selectedSubmission.data.parentsEducationalAttainment === 'College Level' ? 'x' : ' '} ) College Level</div>
+                        <div>( {selectedSubmission.data.parentsEducationalAttainment === 'College Graduate' ? 'x' : ' '} ) College Graduate</div>
+                        <div className="col-span-2">( {selectedSubmission.data.parentsEducationalAttainment === 'post Graduate level/degree' ? 'x' : ' '} ) post Graduate level/degree</div>
+                      </div>
+
+                      <div className="mt-4">What is your family's approximate monthly income?</div>
+                      <div className="pl-24 space-y-1 mt-2">
+                        <div>( {selectedSubmission.data.monthlyIncome === 'below Php10,000' ? 'x' : ' '} ) below Php10,000</div>
+                        <div>( {selectedSubmission.data.monthlyIncome === 'Php10,001 - 20,000' ? 'x' : ' '} ) Php10,001 - 20,000</div>
+                        <div>( {selectedSubmission.data.monthlyIncome === 'Php20,001 - 30,000' ? 'x' : ' '} ) Php20,001 - 30,000</div>
+                        <div>( {selectedSubmission.data.monthlyIncome === 'Above 30,000' ? 'x' : ' '} ) Above 30,000</div>
+                      </div>
+
+                      <div className="flex gap-4 mt-6">
+                        <span>Are you the first in the family to attend College?</span>
+                        <span className="ml-4">( {selectedSubmission.data.firstGenCollege === 'Yes' ? 'x' : ' '} ) Yes</span>
+                        <span>( {selectedSubmission.data.firstGenCollege === 'No' ? 'x' : ' '} ) No</span>
+                      </div>
+                    </div>
+
+                    <strong className="text-base block mt-8">C. Living Condition</strong>
+                    <div className="pl-4 space-y-4">
+                      <div className="flex gap-4">
+                        <span className="w-56">With whom do you currently live?</span>
+                        <div className="flex-1 grid grid-cols-2 gap-y-2">
+                          <div>( {selectedSubmission.data.livingWith === 'Parents/Guardians' ? 'x' : ' '} ) Parents/Guardians</div>
+                          <div>( {selectedSubmission.data.livingWith === 'Boarding house' ? 'x' : ' '} ) Boarding house</div>
+                          <div>( {selectedSubmission.data.livingWith === 'Relatives' ? 'x' : ' '} ) Relatives</div>
+                          <div className="col-span-2 flex gap-2">
+                            <span>( {selectedSubmission.data.livingWith === 'others' ? 'x' : ' '} ) others (please specify)</span>
+                            <span className="border-b border-black flex-1 text-center">{selectedSubmission.data.livingWithSpecify}</span>
+                          </div>
+                          <div>( {selectedSubmission.data.livingWith === 'Alone' ? 'x' : ' '} ) Alone</div>
+                        </div>
+                      </div>
+                      
+                      <div className="flex gap-4 mt-4">
+                        <span className="w-56">Type of Housing</span>
+                        <div className="flex-1 space-y-2">
+                          <div>( {selectedSubmission.data.housingType === 'Own house' ? 'x' : ' '} ) Own house</div>
+                          <div>( {selectedSubmission.data.housingType === 'Rented house or apartment' ? 'x' : ' '} ) Rented house or apartment</div>
+                          <div>( {selectedSubmission.data.housingType === 'Boarding house' ? 'x' : ' '} ) Boarding house</div>
+                          <div className="flex gap-2">
+                            <span>( {selectedSubmission.data.housingType === 'Others' ? 'x' : ' '} ) Others (please specify)</span>
+                            <span className="border-b border-black flex-1 text-center">{selectedSubmission.data.housingTypeSpecify}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <strong className="text-base block mt-8">D. Access to Resources</strong>
+                    <div className="pl-4">
+                      <div className="mb-2">Do you have access of the following at home?</div>
+                      <div className="pl-24 space-y-1">
+                        <div>( {selectedSubmission.data.accessResources?.includes('Personal Computer/Laptop') ? 'x' : ' '} ) Personal Computer/Laptop</div>
+                        <div>( {selectedSubmission.data.accessResources?.includes('Internet Connection') ? 'x' : ' '} ) Internet Connection</div>
+                        <div>( {selectedSubmission.data.accessResources?.includes('Study space') ? 'x' : ' '} ) Study space</div>
+                        <div>( {selectedSubmission.data.accessResources?.includes('Textbooks and learning materials') ? 'x' : ' '} ) Textbooks and learning materials</div>
+                      </div>
+
+                      <div className="flex gap-8 mt-6">
+                        <span>Do you work while studying?</span>
+                        <span>( {selectedSubmission.data.workingStudent === 'Yes, full-time' ? 'x' : ' '} ) Yes, full-time</span>
+                        <span>( {selectedSubmission.data.workingStudent === 'Yes, part-time' ? 'x' : ' '} ) Yes, part-time</span>
+                        <span>( {selectedSubmission.data.workingStudent === 'No' ? 'x' : ' '} ) No</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* PAGE 3: SURVEY CONTINUATION */}
+                <div className="print-page w-[793px] h-[1122px] mx-auto pt-8 font-serif text-sm">
+                  <strong className="text-base block mb-4">E. Student Classification</strong>
+                  <div className="mb-4">Which of the following classification best describe your current status? (Multiple responses)</div>
+                  
+                  <div className="pl-16 space-y-1.5">
+                    {[
+                      'Indigenous Peoples (IPs)', 'Solo Parent', 'Child of a solo parent', 
+                      'Persons with disabilities (PWDs)', 'Child of Person with Disabilities (PWD)',
+                      'Drop out or learner who returned to school', 'Child of drop out or learner who returned to school',
+                      'Rebel returnees', 'Child of a rebel returnees', 'Dependent or child of OFW',
+                      'Member of 4Ps', 'Member of Calamity or Disaster Affected Family',
+                      'Orphan/Child in need of special protection', 'Working Student',
+                      'From geographically isolated & disadvantaged area (GIDA)', 'Muslim Student',
+                      'Low income family/ Economically disadvantaged student', 'Senior Citizen student',
+                      'First Generation student (Parents did not complete a college degree)',
+                      'LGBTQ+ Community', 'Regular student (I do not belong to any of this group classification)'
+                    ].map(opt => (
+                      <div key={opt}>( {selectedSubmission.data.classifications?.includes(opt) ? 'x' : ' '} ) {opt}</div>
+                    ))}
+                    <div className="flex gap-2 mt-2">
+                      <span>( {selectedSubmission.data.classifications?.includes('others') ? 'x' : ' '} ) others (Please specify)</span> 
+                      <span className="border-b border-black w-64 text-center">{selectedSubmission.data.classificationOthersSpecify}</span>
+                    </div>
+                  </div>
+
+                  <div className="mt-8 flex flex-col gap-8">
+                    <div>
+                      <div className="mb-2">If you are working student, please indicate your type of work or source of income</div>
+                      <div className="border-b border-black w-full h-6 text-center pt-1">{selectedSubmission.data.workingStudentTypeOfWork}</div>
+                    </div>
+                    <div>
+                      <div className="mb-2">If you are a student with special needs/Person with disability (PWD), please specify your condition or disability</div>
+                      <div className="border-b border-black w-full h-6 text-center pt-1">{selectedSubmission.data.pwdCondition}</div>
+                    </div>
+                    <div>
+                      <div className="mb-2">If you are a PDL (Drop out, or learner with interrupted schooling), please state the reason why your schooling was previously interrupted.</div>
+                      <div className="border-b border-black w-full h-6 text-center pt-1">{selectedSubmission.data.pdlReason}</div>
+                    </div>
+                  </div>
+
+                  <div className="mt-20">
+                    <p className="mb-16">I hereby certify that the information I have provided is true and correct to the best of my knowledge. I understand that this information will be used solely for student profiling.</p>
+                    <div className="w-80">
+                      <div className="border-b border-black text-center h-6 font-bold uppercase">{selectedSubmission.studentName}</div>
+                      <div className="text-center">Signature over Printed Name</div>
+                    </div>
+                  </div>
+
+                </div>
               </div>
             </div>
           </div>
         </div>
       )}
-      
     </div>
   );
 }
+
+export function GuidanceSettings() {
+  const [activeTab, setActiveTab] = useState('scholarships');
+  const [scholarships, setScholarships] = useState<any[]>([]);
+  const [showScholarshipModal, setShowScholarshipModal] = useState(false);
+  const [editingScholarship, setEditingScholarship] = useState<any>(null);
+  const [scholarshipForm, setScholarshipForm] = useState({
+    name: '', type: 'Internally-Funded', category: '',
+    status: 'Active', slots: 0, deadline: '', description: ''
+  });
+
+  useEffect(() => {
+    loadScholarships();
+  }, []);
+
+  const loadScholarships = async () => {
+    const list = await db.scholarships.listAll();
+    setScholarships(list);
+  };
+
+  const handleSaveScholarship = async () => {
+    if (editingScholarship) {
+      await db.scholarships.update(editingScholarship.id, scholarshipForm);
+    } else {
+      await db.scholarships.create(scholarshipForm);
+    }
+    setShowScholarshipModal(false);
+    loadScholarships();
+  };
+
+  const handleEdit = (s: any) => {
+    setEditingScholarship(s);
+    setScholarshipForm(s);
+    setShowScholarshipModal(true);
+  };
+
+  const handleDelete = async (id: string) => {
+    if (confirm("Are you sure?")) {
+      await db.scholarships.delete(id);
+      loadScholarships();
+    }
+  };
+  
+  return (
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-bold text-[#0f2e60]">System Settings</h2>
+      </div>
+      
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+        <div className="border-b border-gray-100 flex gap-4 px-6 pt-4">
+          <button className={`pb-4 text-sm font-bold border-b-2 transition-colors ${activeTab === 'scholarships' ? 'border-[#1864db] text-[#1864db]' : 'border-transparent text-gray-500 hover:text-gray-900'}`} onClick={() => setActiveTab('scholarships')}>Scholarships Management</button>
+          <button className={`pb-4 text-sm font-bold border-b-2 transition-colors ${activeTab === 'courses' ? 'border-[#1864db] text-[#1864db]' : 'border-transparent text-gray-500 hover:text-gray-900'}`} onClick={() => setActiveTab('courses')}>Courses</button>
+          <button className={`pb-4 text-sm font-bold border-b-2 transition-colors ${activeTab === 'academic-years' ? 'border-[#1864db] text-[#1864db]' : 'border-transparent text-gray-500 hover:text-gray-900'}`} onClick={() => setActiveTab('academic-years')}>Academic Years</button>
+        </div>
+
+        <div className="p-6">
+          {activeTab === 'scholarships' && (
+            <div className="space-y-4">
+              <div className="flex justify-between items-center">
+                <h3 className="text-lg font-bold text-gray-900">Scholarship Registry</h3>
+                <button 
+                  onClick={() => {
+                    setEditingScholarship(null);
+                    setScholarshipForm({ name: '', type: 'Internally-Funded', category: '', status: 'Active', slots: 0, deadline: '', description: '' });
+                    setShowScholarshipModal(true);
+                  }}
+                  className="bg-[#1864db] text-white px-4 py-2 rounded-lg font-bold text-sm hover:bg-[#124b9f]"
+                >
+                  + Add Scholarship
+                </button>
+              </div>
+
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm text-left">
+                  <thead className="bg-gray-50 text-gray-500 uppercase text-xs">
+                    <tr>
+                      <th className="px-6 py-3 font-bold">Name</th>
+                      <th className="px-6 py-3 font-bold">Type</th>
+                      <th className="px-6 py-3 font-bold">Category</th>
+                      <th className="px-6 py-3 font-bold">Slots</th>
+                      <th className="px-6 py-3 font-bold">Deadline</th>
+                      <th className="px-6 py-3 font-bold">Status</th>
+                      <th className="px-6 py-3 font-bold text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">
+                    {scholarships.map(s => (
+                      <tr key={s.id} className="hover:bg-gray-50/50">
+                        <td className="px-6 py-4 font-bold text-gray-900">{s.name}</td>
+                        <td className="px-6 py-4">{s.type}</td>
+                        <td className="px-6 py-4">{s.category}</td>
+                        <td className="px-6 py-4">{s.slots}</td>
+                        <td className="px-6 py-4">{s.deadline}</td>
+                        <td className="px-6 py-4">
+                          <span className={`px-3 py-1 rounded-full text-xs font-bold ${s.status === 'Active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'}`}>
+                            {s.status}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 text-right space-x-3">
+                          <button onClick={() => handleEdit(s)} className="text-blue-600 hover:text-blue-800 font-medium">Edit</button>
+                          <button onClick={() => handleDelete(s.id)} className="text-red-600 hover:text-red-800 font-medium">Delete</button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+          {activeTab === 'courses' && (
+            <div className="text-gray-500 text-sm">Course management coming soon...</div>
+          )}
+          {activeTab === 'academic-years' && (
+            <div className="text-gray-500 text-sm">Academic year management coming soon...</div>
+          )}
+        </div>
+      </div>
+      
+      {/* Modal */}
+        {showScholarshipModal && (
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div className="bg-white rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden">
+              <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+                <h3 className="font-bold text-lg text-gray-900">{editingScholarship ? 'Edit Scholarship' : 'Add New Scholarship'}</h3>
+                <button onClick={() => setShowScholarshipModal(false)} className="text-gray-400 hover:text-gray-600">×</button>
+              </div>
+              <div className="p-6 space-y-4">
+                <div>
+                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Scholarship Name</label>
+                  <input type="text" value={scholarshipForm.name} onChange={e => setScholarshipForm({...scholarshipForm, name: e.target.value})} className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#1864db]" placeholder="e.g. Tulong Dunong" />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Description</label>
+                  <textarea value={scholarshipForm.description} onChange={e => setScholarshipForm({...scholarshipForm, description: e.target.value})} className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#1864db]" placeholder="Short description..." rows={2} />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Funding Type</label>
+                    <select value={scholarshipForm.type} onChange={e => setScholarshipForm({...scholarshipForm, type: e.target.value})} className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#1864db]">
+                      <option>Internally-Funded</option>
+                      <option>Externally-Funded</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Category / Tag</label>
+                    <input type="text" value={scholarshipForm.category} onChange={e => setScholarshipForm({...scholarshipForm, category: e.target.value})} className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#1864db]" placeholder="e.g. Entrance, CHED" />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Status</label>
+                    <select value={scholarshipForm.status} onChange={e => setScholarshipForm({...scholarshipForm, status: e.target.value})} className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#1864db]">
+                      <option>Active</option>
+                      <option>Inactive</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Slots</label>
+                    <input type="number" value={isNaN(scholarshipForm.slots) || scholarshipForm.slots === 0 ? '' : scholarshipForm.slots} onChange={e => setScholarshipForm({...scholarshipForm, slots: e.target.value === '' ? 0 : (parseInt(e.target.value, 10) || 0)})} className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#1864db]" placeholder="0" />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Deadline</label>
+                  <input type="date" value={scholarshipForm.deadline} onChange={e => setScholarshipForm({...scholarshipForm, deadline: e.target.value})} className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#1864db]" />
+                </div>
+              </div>
+              <div className="px-6 py-4 border-t border-gray-100 bg-gray-50 flex justify-end gap-3">
+                <button onClick={() => setShowScholarshipModal(false)} className="px-4 py-2 font-bold text-sm text-gray-600 hover:bg-gray-200 rounded-lg">Cancel</button>
+                <button onClick={handleSaveScholarship} className="px-6 py-2 bg-[#1864db] text-white rounded-lg font-bold text-sm hover:bg-[#124b9f]">Save Scholarship</button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+  );
+}
+export * from './reports';
+export * from './notifications';
+export * from './communications';
