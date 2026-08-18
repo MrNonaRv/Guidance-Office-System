@@ -1,12 +1,12 @@
 {
-  "projectId": "automatic-climate-zgxqk",
-  "appId": "1:557160494463:web:61726a040bf3571277964a",
-  "apiKey": "AIzaSyDdkUg7F-3rd028W8BbdTU9ZTki8-NESR0",
-  "authDomain": "automatic-climate-zgxqk.firebaseapp.com",
+  "projectId": "mathquest-new",
+  "appId": "1:752407989664:web:7c7e66d18362f8fc9268c5",
+  "apiKey": "AIzaSyDIxNzVfx_gaAVKKQ3En8BvH0mnzg66nUU",
+  "authDomain": "mathquest-new.firebaseapp.com",
   "firestoreDatabaseId": "ai-studio-webbasedscholars-1e280336-8fb9-41d3-8c2f-71557c6b152a",
-  "storageBucket": "automatic-climate-zgxqk.firebasestorage.app",
-  "messagingSenderId": "557160494463",
-  "measurementId": "",
-  "oAuthClientId": "557160494463-5s1ammqml6387824h0ecsk2dd6n7lmv2.apps.googleusercontent.com",
+  "storageBucket": "mathquest-new.firebasestorage.app",
+  "messagingSenderId": "752407989664",
+  "measurementId": "G-477FKVYCPK",
+  "oAuthClientId": "",
   "recaptchaSiteKey": ""
 }
