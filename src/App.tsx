@@ -13,10 +13,10 @@ const GuidanceLogin = lazy(() => import('./pages/guidance').then(module => ({ de
 const GuidanceLayout = lazy(() => import('./pages/guidance').then(module => ({ default: module.GuidanceLayout })));
 const GuidanceDashboard = lazy(() => import('./pages/guidance').then(module => ({ default: module.GuidanceDashboard })));
 const GuidanceSubmissions = lazy(() => import('./pages/guidance').then(module => ({ default: module.GuidanceSubmissions })));
-const GuidanceForms = lazy(() => import('./pages/guidance').then(module => ({ default: module.GuidanceForms })));
-const GuidanceNotifications = lazy(() => import('./pages/guidance').then(module => ({ default: module.GuidanceNotifications })));
-const GuidanceCommunications = lazy(() => import('./pages/guidance').then(module => ({ default: module.GuidanceCommunications })));
-const GuidanceReports = lazy(() => import('./pages/guidance').then(module => ({ default: module.GuidanceReports })));
+
+
+
+
 const GuidanceSettings = lazy(() => import('./pages/guidance').then(module => ({ default: module.GuidanceSettings })));
 
 const StudentLogin = lazy(() => import('./pages/student').then(module => ({ default: module.StudentLogin })));
@@ -52,10 +52,10 @@ export default function App() {
             <Route index element={<Navigate to="/admin/dashboard" replace />} />
             <Route path="dashboard" element={<GuidanceDashboard />} />
             <Route path="submissions" element={<GuidanceSubmissions />} />
-            <Route path="forms" element={<GuidanceForms />} />
-            <Route path="notifications" element={<GuidanceNotifications />} />
-            <Route path="communications" element={<GuidanceCommunications />} />
-            <Route path="reports" element={<GuidanceReports />} />
+            
+            
+            
+            
             <Route path="settings" element={<GuidanceSettings />} />
           </Route>
         </Route>

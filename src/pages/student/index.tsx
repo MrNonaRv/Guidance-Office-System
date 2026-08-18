@@ -428,9 +428,11 @@ export function StudentSubmissionForm() {
       if (!userStr) throw new Error("Not logged in");
       const user = JSON.parse(userStr);
 
-      const submission = {
+      const submission: any = {
         id: Date.now().toString(),
         studentId: user.id,
+        studentName: formData.firstName + ' ' + formData.familyName,
+        scholarshipType: formData.fundingType + ' (' + formData.scholarshipCategory + ')',
         formId: formId || 'default',
         status: 'Pending',
         submittedAt: new Date().toISOString(),
