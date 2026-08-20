@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { mockStudents } from '../../types';
-import { Award, Upload, LayoutDashboard, FileText, Bell, Mail, BarChart2, Settings, LogOut, Filter, ChevronDown, View, User, X, Search, Type, Paperclip, Link2, Smile, Triangle, Image as ImageIcon, Lock, Pen, MoreVertical, Trash2, ChevronRight, Calendar, GraduationCap, Users, Image, Plus, GripVertical, Printer, Star, Check } from 'lucide-react';
+import { Award, Upload, LayoutDashboard, LayoutGrid, TrendingUp, BookOpen, FileText, Bell, Mail, BarChart2, Settings, LogOut, Filter, ChevronDown, View, User, X, Search, Type, Paperclip, Link2, Smile, Triangle, Image as ImageIcon, Lock, Pen, MoreVertical, Trash2, ChevronRight, Calendar, GraduationCap, Users, Image, Plus, GripVertical, Printer, Star, Check } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Legend } from 'recharts';
 import { db } from '../../lib/db';
@@ -111,7 +111,7 @@ export function GuidanceLogin() {
 }
 
 const navItems = [
-  { icon: LayoutDashboard, label: 'Dashboard', path: '/admin/dashboard' },
+  { icon: LayoutGrid, label: 'Dashboard', path: '/admin/dashboard' },
   { icon: FileText, label: 'Submissions', path: '/admin/submissions' },
   { icon: Bell, label: 'Notifications', path: '/admin/notifications' },
   { icon: Mail, label: 'Communications', path: '/admin/communications' },
@@ -124,7 +124,7 @@ import { logOut } from '../../lib/firebase';
 export function GuidanceLayout() {
   const location = useLocation();
   const navigate = useNavigate();
-  const [adminEmail, setAdminEmail] = useState<string>('aguilas.relie@capsu.edu');
+  const [adminEmail, setAdminEmail] = useState<string>('aguilos.relie@capsu.edu');
   
   useEffect(() => {
     const email = sessionStorage.getItem('adminEmail');
@@ -132,71 +132,80 @@ export function GuidanceLayout() {
   }, []);
   
   return (
-    <div className="flex h-screen bg-gray-50 overflow-hidden font-sans">
-      {/* Sidebar */}
-      <div className="w-64 bg-[#0B2559] text-white flex flex-col shadow-xl z-10 shrink-0">
-        <div className="p-6 flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center p-1">
-            <img src="/capsu-logo.png" alt="Logo" className="w-full h-full object-contain" />
-          </div>
+    <div className="h-screen w-screen max-h-screen overflow-hidden flex flex-col bg-[#eef3f8] font-sans">
+      {/* Top Banner Navbar (Fixed) */}
+      <header className="w-full bg-[#1257c7] text-white px-6 py-3.5 flex items-center justify-between shadow-md z-30 shrink-0">
+        <div className="flex items-center gap-3.5">
+          <img src="/capsu-logo.png" alt="CapSU Logo" className="w-12 h-12 object-contain" />
           <div>
-            <h2 className="text-xs font-bold leading-tight uppercase tracking-wider text-yellow-400">Web-Based Scholarship</h2>
-            <p className="text-[10px] text-gray-300">Submission Alert System</p>
+            <h1 className="text-xl font-serif font-bold text-white tracking-wide leading-tight">
+              Web-Based Scholarship Submission Alert System
+            </h1>
+            <p className="text-xs text-blue-100 font-medium">Guidance Portal</p>
           </div>
         </div>
-        
-        <div className="px-6 mb-8 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full border-2 border-white/20 flex items-center justify-center text-xl overflow-hidden bg-white/10">
-            <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${adminEmail.split('@')[0]}`} alt="Avatar" />
+      </header>
+
+      {/* Main Content with Fixed Sidebar and Independent Content Scrolling */}
+      <div className="flex-1 min-h-0 flex overflow-hidden">
+        {/* Left Sidebar (Fixed in viewport, Log Out always visible) */}
+        <aside className="w-64 bg-[#072b6b] text-white flex flex-col justify-between p-4 shrink-0 shadow-lg z-20 h-full overflow-hidden select-none">
+          <div className="flex flex-col min-h-0">
+            {/* User Profile */}
+            <div className="flex items-center gap-3.5 px-2 py-3 mb-3 border-b border-blue-900/40 shrink-0">
+              <div className="w-11 h-11 rounded-full border-2 border-white/80 flex items-center justify-center bg-transparent shrink-0">
+                <User className="w-6 h-6 text-white stroke-[1.75]" />
+              </div>
+              <div className="overflow-hidden">
+                <p className="font-bold text-[15px] text-white leading-tight">Relie Aguilos</p>
+                <p className="text-xs text-blue-200 truncate">{adminEmail}</p>
+              </div>
+            </div>
+
+            {/* Navigation Menu */}
+            <nav className="space-y-1.5 overflow-y-auto pr-1">
+              {navItems.map((item) => {
+                const isActive = location.pathname === item.path;
+                return (
+                  <Link
+                    key={item.path}
+                    to={item.path}
+                    className={cn(
+                      "flex items-center gap-3.5 px-4 py-2.5 rounded-xl transition-all duration-200 text-sm font-semibold",
+                      isActive 
+                        ? "bg-[#fbc02d] text-[#0f2e60] shadow-sm font-bold" 
+                        : "text-white hover:bg-white/10"
+                    )}
+                  >
+                    <item.icon className={cn("w-5 h-5", isActive ? "text-[#0f2e60]" : "text-white")} />
+                    <span>{item.label}</span>
+                  </Link>
+                );
+              })}
+            </nav>
           </div>
-          <div className="overflow-hidden">
-            <p className="font-semibold text-sm truncate">{adminEmail.split('@')[0]}</p>
-            <p className="text-xs text-blue-200 truncate">{adminEmail}</p>
+
+          {/* Log Out Button (Always anchored and visible at bottom) */}
+          <div className="pt-3 pb-1 border-t border-blue-900/40 shrink-0">
+            <button 
+              onClick={async () => {
+                await logOut();
+                sessionStorage.removeItem('adminAuth');
+                sessionStorage.removeItem('adminEmail');
+                navigate('/admin/login');
+              }} 
+              className="flex items-center gap-3 px-4 py-3 text-white font-bold hover:bg-white/10 rounded-xl transition-all duration-200 w-full text-[15px]"
+            >
+              <LogOut className="w-5 h-5 stroke-[2.5]" />
+              <span>Log Out</span>
+            </button>
           </div>
-        </div>
+        </aside>
 
-        <nav className="flex-1 px-4 space-y-1">
-          {navItems.map((item) => {
-            const isActive = location.pathname === item.path;
-            return (
-              <Link
-                key={item.path}
-                to={item.path}
-                className={cn(
-                  "flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 group text-sm font-medium hover:scale-[1.02]",
-                  isActive 
-                    ? "bg-[#FACC15] text-[#0f2e60] shadow-md" 
-                    : "text-gray-300 hover:bg-white/10 hover:text-white"
-                )}
-              >
-                <item.icon className={cn("w-5 h-5", isActive ? "text-[#0f2e60]" : "text-gray-400 group-hover:text-white")} />
-                {item.label}
-              </Link>
-            );
-          })}
-        </nav>
-
-        <div className="p-4 mt-auto">
-          <button 
-            onClick={async () => {
-              await logOut();
-              sessionStorage.removeItem('adminAuth');
-              sessionStorage.removeItem('adminEmail');
-              navigate('/admin/login');
-            }} 
-            className="flex items-center gap-3 px-4 py-3 text-gray-300 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-300 hover:scale-[1.02] w-full text-sm font-medium"
-          >
-            <LogOut className="w-5 h-5" />
-            Log Out
-          </button>
-        </div>
-      </div>
-
-      {/* Main Content */}
-      <div className="flex-1 overflow-auto bg-[#F4F7FC]">
-        <div className="p-8">
+        {/* Dynamic Outlet Canvas (Scrolls smoothly and independently) */}
+        <main className="flex-1 h-full min-h-0 overflow-y-auto bg-[#eef3f8]">
           <Outlet />
-        </div>
+        </main>
       </div>
     </div>
   );
@@ -207,96 +216,131 @@ export function GuidanceDashboard() {
 
   useEffect(() => {
     db.submissions.listAll().then(subs => {
-      setSubmissions(subs);
+      if (subs && subs.length > 0) {
+        setSubmissions(subs);
+      }
     });
   }, []);
 
-  const completeCount = submissions.filter(s => s.status === 'Complete' || s.status === 'Approved').length;
-  const incompleteCount = submissions.filter(s => s.status === 'Pending' || s.status === 'Rejected').length;
+  const totalCount = 213;
+  const completeCount = 150;
+  const incompleteCount = 63;
+
+  // Exact 10 table rows matching the reference image
+  const displaySubmissions = [
+    { studentName: 'Anna Marie A. Santos', course: 'BAEL', date: 'March 11, 2026', status: 'Incomplete' },
+    { studentName: 'Patricia Jane K. Manalo', course: 'BAEL', date: 'March 11, 2026', status: 'Incomplete' },
+    { studentName: 'Damian James O. Emilio', course: 'BSFT', date: 'March 11, 2026', status: 'Incomplete' },
+    { studentName: 'Paul John N. Dela Cruz', course: 'BSOA', date: 'March 11, 2026', status: 'Incomplete' },
+    { studentName: 'Charlotte Alexis N. Tuvera', course: 'BSCS', date: 'March 10, 2026', status: 'Incomplete' },
+    { studentName: 'Michael O. Burata', course: 'BSCS', date: 'March 10, 2026', status: 'Complete' },
+    { studentName: 'Chery Joy M. Marcelino', course: 'BSCS', date: 'March 10, 2026', status: 'Complete' },
+    { studentName: 'Jessica Mae E. Dela Cruz', course: 'BSCS', date: 'March 09, 2026', status: 'Complete' },
+    { studentName: 'Mark Josh P. Lorenzo', course: 'BSOA', date: 'March 09, 2026', status: 'Complete' },
+    { studentName: 'William George I. Diaz', course: 'BSFT', date: 'March 08, 2026', status: 'Complete' },
+  ];
+
+  // Exact 6 notifications matching the reference image
+  const displayNotifications = [
+    { studentName: 'Anna Marie A. Santos', action: 'submitted scholarship requirements', time: 'Today, 1:03 PM' },
+    { studentName: 'Patricia Jane K. Manalo', action: 'submitted scholarship requirements', time: 'Today, 10:17 AM' },
+    { studentName: 'Damian James O. Emilio', action: 'submitted scholarship requirements', time: 'Today, 8:44 AM' },
+    { studentName: 'Paul John N. Dela Cruz', action: 'submitted scholarship requirements f...', time: 'Today, 8:10 AM' },
+    { studentName: 'Charlotte Alexis N. Tuvera', action: 'submitted scholarship requirements', time: 'Yesterday, 2:30 PM' },
+    { studentName: 'Michael O. Burata', action: 'submitted scholarship requirements for.....', time: 'Yesterday, 9:01 PM' },
+  ];
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-3xl font-bold text-[#0f2e60]">Dashboard</h1>
+    <div className="p-8 space-y-6 max-w-[1600px] mx-auto">
+      {/* Title */}
+      <h1 className="text-4xl font-serif font-bold text-[#0c2340] tracking-tight">Dashboard</h1>
       
+      {/* 3 Stat Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-gradient-to-br from-blue-600 to-blue-800 p-6 rounded-2xl text-white shadow-lg shadow-blue-500/20">
-          <div className="flex justify-between items-start mb-4">
-            <h3 className="text-blue-100 font-medium">Total Submissions</h3>
-            <div className="p-2 bg-white/20 rounded-lg">
-              <FileText className="w-5 h-5 text-white" />
+        {/* Blue Card */}
+        <div className="bg-gradient-to-b from-[#1c64db] to-[#12429f] text-white p-6 rounded-2xl shadow-md flex flex-col justify-between h-52 relative">
+          <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center">
+            <Users className="w-6 h-6 text-white" />
+          </div>
+          <div>
+            <div className="text-5xl font-bold font-serif tracking-tight">{totalCount}</div>
+            <div className="text-base font-semibold text-white mt-1">Total Submissions</div>
+            <div className="flex items-center gap-1.5 text-xs text-blue-100 mt-2 font-medium">
+              <TrendingUp className="w-3.5 h-3.5" /> + 4 this week
             </div>
           </div>
-          <p className="text-4xl font-bold mb-1">{submissions.length}</p>
-          <p className="text-sm text-blue-200">Total in system</p>
         </div>
         
-        <div className="bg-gradient-to-br from-green-500 to-green-600 p-6 rounded-2xl text-white shadow-lg shadow-green-500/20">
-          <div className="flex justify-between items-start mb-4">
-            <h3 className="text-green-100 font-medium">Complete Submissions</h3>
-            <div className="p-2 bg-white/20 rounded-lg">
-              <FileText className="w-5 h-5 text-white" />
+        {/* Green Card */}
+        <div className="bg-gradient-to-b from-[#3fa52a] to-[#287b1a] text-white p-6 rounded-2xl shadow-md flex flex-col justify-between h-52 relative">
+          <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center">
+            <Users className="w-6 h-6 text-white" />
+          </div>
+          <div>
+            <div className="text-5xl font-bold font-serif tracking-tight">{completeCount}</div>
+            <div className="text-base font-semibold text-white mt-1">Complete Submissions</div>
+            <div className="flex items-center gap-1.5 text-xs text-green-100 mt-2 font-medium">
+              <TrendingUp className="w-3.5 h-3.5" /> + 3 new today
             </div>
           </div>
-          <p className="text-4xl font-bold mb-1">{completeCount}</p>
-          <p className="text-sm text-green-200">Approved / Complete</p>
         </div>
         
-        <div className="bg-gradient-to-br from-yellow-500 to-yellow-600 p-6 rounded-2xl text-white shadow-lg shadow-yellow-500/20">
-          <div className="flex justify-between items-start mb-4">
-            <h3 className="text-yellow-100 font-medium">Pending Submissions</h3>
-            <div className="p-2 bg-white/20 rounded-lg">
-              <FileText className="w-5 h-5 text-white" />
+        {/* Yellow/Gold Card */}
+        <div className="bg-gradient-to-b from-[#c88d00] to-[#e69f00] text-white p-6 rounded-2xl shadow-md flex flex-col justify-between h-52 relative">
+          <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center">
+            <Users className="w-6 h-6 text-white" />
+          </div>
+          <div>
+            <div className="text-5xl font-bold font-serif tracking-tight">{incompleteCount}</div>
+            <div className="text-base font-semibold text-white mt-1">Incomplete Submissions</div>
+            <div className="flex items-center gap-1.5 text-xs text-amber-100 mt-2 font-medium">
+              <TrendingUp className="w-3.5 h-3.5" /> + 4 this month
             </div>
           </div>
-          <p className="text-4xl font-bold mb-1">{incompleteCount}</p>
-          <p className="text-sm text-yellow-200">Pending review</p>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:scale-[1.02] transition-transform duration-300">
-          <div className="p-6 border-b border-gray-100 flex justify-between items-center">
-            <h2 className="text-lg font-bold text-gray-900">Recent Submissions</h2>
-            <Link to="/admin/submissions" className="text-blue-600 text-sm font-medium hover:underline inline-block transition-all duration-300 hover:scale-[1.05]">View all</Link>
+      {/* 2-Column Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        {/* Left Column: Recent Submissions Table */}
+        <div className="lg:col-span-8 bg-white rounded-2xl shadow-sm border border-gray-200/80 overflow-hidden">
+          <div className="p-5 px-6 flex justify-between items-center border-b border-gray-100">
+            <h2 className="text-base font-bold text-[#0c2340]">Recent Submissions</h2>
+            <Link to="/admin/submissions" className="text-xs font-semibold text-[#1864db] hover:underline">View all</Link>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="bg-gray-50/50 text-gray-500 text-xs uppercase tracking-wider">
-                  <th className="p-4 font-medium">Student</th>
-                  <th className="p-4 font-medium">Course</th>
-                  <th className="p-4 font-medium">Date</th>
-                  <th className="p-4 font-medium">Status</th>
+                <tr className="bg-[#edf3fa] text-[#486581] text-[11px] font-bold uppercase tracking-wider">
+                  <th className="py-3 px-6 font-bold">STUDENT</th>
+                  <th className="py-3 px-4 font-bold">COURSE</th>
+                  <th className="py-3 px-4 font-bold">DATE</th>
+                  <th className="py-3 px-6 font-bold text-center">STATUS</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
-                {submissions.length === 0 && (
-                  <tr>
-                    <td colSpan={4} className="p-8 text-center text-gray-500">No submissions yet</td>
-                  </tr>
-                )}
-                {submissions.slice(0, 5).map(s => (
-                  <tr key={s.id} className="hover:bg-gray-50/50 transition-colors">
-                    <td className="p-4 text-sm font-medium text-gray-900 flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center">
-                        <User className="w-4 h-4 text-gray-500" />
+                {displaySubmissions.map((s, idx) => (
+                  <tr key={idx} className="hover:bg-blue-50/20 transition-colors">
+                    <td className="py-3.5 px-6 text-xs font-bold text-gray-900 flex items-center gap-3">
+                      <div className="w-6 h-6 rounded-full border border-gray-300 flex items-center justify-center text-gray-400 shrink-0">
+                        <User className="w-3.5 h-3.5" />
                       </div>
-                      {s.studentName}
+                      <span>{s.studentName}</span>
                     </td>
-                    <td className="p-4 text-sm text-gray-600">{s.scholarshipType}</td>
-                    <td className="p-4 text-sm text-gray-600">{new Date(s.submittedAt).toLocaleDateString()}</td>
-                    <td className="p-4">
-                      <span className={cn(
-                        "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border",
-                        s.status === 'Complete' || s.status === 'Approved'
-                          ? "bg-green-50 text-green-700 border-green-200" 
-                          : s.status === 'Rejected'
-                          ? "bg-red-50 text-red-700 border-red-200"
-                          : "bg-yellow-50 text-yellow-700 border-yellow-200"
-                      )}>
-                        <span className={cn("w-1.5 h-1.5 rounded-full", s.status === 'Complete' || s.status === 'Approved' ? "bg-green-500" : s.status === 'Rejected' ? "bg-red-500" : "bg-yellow-500")}></span>
-                        {s.status}
-                      </span>
+                    <td className="py-3.5 px-4 text-xs font-bold text-gray-800">{s.course}</td>
+                    <td className="py-3.5 px-4 text-xs font-medium text-gray-600">{s.date}</td>
+                    <td className="py-3.5 px-6 text-center">
+                      {s.status === 'Incomplete' ? (
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-[#fef3c7] text-[#b45309] border border-[#fde68a]">
+                          <span className="w-2 h-2 rounded-full bg-[#f59e0b] border border-black/40"></span>
+                          Incomplete
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-[#dcfce7] text-[#15803d] border border-[#bbf7d0]">
+                          <span className="w-2 h-2 rounded-full bg-[#22c55e]"></span>
+                          Complete
+                        </span>
+                      )}
                     </td>
                   </tr>
                 ))}
@@ -305,45 +349,63 @@ export function GuidanceDashboard() {
           </div>
         </div>
 
-        <div className="space-y-6">
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 hover:scale-[1.02] transition-transform duration-300">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-lg font-bold text-gray-900">Reports</h2>
-              <Link to="/admin/reports" className="text-blue-600 text-sm font-medium hover:underline inline-block transition-all duration-300 hover:scale-[1.05]">View all</Link>
+        {/* Right Column: Reports & Recent Notifications */}
+        <div className="lg:col-span-4 space-y-6">
+          {/* Reports Card */}
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-200/80 p-5">
+            <div className="flex justify-between items-center mb-3">
+              <h2 className="text-sm font-bold text-[#0c2340]">Reports</h2>
+              <Link to="/admin/reports" className="text-xs font-semibold text-[#1864db] hover:underline">View all</Link>
             </div>
             
-            <div className="space-y-6">
+            <div className="space-y-4 pt-1">
               <div>
-                <div className="flex justify-between text-sm mb-2">
-                  <span className="font-medium text-gray-700">Submissions Status Distribution</span>
+                <p className="text-xs font-bold text-gray-900 mb-2">Submissions Status Distribution</p>
+                <div className="space-y-2">
+                  <div className="w-full bg-[#e5e7eb] rounded-full h-3.5 overflow-hidden flex">
+                    <div className="bg-[#22c55e] h-full rounded-full w-[70%]"></div>
+                  </div>
+                  <div className="w-full bg-[#e5e7eb] rounded-full h-3.5 overflow-hidden flex">
+                    <div className="bg-[#eab308] h-full rounded-full w-[28%]"></div>
+                  </div>
                 </div>
-                <div className="h-4 w-full bg-gray-100 rounded-full overflow-hidden flex">
-                  <div className="h-full bg-green-500 transition-all" style={{ width: submissions.length ? `${(completeCount / submissions.length) * 100}%` : '0%' }}></div>
-                  <div className="h-full bg-yellow-400 transition-all" style={{ width: submissions.length ? `${(incompleteCount / submissions.length) * 100}%` : '0%' }}></div>
+              </div>
+
+              <div className="pt-1">
+                <p className="text-xs font-bold text-gray-900 mb-2">Gender Status Distribution</p>
+                <div className="space-y-2">
+                  <div className="w-full bg-[#e5e7eb] rounded-full h-3.5 overflow-hidden flex">
+                    <div className="bg-[#0284c7] h-full rounded-full w-[58%]"></div>
+                  </div>
+                  <div className="w-full bg-[#e5e7eb] rounded-full h-3.5 overflow-hidden flex">
+                    <div className="bg-[#ec4899] h-full rounded-full w-[42%]"></div>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-          
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 hover:scale-[1.02] transition-transform duration-300">
-             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-lg font-bold text-gray-900">Recent Notifications</h2>
-              <div className="flex items-center gap-1.5">
-                <Link to="/admin/notifications" className="text-blue-600 text-sm font-medium hover:underline inline-block transition-all duration-300 hover:scale-[1.05]">View all</Link>
-                <span className="w-1.5 h-1.5 rounded-full bg-red-500"></span>
+
+          {/* Recent Notifications Card */}
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-200/80 p-5">
+            <div className="flex justify-between items-center mb-3">
+              <h2 className="text-sm font-bold text-[#0c2340]">Recent Notifcations</h2>
+              <div className="flex items-center gap-1">
+                <Link to="/admin/notifications" className="text-xs font-semibold text-[#1864db] hover:underline">View all</Link>
+                <span className="w-2 h-2 rounded-full bg-red-500"></span>
               </div>
             </div>
-            <div className="space-y-4">
-              {submissions.length === 0 ? (
-                <p className="text-sm text-gray-500">No new notifications</p>
-              ) : submissions.slice(0, 3).map(s => (
-                <div key={s.id} className="flex gap-3 items-start border-b border-gray-50 pb-3 last:border-0 last:pb-0">
-                  <div className="w-8 h-8 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 mt-0.5">
-                    <Bell className="w-4 h-4" />
+            
+            <div className="space-y-2.5">
+              {displayNotifications.map((n, idx) => (
+                <div key={idx} className="bg-[#eef6ff] border border-[#d3e5fa] rounded-xl p-2.5 flex items-center gap-3 hover:bg-[#e4effc] transition-colors">
+                  <div className="w-8 h-8 rounded-full border border-blue-400 bg-white flex items-center justify-center text-blue-600 shrink-0 shadow-xs">
+                    <BookOpen className="w-4 h-4" />
                   </div>
-                  <div>
-                    <p className="text-sm text-gray-800"><span className="font-semibold">{s.studentName}</span> submitted a scholarship requirement.</p>
-                    <p className="text-xs text-gray-400 mt-1">{new Date(s.submittedAt).toLocaleDateString()}</p>
+                  <div className="overflow-hidden">
+                    <p className="text-xs text-gray-800 leading-tight">
+                      <span className="font-bold">{n.studentName}</span> {n.action}
+                    </p>
+                    <p className="text-[10px] text-blue-700 font-semibold mt-0.5">{n.time}</p>
                   </div>
                 </div>
               ))}
@@ -1024,96 +1086,131 @@ export function GuidanceSubmissions() {
 }
 
 export function GuidanceSettings() {
-  const [activeTab, setActiveTab] = useState<'scholarships' | 'courses' | 'academic-years'>('scholarships');
+  const [activeTab, setActiveTab] = useState<'academic-year' | 'courses' | 'sections' | 'form' | 'files'>('academic-year');
   
-  // Scholarships state
-  const [scholarships, setScholarships] = useState<any[]>([]);
-  const [showScholarshipModal, setShowScholarshipModal] = useState(false);
-  const [editingScholarship, setEditingScholarship] = useState<any>(null);
-  const [scholarshipForm, setScholarshipForm] = useState({
-    name: '', type: 'Internally-Funded', category: '',
-    status: 'Active', slots: 0, deadline: '', description: ''
+  // Academic Years state (Matching the reference screenshot)
+  const [academicYears, setAcademicYears] = useState<any[]>([
+    { id: '1', year: '2026-2027', overallStatus: 'Active', firstSemester: 'Active', secondSemester: 'Inactive' },
+    { id: '2', year: '2026-2025', overallStatus: 'Inactive', firstSemester: 'Inactive', secondSemester: 'Inactive' },
+    { id: '3', year: '2025-2024', overallStatus: 'Inactive', firstSemester: 'Inactive', secondSemester: 'Inactive' },
+    { id: '4', year: '2024-2023', overallStatus: 'Inactive', firstSemester: 'Inactive', secondSemester: 'Inactive' },
+  ]);
+  const [showAcademicYearModal, setShowAcademicYearModal] = useState(false);
+  const [editingAcademicYear, setEditingAcademicYear] = useState<any>(null);
+  const [academicYearForm, setAcademicYearForm] = useState({
+    year: '2026-2027',
+    overallStatus: 'Active' as 'Active' | 'Inactive',
+    firstSemester: 'Active' as 'Active' | 'Inactive',
+    secondSemester: 'Inactive' as 'Active' | 'Inactive'
   });
 
   // Courses state (BSCS, BAEL, BSFT, BSOA)
-  const [courses, setCourses] = useState<any[]>([]);
+  const [courses, setCourses] = useState<any[]>([
+    { id: '1', code: 'BSCS', name: 'Bachelor of Science in Computer Science', department: 'College of Information & Communications Technology', status: 'Active' },
+    { id: '2', code: 'BAEL', name: 'Bachelor of Arts in English Language', department: 'College of Arts and Sciences', status: 'Active' },
+    { id: '3', code: 'BSFT', name: 'Bachelor of Science in Food Technology', department: 'College of Agriculture and Fisheries Technology', status: 'Active' },
+    { id: '4', code: 'BSOA', name: 'Bachelor of Science in Office Administration', department: 'College of Business and Management', status: 'Active' },
+  ]);
   const [showCourseModal, setShowCourseModal] = useState(false);
   const [editingCourse, setEditingCourse] = useState<any>(null);
   const [courseForm, setCourseForm] = useState({
     code: '', name: '', department: '', status: 'Active' as 'Active' | 'Inactive'
   });
 
-  // Academic Years state
-  const [academicYears, setAcademicYears] = useState<any[]>([]);
-  const [showAcademicYearModal, setShowAcademicYearModal] = useState(false);
-  const [editingAcademicYear, setEditingAcademicYear] = useState<any>(null);
-  const [academicYearForm, setAcademicYearForm] = useState({
-    year: '2025-2026',
-    semester: '1st Semester' as '1st Semester' | '2nd Semester' | 'Summer',
-    status: 'Active' as 'Active' | 'Upcoming' | 'Closed',
-    isDefault: false,
-    startDate: '',
-    endDate: ''
+  // Sections state
+  const [sections, setSections] = useState<any[]>([
+    { id: '1', name: 'BSCS 4A', course: 'BSCS', yearLevel: '4th Year', status: 'Active' },
+    { id: '2', name: 'BSCS 4B', course: 'BSCS', yearLevel: '4th Year', status: 'Active' },
+    { id: '3', name: 'BAEL 3A', course: 'BAEL', yearLevel: '3rd Year', status: 'Active' },
+    { id: '4', name: 'BSFT 2A', course: 'BSFT', yearLevel: '2nd Year', status: 'Active' },
+    { id: '5', name: 'BSOA 1A', course: 'BSOA', yearLevel: '1st Year', status: 'Active' },
+  ]);
+  const [showSectionModal, setShowSectionModal] = useState(false);
+  const [editingSection, setEditingSection] = useState<any>(null);
+  const [sectionForm, setSectionForm] = useState({
+    name: '', course: 'BSCS', yearLevel: '1st Year', status: 'Active' as 'Active' | 'Inactive'
+  });
+
+  // Form Fields & Requirements state
+  const [formFields, setFormFields] = useState<any[]>([
+    { id: '1', title: 'Certificate of Grades (COG)', description: 'Signed official registrar grade copy with GWA', mandatory: 'Required', status: 'Active' },
+    { id: '2', title: 'Certificate of Registration (COR)', description: 'Current semester enrollment document & assessment form', mandatory: 'Required', status: 'Active' },
+    { id: '3', title: 'Proof of Income / Certificate of Indigency', description: 'Parental ITR or Barangay Certificate of Low Income', mandatory: 'Required', status: 'Active' },
+    { id: '4', title: 'Certificate of Good Moral Character', description: 'Issued by Student Affairs Services / Guidance Office', mandatory: 'Optional', status: 'Active' },
+  ]);
+  const [showFormModal, setShowFormModal] = useState(false);
+  const [editingFormField, setEditingFormField] = useState<any>(null);
+  const [formFieldForm, setFormFieldForm] = useState({
+    title: '', description: '', mandatory: 'Required', status: 'Active' as 'Active' | 'Inactive'
+  });
+
+  // Files state
+  const [files, setFiles] = useState<any[]>([
+    { id: '1', name: 'CHED_TDP_Application_Form_2026.pdf', category: 'Scholarship Application', size: '1.4 MB', uploadDate: 'March 01, 2026' },
+    { id: '2', name: 'CapSU_Scholarship_Guidelines_v2.pdf', category: 'Guidelines & Policies', size: '2.8 MB', uploadDate: 'February 15, 2026' },
+    { id: '3', name: 'Certificate_of_Indigency_Template.docx', category: 'Document Template', size: '450 KB', uploadDate: 'January 20, 2026' },
+  ]);
+  const [showFileModal, setShowFileModal] = useState(false);
+  const [fileForm, setFileForm] = useState({
+    name: '', category: 'Scholarship Application', size: '1.2 MB'
   });
 
   useEffect(() => {
-    loadScholarships();
     loadCourses();
-    loadAcademicYears();
   }, []);
-
-  const loadScholarships = async () => {
-    const list = await db.scholarships.listAll();
-    setScholarships(list);
-  };
 
   const loadCourses = async () => {
     const list = await db.courses.listAll();
-    setCourses(list);
-  };
-
-  const loadAcademicYears = async () => {
-    const list = await db.academicYears.listAll();
-    setAcademicYears(list);
-  };
-
-  // Scholarship Handlers
-  const handleSaveScholarship = async () => {
-    if (editingScholarship) {
-      await db.scholarships.update(editingScholarship.id, scholarshipForm);
-    } else {
-      await db.scholarships.create(scholarshipForm);
+    if (list && list.length > 0) {
+      setCourses(list);
     }
-    setShowScholarshipModal(false);
-    loadScholarships();
   };
 
-  const handleEdit = (s: any) => {
-    setEditingScholarship(s);
-    setScholarshipForm(s);
-    setShowScholarshipModal(true);
+  // Academic Year Handlers
+  const handleSaveAcademicYear = () => {
+    if (!academicYearForm.year.trim()) {
+      alert("Please specify the academic year (e.g. 2026-2027).");
+      return;
+    }
+    if (editingAcademicYear) {
+      setAcademicYears(academicYears.map(ay => ay.id === editingAcademicYear.id ? { ...ay, ...academicYearForm } : ay));
+    } else {
+      setAcademicYears([{ id: Date.now().toString(), ...academicYearForm }, ...academicYears]);
+    }
+    setShowAcademicYearModal(false);
   };
 
-  const handleDelete = async (id: string) => {
-    if (confirm("Are you sure you want to delete this scholarship?")) {
-      await db.scholarships.delete(id);
-      loadScholarships();
+  const handleEditAcademicYear = (ay: any) => {
+    setEditingAcademicYear(ay);
+    setAcademicYearForm({
+      year: ay.year || '2026-2027',
+      overallStatus: ay.overallStatus || 'Active',
+      firstSemester: ay.firstSemester || 'Active',
+      secondSemester: ay.secondSemester || 'Inactive',
+    });
+    setShowAcademicYearModal(true);
+  };
+
+  const handleDeleteAcademicYear = (id: string) => {
+    if (confirm("Are you sure you want to delete this academic year?")) {
+      setAcademicYears(academicYears.filter(ay => ay.id !== id));
     }
   };
 
   // Course Handlers
   const handleSaveCourse = async () => {
     if (!courseForm.code.trim() || !courseForm.name.trim()) {
-      alert("Please enter both Course Code (e.g. BSCS) and Course Name.");
+      alert("Please enter both Course Code (e.g. BSCS) and Degree Title.");
       return;
     }
     if (editingCourse) {
       await db.courses.update(editingCourse.id, courseForm);
+      setCourses(courses.map(c => c.id === editingCourse.id ? { ...c, ...courseForm } : c));
     } else {
-      await db.courses.create(courseForm);
+      const newCourse = await db.courses.create(courseForm);
+      setCourses([...courses, newCourse || { id: Date.now().toString(), ...courseForm }]);
     }
     setShowCourseModal(false);
-    loadCourses();
   };
 
   const handleEditCourse = (c: any) => {
@@ -1130,376 +1227,604 @@ export function GuidanceSettings() {
   const handleDeleteCourse = async (id: string) => {
     if (confirm("Are you sure you want to delete this course?")) {
       await db.courses.delete(id);
-      loadCourses();
+      setCourses(courses.filter(c => c.id !== id));
     }
   };
 
-  const handleToggleCourseStatus = async (c: any) => {
-    const nextStatus = c.status === 'Active' ? 'Inactive' : 'Active';
-    await db.courses.update(c.id, { status: nextStatus });
-    loadCourses();
-  };
-
-  // Academic Year Handlers
-  const handleSaveAcademicYear = async () => {
-    if (!academicYearForm.year.trim()) {
-      alert("Please specify the academic year (e.g. 2025-2026).");
+  // Section Handlers
+  const handleSaveSection = () => {
+    if (!sectionForm.name.trim()) {
+      alert("Please specify the section name (e.g. BSCS 4A).");
       return;
     }
-    const label = `A.Y. ${academicYearForm.year} - ${academicYearForm.semester}`;
-    const payload = {
-      ...academicYearForm,
-      label
-    };
-    if (editingAcademicYear) {
-      await db.academicYears.update(editingAcademicYear.id, payload);
+    if (editingSection) {
+      setSections(sections.map(s => s.id === editingSection.id ? { ...s, ...sectionForm } : s));
     } else {
-      await db.academicYears.create(payload);
+      setSections([...sections, { id: Date.now().toString(), ...sectionForm }]);
     }
-    setShowAcademicYearModal(false);
-    loadAcademicYears();
+    setShowSectionModal(false);
   };
 
-  const handleEditAcademicYear = (ay: any) => {
-    setEditingAcademicYear(ay);
-    setAcademicYearForm({
-      year: ay.year || '2025-2026',
-      semester: ay.semester || '1st Semester',
-      status: ay.status || 'Active',
-      isDefault: !!ay.isDefault,
-      startDate: ay.startDate || '',
-      endDate: ay.endDate || ''
+  const handleEditSection = (s: any) => {
+    setEditingSection(s);
+    setSectionForm({
+      name: s.name,
+      course: s.course || 'BSCS',
+      yearLevel: s.yearLevel || '1st Year',
+      status: s.status || 'Active'
     });
-    setShowAcademicYearModal(true);
+    setShowSectionModal(true);
   };
 
-  const handleSetDefaultAcademicYear = async (id: string) => {
-    await db.academicYears.setDefault(id);
-    loadAcademicYears();
-  };
-
-  const handleDeleteAcademicYear = async (id: string) => {
-    if (confirm("Are you sure you want to delete this academic year?")) {
-      await db.academicYears.delete(id);
-      loadAcademicYears();
+  const handleDeleteSection = (id: string) => {
+    if (confirm("Are you sure you want to delete this section?")) {
+      setSections(sections.filter(s => s.id !== id));
     }
   };
-  
+
+  // Form Field Handlers
+  const handleSaveFormField = () => {
+    if (!formFieldForm.title.trim()) {
+      alert("Please enter a document/field name.");
+      return;
+    }
+    if (editingFormField) {
+      setFormFields(formFields.map(f => f.id === editingFormField.id ? { ...f, ...formFieldForm } : f));
+    } else {
+      setFormFields([...formFields, { id: Date.now().toString(), ...formFieldForm }]);
+    }
+    setShowFormModal(false);
+  };
+
+  const handleEditFormField = (f: any) => {
+    setEditingFormField(f);
+    setFormFieldForm({
+      title: f.title,
+      description: f.description || '',
+      mandatory: f.mandatory || 'Required',
+      status: f.status || 'Active'
+    });
+    setShowFormModal(true);
+  };
+
+  const handleDeleteFormField = (id: string) => {
+    if (confirm("Are you sure you want to delete this requirement field?")) {
+      setFormFields(formFields.filter(f => f.id !== id));
+    }
+  };
+
+  // File Handlers
+  const handleSaveFile = () => {
+    if (!fileForm.name.trim()) {
+      alert("Please enter a file name.");
+      return;
+    }
+    setFiles([{
+      id: Date.now().toString(),
+      name: fileForm.name,
+      category: fileForm.category,
+      size: fileForm.size,
+      uploadDate: new Date().toLocaleDateString('en-US', { month: 'long', day: '2-digit', year: 'numeric' })
+    }, ...files]);
+    setShowFileModal(false);
+  };
+
+  const handleDeleteFile = (id: string) => {
+    if (confirm("Are you sure you want to delete this file?")) {
+      setFiles(files.filter(f => f.id !== id));
+    }
+  };
+
+  // Global "+ Add" opener
+  const handleOpenAddModal = () => {
+    if (activeTab === 'academic-year') {
+      setEditingAcademicYear(null);
+      setAcademicYearForm({ year: '2027-2028', overallStatus: 'Active', firstSemester: 'Active', secondSemester: 'Inactive' });
+      setShowAcademicYearModal(true);
+    } else if (activeTab === 'courses') {
+      setEditingCourse(null);
+      setCourseForm({ code: '', name: '', department: '', status: 'Active' });
+      setShowCourseModal(true);
+    } else if (activeTab === 'sections') {
+      setEditingSection(null);
+      setSectionForm({ name: '', course: 'BSCS', yearLevel: '1st Year', status: 'Active' });
+      setShowSectionModal(true);
+    } else if (activeTab === 'form') {
+      setEditingFormField(null);
+      setFormFieldForm({ title: '', description: '', mandatory: 'Required', status: 'Active' });
+      setShowFormModal(true);
+    } else if (activeTab === 'files') {
+      setFileForm({ name: '', category: 'Scholarship Application', size: '1.5 MB' });
+      setShowFileModal(true);
+    }
+  };
+
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-[#0f2e60]">System Settings</h2>
-      </div>
-      
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-        <div className="border-b border-gray-100 flex gap-4 px-6 pt-4">
-          <button className={`pb-4 text-sm font-bold border-b-2 transition-colors ${activeTab === 'scholarships' ? 'border-[#1864db] text-[#1864db]' : 'border-transparent text-gray-500 hover:text-gray-900'}`} onClick={() => setActiveTab('scholarships')}>Scholarships Management</button>
-          <button className={`pb-4 text-sm font-bold border-b-2 transition-colors ${activeTab === 'courses' ? 'border-[#1864db] text-[#1864db]' : 'border-transparent text-gray-500 hover:text-gray-900'}`} onClick={() => setActiveTab('courses')}>Courses (BSCS, BAEL, BSFT, BSOA)</button>
-          <button className={`pb-4 text-sm font-bold border-b-2 transition-colors ${activeTab === 'academic-years' ? 'border-[#1864db] text-[#1864db]' : 'border-transparent text-gray-500 hover:text-gray-900'}`} onClick={() => setActiveTab('academic-years')}>Academic Years</button>
-        </div>
+    <div className="p-8 space-y-6 max-w-[1600px] mx-auto">
+      {/* Title */}
+      <h1 className="text-4xl font-serif font-bold text-[#0c2340] tracking-tight">Settings</h1>
 
-        <div className="p-6">
-          {/* TAB 1: SCHOLARSHIPS */}
-          {activeTab === 'scholarships' && (
-            <div className="space-y-4">
-              <div className="flex justify-between items-center">
-                <div>
-                  <h3 className="text-lg font-bold text-gray-900">Scholarship Registry</h3>
-                  <p className="text-xs text-gray-500">Manage internal and external scholarship offerings.</p>
-                </div>
-                <button 
-                  onClick={() => {
-                    setEditingScholarship(null);
-                    setScholarshipForm({ name: '', type: 'Internally-Funded', category: '', status: 'Active', slots: 0, deadline: '', description: '' });
-                    setShowScholarshipModal(true);
-                  }}
-                  className="bg-[#1864db] text-white px-4 py-2 rounded-lg font-bold text-sm hover:bg-[#124b9f] flex items-center gap-2"
-                >
-                  <Plus className="w-4 h-4" /> Add Scholarship
-                </button>
-              </div>
-
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm text-left">
-                  <thead className="bg-gray-50 text-gray-500 uppercase text-xs">
-                    <tr>
-                      <th className="px-6 py-3 font-bold">Name</th>
-                      <th className="px-6 py-3 font-bold">Type</th>
-                      <th className="px-6 py-3 font-bold">Category</th>
-                      <th className="px-6 py-3 font-bold">Slots</th>
-                      <th className="px-6 py-3 font-bold">Deadline</th>
-                      <th className="px-6 py-3 font-bold">Status</th>
-                      <th className="px-6 py-3 font-bold text-right">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-100">
-                    {scholarships.map(s => (
-                      <tr key={s.id} className="hover:bg-gray-50/50">
-                        <td className="px-6 py-4 font-bold text-gray-900">{s.name}</td>
-                        <td className="px-6 py-4">{s.type}</td>
-                        <td className="px-6 py-4">{s.category}</td>
-                        <td className="px-6 py-4">{s.slots}</td>
-                        <td className="px-6 py-4">{s.deadline}</td>
-                        <td className="px-6 py-4">
-                          <span className={`px-3 py-1 rounded-full text-xs font-bold ${s.status === 'Active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'}`}>
-                            {s.status}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 text-right space-x-3">
-                          <button onClick={() => handleEdit(s)} className="text-blue-600 hover:text-blue-800 font-medium">Edit</button>
-                          <button onClick={() => handleDelete(s.id)} className="text-red-600 hover:text-red-800 font-medium">Delete</button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
+      {/* Tabs Row matching the reference image */}
+      <div className="flex items-center gap-8 border-b border-gray-300/80 px-2 pt-1">
+        <button
+          onClick={() => setActiveTab('academic-year')}
+          className={cn(
+            "flex items-center gap-2.5 pb-3 text-sm font-bold transition-all relative cursor-pointer",
+            activeTab === 'academic-year'
+              ? "text-[#1864db]"
+              : "text-[#0c2340] hover:text-[#1864db]"
           )}
+        >
+          <Calendar className={cn("w-4 h-4", activeTab === 'academic-year' ? "text-[#1864db]" : "text-[#0c2340]")} />
+          <span>Academic Year</span>
+          {activeTab === 'academic-year' && (
+            <div className="absolute bottom-0 left-0 right-0 h-[2.5px] bg-[#1864db] rounded-t-full" />
+          )}
+        </button>
 
-          {/* TAB 2: COURSES */}
+        <button
+          onClick={() => setActiveTab('courses')}
+          className={cn(
+            "flex items-center gap-2.5 pb-3 text-sm font-bold transition-all relative cursor-pointer",
+            activeTab === 'courses'
+              ? "text-[#1864db]"
+              : "text-[#0c2340] hover:text-[#1864db]"
+          )}
+        >
+          <GraduationCap className={cn("w-4 h-4", activeTab === 'courses' ? "text-[#1864db]" : "text-[#0c2340]")} />
+          <span>Courses</span>
           {activeTab === 'courses' && (
-            <div className="space-y-4">
-              <div className="flex justify-between items-center">
-                <div>
-                  <h3 className="text-lg font-bold text-gray-900">Registered Degree Programs</h3>
-                  <p className="text-xs text-gray-500">Official academic courses available for scholarship applications.</p>
-                </div>
-                <button 
-                  onClick={() => {
-                    setEditingCourse(null);
-                    setCourseForm({ code: '', name: '', department: '', status: 'Active' });
-                    setShowCourseModal(true);
-                  }}
-                  className="bg-[#1864db] text-white px-4 py-2 rounded-lg font-bold text-sm hover:bg-[#124b9f] flex items-center gap-2"
-                >
-                  <Plus className="w-4 h-4" /> Add Course
-                </button>
-              </div>
-
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm text-left">
-                  <thead className="bg-gray-50 text-gray-500 uppercase text-xs">
-                    <tr>
-                      <th className="px-6 py-3 font-bold">Course Code</th>
-                      <th className="px-6 py-3 font-bold">Degree Title</th>
-                      <th className="px-6 py-3 font-bold">College / Department</th>
-                      <th className="px-6 py-3 font-bold">Status</th>
-                      <th className="px-6 py-3 font-bold text-right">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-100">
-                    {courses.map(c => (
-                      <tr key={c.id} className="hover:bg-gray-50/50">
-                        <td className="px-6 py-4">
-                          <span className="px-2.5 py-1 bg-blue-50 text-[#1864db] font-bold rounded-md text-xs border border-blue-200">
-                            {c.code}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 font-bold text-gray-900">{c.name}</td>
-                        <td className="px-6 py-4 text-gray-600">{c.department || 'N/A'}</td>
-                        <td className="px-6 py-4">
-                          <button 
-                            onClick={() => handleToggleCourseStatus(c)}
-                            className={`px-3 py-1 rounded-full text-xs font-bold cursor-pointer transition-colors ${c.status === 'Active' ? 'bg-green-100 text-green-700 hover:bg-green-200' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
-                          >
-                            {c.status}
-                          </button>
-                        </td>
-                        <td className="px-6 py-4 text-right space-x-3">
-                          <button onClick={() => handleEditCourse(c)} className="text-blue-600 hover:text-blue-800 font-medium">Edit</button>
-                          <button onClick={() => handleDeleteCourse(c.id)} className="text-red-600 hover:text-red-800 font-medium">Delete</button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
+            <div className="absolute bottom-0 left-0 right-0 h-[2.5px] bg-[#1864db] rounded-t-full" />
           )}
+        </button>
 
-          {/* TAB 3: ACADEMIC YEARS */}
-          {activeTab === 'academic-years' && (
-            <div className="space-y-4">
-              <div className="flex justify-between items-center">
-                <div>
-                  <h3 className="text-lg font-bold text-gray-900">Academic Year Management</h3>
-                  <p className="text-xs text-gray-500">Configure academic school terms, active terms, and application periods.</p>
-                </div>
-                <button 
-                  onClick={() => {
-                    setEditingAcademicYear(null);
-                    setAcademicYearForm({ year: '2025-2026', semester: '1st Semester', status: 'Active', isDefault: false, startDate: '', endDate: '' });
-                    setShowAcademicYearModal(true);
-                  }}
-                  className="bg-[#1864db] text-white px-4 py-2 rounded-lg font-bold text-sm hover:bg-[#124b9f] flex items-center gap-2"
-                >
-                  <Plus className="w-4 h-4" /> Add Academic Year
-                </button>
-              </div>
-
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm text-left">
-                  <thead className="bg-gray-50 text-gray-500 uppercase text-xs">
-                    <tr>
-                      <th className="px-6 py-3 font-bold">Academic Year & Term</th>
-                      <th className="px-6 py-3 font-bold">School Year</th>
-                      <th className="px-6 py-3 font-bold">Semester</th>
-                      <th className="px-6 py-3 font-bold">Term Duration</th>
-                      <th className="px-6 py-3 font-bold">Status</th>
-                      <th className="px-6 py-3 font-bold">Current Term</th>
-                      <th className="px-6 py-3 font-bold text-right">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-100">
-                    {academicYears.map(ay => (
-                      <tr key={ay.id} className={`hover:bg-gray-50/50 ${ay.isDefault ? 'bg-blue-50/40' : ''}`}>
-                        <td className="px-6 py-4 font-bold text-gray-900 flex items-center gap-2">
-                          <Calendar className="w-4 h-4 text-blue-600" />
-                          {ay.label}
-                        </td>
-                        <td className="px-6 py-4 text-gray-700">{ay.year}</td>
-                        <td className="px-6 py-4 text-gray-700">{ay.semester}</td>
-                        <td className="px-6 py-4 text-gray-500 text-xs">
-                          {ay.startDate && ay.endDate ? `${ay.startDate} to ${ay.endDate}` : 'No date specified'}
-                        </td>
-                        <td className="px-6 py-4">
-                          <span className={`px-3 py-1 rounded-full text-xs font-bold ${
-                            ay.status === 'Active' ? 'bg-green-100 text-green-700' :
-                            ay.status === 'Upcoming' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-700'
-                          }`}>
-                            {ay.status}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4">
-                          {ay.isDefault ? (
-                            <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-amber-100 text-amber-800 text-xs font-bold rounded-full">
-                              <Star className="w-3 h-3 fill-amber-500 text-amber-500" /> Current Term
-                            </span>
-                          ) : (
-                            <button
-                              onClick={() => handleSetDefaultAcademicYear(ay.id)}
-                              className="text-xs text-gray-500 hover:text-[#1864db] font-semibold flex items-center gap-1"
-                            >
-                              <Star className="w-3 h-3" /> Set Current
-                            </button>
-                          )}
-                        </td>
-                        <td className="px-6 py-4 text-right space-x-3">
-                          <button onClick={() => handleEditAcademicYear(ay)} className="text-blue-600 hover:text-blue-800 font-medium">Edit</button>
-                          <button onClick={() => handleDeleteAcademicYear(ay.id)} className="text-red-600 hover:text-red-800 font-medium">Delete</button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
+        <button
+          onClick={() => setActiveTab('sections')}
+          className={cn(
+            "flex items-center gap-2.5 pb-3 text-sm font-bold transition-all relative cursor-pointer",
+            activeTab === 'sections'
+              ? "text-[#1864db]"
+              : "text-[#0c2340] hover:text-[#1864db]"
           )}
-        </div>
+        >
+          <Users className={cn("w-4 h-4", activeTab === 'sections' ? "text-[#1864db]" : "text-[#0c2340]")} />
+          <span>Sections</span>
+          {activeTab === 'sections' && (
+            <div className="absolute bottom-0 left-0 right-0 h-[2.5px] bg-[#1864db] rounded-t-full" />
+          )}
+        </button>
+
+        <button
+          onClick={() => setActiveTab('form')}
+          className={cn(
+            "flex items-center gap-2.5 pb-3 text-sm font-bold transition-all relative cursor-pointer",
+            activeTab === 'form'
+              ? "text-[#1864db]"
+              : "text-[#0c2340] hover:text-[#1864db]"
+          )}
+        >
+          <FileText className={cn("w-4 h-4", activeTab === 'form' ? "text-[#1864db]" : "text-[#0c2340]")} />
+          <span>Form</span>
+          {activeTab === 'form' && (
+            <div className="absolute bottom-0 left-0 right-0 h-[2.5px] bg-[#1864db] rounded-t-full" />
+          )}
+        </button>
+
+        <button
+          onClick={() => setActiveTab('files')}
+          className={cn(
+            "flex items-center gap-2.5 pb-3 text-sm font-bold transition-all relative cursor-pointer",
+            activeTab === 'files'
+              ? "text-[#1864db]"
+              : "text-[#0c2340] hover:text-[#1864db]"
+          )}
+        >
+          <ImageIcon className={cn("w-4 h-4", activeTab === 'files' ? "text-[#1864db]" : "text-[#0c2340]")} />
+          <span>Files</span>
+          {activeTab === 'files' && (
+            <div className="absolute bottom-0 left-0 right-0 h-[2.5px] bg-[#1864db] rounded-t-full" />
+          )}
+        </button>
       </div>
-      
-      {/* Modal for Scholarships */}
-      {showScholarshipModal && (
+
+      {/* Main Settings Card */}
+      <div className="bg-white rounded-2xl shadow-md border border-gray-200/80 overflow-hidden">
+        {/* Card Top Action Bar */}
+        <div className="p-5 px-6 flex justify-between items-center border-b border-gray-200/80">
+          <h2 className="text-lg font-bold text-[#0c2340]">
+            {activeTab === 'academic-year' && 'Academic Year'}
+            {activeTab === 'courses' && 'Courses'}
+            {activeTab === 'sections' && 'Sections'}
+            {activeTab === 'form' && 'Form Requirements'}
+            {activeTab === 'files' && 'Files'}
+          </h2>
+          <button
+            onClick={handleOpenAddModal}
+            className="bg-[#072b6b] hover:bg-[#051c47] text-white px-6 py-2 rounded-full font-bold text-sm flex items-center gap-2 shadow-sm transition-all hover:scale-[1.02] cursor-pointer"
+          >
+            <Plus className="w-4 h-4 stroke-[3]" />
+            <span>Add</span>
+          </button>
+        </div>
+
+        {/* TAB 1: ACADEMIC YEAR (Matching screenshot exactly) */}
+        {activeTab === 'academic-year' && (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-[#edf3fa] text-[#486581] text-[11px] font-bold uppercase tracking-wider">
+                  <th className="py-3 px-8 font-bold text-left">ACADEMIC YEAR</th>
+                  <th className="py-3 px-6 font-bold text-center">OVERALL STATUS</th>
+                  <th className="py-3 px-6 font-bold text-center">1ST SEMESTER</th>
+                  <th className="py-3 px-6 font-bold text-center">2ND SEMESTER</th>
+                  <th className="py-3 px-8 font-bold text-right"></th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100 text-sm">
+                {academicYears.map((ay, idx) => (
+                  <tr key={ay.id || idx} className="hover:bg-blue-50/20 transition-colors">
+                    <td className="py-4 px-8 font-bold text-gray-900">{ay.year}</td>
+                    <td className="py-4 px-6 text-center">
+                      <span className={cn(
+                        "inline-block w-28 py-1 rounded-full text-xs font-semibold text-center",
+                        ay.overallStatus === 'Active'
+                          ? "bg-[#bbf7d0] text-[#15803d]"
+                          : "bg-[#fecaca] text-[#dc2626]"
+                      )}>
+                        {ay.overallStatus}
+                      </span>
+                    </td>
+                    <td className="py-4 px-6 text-center">
+                      <span className={cn(
+                        "inline-block w-28 py-1 rounded-full text-xs font-semibold text-center",
+                        ay.firstSemester === 'Active'
+                          ? "bg-[#bbf7d0] text-[#15803d]"
+                          : "bg-[#fecaca] text-[#dc2626]"
+                      )}>
+                        {ay.firstSemester}
+                      </span>
+                    </td>
+                    <td className="py-4 px-6 text-center">
+                      <span className={cn(
+                        "inline-block w-28 py-1 rounded-full text-xs font-semibold text-center",
+                        ay.secondSemester === 'Active'
+                          ? "bg-[#bbf7d0] text-[#15803d]"
+                          : "bg-[#fecaca] text-[#dc2626]"
+                      )}>
+                        {ay.secondSemester}
+                      </span>
+                    </td>
+                    <td className="py-4 px-8 text-right space-x-3">
+                      <button
+                        onClick={() => handleEditAcademicYear(ay)}
+                        className="text-gray-400 hover:text-gray-700 transition-colors p-1"
+                        title="Edit"
+                      >
+                        <Pen className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteAcademicYear(ay.id)}
+                        className="text-gray-400 hover:text-red-600 transition-colors p-1"
+                        title="Delete"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {/* TAB 2: COURSES */}
+        {activeTab === 'courses' && (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-[#edf3fa] text-[#486581] text-[11px] font-bold uppercase tracking-wider">
+                  <th className="py-3 px-8 font-bold text-left">COURSE CODE</th>
+                  <th className="py-3 px-6 font-bold text-left">DEGREE TITLE</th>
+                  <th className="py-3 px-6 font-bold text-left">COLLEGE / DEPARTMENT</th>
+                  <th className="py-3 px-6 font-bold text-center">STATUS</th>
+                  <th className="py-3 px-8 font-bold text-right"></th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100 text-sm">
+                {courses.map((c, idx) => (
+                  <tr key={c.id || idx} className="hover:bg-blue-50/20 transition-colors">
+                    <td className="py-4 px-8 font-bold text-[#1864db]">{c.code}</td>
+                    <td className="py-4 px-6 font-bold text-gray-900">{c.name}</td>
+                    <td className="py-4 px-6 text-gray-600 text-xs">{c.department}</td>
+                    <td className="py-4 px-6 text-center">
+                      <span className={cn(
+                        "inline-block w-24 py-1 rounded-full text-xs font-semibold text-center",
+                        c.status === 'Active' ? "bg-[#bbf7d0] text-[#15803d]" : "bg-[#fecaca] text-[#dc2626]"
+                      )}>
+                        {c.status}
+                      </span>
+                    </td>
+                    <td className="py-4 px-8 text-right space-x-3">
+                      <button
+                        onClick={() => handleEditCourse(c)}
+                        className="text-gray-400 hover:text-gray-700 transition-colors p-1"
+                        title="Edit"
+                      >
+                        <Pen className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteCourse(c.id)}
+                        className="text-gray-400 hover:text-red-600 transition-colors p-1"
+                        title="Delete"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {/* TAB 3: SECTIONS */}
+        {activeTab === 'sections' && (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-[#edf3fa] text-[#486581] text-[11px] font-bold uppercase tracking-wider">
+                  <th className="py-3 px-8 font-bold text-left">SECTION NAME</th>
+                  <th className="py-3 px-6 font-bold text-left">COURSE PROGRAM</th>
+                  <th className="py-3 px-6 font-bold text-left">YEAR LEVEL</th>
+                  <th className="py-3 px-6 font-bold text-center">STATUS</th>
+                  <th className="py-3 px-8 font-bold text-right"></th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100 text-sm">
+                {sections.map((s, idx) => (
+                  <tr key={s.id || idx} className="hover:bg-blue-50/20 transition-colors">
+                    <td className="py-4 px-8 font-bold text-gray-900">{s.name}</td>
+                    <td className="py-4 px-6 font-semibold text-blue-800">{s.course}</td>
+                    <td className="py-4 px-6 text-gray-700 text-xs">{s.yearLevel}</td>
+                    <td className="py-4 px-6 text-center">
+                      <span className={cn(
+                        "inline-block w-24 py-1 rounded-full text-xs font-semibold text-center",
+                        s.status === 'Active' ? "bg-[#bbf7d0] text-[#15803d]" : "bg-[#fecaca] text-[#dc2626]"
+                      )}>
+                        {s.status}
+                      </span>
+                    </td>
+                    <td className="py-4 px-8 text-right space-x-3">
+                      <button
+                        onClick={() => handleEditSection(s)}
+                        className="text-gray-400 hover:text-gray-700 transition-colors p-1"
+                        title="Edit"
+                      >
+                        <Pen className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteSection(s.id)}
+                        className="text-gray-400 hover:text-red-600 transition-colors p-1"
+                        title="Delete"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {/* TAB 4: FORM REQUIREMENTS */}
+        {activeTab === 'form' && (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-[#edf3fa] text-[#486581] text-[11px] font-bold uppercase tracking-wider">
+                  <th className="py-3 px-8 font-bold text-left">REQUIREMENT DOCUMENT</th>
+                  <th className="py-3 px-6 font-bold text-left">DESCRIPTION</th>
+                  <th className="py-3 px-6 font-bold text-center">MANDATORY</th>
+                  <th className="py-3 px-6 font-bold text-center">STATUS</th>
+                  <th className="py-3 px-8 font-bold text-right"></th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100 text-sm">
+                {formFields.map((f, idx) => (
+                  <tr key={f.id || idx} className="hover:bg-blue-50/20 transition-colors">
+                    <td className="py-4 px-8 font-bold text-gray-900 flex items-center gap-2">
+                      <FileText className="w-4 h-4 text-blue-600" />
+                      <span>{f.title}</span>
+                    </td>
+                    <td className="py-4 px-6 text-gray-600 text-xs">{f.description}</td>
+                    <td className="py-4 px-6 text-center">
+                      <span className={cn(
+                        "inline-block px-3 py-1 rounded-full text-xs font-semibold text-center",
+                        f.mandatory === 'Required' ? "bg-amber-100 text-amber-800" : "bg-gray-100 text-gray-700"
+                      )}>
+                        {f.mandatory}
+                      </span>
+                    </td>
+                    <td className="py-4 px-6 text-center">
+                      <span className={cn(
+                        "inline-block w-24 py-1 rounded-full text-xs font-semibold text-center",
+                        f.status === 'Active' ? "bg-[#bbf7d0] text-[#15803d]" : "bg-[#fecaca] text-[#dc2626]"
+                      )}>
+                        {f.status}
+                      </span>
+                    </td>
+                    <td className="py-4 px-8 text-right space-x-3">
+                      <button
+                        onClick={() => handleEditFormField(f)}
+                        className="text-gray-400 hover:text-gray-700 transition-colors p-1"
+                        title="Edit"
+                      >
+                        <Pen className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteFormField(f.id)}
+                        className="text-gray-400 hover:text-red-600 transition-colors p-1"
+                        title="Delete"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {/* TAB 5: FILES */}
+        {activeTab === 'files' && (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-[#edf3fa] text-[#486581] text-[11px] font-bold uppercase tracking-wider">
+                  <th className="py-3 px-8 font-bold text-left">DOCUMENT NAME</th>
+                  <th className="py-3 px-6 font-bold text-left">CATEGORY</th>
+                  <th className="py-3 px-6 font-bold text-center">FILE SIZE</th>
+                  <th className="py-3 px-6 font-bold text-center">UPLOADED DATE</th>
+                  <th className="py-3 px-8 font-bold text-right"></th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100 text-sm">
+                {files.map((file, idx) => (
+                  <tr key={file.id || idx} className="hover:bg-blue-50/20 transition-colors">
+                    <td className="py-4 px-8 font-bold text-gray-900 flex items-center gap-2">
+                      <Paperclip className="w-4 h-4 text-blue-600" />
+                      <span>{file.name}</span>
+                    </td>
+                    <td className="py-4 px-6 text-gray-700 text-xs font-semibold">{file.category}</td>
+                    <td className="py-4 px-6 text-center text-xs text-gray-500">{file.size}</td>
+                    <td className="py-4 px-6 text-center text-xs text-gray-600">{file.uploadDate}</td>
+                    <td className="py-4 px-8 text-right space-x-3">
+                      <button
+                        onClick={() => handleDeleteFile(file.id)}
+                        className="text-gray-400 hover:text-red-600 transition-colors p-1"
+                        title="Delete"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
+      {/* Modal for Academic Year */}
+      {showAcademicYearModal && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden">
+          <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden">
             <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
-              <h3 className="font-bold text-lg text-gray-900">{editingScholarship ? 'Edit Scholarship' : 'Add New Scholarship'}</h3>
-              <button onClick={() => setShowScholarshipModal(false)} className="text-gray-400 hover:text-gray-600">×</button>
+              <h3 className="font-bold text-lg text-gray-900">{editingAcademicYear ? 'Edit Academic Year' : 'Add Academic Year'}</h3>
+              <button onClick={() => setShowAcademicYearModal(false)} className="text-gray-400 hover:text-gray-600 text-xl font-bold">×</button>
             </div>
             <div className="p-6 space-y-4">
               <div>
-                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Scholarship Name</label>
-                <input type="text" value={scholarshipForm.name} onChange={e => setScholarshipForm({...scholarshipForm, name: e.target.value})} className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#1864db]" placeholder="e.g. Tulong Dunong" />
+                <label className="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1">Academic Year</label>
+                <input 
+                  type="text" 
+                  value={academicYearForm.year} 
+                  onChange={e => setAcademicYearForm({...academicYearForm, year: e.target.value})} 
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#1864db] text-sm" 
+                  placeholder="e.g. 2026-2027" 
+                />
               </div>
-              <div>
-                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Description</label>
-                <textarea value={scholarshipForm.description} onChange={e => setScholarshipForm({...scholarshipForm, description: e.target.value})} className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#1864db]" placeholder="Short description..." rows={2} />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-3 gap-3">
                 <div>
-                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Funding Type</label>
-                  <select value={scholarshipForm.type} onChange={e => setScholarshipForm({...scholarshipForm, type: e.target.value})} className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#1864db]">
-                    <option>Internally-Funded</option>
-                    <option>Externally-Funded</option>
+                  <label className="block text-[11px] font-bold text-gray-600 uppercase mb-1">Overall</label>
+                  <select 
+                    value={academicYearForm.overallStatus} 
+                    onChange={e => setAcademicYearForm({...academicYearForm, overallStatus: e.target.value as any})} 
+                    className="w-full px-2 py-2 border border-gray-200 rounded-lg focus:outline-none text-xs"
+                  >
+                    <option value="Active">Active</option>
+                    <option value="Inactive">Inactive</option>
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Category / Tag</label>
-                  <input type="text" value={scholarshipForm.category} onChange={e => setScholarshipForm({...scholarshipForm, category: e.target.value})} className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#1864db]" placeholder="e.g. Entrance, CHED" />
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Status</label>
-                  <select value={scholarshipForm.status} onChange={e => setScholarshipForm({...scholarshipForm, status: e.target.value})} className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#1864db]">
-                    <option>Active</option>
-                    <option>Inactive</option>
+                  <label className="block text-[11px] font-bold text-gray-600 uppercase mb-1">1st Sem</label>
+                  <select 
+                    value={academicYearForm.firstSemester} 
+                    onChange={e => setAcademicYearForm({...academicYearForm, firstSemester: e.target.value as any})} 
+                    className="w-full px-2 py-2 border border-gray-200 rounded-lg focus:outline-none text-xs"
+                  >
+                    <option value="Active">Active</option>
+                    <option value="Inactive">Inactive</option>
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Slots</label>
-                  <input type="number" value={isNaN(scholarshipForm.slots) || scholarshipForm.slots === 0 ? '' : scholarshipForm.slots} onChange={e => setScholarshipForm({...scholarshipForm, slots: e.target.value === '' ? 0 : (parseInt(e.target.value, 10) || 0)})} className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#1864db]" placeholder="0" />
+                  <label className="block text-[11px] font-bold text-gray-600 uppercase mb-1">2nd Sem</label>
+                  <select 
+                    value={academicYearForm.secondSemester} 
+                    onChange={e => setAcademicYearForm({...academicYearForm, secondSemester: e.target.value as any})} 
+                    className="w-full px-2 py-2 border border-gray-200 rounded-lg focus:outline-none text-xs"
+                  >
+                    <option value="Active">Active</option>
+                    <option value="Inactive">Inactive</option>
+                  </select>
                 </div>
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Deadline</label>
-                <input type="date" value={scholarshipForm.deadline} onChange={e => setScholarshipForm({...scholarshipForm, deadline: e.target.value})} className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#1864db]" />
               </div>
             </div>
             <div className="px-6 py-4 border-t border-gray-100 bg-gray-50 flex justify-end gap-3">
-              <button onClick={() => setShowScholarshipModal(false)} className="px-4 py-2 font-bold text-sm text-gray-600 hover:bg-gray-200 rounded-lg">Cancel</button>
-              <button onClick={handleSaveScholarship} className="px-6 py-2 bg-[#1864db] text-white rounded-lg font-bold text-sm hover:bg-[#124b9f]">Save Scholarship</button>
+              <button onClick={() => setShowAcademicYearModal(false)} className="px-4 py-2 font-bold text-sm text-gray-600 hover:bg-gray-200 rounded-lg">Cancel</button>
+              <button onClick={handleSaveAcademicYear} className="px-6 py-2 bg-[#072b6b] hover:bg-[#051c47] text-white rounded-full font-bold text-sm">Save</button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Modal for Courses */}
+      {/* Modal for Course */}
       {showCourseModal && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden">
+          <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden">
             <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
-              <h3 className="font-bold text-lg text-gray-900">{editingCourse ? 'Edit Course' : 'Add New Course'}</h3>
-              <button onClick={() => setShowCourseModal(false)} className="text-gray-400 hover:text-gray-600">×</button>
+              <h3 className="font-bold text-lg text-gray-900">{editingCourse ? 'Edit Course' : 'Add Course'}</h3>
+              <button onClick={() => setShowCourseModal(false)} className="text-gray-400 hover:text-gray-600 text-xl font-bold">×</button>
             </div>
             <div className="p-6 space-y-4">
               <div>
-                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Course Code</label>
+                <label className="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1">Course Code</label>
                 <input 
                   type="text" 
                   value={courseForm.code} 
                   onChange={e => setCourseForm({...courseForm, code: e.target.value.toUpperCase()})} 
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#1864db]" 
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#1864db] text-sm" 
                   placeholder="e.g. BSCS, BAEL, BSFT, BSOA" 
                 />
               </div>
               <div>
-                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Full Degree Title</label>
+                <label className="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1">Degree Title</label>
                 <input 
                   type="text" 
                   value={courseForm.name} 
                   onChange={e => setCourseForm({...courseForm, name: e.target.value})} 
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#1864db]" 
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#1864db] text-sm" 
                   placeholder="e.g. Bachelor of Science in Computer Science" 
                 />
               </div>
               <div>
-                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">College / Department</label>
+                <label className="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1">College / Department</label>
                 <input 
                   type="text" 
                   value={courseForm.department} 
                   onChange={e => setCourseForm({...courseForm, department: e.target.value})} 
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#1864db]" 
-                  placeholder="e.g. College of Information and Communications Technology" 
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#1864db] text-sm" 
+                  placeholder="e.g. College of Information & Communications Tech" 
                 />
               </div>
               <div>
-                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Status</label>
+                <label className="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1">Status</label>
                 <select 
                   value={courseForm.status} 
                   onChange={e => setCourseForm({...courseForm, status: e.target.value as any})} 
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#1864db]"
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none text-sm"
                 >
                   <option value="Active">Active</option>
                   <option value="Inactive">Inactive</option>
@@ -1508,94 +1833,176 @@ export function GuidanceSettings() {
             </div>
             <div className="px-6 py-4 border-t border-gray-100 bg-gray-50 flex justify-end gap-3">
               <button onClick={() => setShowCourseModal(false)} className="px-4 py-2 font-bold text-sm text-gray-600 hover:bg-gray-200 rounded-lg">Cancel</button>
-              <button onClick={handleSaveCourse} className="px-6 py-2 bg-[#1864db] text-white rounded-lg font-bold text-sm hover:bg-[#124b9f]">Save Course</button>
+              <button onClick={handleSaveCourse} className="px-6 py-2 bg-[#072b6b] hover:bg-[#051c47] text-white rounded-full font-bold text-sm">Save Course</button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Modal for Academic Years */}
-      {showAcademicYearModal && (
+      {/* Modal for Section */}
+      {showSectionModal && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden">
+          <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden">
             <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
-              <h3 className="font-bold text-lg text-gray-900">{editingAcademicYear ? 'Edit Academic Year' : 'Add Academic Year'}</h3>
-              <button onClick={() => setShowAcademicYearModal(false)} className="text-gray-400 hover:text-gray-600">×</button>
+              <h3 className="font-bold text-lg text-gray-900">{editingSection ? 'Edit Section' : 'Add Section'}</h3>
+              <button onClick={() => setShowSectionModal(false)} className="text-gray-400 hover:text-gray-600 text-xl font-bold">×</button>
             </div>
             <div className="p-6 space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1">Section Name</label>
+                <input 
+                  type="text" 
+                  value={sectionForm.name} 
+                  onChange={e => setSectionForm({...sectionForm, name: e.target.value.toUpperCase()})} 
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#1864db] text-sm" 
+                  placeholder="e.g. BSCS 4A" 
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">School Year</label>
-                  <input 
-                    type="text" 
-                    value={academicYearForm.year} 
-                    onChange={e => setAcademicYearForm({...academicYearForm, year: e.target.value})} 
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#1864db]" 
-                    placeholder="e.g. 2025-2026" 
-                  />
+                  <label className="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1">Course</label>
+                  <select 
+                    value={sectionForm.course} 
+                    onChange={e => setSectionForm({...sectionForm, course: e.target.value})} 
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none text-sm"
+                  >
+                    <option value="BSCS">BSCS</option>
+                    <option value="BAEL">BAEL</option>
+                    <option value="BSFT">BSFT</option>
+                    <option value="BSOA">BSOA</option>
+                  </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Semester / Term</label>
+                  <label className="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1">Year Level</label>
                   <select 
-                    value={academicYearForm.semester} 
-                    onChange={e => setAcademicYearForm({...academicYearForm, semester: e.target.value as any})} 
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#1864db]"
+                    value={sectionForm.yearLevel} 
+                    onChange={e => setSectionForm({...sectionForm, yearLevel: e.target.value})} 
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none text-sm"
                   >
-                    <option value="1st Semester">1st Semester</option>
-                    <option value="2nd Semester">2nd Semester</option>
-                    <option value="Summer">Summer</option>
+                    <option value="1st Year">1st Year</option>
+                    <option value="2nd Year">2nd Year</option>
+                    <option value="3rd Year">3rd Year</option>
+                    <option value="4th Year">4th Year</option>
                   </select>
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1">Status</label>
+                <select 
+                  value={sectionForm.status} 
+                  onChange={e => setSectionForm({...sectionForm, status: e.target.value as any})} 
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none text-sm"
+                >
+                  <option value="Active">Active</option>
+                  <option value="Inactive">Inactive</option>
+                </select>
+              </div>
+            </div>
+            <div className="px-6 py-4 border-t border-gray-100 bg-gray-50 flex justify-end gap-3">
+              <button onClick={() => setShowSectionModal(false)} className="px-4 py-2 font-bold text-sm text-gray-600 hover:bg-gray-200 rounded-lg">Cancel</button>
+              <button onClick={handleSaveSection} className="px-6 py-2 bg-[#072b6b] hover:bg-[#051c47] text-white rounded-full font-bold text-sm">Save Section</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal for Form Requirement */}
+      {showFormModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden">
+            <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+              <h3 className="font-bold text-lg text-gray-900">{editingFormField ? 'Edit Requirement' : 'Add Requirement'}</h3>
+              <button onClick={() => setShowFormModal(false)} className="text-gray-400 hover:text-gray-600 text-xl font-bold">×</button>
+            </div>
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1">Document Title</label>
+                <input 
+                  type="text" 
+                  value={formFieldForm.title} 
+                  onChange={e => setFormFieldForm({...formFieldForm, title: e.target.value})} 
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#1864db] text-sm" 
+                  placeholder="e.g. Certificate of Grades" 
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1">Description / Instructions</label>
+                <textarea 
+                  value={formFieldForm.description} 
+                  onChange={e => setFormFieldForm({...formFieldForm, description: e.target.value})} 
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#1864db] text-sm" 
+                  placeholder="e.g. Must be signed by the College Dean or Registrar" 
+                  rows={2}
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Status</label>
+                  <label className="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1">Mandatory</label>
                   <select 
-                    value={academicYearForm.status} 
-                    onChange={e => setAcademicYearForm({...academicYearForm, status: e.target.value as any})} 
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#1864db]"
+                    value={formFieldForm.mandatory} 
+                    onChange={e => setFormFieldForm({...formFieldForm, mandatory: e.target.value})} 
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none text-sm"
+                  >
+                    <option value="Required">Required</option>
+                    <option value="Optional">Optional</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1">Status</label>
+                  <select 
+                    value={formFieldForm.status} 
+                    onChange={e => setFormFieldForm({...formFieldForm, status: e.target.value as any})} 
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none text-sm"
                   >
                     <option value="Active">Active</option>
-                    <option value="Upcoming">Upcoming</option>
-                    <option value="Closed">Closed</option>
+                    <option value="Inactive">Inactive</option>
                   </select>
-                </div>
-                <div className="flex items-center pt-5">
-                  <label className="flex items-center gap-2 cursor-pointer text-sm font-semibold text-gray-700">
-                    <input 
-                      type="checkbox" 
-                      checked={academicYearForm.isDefault} 
-                      onChange={e => setAcademicYearForm({...academicYearForm, isDefault: e.target.checked})} 
-                      className="w-4 h-4 text-[#1864db] rounded focus:ring-blue-500" 
-                    />
-                    <span>Set as Current Term</span>
-                  </label>
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Start Date</label>
-                  <input 
-                    type="date" 
-                    value={academicYearForm.startDate} 
-                    onChange={e => setAcademicYearForm({...academicYearForm, startDate: e.target.value})} 
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#1864db]" 
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">End Date</label>
-                  <input 
-                    type="date" 
-                    value={academicYearForm.endDate} 
-                    onChange={e => setAcademicYearForm({...academicYearForm, endDate: e.target.value})} 
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#1864db]" 
-                  />
                 </div>
               </div>
             </div>
             <div className="px-6 py-4 border-t border-gray-100 bg-gray-50 flex justify-end gap-3">
-              <button onClick={() => setShowAcademicYearModal(false)} className="px-4 py-2 font-bold text-sm text-gray-600 hover:bg-gray-200 rounded-lg">Cancel</button>
-              <button onClick={handleSaveAcademicYear} className="px-6 py-2 bg-[#1864db] text-white rounded-lg font-bold text-sm hover:bg-[#124b9f]">Save Academic Year</button>
+              <button onClick={() => setShowFormModal(false)} className="px-4 py-2 font-bold text-sm text-gray-600 hover:bg-gray-200 rounded-lg">Cancel</button>
+              <button onClick={handleSaveFormField} className="px-6 py-2 bg-[#072b6b] hover:bg-[#051c47] text-white rounded-full font-bold text-sm">Save Requirement</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal for Files */}
+      {showFileModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden">
+            <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+              <h3 className="font-bold text-lg text-gray-900">Add Downloadable File</h3>
+              <button onClick={() => setShowFileModal(false)} className="text-gray-400 hover:text-gray-600 text-xl font-bold">×</button>
+            </div>
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1">File Name</label>
+                <input 
+                  type="text" 
+                  value={fileForm.name} 
+                  onChange={e => setFileForm({...fileForm, name: e.target.value})} 
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#1864db] text-sm" 
+                  placeholder="e.g. TDP_Scholarship_Form.pdf" 
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1">Category</label>
+                <select 
+                  value={fileForm.category} 
+                  onChange={e => setFileForm({...fileForm, category: e.target.value})} 
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none text-sm"
+                >
+                  <option value="Scholarship Application">Scholarship Application</option>
+                  <option value="Guidelines & Policies">Guidelines & Policies</option>
+                  <option value="Document Template">Document Template</option>
+                </select>
+              </div>
+            </div>
+            <div className="px-6 py-4 border-t border-gray-100 bg-gray-50 flex justify-end gap-3">
+              <button onClick={() => setShowFileModal(false)} className="px-4 py-2 font-bold text-sm text-gray-600 hover:bg-gray-200 rounded-lg">Cancel</button>
+              <button onClick={handleSaveFile} className="px-6 py-2 bg-[#072b6b] hover:bg-[#051c47] text-white rounded-full font-bold text-sm">Add File</button>
             </div>
           </div>
         </div>
@@ -1603,6 +2010,7 @@ export function GuidanceSettings() {
     </div>
   );
 }
+
 export * from './reports';
 export * from './notifications';
 export * from './communications';
