@@ -1,7 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Outlet, Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { cn } from '../../lib/utils';
-import { LogOut, Upload, CheckCircle2, ChevronDown, View, FileText, Award, GraduationCap } from 'lucide-react';
+import { 
+  LogOut, Upload, CheckCircle2, ChevronDown, View, FileText, Award, GraduationCap,
+  PenTool, Trash2, Camera, CreditCard, FileCheck, Eye, RefreshCw, Check, AlertCircle,
+  Sparkles, Image as ImageIcon, X, Download, ShieldCheck
+} from 'lucide-react';
 import { db } from '../../lib/db';
 import { motion } from 'motion/react';
 
@@ -334,6 +338,282 @@ export function StudentDashboard() {
   );
 }
 
+function DigitalSignaturePad({
+  value,
+  onChange,
+  studentName
+}: {
+  value?: string;
+  onChange: (dataUrl: string) => void;
+  studentName: string;
+}) {
+  const [mode, setMode] = useState<'draw' | 'type' | 'upload'>('draw');
+  const [typedName, setTypedName] = useState(studentName || '');
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const [isDrawing, setIsDrawing] = useState(false);
+  const [hasDrawn, setHasDrawn] = useState(false);
+
+  useEffect(() => {
+    if (mode === 'draw' && canvasRef.current) {
+      const canvas = canvasRef.current;
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        ctx.strokeStyle = '#003884';
+        ctx.lineWidth = 2.5;
+      }
+    }
+  }, [mode]);
+
+  const startDrawing = (e: React.PointerEvent<HTMLCanvasElement>) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    setIsDrawing(true);
+    setHasDrawn(true);
+  };
+
+  const draw = (e: React.PointerEvent<HTMLCanvasElement>) => {
+    if (!isDrawing) return;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    ctx.lineTo(x, y);
+    ctx.stroke();
+  };
+
+  const stopDrawing = () => {
+    if (!isDrawing) return;
+    setIsDrawing(false);
+    const canvas = canvasRef.current;
+    if (canvas) {
+      const dataUrl = canvas.toDataURL('image/png');
+      onChange(dataUrl);
+    }
+  };
+
+  const clearCanvas = () => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    setHasDrawn(false);
+    onChange('');
+  };
+
+  const generateTypedSignature = (text: string) => {
+    setTypedName(text);
+    if (!text.trim()) {
+      onChange('');
+      return;
+    }
+    const canvas = document.createElement('canvas');
+    canvas.width = 400;
+    canvas.height = 120;
+    const ctx = canvas.getContext('2d');
+    if (ctx) {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.font = 'italic bold 34px "Brush Script MT", "Caveat", "Dancing Script", cursive, Georgia, serif';
+      ctx.fillStyle = '#003884';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(text, 200, 55);
+      
+      ctx.beginPath();
+      ctx.moveTo(50, 90);
+      ctx.quadraticCurveTo(200, 102, 350, 85);
+      ctx.strokeStyle = '#003884';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      const dataUrl = canvas.toDataURL('image/png');
+      onChange(dataUrl);
+    }
+  };
+
+  const handleUploadSignature = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        onChange(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  return (
+    <div className="bg-[#f8faff] border-2 border-blue-100 rounded-2xl p-6 space-y-4 shadow-sm">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-blue-100 pb-3">
+        <div>
+          <h4 className="text-sm font-bold text-[#0f2e60] flex items-center gap-2">
+            <PenTool className="w-4 h-4 text-[#1864db]" />
+            Applicant Digital Signature
+          </h4>
+          <p className="text-xs text-gray-500 mt-0.5">Sign digitally using your mouse/touch, upload a signature image, or type your name.</p>
+        </div>
+
+        {/* Input Mode Selector */}
+        <div className="flex items-center gap-1 bg-white p-1 rounded-xl border border-blue-200">
+          <button
+            type="button"
+            onClick={() => setMode('draw')}
+            className={cn(
+              "px-3 py-1.5 rounded-lg text-xs font-bold transition-all",
+              mode === 'draw' ? "bg-[#1864db] text-white shadow-xs" : "text-gray-600 hover:text-blue-900"
+            )}
+          >
+            Draw
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setMode('type');
+              if (typedName) generateTypedSignature(typedName);
+            }}
+            className={cn(
+              "px-3 py-1.5 rounded-lg text-xs font-bold transition-all",
+              mode === 'type' ? "bg-[#1864db] text-white shadow-xs" : "text-gray-600 hover:text-blue-900"
+            )}
+          >
+            Type
+          </button>
+          <button
+            type="button"
+            onClick={() => setMode('upload')}
+            className={cn(
+              "px-3 py-1.5 rounded-lg text-xs font-bold transition-all",
+              mode === 'upload' ? "bg-[#1864db] text-white shadow-xs" : "text-gray-600 hover:text-blue-900"
+            )}
+          >
+            Upload
+          </button>
+        </div>
+      </div>
+
+      {/* Mode 1: Draw on Canvas */}
+      {mode === 'draw' && (
+        <div className="space-y-2">
+          <div className="relative border-2 border-dashed border-blue-200 bg-white rounded-xl overflow-hidden cursor-crosshair shadow-inner">
+            <canvas
+              ref={canvasRef}
+              width={500}
+              height={140}
+              onPointerDown={startDrawing}
+              onPointerMove={draw}
+              onPointerUp={stopDrawing}
+              onPointerLeave={stopDrawing}
+              className="w-full h-[140px] touch-none block"
+            />
+            {!hasDrawn && !value && (
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none text-gray-300 text-sm font-medium">
+                Sign here with mouse, finger, or stylus
+              </div>
+            )}
+          </div>
+          <div className="flex items-center justify-between text-xs text-gray-500">
+            <span>Draw your legal signature inside the box</span>
+            <button
+              type="button"
+              onClick={clearCanvas}
+              className="text-red-600 hover:text-red-700 font-bold flex items-center gap-1 hover:underline"
+            >
+              <Trash2 className="w-3.5 h-3.5" /> Clear Signature
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Mode 2: Type Signature */}
+      {mode === 'type' && (
+        <div className="space-y-3">
+          <div>
+            <label className="block text-xs font-bold text-gray-700 mb-1.5">Type your full legal name</label>
+            <input
+              type="text"
+              value={typedName}
+              onChange={(e) => generateTypedSignature(e.target.value)}
+              placeholder="e.g. Juan D. Dela Cruz"
+              className="w-full px-4 py-2.5 bg-white border border-blue-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-blue-500 outline-none"
+            />
+          </div>
+          {value && (
+            <div className="p-4 bg-white border border-blue-100 rounded-xl flex items-center justify-center min-h-[100px]">
+              <img src={value} alt="Typed Signature Preview" className="max-h-20 object-contain" />
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Mode 3: Upload Signature File */}
+      {mode === 'upload' && (
+        <div className="space-y-3">
+          <div className="border-2 border-dashed border-blue-200 bg-white rounded-xl p-6 text-center hover:bg-blue-50/50 transition-colors relative group">
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleUploadSignature}
+              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+            />
+            <div className="w-10 h-10 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-2 group-hover:scale-110 transition-transform">
+              <Upload className="w-5 h-5" />
+            </div>
+            <p className="text-sm font-bold text-gray-800">Upload signature image file</p>
+            <p className="text-xs text-gray-500 mt-0.5">PNG, JPG, or JPEG with clean background</p>
+          </div>
+          {value && (
+            <div className="p-3 bg-white border border-blue-100 rounded-xl flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <img src={value} alt="Signature Preview" className="h-12 w-28 object-contain border border-gray-100 rounded p-1 bg-gray-50" />
+                <span className="text-xs font-bold text-green-700 flex items-center gap-1">
+                  <CheckCircle2 className="w-3.5 h-3.5" /> Signature Attached
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => onChange('')}
+                className="text-xs text-red-600 hover:text-red-700 font-bold"
+              >
+                Remove
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Signature Confirmation Banner */}
+      {value ? (
+        <div className="bg-green-50 border border-green-200 rounded-xl p-3 flex items-center justify-between text-xs">
+          <div className="flex items-center gap-2 text-green-800 font-bold">
+            <ShieldCheck className="w-4 h-4 text-green-600" />
+            <span>Digital Signature Verified & Affixed</span>
+          </div>
+          <span className="text-gray-500 font-mono text-[11px]">
+            {new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+          </span>
+        </div>
+      ) : (
+        <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 flex items-center gap-2 text-xs text-amber-800 font-medium">
+          <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
+          <span>Please affix your signature above before submitting your application.</span>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function StudentSubmissionForm() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -381,10 +661,26 @@ export function StudentSubmissionForm() {
     // F. Scholarship Category
     fundingType: 'Internally-Funded',
     scholarshipCategory: '',
-    scholarshipSpecify: ''
+    scholarshipSpecify: '',
+
+    // Identification & Digital Signature
+    photo2x2: '',
+    studentIdCard: '',
+    signature: '',
+    studentCertificationAgreed: false
   });
 
-  const [files, setFiles] = useState<{name: string, data: string, type: string}[]>([]);
+  const [files, setFiles] = useState<{
+    id?: string;
+    name: string;
+    category?: string;
+    data: string;
+    type: string;
+    size?: string;
+    verified?: boolean;
+    status?: string;
+  }[]>([]);
+  
   const [user, setUser] = useState<any>(null);
   const [coursesList, setCoursesList] = useState<any[]>([]);
   const [academicYearsList, setAcademicYearsList] = useState<any[]>([]);
@@ -434,21 +730,52 @@ export function StudentSubmissionForm() {
     }
   }, [scholarshipId]);
 
-  const handleNext = () => setStep(s => Math.min(s + 1, 4));
+  const handleNext = () => {
+    setFormError('');
+    setStep(s => Math.min(s + 1, 4));
+  };
+  
   const handlePrev = () => setStep(s => Math.max(s - 1, 1));
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setFiles(prev => [...prev, {
-          name: file.name,
-          type: file.type,
-          data: reader.result as string
-        }]);
+  const handleCategoryFileUpload = (category: string, file: File) => {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const dataUrl = reader.result as string;
+      const sizeStr = file.size > 1024 * 1024 
+        ? `${(file.size / (1024 * 1024)).toFixed(1)} MB` 
+        : `${Math.round(file.size / 1024)} KB`;
+
+      const newFileObj = {
+        id: `file-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+        name: file.name,
+        category: category,
+        type: file.type,
+        size: sizeStr,
+        data: dataUrl,
+        verified: false,
+        status: 'Pending'
       };
-      reader.readAsDataURL(file);
+
+      setFiles(prev => {
+        const filtered = prev.filter(f => f.category !== category);
+        return [...filtered, newFileObj];
+      });
+
+      if (category === '2x2 Recent Formal ID Photo') {
+        setFormData(prev => ({ ...prev, photo2x2: dataUrl }));
+      } else if (category === 'Valid Student ID') {
+        setFormData(prev => ({ ...prev, studentIdCard: dataUrl }));
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleRemoveCategoryFile = (category: string) => {
+    setFiles(prev => prev.filter(f => f.category !== category));
+    if (category === '2x2 Recent Formal ID Photo') {
+      setFormData(prev => ({ ...prev, photo2x2: '' }));
+    } else if (category === 'Valid Student ID') {
+      setFormData(prev => ({ ...prev, studentIdCard: '' }));
     }
   };
 
@@ -464,29 +791,133 @@ export function StudentSubmissionForm() {
   };
 
   const handleSubmit = async () => {
-    if (!user) return;
+    if (!user) {
+      setFormError('Please log in before submitting.');
+      return;
+    }
+
+    if (!formData.signature) {
+      setFormError('Please affix your digital signature in Step 4 before submitting.');
+      return;
+    }
+
+    if (!formData.studentCertificationAgreed) {
+      setFormError('Please confirm the certification statement before submitting.');
+      return;
+    }
+
     setIsSubmitting(true);
     setFormError('');
     try {
+      const studentFullName = `${formData.firstName || ''} ${formData.middleName ? formData.middleName + ' ' : ''}${formData.familyName || ''}`.trim();
+      const studentIdNumber = user.studentId || user.id || '2024-CAPSU-0182';
+
+      const requirementsList = [
+        { name: '2x2 Recent Formal ID Photo', status: formData.photo2x2 ? 'Pending' : 'Missing' },
+        { name: 'Valid Student ID', status: formData.studentIdCard ? 'Pending' : 'Missing' },
+        { name: 'Certificate of Grades (COG)', status: files.some(f => f.category?.includes('COG') || f.category?.includes('Grades')) ? 'Pending' : 'Missing' },
+        { name: 'Certificate of Registration (COR)', status: files.some(f => f.category?.includes('COR') || f.category?.includes('Registration')) ? 'Pending' : 'Missing' },
+        { name: 'Proof of Income / Certificate of Indigency', status: files.some(f => f.category?.includes('Income') || f.category?.includes('Indigency')) ? 'Pending' : 'Missing' },
+        { name: 'Certificate of Good Moral Character', status: files.some(f => f.category?.includes('Moral')) ? 'Pending' : 'Missing' }
+      ];
+
       const submission: any = {
-        id: Date.now().toString(),
-        studentId: user.id,
-        studentName: formData.firstName + ' ' + formData.familyName,
-        scholarshipType: formData.fundingType + ' (' + formData.scholarshipCategory + ')',
+        id: `sub-${Date.now()}`,
+        studentId: studentIdNumber,
+        studentName: studentFullName || user.email || 'CapSU Student',
+        scholarshipType: `${formData.fundingType} (${formData.scholarshipCategory || 'Academic Grant'})`,
         formId: scholarshipId || 'default',
         status: 'Pending',
         submittedAt: new Date().toISOString(),
-        data: formData,
+        signature: formData.signature,
+        data: {
+          ...formData,
+          studentId: studentIdNumber,
+          photo2x2: formData.photo2x2,
+          studentIdCard: formData.studentIdCard,
+          signature: formData.signature,
+          signedAt: new Date().toISOString(),
+          requirements: requirementsList
+        },
         files: files
       };
-      // @ts-ignore
+
       await db.submissions.set(submission.id, submission);
+
+      // Add notification for guidance
+      try {
+        await db.notifications.create({
+          type: 'submission',
+          title: 'New Scholarship Application',
+          description: `${studentFullName || 'Student'} submitted an application for ${submission.scholarshipType}`,
+          studentName: studentFullName || 'Student',
+          studentId: studentIdNumber,
+          scholarship: submission.scholarshipType,
+          timestamp: new Date().toISOString(),
+          read: false,
+          priority: 'high'
+        });
+      } catch (e) {}
+
       navigate('/student/dashboard');
     } catch (err: any) {
       setFormError(err.message || 'Failed to submit application');
       setIsSubmitting(false);
     }
   };
+
+  const requirementDefinitions = [
+    {
+      id: 'photo-2x2',
+      category: '2x2 Recent Formal ID Photo',
+      title: '2x2 Recent Formal ID Photo',
+      description: 'Formal attire with plain white/blue background. (JPG, PNG)',
+      required: true,
+      accept: 'image/*',
+      isPhoto: true
+    },
+    {
+      id: 'student-id',
+      category: 'Valid Student ID',
+      title: 'Valid Student ID (Front & Back)',
+      description: 'Clear photo or scan of your official CapSU Student ID Card. (PDF, JPG, PNG)',
+      required: true,
+      accept: 'image/*,application/pdf',
+      isIdCard: true
+    },
+    {
+      id: 'cog',
+      category: 'Certificate of Grades (COG)',
+      title: 'Certificate of Grades (COG)',
+      description: 'Official grade slip or transcript for the previous semester. (PDF, JPG, PNG)',
+      required: true,
+      accept: 'image/*,application/pdf'
+    },
+    {
+      id: 'cor',
+      category: 'Certificate of Registration (COR)',
+      title: 'Certificate of Registration (COR)',
+      description: 'Current semester enrollment assessment & unit load form. (PDF, JPG, PNG)',
+      required: true,
+      accept: 'image/*,application/pdf'
+    },
+    {
+      id: 'indigency',
+      category: 'Proof of Income / Certificate of Indigency',
+      title: 'Proof of Income / Certificate of Indigency',
+      description: 'Barangay Certificate of Indigency, ITR, or 4Ps ID card. (PDF, JPG, PNG)',
+      required: true,
+      accept: 'image/*,application/pdf'
+    },
+    {
+      id: 'good-moral',
+      category: 'Certificate of Good Moral Character',
+      title: 'Certificate of Good Moral Character',
+      description: 'Certification issued by CapSU Guidance & Counseling Office. (PDF, JPG, PNG)',
+      required: false,
+      accept: 'image/*,application/pdf'
+    }
+  ];
 
   return (
     <div className="max-w-4xl mx-auto space-y-8">
@@ -502,12 +933,20 @@ export function StudentSubmissionForm() {
         <div className="absolute left-0 top-1/2 -translate-y-1/2 w-full h-1 bg-gray-200 -z-10 rounded-full"></div>
         <div className="absolute left-0 top-1/2 -translate-y-1/2 h-1 bg-[#1864db] -z-10 rounded-full transition-all duration-300" style={{ width: `${((step - 1) / 3) * 100}%` }}></div>
         
-        {[1, 2, 3, 4].map((s) => (
-          <div key={s} className={cn(
-            "w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-all shadow-sm",
-            step >= s ? "bg-[#1864db] text-white border-2 border-white" : "bg-white text-gray-400 border-2 border-gray-200"
-          )}>
-            {step > s ? <CheckCircle2 className="w-5 h-5" /> : s}
+        {[
+          { num: 1, label: 'Personal Demographics' },
+          { num: 2, label: 'Family Background' },
+          { num: 3, label: 'Living & Classification' },
+          { num: 4, label: 'Requirements & Signature' }
+        ].map((s) => (
+          <div key={s.num} className="flex flex-col items-center">
+            <div className={cn(
+              "w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-all shadow-sm",
+              step >= s.num ? "bg-[#1864db] text-white border-2 border-white" : "bg-white text-gray-400 border-2 border-gray-200"
+            )}>
+              {step > s.num ? <CheckCircle2 className="w-5 h-5" /> : s.num}
+            </div>
+            <span className="text-[11px] font-bold text-gray-600 mt-1.5 hidden md:block">{s.label}</span>
           </div>
         ))}
       </div>
@@ -515,8 +954,9 @@ export function StudentSubmissionForm() {
       <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
         <div className="p-8">
           {formError && (
-            <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-600 rounded-lg text-sm font-medium">
-              {formError}
+            <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-600 rounded-lg text-sm font-medium flex items-center gap-2">
+              <AlertCircle className="w-5 h-5 shrink-0" />
+              <span>{formError}</span>
             </div>
           )}
 
@@ -842,61 +1282,189 @@ export function StudentSubmissionForm() {
             </div>
           )}
 
-          {/* STEP 4: ATTACHMENTS */}
+          {/* STEP 4: ATTACHMENTS, IDENTIFICATION & DIGITAL SIGNATURE */}
           {step === 4 && (
-            <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
-              <div className="border-b border-gray-100 pb-4 mb-6">
-                <h3 className="text-xl font-bold text-gray-900">Scholarship Category & Attachments</h3>
-                <p className="text-sm text-gray-500">Confirm your scholarship category and upload requirements.</p>
+            <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-300">
+              <div className="border-b border-gray-100 pb-4">
+                <h3 className="text-xl font-bold text-gray-900">Scholarship Target, ID Requirements & Digital Signature</h3>
+                <p className="text-sm text-gray-500">Upload your student identification documents, required credentials, and affix your digital signature.</p>
               </div>
               
-              <div className="bg-blue-50/50 rounded-2xl p-6 border border-blue-100 mb-8">
+              {/* Scholarship Target */}
+              <div className="bg-[#eef5fc] rounded-2xl p-6 border border-[#cde2f8]">
                 <h4 className="font-bold text-[#0f2e60] mb-4 flex items-center gap-2">
                   <Award className="w-5 h-5 text-[#1864db]" /> 
-                  Selected Scholarship Target
+                  Selected Scholarship Target Program
                 </h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-xs font-bold text-blue-800 uppercase tracking-wide mb-2">Funding Type</label>
-                    <select value={formData.fundingType} onChange={e => setFormData({...formData, fundingType: e.target.value})} className="w-full px-4 py-3 bg-white border border-blue-200 rounded-xl focus:border-[#1864db] outline-none">
-                      <option value="Internally-Funded">Internally-Funded</option>
-                      <option value="Externally-Funded">Externally-Funded</option>
+                    <label className="block text-xs font-bold text-blue-900 uppercase tracking-wide mb-2">Funding Type</label>
+                    <select 
+                      value={formData.fundingType} 
+                      onChange={e => setFormData({...formData, fundingType: e.target.value})} 
+                      className="w-full px-4 py-2.5 bg-white border border-blue-200 rounded-xl focus:border-[#1864db] outline-none font-medium text-sm text-gray-800"
+                    >
+                      <option value="Internally-Funded">Internally-Funded (Institutional / University)</option>
+                      <option value="Externally-Funded">Externally-Funded (CHED / Pag-ulikid / LGU)</option>
                     </select>
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-blue-800 uppercase tracking-wide mb-2">Scholarship Category</label>
-                    <input type="text" value={formData.scholarshipCategory} onChange={e => setFormData({...formData, scholarshipCategory: e.target.value})} placeholder="e.g. Entrance - Valedictorian" className="w-full px-4 py-3 bg-white border border-blue-200 rounded-xl focus:border-[#1864db] outline-none" />
+                    <label className="block text-xs font-bold text-blue-900 uppercase tracking-wide mb-2">Scholarship Category / Program</label>
+                    <input 
+                      type="text" 
+                      value={formData.scholarshipCategory} 
+                      onChange={e => setFormData({...formData, scholarshipCategory: e.target.value})} 
+                      placeholder="e.g. Pag-ulikid / Academic Excellence / Tulong Dunong" 
+                      className="w-full px-4 py-2.5 bg-white border border-blue-200 rounded-xl focus:border-[#1864db] outline-none font-medium text-sm text-gray-800" 
+                    />
                   </div>
                 </div>
               </div>
 
+              {/* Requirement Upload Slots Grid */}
               <div className="space-y-4">
-                <label className="block text-sm font-bold text-gray-900 mb-2">Required Attachments</label>
-                
-                {['2x2 Picture', 'Certificate of Grades (COG)'].map((docName, idx) => (
-                  <div key={idx} className="border border-dashed border-gray-300 rounded-2xl p-6 flex flex-col items-center justify-center text-center hover:bg-gray-50 hover:border-[#1864db] transition-colors relative group">
-                    <input type="file" onChange={handleFileUpload} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
-                    <div className="w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center mb-3 group-hover:bg-blue-100 transition-colors">
-                      <Upload className="w-6 h-6 text-[#1864db]" />
-                    </div>
-                    <p className="font-bold text-gray-900">{docName}</p>
-                    <p className="text-xs text-gray-500 mt-1">Click or drag file to upload</p>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h4 className="text-base font-bold text-[#0f2e60] flex items-center gap-2">
+                      <FileCheck className="w-5 h-5 text-[#1864db]" />
+                      Required Student Documents & ID Uploads
+                    </h4>
+                    <p className="text-xs text-gray-500 mt-0.5">Please upload clear copies of all required documents. File formats supported: JPG, PNG, PDF.</p>
                   </div>
-                ))}
+                  <span className="text-xs font-bold bg-blue-100 text-blue-800 px-2.5 py-1 rounded-full">
+                    {files.length} / {requirementDefinitions.length} Attached
+                  </span>
+                </div>
 
-                {files.length > 0 && (
-                  <div className="mt-6 pt-6 border-t border-gray-100">
-                    <h4 className="text-sm font-bold text-gray-900 mb-3">Uploaded Files</h4>
-                    <div className="space-y-2">
-                      {files.map((f, i) => (
-                        <div key={i} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-100">
-                          <span className="text-sm font-medium text-gray-700">{f.name}</span>
-                          <CheckCircle2 className="w-4 h-4 text-green-500" />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {requirementDefinitions.map((req) => {
+                    const uploadedFile = files.find(f => f.category === req.category);
+
+                    return (
+                      <div 
+                        key={req.id} 
+                        className={cn(
+                          "rounded-2xl p-4 border transition-all duration-200",
+                          uploadedFile 
+                            ? "bg-[#f3f9f4] border-green-200 shadow-xs" 
+                            : req.required 
+                            ? "bg-white border-gray-200 hover:border-blue-300 shadow-xs" 
+                            : "bg-gray-50/70 border-gray-200"
+                        )}
+                      >
+                        <div className="flex items-start justify-between gap-3 mb-2">
+                          <div className="flex items-center gap-2.5">
+                            <div className={cn(
+                              "w-8 h-8 rounded-xl flex items-center justify-center text-xs font-bold shrink-0",
+                              uploadedFile 
+                                ? "bg-green-600 text-white" 
+                                : req.isPhoto 
+                                ? "bg-purple-100 text-purple-700" 
+                                : req.isIdCard 
+                                ? "bg-blue-100 text-blue-700" 
+                                : "bg-gray-100 text-gray-600"
+                            )}>
+                              {uploadedFile ? (
+                                <Check className="w-4 h-4" />
+                              ) : req.isPhoto ? (
+                                <Camera className="w-4 h-4" />
+                              ) : req.isIdCard ? (
+                                <CreditCard className="w-4 h-4" />
+                              ) : (
+                                <FileText className="w-4 h-4" />
+                              )}
+                            </div>
+                            <div>
+                              <h5 className="font-bold text-sm text-gray-900 leading-tight">{req.title}</h5>
+                              <p className="text-[11px] text-gray-500 mt-0.5 line-clamp-1">{req.description}</p>
+                            </div>
+                          </div>
+
+                          <span className={cn(
+                            "text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full shrink-0",
+                            req.required 
+                              ? (uploadedFile ? "bg-green-200/60 text-green-800" : "bg-amber-100 text-amber-800")
+                              : "bg-gray-100 text-gray-600"
+                          )}>
+                            {req.required ? 'Required' : 'Optional'}
+                          </span>
                         </div>
-                      ))}
+
+                        {/* Uploaded state vs empty state */}
+                        {uploadedFile ? (
+                          <div className="mt-3 pt-3 border-t border-green-200/70 flex items-center justify-between gap-2">
+                            <div className="flex items-center gap-2 overflow-hidden">
+                              {uploadedFile.type.startsWith('image/') ? (
+                                <img src={uploadedFile.data} alt="Thumbnail" className="w-8 h-8 object-cover rounded-lg border border-green-300 shrink-0" />
+                              ) : (
+                                <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center text-blue-700 shrink-0 text-[10px] font-bold">
+                                  PDF
+                                </div>
+                              )}
+                              <div className="overflow-hidden">
+                                <p className="text-xs font-bold text-gray-800 truncate">{uploadedFile.name}</p>
+                                <p className="text-[10px] text-green-700 font-semibold">{uploadedFile.size || 'Ready'} • Ready for Verification</p>
+                              </div>
+                            </div>
+
+                            <div className="flex items-center gap-1.5 shrink-0">
+                              <button
+                                type="button"
+                                onClick={() => handleRemoveCategoryFile(req.category)}
+                                className="p-1.5 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg text-xs font-semibold transition-colors"
+                                title="Remove file"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="mt-3 relative">
+                            <input
+                              type="file"
+                              accept={req.accept}
+                              onChange={(e) => {
+                                if (e.target.files && e.target.files[0]) {
+                                  handleCategoryFileUpload(req.category, e.target.files[0]);
+                                }
+                              }}
+                              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                            />
+                            <div className="border border-dashed border-gray-300 hover:border-[#1864db] bg-white rounded-xl py-3 px-4 flex items-center justify-center gap-2 text-xs font-semibold text-gray-700 hover:bg-blue-50/40 transition-colors">
+                              <Upload className="w-4 h-4 text-[#1864db]" />
+                              <span>Click to upload {req.isPhoto ? 'Photo' : req.isIdCard ? 'ID Card' : 'Document'}</span>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Digital Signature & Certification Pad */}
+              <div className="space-y-4">
+                <DigitalSignaturePad
+                  value={formData.signature}
+                  onChange={(sig) => setFormData(prev => ({ ...prev, signature: sig }))}
+                  studentName={`${formData.firstName} ${formData.familyName}`.trim()}
+                />
+
+                {/* Formal Certification Checkbox */}
+                <div className="bg-gray-50 border border-gray-200 rounded-xl p-4">
+                  <label className="flex items-start gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={formData.studentCertificationAgreed}
+                      onChange={(e) => setFormData(prev => ({ ...prev, studentCertificationAgreed: e.target.checked }))}
+                      className="mt-0.5 w-4 h-4 text-[#1864db] rounded focus:ring-blue-500 cursor-pointer"
+                    />
+                    <div className="text-xs text-gray-700 leading-relaxed">
+                      <span className="font-bold text-gray-900">Applicant Certification: </span>
+                      I hereby certify under oath that all the information and credentials provided in this scholarship application form are authentic, correct, and complete to the best of my personal knowledge. I acknowledge that any falsification or omission will result in immediate disqualification.
                     </div>
-                  </div>
-                )}
+                  </label>
+                </div>
               </div>
             </div>
           )}

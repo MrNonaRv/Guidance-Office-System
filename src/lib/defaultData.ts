@@ -1,7 +1,14 @@
 import { Submission, NotificationItem } from './db';
 
 const dummyBase64Pdf = "data:application/pdf;base64,JVBERi0xLjQKJcTl8uXrp/Og0MTGCjQgMCBvYmoKPDwgL0xlbmd0aCA1IDAgUiAvRmlsdGVyIC9GbGF0ZURlY29kZSA+PgpzdHJlYW0KeJzLSM3JyVcozy/KSVEEAELnBfUKZW5kc3RyZWFtCmVuZG9iago1IDAgb2JqCjE4CmVuZG9iagoxIDAgb2JqCjw8IC9UeXBlIC9DYXRhbG9nIC9QYWdlcyAyIDAgUiA+PgplbmRvYmoK";
-const dummyBase64Image = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 200 200'><rect width='200' height='200' fill='%230f2e60'/><text x='100' y='105' fill='%23ffffff' font-family='sans-serif' font-size='14' text-anchor='middle' font-weight='bold'>2x2 Formal ID</text></svg>";
+
+export const dummyBase64Photo2x2 = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240' viewBox='0 0 240 240'><rect width='240' height='240' fill='%23e2e8f0'/><rect x='8' y='8' width='224' height='224' fill='%23003884' rx='6'/><circle cx='120' cy='90' r='42' fill='%23fde047'/><circle cx='120' cy='85' r='38' fill='%23cbd5e1'/><path d='M45 205 C 45 145, 195 145, 195 205 Z' fill='%23ffffff'/><rect x='16' y='195' width='208' height='25' fill='%230a192f' rx='4'/><text x='120' y='212' fill='%23ffffff' font-family='Arial, sans-serif' font-size='11' font-weight='bold' text-anchor='middle' letter-spacing='1'>CAPSU OFFICIAL 2x2 ID</text></svg>";
+
+export const dummyBase64StudentId = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='360' height='220' viewBox='0 0 360 220'><rect width='360' height='220' rx='12' fill='%23ffffff' stroke='%23003884' stroke-width='4'/><rect width='360' height='45' fill='%23003884' rx='10 10 0 0'/><text x='180' y='23' fill='%23ffffff' font-family='Arial, sans-serif' font-size='12' font-weight='bold' text-anchor='middle'>CAPIZ STATE UNIVERSITY</text><text x='180' y='37' fill='%23fbbf24' font-family='Arial, sans-serif' font-size='9' font-weight='bold' text-anchor='middle'>STUDENT IDENTIFICATION CARD</text><rect x='20' y='60' width='80' height='95' fill='%23e2e8f0' stroke='%2394a3b8' rx='6'/><circle cx='60' cy='95' r='20' fill='%2394a3b8'/><path d='M35 145 C 35 125, 85 125, 85 145 Z' fill='%2364748b'/><text x='115' y='80' fill='%23003884' font-family='Arial, sans-serif' font-size='13' font-weight='bold'>STUDENT IDENTITY</text><text x='115' y='100' fill='%23334155' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>ID NO: 2024-CAPSU-0182</text><text x='115' y='118' fill='%23334155' font-family='Arial, sans-serif' font-size='10'>STATUS: ENROLLED REGULAR</text><text x='115' y='136' fill='%2316a34a' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>VALID: ACADEMIC YEAR 2025-2026</text><rect x='20' y='168' width='320' height='34' fill='%23f1f5f9' rx='4'/><text x='180' y='190' fill='%230f172a' font-family='Courier, monospace' font-size='14' font-weight='bold' text-anchor='middle' letter-spacing='4'>|||| | ||||| || |||||| | |||</text></svg>";
+
+export const dummyBase64Signature = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='100' viewBox='0 0 300 100'><path d='M25 65 Q 45 10, 65 55 T 105 45 Q 125 15, 145 60 T 185 50 Q 215 10, 235 55 T 275 40' fill='none' stroke='%23003884' stroke-width='3' stroke-linecap='round'/><path d='M35 78 Q 145 88, 275 72' fill='none' stroke='%23003884' stroke-width='2' stroke-linecap='round'/></svg>";
+
+const dummyBase64Image = dummyBase64Photo2x2;
 
 export const defaultSubmissions: Submission[] = [
   {
@@ -41,20 +48,26 @@ export const defaultSubmissions: Submission[] = [
       accessResources: ['Study space', 'Textbooks and learning materials'],
       workingStudent: 'No',
       classifications: ['Low income family/ Economically disadvantaged student', 'First Generation student (Parents did not complete a college degree)'],
+      photo2x2: dummyBase64Photo2x2,
+      studentIdCard: dummyBase64StudentId,
+      signature: dummyBase64Signature,
+      signedAt: '2026-03-11T10:00:00Z',
       requirements: [
+        { name: '2x2 Recent Formal ID Photo', status: 'Verified' },
+        { name: 'Valid Student ID', status: 'Verified' },
         { name: 'Certificate of Grades (COG)', status: 'Verified' },
         { name: 'Certificate of Registration (COR)', status: 'Verified' },
         { name: 'Proof of Income / Certificate of Indigency', status: 'Verified' },
-        { name: 'Certificate of Good Moral Character', status: 'Verified' },
-        { name: '2x2 Recent Formal ID Photo', status: 'Verified' }
+        { name: 'Certificate of Good Moral Character', status: 'Verified' }
       ]
     },
     files: [
+      { id: 'f-photo', name: 'Santos_2x2_ID_Photo.png', category: '2x2 Recent Formal ID Photo', type: 'image/png', size: '320 KB', data: dummyBase64Photo2x2, verified: true, status: 'Verified' },
+      { id: 'f-id', name: 'Santos_Valid_Student_ID.png', category: 'Valid Student ID', type: 'image/png', size: '450 KB', data: dummyBase64StudentId, verified: true, status: 'Verified' },
       { id: 'f-1', name: 'Santos_Certificate_of_Grades.pdf', category: 'Certificate of Grades (COG)', type: 'application/pdf', size: '1.2 MB', data: dummyBase64Pdf, verified: true, status: 'Verified' },
       { id: 'f-2', name: 'Santos_Certificate_of_Registration.pdf', category: 'Certificate of Registration (COR)', type: 'application/pdf', size: '850 KB', data: dummyBase64Pdf, verified: true, status: 'Verified' },
       { id: 'f-3', name: 'Santos_Certificate_of_Indigency.pdf', category: 'Proof of Income / Certificate of Indigency', type: 'application/pdf', size: '620 KB', data: dummyBase64Pdf, verified: true, status: 'Verified' },
-      { id: 'f-4', name: 'Santos_Good_Moral_Character.pdf', category: 'Certificate of Good Moral Character', type: 'application/pdf', size: '540 KB', data: dummyBase64Pdf, verified: true, status: 'Verified' },
-      { id: 'f-5', name: 'Santos_2x2_ID_Photo.png', category: '2x2 Recent Formal ID Photo', type: 'image/png', size: '320 KB', data: dummyBase64Image, verified: true, status: 'Verified' }
+      { id: 'f-4', name: 'Santos_Good_Moral_Character.pdf', category: 'Certificate of Good Moral Character', type: 'application/pdf', size: '540 KB', data: dummyBase64Pdf, verified: true, status: 'Verified' }
     ]
   },
   {

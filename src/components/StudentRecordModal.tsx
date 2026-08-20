@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
-import { X, ArrowLeft, ChevronDown, CheckCircle2, AlertCircle, FileText, Download, Printer, Eye, Check } from 'lucide-react';
+import { 
+  X, ArrowLeft, ChevronDown, CheckCircle2, AlertCircle, FileText, Download, 
+  Printer, Eye, Check, CreditCard, PenTool, Camera, ShieldCheck, UserCheck 
+} from 'lucide-react';
 import { cn } from '../lib/utils';
 import { db, Submission, SubmissionFile } from '../lib/db';
 
@@ -17,7 +20,7 @@ export function StudentRecordModal({
   academicYearsList = []
 }: StudentRecordModalProps) {
   const [currentStatus, setCurrentStatus] = useState<string>(submission.status || 'Incomplete');
-  const [viewMode, setViewMode] = useState<'overview' | 'requirements' | 'semester_record'>('overview');
+  const [viewMode, setViewMode] = useState<'overview' | 'requirements' | 'id_signature' | 'semester_record'>('overview');
   const [selectedSemester, setSelectedSemester] = useState<'1st Semester' | '2nd Semester'>('1st Semester');
   const [selectedAcademicYear, setSelectedAcademicYear] = useState<string>('2025-2026');
   const [previewFile, setPreviewFile] = useState<SubmissionFile | null>(null);
@@ -29,9 +32,15 @@ export function StudentRecordModal({
 
   const formData = localSubmission.data || {};
   const studentName = localSubmission.studentName || `${formData.firstName || 'Anna Marie'} ${formData.middleName || 'A.'} ${formData.familyName || 'Santos'}`.trim();
+  const studentIdNumber = localSubmission.studentId || formData.studentId || '2024-CAPSU-0182';
   const courseCode = formData.course || localSubmission.answers?.course || (localSubmission.scholarshipType?.includes('BS') || localSubmission.scholarshipType?.includes('BA') ? localSubmission.scholarshipType.split(' ')[0] : 'BAEL');
   const scholarshipType = localSubmission.scholarshipType || formData.scholarshipCategory || 'Externally-Funded (Pag-ulikid)';
   
+  // Extract photo, student ID, and signature from formData or files
+  const photo2x2 = localSubmission.photo2x2 || formData.photo2x2 || localSubmission.files?.find(f => f.category?.includes('2x2') || f.category?.includes('Photo'))?.data;
+  const studentIdCard = localSubmission.studentIdCard || formData.studentIdCard || localSubmission.files?.find(f => f.category?.includes('Student ID'))?.data;
+  const digitalSignature = localSubmission.signature || formData.signature;
+
   // Available Academic Years for dropdowns
   const academicYearsOptions = academicYearsList && academicYearsList.length > 0
     ? academicYearsList.map(ay => (typeof ay === 'string' ? ay : ay.label || ay.year || '2025-2026'))
@@ -68,6 +77,22 @@ export function StudentRecordModal({
   // Requirements list
   const requirementsList = [
     {
+      id: 'req-photo',
+      name: '2x2 Recent Formal ID Photo',
+      category: '2x2 Recent Formal ID Photo',
+      fileName: `${studentName.replace(/\s+/g, '_')}_2x2_Photo.png`,
+      status: (photo2x2 || localSubmission.files?.find(f => f.category?.includes('Photo') || f.category?.includes('2x2'))?.verified || localSubmission.status === 'Complete' || localSubmission.status === 'Approved') ? 'Verified' : 'Pending',
+      file: localSubmission.files?.find(f => f.category?.includes('Photo') || f.category?.includes('2x2')) || (photo2x2 ? { name: '2x2_Photo.png', data: photo2x2, type: 'image/png', category: '2x2 Recent Formal ID Photo' } : null)
+    },
+    {
+      id: 'req-id',
+      name: 'Valid Student ID Card',
+      category: 'Valid Student ID',
+      fileName: `${studentName.replace(/\s+/g, '_')}_StudentID.png`,
+      status: (studentIdCard || localSubmission.files?.find(f => f.category?.includes('Student ID'))?.verified || localSubmission.status === 'Complete' || localSubmission.status === 'Approved') ? 'Verified' : 'Pending',
+      file: localSubmission.files?.find(f => f.category?.includes('Student ID')) || (studentIdCard ? { name: 'Student_ID_Card.png', data: studentIdCard, type: 'image/png', category: 'Valid Student ID' } : null)
+    },
+    {
       id: 'req-1',
       name: 'Certificate of Grades (COG)',
       category: 'Certificate of Grades (COG)',
@@ -98,14 +123,6 @@ export function StudentRecordModal({
       fileName: `${studentName.replace(/\s+/g, '_')}_GoodMoral.pdf`,
       status: (localSubmission.files?.find(f => f.category?.includes('Moral'))?.verified || localSubmission.status === 'Complete' || localSubmission.status === 'Approved') ? 'Verified' : 'Pending',
       file: localSubmission.files?.find(f => f.category?.includes('Moral'))
-    },
-    {
-      id: 'req-5',
-      name: '2x2 Recent Formal ID Photo',
-      category: '2x2 Recent Formal ID Photo',
-      fileName: `${studentName.replace(/\s+/g, '_')}_2x2_ID.png`,
-      status: (localSubmission.files?.find(f => f.category?.includes('Photo') || f.category?.includes('2x2') || f.type?.includes('image'))?.verified || localSubmission.status === 'Complete' || localSubmission.status === 'Approved') ? 'Verified' : 'Pending',
-      file: localSubmission.files?.find(f => f.category?.includes('Photo') || f.category?.includes('2x2') || f.type?.includes('image'))
     }
   ];
 
@@ -113,10 +130,10 @@ export function StudentRecordModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-150 print:p-0 print:bg-white print:block print:relative print:z-0">
       
       {/* Main Dialog Container */}
-      <div className="relative w-full max-w-lg bg-white rounded-2xl shadow-2xl overflow-hidden border border-gray-100 animate-in zoom-in-95 duration-200 print:hidden">
+      <div className="relative w-full max-w-lg bg-white rounded-2xl shadow-2xl overflow-hidden border border-gray-100 animate-in zoom-in-95 duration-200 print:hidden max-h-[92vh] flex flex-col">
         
-        {/* Top Navy Blue Header Banner matching exact design */}
-        <div className="bg-[#003884] text-white px-6 py-4 flex items-center justify-center relative shadow-md">
+        {/* Top Navy Blue Header Banner */}
+        <div className="bg-[#003884] text-white px-6 py-4 flex items-center justify-center relative shadow-md shrink-0">
           {viewMode !== 'overview' && (
             <button
               onClick={() => setViewMode('overview')}
@@ -139,313 +156,474 @@ export function StudentRecordModal({
           </button>
         </div>
 
-        {/* ------------------------------------------------------------- */}
-        {/* VIEW 1: OVERVIEW (The 3 Folder Dashboard requested in image) */}
-        {/* ------------------------------------------------------------- */}
-        {viewMode === 'overview' && (
-          <div className="p-6 md:p-7 space-y-4 bg-white">
-            
-            {/* Student Info & Status Header */}
-            <div className="flex items-start justify-between gap-4 mb-2">
-              <div>
-                <h3 className="text-xl md:text-[22px] font-extrabold text-gray-900 leading-tight">
-                  {studentName}
-                </h3>
-                <p className="text-base font-bold text-gray-800 tracking-wide mt-0.5">
-                  {courseCode}
-                </p>
+        {/* Scrollable Container */}
+        <div className="overflow-y-auto flex-1">
+          {/* ------------------------------------------------------------- */}
+          {/* VIEW 1: OVERVIEW (The 3 Folder Dashboard + Student Identity) */}
+          {/* ------------------------------------------------------------- */}
+          {viewMode === 'overview' && (
+            <div className="p-6 md:p-7 space-y-4 bg-white">
+              
+              {/* Student Info & Status Header with 2x2 Photo Avatar */}
+              <div className="flex items-start justify-between gap-4 mb-2 pb-4 border-b border-gray-100">
+                <div className="flex items-center gap-3.5">
+                  {photo2x2 ? (
+                    <img 
+                      src={photo2x2} 
+                      alt="Student 2x2 Photo" 
+                      className="w-14 h-14 rounded-2xl object-cover border-2 border-[#003884] shadow-sm shrink-0" 
+                    />
+                  ) : (
+                    <div className="w-14 h-14 rounded-2xl bg-blue-100 text-[#003884] flex items-center justify-center font-extrabold text-lg border-2 border-blue-200 shrink-0">
+                      {studentName.split(' ').map((n: string) => n[0]).join('').slice(0, 2)}
+                    </div>
+                  )}
+
+                  <div>
+                    <h3 className="text-lg md:text-[20px] font-extrabold text-gray-900 leading-tight">
+                      {studentName}
+                    </h3>
+                    <p className="text-sm font-bold text-[#003884] tracking-wide mt-0.5">
+                      {courseCode} &bull; <span className="text-gray-500 font-normal">{studentIdNumber}</span>
+                    </p>
+                    {digitalSignature && (
+                      <span className="inline-flex items-center gap-1 text-[11px] font-bold text-green-700 mt-1">
+                        <ShieldCheck className="w-3.5 h-3.5 text-green-600" /> Digital Signature Affixed
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                <div className="text-right shrink-0">
+                  <span className="block text-xs font-bold text-[#003884] mb-1">Status</span>
+                  <div className="relative inline-block">
+                    <select
+                      value={currentStatus === 'Pending' ? 'Incomplete' : currentStatus}
+                      onChange={(e) => handleStatusSelect(e.target.value)}
+                      className="appearance-none bg-[#dce7f9] hover:bg-[#d0e0f8] text-gray-900 font-semibold text-sm pl-3.5 pr-8 py-1.5 rounded-xl border border-[#b4cef8] focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer shadow-xs transition-colors"
+                    >
+                      <option value="Incomplete">Incomplete</option>
+                      <option value="Complete">Complete</option>
+                      <option value="Approved">Approved</option>
+                      <option value="Rejected">Rejected</option>
+                    </select>
+                    <ChevronDown className="w-4 h-4 text-gray-700 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  </div>
+                </div>
               </div>
 
-              <div className="text-right shrink-0">
-                <span className="block text-xs font-bold text-[#003884] mb-1">Status</span>
-                <div className="relative inline-block">
+              {/* Folder 1: Scholarship Requirements */}
+              <div className="bg-[#edf4fe] border border-[#d2e2fc] rounded-2xl p-4 md:p-4.5 flex items-center justify-between shadow-xs hover:border-blue-300 transition-all">
+                <div className="flex items-center gap-3.5">
+                  <div className="w-9 h-9 flex items-center justify-center shrink-0">
+                    <svg className="w-8 h-8 drop-shadow-xs" viewBox="0 0 24 24" fill="none">
+                      <path d="M2.5 7C2.5 5.61929 3.61929 4.5 5 4.5H9.5C10.163 4.5 10.7989 4.76339 11.2678 5.23223L12.5355 6.5H19C20.3807 6.5 21.5 7.61929 21.5 9V17.5C21.5 18.8807 20.3807 20 19 20H5C3.61929 20 2.5 18.8807 2.5 17.5V7Z" fill="#F59E0B" stroke="#D97706" strokeWidth="1.2"/>
+                      <path d="M2.5 9.5C2.5 8.11929 3.61929 7 5 7H19C20.3807 7 21.5 8.11929 21.5 9.5V17.5C21.5 18.8807 20.3807 20 19 20H5C3.61929 20 2.5 18.8807 2.5 17.5V9.5Z" fill="#FBBF24" stroke="#D97706" strokeWidth="1"/>
+                    </svg>
+                  </div>
+                  <div>
+                    <span className="text-base md:text-[17px] font-bold text-gray-900 block">
+                      Scholarship Requirements
+                    </span>
+                    <span className="text-xs text-gray-500 font-medium">COG, COR, Indigency, ID & Photos</span>
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => setViewMode('requirements')}
+                  className="bg-[#0052cc] hover:bg-[#0041a8] text-white text-sm md:text-base font-bold px-8 py-2 md:py-2.5 rounded-full shadow-xs transition-transform active:scale-95 cursor-pointer whitespace-nowrap"
+                >
+                  View
+                </button>
+              </div>
+
+              {/* Folder 2: Student ID & Digital Signature Card */}
+              <div className="bg-[#f0fdf4] border border-[#bbf7d0] rounded-2xl p-4 md:p-4.5 flex items-center justify-between shadow-xs hover:border-green-400 transition-all">
+                <div className="flex items-center gap-3.5">
+                  <div className="w-9 h-9 rounded-xl bg-green-100 text-green-700 flex items-center justify-center shrink-0">
+                    <UserCheck className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <span className="text-base md:text-[17px] font-bold text-gray-900 block">
+                      Student ID & Signature
+                    </span>
+                    <span className="text-xs text-gray-600 font-medium">
+                      {studentIdCard ? 'ID Uploaded' : 'Pending ID'} &bull; {digitalSignature ? 'Signed Digitally' : 'Unsigned'}
+                    </span>
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => setViewMode('id_signature')}
+                  className="bg-[#15803d] hover:bg-[#166534] text-white text-sm md:text-base font-bold px-8 py-2 md:py-2.5 rounded-full shadow-xs transition-transform active:scale-95 cursor-pointer whitespace-nowrap"
+                >
+                  View
+                </button>
+              </div>
+
+              {/* Folder 3: 1st Semester */}
+              <div className="bg-[#edf4fe] border border-[#d2e2fc] rounded-2xl p-4 md:p-4.5 flex items-center justify-between shadow-xs hover:border-blue-300 transition-all">
+                <div className="flex items-center gap-3.5">
+                  <div className="w-9 h-9 flex items-center justify-center shrink-0">
+                    <svg className="w-8 h-8 drop-shadow-xs" viewBox="0 0 24 24" fill="none">
+                      <path d="M1.5 5.5C1.5 4.39543 2.39543 3.5 3.5 3.5H7.5C8.03043 3.5 8.53914 3.71071 8.91421 4.08579L9.91421 5.08579H16.5C17.6046 5.08579 18.5 5.98122 18.5 7.08579V14.5C18.5 15.6046 17.6046 16.5 16.5 16.5H3.5C2.39543 16.5 1.5 15.6046 1.5 14.5V5.5Z" fill="#D97706" stroke="#B45309" strokeWidth="1"/>
+                      <path d="M4.5 7.5C4.5 6.39543 5.39543 5.5 6.5 5.5H10.5C11.0304 5.5 11.5391 5.71071 11.9142 6.08579L13.1 7.27C13.475 7.645 13.984 7.856 14.514 7.856H20.5C21.6046 7.856 22.5 8.751 22.5 9.856V18.5C22.5 19.6046 21.6046 20.5 20.5 20.5H6.5C5.39543 20.5 4.5 19.6046 4.5 18.5V7.5Z" fill="#F59E0B" stroke="#D97706" strokeWidth="1.2"/>
+                      <path d="M4.5 10C4.5 8.89543 5.39543 8 6.5 8H20.5C21.6046 8 22.5 8.89543 22.5 10V18.5C22.5 19.6046 21.6046 20.5 20.5 20.5H6.5C5.39543 20.5 4.5 19.6046 4.5 18.5V10Z" fill="#FCD34D" stroke="#D97706" strokeWidth="1"/>
+                    </svg>
+                  </div>
+                  <span className="text-base md:text-[17px] font-bold text-gray-900">
+                    1st Semester
+                  </span>
+                </div>
+
+                <div className="relative shrink-0">
                   <select
-                    value={currentStatus === 'Pending' ? 'Incomplete' : currentStatus}
-                    onChange={(e) => handleStatusSelect(e.target.value)}
-                    className="appearance-none bg-[#dce7f9] hover:bg-[#d0e0f8] text-gray-900 font-semibold text-sm pl-3.5 pr-8 py-1.5 rounded-xl border border-[#b4cef8] focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer shadow-xs transition-colors"
+                    value={firstSemAY}
+                    onChange={(e) => {
+                      setFirstSemAY(e.target.value);
+                      handleOpenSemester('1st Semester', e.target.value);
+                    }}
+                    className="appearance-none bg-[#dce7f9] hover:bg-[#d0e0f8] text-gray-900 font-semibold text-sm pl-3.5 pr-8 py-2 rounded-xl border border-[#b4cef8] focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer shadow-xs transition-colors"
                   >
-                    <option value="Incomplete">Incomplete</option>
-                    <option value="Complete">Complete</option>
-                    <option value="Approved">Approved</option>
-                    <option value="Rejected">Rejected</option>
+                    <option value="">Academic Year</option>
+                    {academicYearsOptions.map(ay => (
+                      <option key={ay} value={ay}>{ay}</option>
+                    ))}
                   </select>
                   <ChevronDown className="w-4 h-4 text-gray-700 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                 </div>
               </div>
-            </div>
 
-            {/* Folder 1: Scholarship Requirements */}
-            <div className="bg-[#edf4fe] border border-[#d2e2fc] rounded-2xl p-4 md:p-4.5 flex items-center justify-between shadow-xs hover:border-blue-300 transition-all">
-              <div className="flex items-center gap-3.5">
-                {/* Yellow/Amber Single Folder Icon */}
-                <div className="w-9 h-9 flex items-center justify-center shrink-0">
-                  <svg className="w-8 h-8 drop-shadow-xs" viewBox="0 0 24 24" fill="none">
-                    <path d="M2.5 7C2.5 5.61929 3.61929 4.5 5 4.5H9.5C10.163 4.5 10.7989 4.76339 11.2678 5.23223L12.5355 6.5H19C20.3807 6.5 21.5 7.61929 21.5 9V17.5C21.5 18.8807 20.3807 20 19 20H5C3.61929 20 2.5 18.8807 2.5 17.5V7Z" fill="#F59E0B" stroke="#D97706" strokeWidth="1.2"/>
-                    <path d="M2.5 9.5C2.5 8.11929 3.61929 7 5 7H19C20.3807 7 21.5 8.11929 21.5 9.5V17.5C21.5 18.8807 20.3807 20 19 20H5C3.61929 20 2.5 18.8807 2.5 17.5V9.5Z" fill="#FBBF24" stroke="#D97706" strokeWidth="1"/>
-                  </svg>
+              {/* Folder 4: 2nd Semester */}
+              <div className="bg-[#edf4fe] border border-[#d2e2fc] rounded-2xl p-4 md:p-4.5 flex items-center justify-between shadow-xs hover:border-blue-300 transition-all">
+                <div className="flex items-center gap-3.5">
+                  <div className="w-9 h-9 flex items-center justify-center shrink-0">
+                    <svg className="w-8 h-8 drop-shadow-xs" viewBox="0 0 24 24" fill="none">
+                      <path d="M1.5 5.5C1.5 4.39543 2.39543 3.5 3.5 3.5H7.5C8.03043 3.5 8.53914 3.71071 8.91421 4.08579L9.91421 5.08579H16.5C17.6046 5.08579 18.5 5.98122 18.5 7.08579V14.5C18.5 15.6046 17.6046 16.5 16.5 16.5H3.5C2.39543 16.5 1.5 15.6046 1.5 14.5V5.5Z" fill="#D97706" stroke="#B45309" strokeWidth="1"/>
+                      <path d="M4.5 7.5C4.5 6.39543 5.39543 5.5 6.5 5.5H10.5C11.0304 5.5 11.5391 5.71071 11.9142 6.08579L13.1 7.27C13.475 7.645 13.984 7.856 14.514 7.856H20.5C21.6046 7.856 22.5 8.751 22.5 9.856V18.5C22.5 19.6046 21.6046 20.5 20.5 20.5H6.5C5.39543 20.5 4.5 19.6046 4.5 18.5V7.5Z" fill="#F59E0B" stroke="#D97706" strokeWidth="1.2"/>
+                      <path d="M4.5 10C4.5 8.89543 5.39543 8 6.5 8H20.5C21.6046 8 22.5 8.89543 22.5 10V18.5C22.5 19.6046 21.6046 20.5 20.5 20.5H6.5C5.39543 20.5 4.5 19.6046 4.5 18.5V10Z" fill="#FCD34D" stroke="#D97706" strokeWidth="1"/>
+                    </svg>
+                  </div>
+                  <span className="text-base md:text-[17px] font-bold text-gray-900">
+                    2nd Semester
+                  </span>
                 </div>
-                <span className="text-base md:text-[17px] font-bold text-gray-900">
-                  Scholarship Requirements
-                </span>
+
+                <div className="relative shrink-0">
+                  <select
+                    value={secondSemAY}
+                    onChange={(e) => {
+                      setSecondSemAY(e.target.value);
+                      handleOpenSemester('2nd Semester', e.target.value);
+                    }}
+                    className="appearance-none bg-[#dce7f9] hover:bg-[#d0e0f8] text-gray-900 font-semibold text-sm pl-3.5 pr-8 py-2 rounded-xl border border-[#b4cef8] focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer shadow-xs transition-colors"
+                  >
+                    <option value="">Academic Year</option>
+                    {academicYearsOptions.map(ay => (
+                      <option key={ay} value={ay}>{ay}</option>
+                    ))}
+                  </select>
+                  <ChevronDown className="w-4 h-4 text-gray-700 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                </div>
               </div>
 
-              <button
-                onClick={() => setViewMode('requirements')}
-                className="bg-[#0052cc] hover:bg-[#0041a8] text-white text-sm md:text-base font-bold px-8 py-2 md:py-2.5 rounded-full shadow-xs transition-transform active:scale-95 cursor-pointer whitespace-nowrap"
-              >
-                View
-              </button>
             </div>
+          )}
 
-            {/* Folder 2: 1st Semester */}
-            <div className="bg-[#edf4fe] border border-[#d2e2fc] rounded-2xl p-4 md:p-4.5 flex items-center justify-between shadow-xs hover:border-blue-300 transition-all">
-              <div className="flex items-center gap-3.5">
-                {/* Yellow/Amber Stacked Folder Icon */}
-                <div className="w-9 h-9 flex items-center justify-center shrink-0">
-                  <svg className="w-8 h-8 drop-shadow-xs" viewBox="0 0 24 24" fill="none">
-                    <path d="M1.5 5.5C1.5 4.39543 2.39543 3.5 3.5 3.5H7.5C8.03043 3.5 8.53914 3.71071 8.91421 4.08579L9.91421 5.08579H16.5C17.6046 5.08579 18.5 5.98122 18.5 7.08579V14.5C18.5 15.6046 17.6046 16.5 16.5 16.5H3.5C2.39543 16.5 1.5 15.6046 1.5 14.5V5.5Z" fill="#D97706" stroke="#B45309" strokeWidth="1"/>
-                    <path d="M4.5 7.5C4.5 6.39543 5.39543 5.5 6.5 5.5H10.5C11.0304 5.5 11.5391 5.71071 11.9142 6.08579L13.1 7.27C13.475 7.645 13.984 7.856 14.514 7.856H20.5C21.6046 7.856 22.5 8.751 22.5 9.856V18.5C22.5 19.6046 21.6046 20.5 20.5 20.5H6.5C5.39543 20.5 4.5 19.6046 4.5 18.5V7.5Z" fill="#F59E0B" stroke="#D97706" strokeWidth="1.2"/>
-                    <path d="M4.5 10C4.5 8.89543 5.39543 8 6.5 8H20.5C21.6046 8 22.5 8.89543 22.5 10V18.5C22.5 19.6046 21.6046 20.5 20.5 20.5H6.5C5.39543 20.5 4.5 19.6046 4.5 18.5V10Z" fill="#FCD34D" stroke="#D97706" strokeWidth="1"/>
-                  </svg>
+          {/* ------------------------------------------------------------- */}
+          {/* VIEW 2: SCHOLARSHIP REQUIREMENTS DETAIL & VERIFICATION */}
+          {/* ------------------------------------------------------------- */}
+          {viewMode === 'requirements' && (
+            <div className="p-6 space-y-5 bg-gray-50/60">
+              
+              {/* Context bar */}
+              <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-xs flex flex-wrap justify-between items-center gap-3">
+                <div>
+                  <span className="text-xs font-bold uppercase tracking-wider text-blue-700">Scholarship Program</span>
+                  <h4 className="text-base font-bold text-gray-900">{scholarshipType}</h4>
+                  <p className="text-xs text-gray-500 mt-0.5">Submitted on {new Date(localSubmission.submittedAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</p>
                 </div>
-                <span className="text-base md:text-[17px] font-bold text-gray-900">
-                  1st Semester
-                </span>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => window.print()}
+                    className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-xs font-semibold transition-colors cursor-pointer"
+                    title="Print official form"
+                  >
+                    <Printer className="w-3.5 h-3.5" /> Print Form
+                  </button>
+                  <button
+                    onClick={() => handleStatusSelect('Approved')}
+                    className="flex items-center gap-1.5 px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded-lg text-xs font-bold transition-colors shadow-xs cursor-pointer"
+                  >
+                    <Check className="w-3.5 h-3.5" /> Approve
+                  </button>
+                </div>
               </div>
 
-              <div className="relative shrink-0">
-                <select
-                  value={firstSemAY}
-                  onChange={(e) => {
-                    setFirstSemAY(e.target.value);
-                    handleOpenSemester('1st Semester', e.target.value);
-                  }}
-                  className="appearance-none bg-[#dce7f9] hover:bg-[#d0e0f8] text-gray-900 font-semibold text-sm pl-3.5 pr-8 py-2 rounded-xl border border-[#b4cef8] focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer shadow-xs transition-colors"
+              {/* Checklist of required documents */}
+              <div className="space-y-3">
+                <h5 className="text-xs font-bold uppercase tracking-wider text-gray-600 px-1">
+                  Document Checklist & Verification
+                </h5>
+
+                {requirementsList.map((req) => (
+                  <div key={req.id} className="bg-white p-4 rounded-xl border border-gray-200 shadow-xs flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className={cn(
+                        "w-8 h-8 rounded-lg flex items-center justify-center shrink-0 font-bold",
+                        req.status === 'Verified' ? "bg-green-100 text-green-700" : "bg-amber-100 text-amber-700"
+                      )}>
+                        {req.status === 'Verified' ? <CheckCircle2 className="w-5 h-5 text-green-600" /> : <AlertCircle className="w-5 h-5 text-amber-600" />}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-sm font-bold text-gray-900 truncate">{req.name}</p>
+                        <p className="text-xs text-gray-500 truncate">{req.fileName}</p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 shrink-0">
+                      <span className={cn(
+                        "px-2.5 py-1 rounded-full text-[11px] font-bold uppercase",
+                        req.status === 'Verified' ? "bg-green-100 text-green-700 border border-green-200" : "bg-amber-100 text-amber-800 border border-amber-200"
+                      )}>
+                        {req.status}
+                      </span>
+
+                      {req.file && (
+                        <button
+                          onClick={() => setPreviewFile(req.file as SubmissionFile)}
+                          className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors cursor-pointer"
+                          title="Preview File"
+                        >
+                          <Eye className="w-4 h-4" />
+                        </button>
+                      )}
+
+                      <button
+                        onClick={() => handleVerifyRequirement(req.category, req.status === 'Verified' ? 'Pending' : 'Verified')}
+                        className={cn(
+                          "px-2.5 py-1 text-xs font-semibold rounded-lg transition-all cursor-pointer",
+                          req.status === 'Verified' 
+                            ? "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                            : "bg-blue-600 text-white hover:bg-blue-700 shadow-xs"
+                        )}
+                      >
+                        {req.status === 'Verified' ? 'Mark Pending' : 'Verify'}
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Back button */}
+              <div className="pt-2 text-center">
+                <button
+                  onClick={() => setViewMode('overview')}
+                  className="text-xs font-bold text-blue-600 hover:text-blue-800 underline transition-colors cursor-pointer"
                 >
-                  <option value="">Academic Year</option>
-                  {academicYearsOptions.map(ay => (
-                    <option key={ay} value={ay}>{ay}</option>
-                  ))}
-                </select>
-                <ChevronDown className="w-4 h-4 text-gray-700 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  ← Return to Student Records Summary
+                </button>
               </div>
-            </div>
 
-            {/* Folder 3: 2nd Semester */}
-            <div className="bg-[#edf4fe] border border-[#d2e2fc] rounded-2xl p-4 md:p-4.5 flex items-center justify-between shadow-xs hover:border-blue-300 transition-all">
-              <div className="flex items-center gap-3.5">
-                {/* Yellow/Amber Stacked Folder Icon */}
-                <div className="w-9 h-9 flex items-center justify-center shrink-0">
-                  <svg className="w-8 h-8 drop-shadow-xs" viewBox="0 0 24 24" fill="none">
-                    <path d="M1.5 5.5C1.5 4.39543 2.39543 3.5 3.5 3.5H7.5C8.03043 3.5 8.53914 3.71071 8.91421 4.08579L9.91421 5.08579H16.5C17.6046 5.08579 18.5 5.98122 18.5 7.08579V14.5C18.5 15.6046 17.6046 16.5 16.5 16.5H3.5C2.39543 16.5 1.5 15.6046 1.5 14.5V5.5Z" fill="#D97706" stroke="#B45309" strokeWidth="1"/>
-                    <path d="M4.5 7.5C4.5 6.39543 5.39543 5.5 6.5 5.5H10.5C11.0304 5.5 11.5391 5.71071 11.9142 6.08579L13.1 7.27C13.475 7.645 13.984 7.856 14.514 7.856H20.5C21.6046 7.856 22.5 8.751 22.5 9.856V18.5C22.5 19.6046 21.6046 20.5 20.5 20.5H6.5C5.39543 20.5 4.5 19.6046 4.5 18.5V7.5Z" fill="#F59E0B" stroke="#D97706" strokeWidth="1.2"/>
-                    <path d="M4.5 10C4.5 8.89543 5.39543 8 6.5 8H20.5C21.6046 8 22.5 8.89543 22.5 10V18.5C22.5 19.6046 21.6046 20.5 20.5 20.5H6.5C5.39543 20.5 4.5 19.6046 4.5 18.5V10Z" fill="#FCD34D" stroke="#D97706" strokeWidth="1"/>
-                  </svg>
+            </div>
+          )}
+
+          {/* ------------------------------------------------------------- */}
+          {/* VIEW 3: STUDENT ID & DIGITAL SIGNATURE DEDICATED VIEW */}
+          {/* ------------------------------------------------------------- */}
+          {viewMode === 'id_signature' && (
+            <div className="p-6 space-y-6 bg-gray-50/60">
+              
+              {/* Header & Verification Bar */}
+              <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-xs flex items-center justify-between">
+                <div>
+                  <span className="text-xs font-bold uppercase tracking-wider text-green-700">Identity Verification</span>
+                  <h4 className="text-base font-bold text-gray-900">Student ID & Legal Signature</h4>
+                  <p className="text-xs text-gray-500 mt-0.5">{studentName} &bull; {studentIdNumber}</p>
                 </div>
-                <span className="text-base md:text-[17px] font-bold text-gray-900">
-                  2nd Semester
-                </span>
-              </div>
 
-              <div className="relative shrink-0">
-                <select
-                  value={secondSemAY}
-                  onChange={(e) => {
-                    setSecondSemAY(e.target.value);
-                    handleOpenSemester('2nd Semester', e.target.value);
-                  }}
-                  className="appearance-none bg-[#dce7f9] hover:bg-[#d0e0f8] text-gray-900 font-semibold text-sm pl-3.5 pr-8 py-2 rounded-xl border border-[#b4cef8] focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer shadow-xs transition-colors"
-                >
-                  <option value="">Academic Year</option>
-                  {academicYearsOptions.map(ay => (
-                    <option key={ay} value={ay}>{ay}</option>
-                  ))}
-                </select>
-                <ChevronDown className="w-4 h-4 text-gray-700 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-              </div>
-            </div>
-
-          </div>
-        )}
-
-        {/* ------------------------------------------------------------- */}
-        {/* VIEW 2: SCHOLARSHIP REQUIREMENTS DETAIL & VERIFICATION */}
-        {/* ------------------------------------------------------------- */}
-        {viewMode === 'requirements' && (
-          <div className="p-6 max-h-[80vh] overflow-y-auto space-y-5 bg-gray-50/60">
-            
-            {/* Context bar */}
-            <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-xs flex flex-wrap justify-between items-center gap-3">
-              <div>
-                <span className="text-xs font-bold uppercase tracking-wider text-blue-700">Scholarship Program</span>
-                <h4 className="text-base font-bold text-gray-900">{scholarshipType}</h4>
-                <p className="text-xs text-gray-500 mt-0.5">Submitted on {new Date(localSubmission.submittedAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</p>
-              </div>
-
-              <div className="flex items-center gap-2">
                 <button
                   onClick={() => window.print()}
                   className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-xs font-semibold transition-colors cursor-pointer"
-                  title="Print official form"
                 >
-                  <Printer className="w-3.5 h-3.5" /> Print Form
-                </button>
-                <button
-                  onClick={() => handleStatusSelect('Approved')}
-                  className="flex items-center gap-1.5 px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded-lg text-xs font-bold transition-colors shadow-xs cursor-pointer"
-                >
-                  <Check className="w-3.5 h-3.5" /> Approve
+                  <Printer className="w-3.5 h-3.5" /> Print Records
                 </button>
               </div>
-            </div>
 
-            {/* Checklist of required documents */}
-            <div className="space-y-3">
-              <h5 className="text-xs font-bold uppercase tracking-wider text-gray-600 px-1">
-                Document Checklist & Verification
-              </h5>
-
-              {requirementsList.map((req) => (
-                <div key={req.id} className="bg-white p-4 rounded-xl border border-gray-200 shadow-xs flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div className={cn(
-                      "w-8 h-8 rounded-lg flex items-center justify-center shrink-0 font-bold",
-                      req.status === 'Verified' ? "bg-green-100 text-green-700" : "bg-amber-100 text-amber-700"
-                    )}>
-                      {req.status === 'Verified' ? <CheckCircle2 className="w-5 h-5 text-green-600" /> : <AlertCircle className="w-5 h-5 text-amber-600" />}
-                    </div>
-                    <div className="min-w-0">
-                      <p className="text-sm font-bold text-gray-900 truncate">{req.name}</p>
-                      <p className="text-xs text-gray-500 truncate">{req.fileName}</p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2 shrink-0">
-                    <span className={cn(
-                      "px-2.5 py-1 rounded-full text-[11px] font-bold uppercase",
-                      req.status === 'Verified' ? "bg-green-100 text-green-700 border border-green-200" : "bg-amber-100 text-amber-800 border border-amber-200"
-                    )}>
-                      {req.status}
+              {/* 1. Official CapSU Student ID Card */}
+              <div className="bg-white p-5 rounded-2xl border border-gray-200 shadow-xs space-y-3">
+                <div className="flex items-center justify-between">
+                  <h5 className="text-sm font-bold text-[#0f2e60] flex items-center gap-2">
+                    <CreditCard className="w-4 h-4 text-[#1864db]" />
+                    Official Student Identification Card
+                  </h5>
+                  {studentIdCard ? (
+                    <span className="text-xs font-bold text-green-700 bg-green-50 px-2.5 py-0.5 rounded-full border border-green-200 flex items-center gap-1">
+                      <CheckCircle2 className="w-3 h-3" /> Uploaded & Valid
                     </span>
+                  ) : (
+                    <span className="text-xs font-bold text-amber-700 bg-amber-50 px-2.5 py-0.5 rounded-full border border-amber-200 flex items-center gap-1">
+                      <AlertCircle className="w-3 h-3" /> Missing ID
+                    </span>
+                  )}
+                </div>
 
-                    {req.file && (
-                      <button
-                        onClick={() => setPreviewFile(req.file as SubmissionFile)}
-                        className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors cursor-pointer"
-                        title="Preview File"
-                      >
-                        <Eye className="w-4 h-4" />
-                      </button>
-                    )}
-
+                {studentIdCard ? (
+                  <div className="relative border-2 border-dashed border-gray-200 rounded-xl p-3 bg-gray-50 flex flex-col items-center group">
+                    <img 
+                      src={studentIdCard} 
+                      alt="Student ID Card" 
+                      className="max-h-56 w-auto object-contain rounded-lg shadow-sm group-hover:scale-[1.02] transition-transform" 
+                    />
                     <button
-                      onClick={() => handleVerifyRequirement(req.category, req.status === 'Verified' ? 'Pending' : 'Verified')}
-                      className={cn(
-                        "px-2.5 py-1 text-xs font-semibold rounded-lg transition-all cursor-pointer",
-                        req.status === 'Verified' 
-                          ? "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                          : "bg-blue-600 text-white hover:bg-blue-700 shadow-xs"
-                      )}
+                      onClick={() => setPreviewFile({ name: 'Student_ID_Card.png', data: studentIdCard, type: 'image/png', category: 'Valid Student ID' })}
+                      className="mt-3 inline-flex items-center gap-1.5 text-xs font-bold text-[#1864db] hover:underline"
                     >
-                      {req.status === 'Verified' ? 'Mark Pending' : 'Verify'}
+                      <Eye className="w-3.5 h-3.5" /> Click to enlarge ID card preview
                     </button>
                   </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Back button */}
-            <div className="pt-2 text-center">
-              <button
-                onClick={() => setViewMode('overview')}
-                className="text-xs font-bold text-blue-600 hover:text-blue-800 underline transition-colors cursor-pointer"
-              >
-                ← Return to Student Records Summary
-              </button>
-            </div>
-
-          </div>
-        )}
-
-        {/* ------------------------------------------------------------- */}
-        {/* VIEW 3: SEMESTER RECORD (1st Sem or 2nd Sem) */}
-        {/* ------------------------------------------------------------- */}
-        {viewMode === 'semester_record' && (
-          <div className="p-6 max-h-[80vh] overflow-y-auto space-y-5 bg-gray-50/60">
-            
-            {/* Header info */}
-            <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-xs">
-              <div className="flex justify-between items-start">
-                <div>
-                  <span className="text-xs font-bold uppercase tracking-wider text-blue-700">{selectedSemester} Academic Term</span>
-                  <h4 className="text-lg font-bold text-gray-900">Academic Year {selectedAcademicYear}</h4>
-                  <p className="text-xs text-gray-600 mt-0.5">{studentName} &bull; {courseCode}</p>
-                </div>
-                <span className="px-3 py-1 bg-green-100 text-green-700 border border-green-200 rounded-full text-xs font-bold">
-                  Enrolled & Active
-                </span>
+                ) : (
+                  <div className="p-6 text-center border-2 border-dashed border-gray-200 rounded-xl bg-gray-50 text-gray-400 text-xs">
+                    No student ID card image uploaded by the applicant.
+                  </div>
+                )}
               </div>
-            </div>
 
-            {/* Semester Academic Summary */}
-            <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-xs space-y-3">
-              <h5 className="text-xs font-bold uppercase tracking-wider text-gray-700">Academic Standing</h5>
-              <div className="grid grid-cols-3 gap-3 text-center">
-                <div className="bg-blue-50/60 p-3 rounded-xl border border-blue-100">
-                  <span className="text-xs text-gray-500 font-medium">GWA</span>
-                  <p className="text-lg font-extrabold text-blue-900">1.45</p>
+              {/* 2. Affixed Digital Signature */}
+              <div className="bg-white p-5 rounded-2xl border border-gray-200 shadow-xs space-y-3">
+                <div className="flex items-center justify-between">
+                  <h5 className="text-sm font-bold text-[#0f2e60] flex items-center gap-2">
+                    <PenTool className="w-4 h-4 text-[#1864db]" />
+                    Applicant Digital Signature
+                  </h5>
+                  {digitalSignature ? (
+                    <span className="text-xs font-bold text-green-700 bg-green-50 px-2.5 py-0.5 rounded-full border border-green-200 flex items-center gap-1">
+                      <CheckCircle2 className="w-3 h-3" /> Signed & Authenticated
+                    </span>
+                  ) : (
+                    <span className="text-xs font-bold text-amber-700 bg-amber-50 px-2.5 py-0.5 rounded-full border border-amber-200">
+                      No Signature
+                    </span>
+                  )}
                 </div>
-                <div className="bg-blue-50/60 p-3 rounded-xl border border-blue-100">
-                  <span className="text-xs text-gray-500 font-medium">Units Passed</span>
-                  <p className="text-lg font-extrabold text-blue-900">21</p>
-                </div>
-                <div className="bg-blue-50/60 p-3 rounded-xl border border-blue-100">
-                  <span className="text-xs text-gray-500 font-medium">Evaluation</span>
-                  <p className="text-lg font-extrabold text-green-600">Retained</p>
-                </div>
-              </div>
-            </div>
 
-            {/* Uploaded Documents for this Semester */}
-            <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-xs space-y-3">
-              <h5 className="text-xs font-bold uppercase tracking-wider text-gray-700">Semester Uploads</h5>
-              <div className="space-y-2">
-                <div className="p-3 bg-gray-50 rounded-lg flex items-center justify-between border border-gray-100">
-                  <div className="flex items-center gap-2.5">
-                    <FileText className="w-4 h-4 text-blue-600" />
-                    <div>
-                      <p className="text-xs font-bold text-gray-800">Certificate of Grades ({selectedSemester})</p>
-                      <p className="text-[11px] text-gray-500">Official Registrar Copy &bull; 1.2 MB</p>
+                {digitalSignature ? (
+                  <div className="border-2 border-dashed border-blue-100 rounded-xl p-4 bg-[#f9fbff] flex flex-col items-center justify-center">
+                    <img 
+                      src={digitalSignature} 
+                      alt="Student Digital Signature" 
+                      className="h-20 object-contain drop-shadow-xs" 
+                    />
+                    <div className="w-48 border-t border-gray-400 mt-2 text-center">
+                      <p className="text-xs font-bold text-gray-800 uppercase tracking-wide">{studentName}</p>
+                      <p className="text-[10px] text-gray-500">Applicant Signature</p>
                     </div>
                   </div>
-                  <span className="text-xs font-semibold text-green-700 bg-green-50 px-2 py-0.5 rounded border border-green-200">Verified</span>
-                </div>
-
-                <div className="p-3 bg-gray-50 rounded-lg flex items-center justify-between border border-gray-100">
-                  <div className="flex items-center gap-2.5">
-                    <FileText className="w-4 h-4 text-blue-600" />
-                    <div>
-                      <p className="text-xs font-bold text-gray-800">Certificate of Registration ({selectedSemester})</p>
-                      <p className="text-[11px] text-gray-500">Assessment Form &bull; 850 KB</p>
-                    </div>
+                ) : (
+                  <div className="p-6 text-center border-2 border-dashed border-gray-200 rounded-xl bg-gray-50 text-gray-400 text-xs">
+                    No digital signature affixed by the applicant.
                   </div>
-                  <span className="text-xs font-semibold text-green-700 bg-green-50 px-2 py-0.5 rounded border border-green-200">Verified</span>
+                )}
+
+                <div className="bg-blue-50 border border-blue-100 rounded-xl p-3 text-[11px] text-blue-900 leading-relaxed">
+                  <strong>Verification Note: </strong> This signature was captured during application submission and is legally binding for all scholarship evaluations.
                 </div>
               </div>
-            </div>
 
-            {/* Back action */}
-            <div className="pt-2 text-center">
-              <button
-                onClick={() => setViewMode('overview')}
-                className="text-xs font-bold text-blue-600 hover:text-blue-800 underline transition-colors cursor-pointer"
-              >
-                ← Return to Student Records Summary
-              </button>
-            </div>
+              {/* Back button */}
+              <div className="pt-2 text-center">
+                <button
+                  onClick={() => setViewMode('overview')}
+                  className="text-xs font-bold text-blue-600 hover:text-blue-800 underline transition-colors cursor-pointer"
+                >
+                  ← Return to Student Records Summary
+                </button>
+              </div>
 
-          </div>
-        )}
+            </div>
+          )}
+
+          {/* ------------------------------------------------------------- */}
+          {/* VIEW 4: SEMESTER RECORD (1st Sem or 2nd Sem) */}
+          {/* ------------------------------------------------------------- */}
+          {viewMode === 'semester_record' && (
+            <div className="p-6 space-y-5 bg-gray-50/60">
+              
+              {/* Header info */}
+              <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-xs">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <span className="text-xs font-bold uppercase tracking-wider text-blue-700">{selectedSemester} Academic Term</span>
+                    <h4 className="text-lg font-bold text-gray-900">Academic Year {selectedAcademicYear}</h4>
+                    <p className="text-xs text-gray-600 mt-0.5">{studentName} &bull; {courseCode}</p>
+                  </div>
+                  <span className="px-3 py-1 bg-green-100 text-green-700 border border-green-200 rounded-full text-xs font-bold">
+                    Enrolled & Active
+                  </span>
+                </div>
+              </div>
+
+              {/* Semester Academic Summary */}
+              <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-xs space-y-3">
+                <h5 className="text-xs font-bold uppercase tracking-wider text-gray-700">Academic Standing</h5>
+                <div className="grid grid-cols-3 gap-3 text-center">
+                  <div className="bg-blue-50/60 p-3 rounded-xl border border-blue-100">
+                    <span className="text-xs text-gray-500 font-medium">GWA</span>
+                    <p className="text-lg font-extrabold text-blue-900">1.45</p>
+                  </div>
+                  <div className="bg-blue-50/60 p-3 rounded-xl border border-blue-100">
+                    <span className="text-xs text-gray-500 font-medium">Units Passed</span>
+                    <p className="text-lg font-extrabold text-blue-900">21</p>
+                  </div>
+                  <div className="bg-blue-50/60 p-3 rounded-xl border border-blue-100">
+                    <span className="text-xs text-gray-500 font-medium">Evaluation</span>
+                    <p className="text-lg font-extrabold text-green-600">Retained</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Uploaded Documents for this Semester */}
+              <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-xs space-y-3">
+                <h5 className="text-xs font-bold uppercase tracking-wider text-gray-700">Semester Uploads</h5>
+                <div className="space-y-2">
+                  <div className="p-3 bg-gray-50 rounded-lg flex items-center justify-between border border-gray-100">
+                    <div className="flex items-center gap-2.5">
+                      <FileText className="w-4 h-4 text-blue-600" />
+                      <div>
+                        <p className="text-xs font-bold text-gray-800">Certificate of Grades ({selectedSemester})</p>
+                        <p className="text-[11px] text-gray-500">Official Registrar Copy &bull; 1.2 MB</p>
+                      </div>
+                    </div>
+                    <span className="text-xs font-semibold text-green-700 bg-green-50 px-2 py-0.5 rounded border border-green-200">Verified</span>
+                  </div>
+
+                  <div className="p-3 bg-gray-50 rounded-lg flex items-center justify-between border border-gray-100">
+                    <div className="flex items-center gap-2.5">
+                      <FileText className="w-4 h-4 text-blue-600" />
+                      <div>
+                        <p className="text-xs font-bold text-gray-800">Certificate of Registration ({selectedSemester})</p>
+                        <p className="text-[11px] text-gray-500">Assessment Form &bull; 850 KB</p>
+                      </div>
+                    </div>
+                    <span className="text-xs font-semibold text-green-700 bg-green-50 px-2 py-0.5 rounded border border-green-200">Verified</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Back action */}
+              <div className="pt-2 text-center">
+                <button
+                  onClick={() => setViewMode('overview')}
+                  className="text-xs font-bold text-blue-600 hover:text-blue-800 underline transition-colors cursor-pointer"
+                >
+                  ← Return to Student Records Summary
+                </button>
+              </div>
+
+            </div>
+          )}
+        </div>
 
       </div>
 
@@ -515,8 +693,14 @@ export function StudentRecordModal({
                 <span className="flex-1 border-b border-black">{formData.motherName || 'Elena Santos'}</span>
               </div>
             </div>
-            <div className="w-32 h-32 border border-black flex items-center justify-center text-center text-xs p-2 shrink-0 font-serif">
-              Attach<br/>2x2 Picture
+            
+            {/* 2x2 Picture Box */}
+            <div className="w-32 h-32 border border-black flex items-center justify-center text-center text-xs p-1 shrink-0 font-serif overflow-hidden">
+              {photo2x2 ? (
+                <img src={photo2x2} alt="2x2 Photo" className="w-full h-full object-cover" />
+              ) : (
+                <span>Attach<br/>2x2 Picture</span>
+              )}
             </div>
           </div>
 
@@ -542,13 +726,19 @@ export function StudentRecordModal({
             </div>
           </div>
 
-          <div className="mt-16 flex justify-between text-sm font-serif">
+          {/* Signature and Date Section */}
+          <div className="mt-16 flex justify-between items-end text-sm font-serif">
             <div className="w-48 text-center">
               <div className="border-b border-black text-center">{new Date(localSubmission.submittedAt).toLocaleDateString()}</div>
               <div className="mt-1">Date Received</div>
             </div>
             <div className="w-64 text-center">
-              <div className="border-b border-black h-5 text-center font-bold">{studentName}</div>
+              <div className="border-b border-black min-h-[48px] flex flex-col justify-end items-center pb-1">
+                {digitalSignature && (
+                  <img src={digitalSignature} alt="Applicant Signature" className="max-h-12 object-contain" />
+                )}
+                <span className="font-bold">{studentName}</span>
+              </div>
               <div className="mt-1">Signature of Applicant</div>
             </div>
           </div>
