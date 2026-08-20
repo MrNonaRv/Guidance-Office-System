@@ -1,39 +1,78 @@
-import { db } from './db';
+import { db, defaultSections, defaultFormRequirements, defaultSystemFiles } from './db';
+import { defaultScholarships, defaultCourses, defaultAcademicYears } from '../types';
+import { defaultSubmissions, defaultNotifications } from './defaultData';
 
 export async function seedDatabase() {
   try {
-    const existing = await db.submissions.listAll();
-    
-    // If we already have records, assume it's seeded
-    if (existing && existing.length >= 10) return; 
+    // Run seed setups concurrently in background without blocking
+    Promise.allSettled([
+      // 1. Scholarships
+      (async () => {
+        const scholarships = await db.scholarships.listAll();
+        if (scholarships.length === 0) {
+          await Promise.all(defaultScholarships.map(s => db.scholarships.set(s.id, s)));
+        }
+      })(),
 
-    const seedData = [
-      { studentName: 'Anna Marie A. Santos', course: 'BAEL', date: '2026-03-11T10:00:00Z', status: 'Incomplete' },
-      { studentName: 'Patricia Jane K. Manalo', course: 'BAEL', date: '2026-03-11T10:00:00Z', status: 'Incomplete' },
-      { studentName: 'Damian James O. Emilio', course: 'BSFT', date: '2026-03-11T10:00:00Z', status: 'Incomplete' },
-      { studentName: 'Paul John N. Dela Cruz', course: 'BSOA', date: '2026-03-11T10:00:00Z', status: 'Incomplete' },
-      { studentName: 'Charlotte Alexis N. Tuvera', course: 'BSCS', date: '2026-03-10T10:00:00Z', status: 'Incomplete' },
-      { studentName: 'Michael G. Burata', course: 'BSCS', date: '2026-03-10T10:00:00Z', status: 'Complete' },
-      { studentName: 'Chery Joy M. Marcelino', course: 'BSCS', date: '2026-03-10T10:00:00Z', status: 'Complete' },
-      { studentName: 'Jessica Mae E. Dela Cruz', course: 'BSCS', date: '2026-03-09T10:00:00Z', status: 'Complete' },
-      { studentName: 'Mark Josh P. Lorenzo', course: 'BSOA', date: '2026-03-09T10:00:00Z', status: 'Complete' },
-      { studentName: 'William George I. Diaz', course: 'BSFT', date: '2026-03-08T10:00:00Z', status: 'Complete' }
-    ];
+      // 2. Courses
+      (async () => {
+        const courses = await db.courses.listAll();
+        if (courses.length === 0) {
+          await Promise.all(defaultCourses.map(c => db.courses.set(c.id, c)));
+        }
+      })(),
 
-    for (let i = 0; i < seedData.length; i++) {
-      const item = seedData[i];
-      await db.submissions.set(`seed-top-${i}`, {
-        id: `seed-top-${i}`,
-        studentId: `student-${i}`,
-        studentName: item.studentName,
-        scholarshipType: item.course + ' Scholarship',
-        status: item.status as any,
-        submittedAt: item.date,
-        answers: { course: item.course },
-        files: []
-      });
-    }
+      // 3. Academic Years
+      (async () => {
+        const academicYears = await db.academicYears.listAll();
+        if (academicYears.length === 0) {
+          await Promise.all(defaultAcademicYears.map(a => db.academicYears.set(a.id, a)));
+        }
+      })(),
+
+      // 4. Sections
+      (async () => {
+        const sections = await db.sections.listAll();
+        if (sections.length === 0) {
+          await Promise.all(defaultSections.map(sec => db.sections.set(sec.id, sec)));
+        }
+      })(),
+
+      // 5. Form Requirements
+      (async () => {
+        const formReqs = await db.formRequirements.listAll();
+        if (formReqs.length === 0) {
+          await Promise.all(defaultFormRequirements.map(req => db.formRequirements.set(req.id, req)));
+        }
+      })(),
+
+      // 6. System Files
+      (async () => {
+        const sysFiles = await db.files.listAll();
+        if (sysFiles.length === 0) {
+          await Promise.all(defaultSystemFiles.map(file => db.files.set(file.id, file)));
+        }
+      })(),
+
+      // 7. Submissions
+      (async () => {
+        const existing = await db.submissions.listAll();
+        if (existing.length === 0) {
+          await Promise.all(defaultSubmissions.map(sub => db.submissions.set(sub.id, sub)));
+        }
+      })(),
+
+      // 8. Notifications
+      (async () => {
+        const existingNotifs = await db.notifications.listAll();
+        if (existingNotifs.length === 0) {
+          await Promise.all(defaultNotifications.map(n => db.notifications.set(n.id, n)));
+        }
+      })()
+    ]).then(() => {
+      db.system.syncAll().catch(() => {});
+    });
   } catch (err) {
-    console.warn("Seeding initial submissions notice:", err);
+    console.warn("Seeding initial database notice:", err);
   }
 }

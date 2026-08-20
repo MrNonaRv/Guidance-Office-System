@@ -255,10 +255,11 @@ export function StudentDashboard() {
       db.submissions.listByStudent(parsedUser.id).then(subs => setSubmissions(subs));
     }
     
-    // @ts-ignore
-    db.scholarships.listAll().then(items => {
+    setScholarships(db.scholarships.getCached().filter((s: any) => s.status === 'Active'));
+    const unsubScholarships = db.scholarships.subscribe(items => {
       setScholarships(items.filter((s: any) => s.status === 'Active'));
     });
+    return () => unsubScholarships();
   }, []);
   
   return (

@@ -40,27 +40,128 @@
         "semester": { "type": "string" },
         "label": { "type": "string" },
         "status": { "type": "string" },
+        "overallStatus": { "type": "string" },
+        "firstSemester": { "type": "string" },
+        "secondSemester": { "type": "string" },
         "isDefault": { "type": "boolean" },
         "startDate": { "type": "string" },
         "endDate": { "type": "string" }
       },
-      "required": ["id", "year", "semester", "label", "status"]
+      "required": ["id", "year", "status"]
+    },
+    "sections": {
+      "title": "Section",
+      "description": "Class sections per academic course and year level",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "course": { "type": "string" },
+        "yearLevel": { "type": "string" },
+        "status": { "type": "string" }
+      },
+      "required": ["id", "name", "course", "status"]
+    },
+    "formRequirements": {
+      "title": "Form Requirement",
+      "description": "Mandatory and optional document submission requirements",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "mandatory": { "type": "string" },
+        "status": { "type": "string" }
+      },
+      "required": ["id", "title", "mandatory", "status"]
+    },
+    "files": {
+      "title": "System File",
+      "description": "Institutional scholarship forms, guidelines, templates and attachments",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "category": { "type": "string" },
+        "size": { "type": "string" },
+        "uploadDate": { "type": "string" },
+        "data": { "type": "string" },
+        "type": { "type": "string" }
+      },
+      "required": ["id", "name", "category"]
     },
     "submissions": {
       "title": "Submission",
-      "description": "Student scholarship applications",
+      "description": "Student scholarship applications with all uploaded files and verification states",
       "type": "object",
       "properties": {
         "id": { "type": "string" },
         "studentId": { "type": "string" },
         "studentName": { "type": "string" },
         "scholarshipType": { "type": "string" },
+        "formId": { "type": "string" },
         "status": { "type": "string" },
         "submittedAt": { "type": "string" },
         "data": { "type": "object" },
         "files": { "type": "array" }
       },
       "required": ["id", "studentId", "studentName", "status", "submittedAt"]
+    },
+    "notifications": {
+      "title": "Notification",
+      "description": "System alerts, deadline warnings, and submission events",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "type": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "studentName": { "type": "string" },
+        "studentId": { "type": "string" },
+        "scholarship": { "type": "string" },
+        "timestamp": { "type": "string" },
+        "read": { "type": "boolean" },
+        "priority": { "type": "string" }
+      },
+      "required": ["id", "type", "title", "description", "timestamp"]
+    },
+    "communications": {
+      "title": "Communication",
+      "description": "Messages, notices, and file attachments sent to students",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "recipients": { "type": "array" },
+        "subject": { "type": "string" },
+        "message": { "type": "string" },
+        "sender": { "type": "string" },
+        "sentAt": { "type": "string" },
+        "attachments": { "type": "array" }
+      },
+      "required": ["id", "subject", "message", "sentAt"]
+    },
+    "users": {
+      "title": "User",
+      "description": "Student and Counselor accounts",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "email": { "type": "string" },
+        "firstName": { "type": "string" },
+        "lastName": { "type": "string" },
+        "role": { "type": "string" }
+      },
+      "required": ["id", "email", "role"]
+    },
+    "test": {
+      "title": "Test",
+      "description": "Connection test document",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "status": { "type": "string" }
+      },
+      "required": ["id"]
     }
   },
   "firestoreRules": "firestore.rules"

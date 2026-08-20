@@ -17,7 +17,9 @@ import {
   Award, 
   RotateCcw,
   ExternalLink,
-  Search
+  Search,
+  HardDrive,
+  Download
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 
@@ -41,6 +43,8 @@ interface StudentBreakdownItem {
   dateSubmitted: string;
   requirements: { name: string; status: 'Verified' | 'Pending' | 'Missing' }[];
   remarks: string;
+  files?: any[];
+  data?: any;
 }
 
 export function GuidanceReports() {
@@ -447,12 +451,64 @@ export function GuidanceReports() {
     },
   ];
 
+  const [allBreakdownData, setAllBreakdownData] = useState<StudentBreakdownItem[]>(initialBreakdownData);
+
   useEffect(() => {
-    db.submissions.listAll().then(subs => {
-      if (subs && subs.length > 0) {
-        setSubmissions(subs);
+    async function loadData() {
+      try {
+        const subs = await db.submissions.listAll();
+        if (subs && subs.length > 0) {
+          setSubmissions(subs);
+          const dynamicStudents: StudentBreakdownItem[] = subs.map((s, idx) => {
+            const formData = s.data || {};
+            const scholarshipParts = (s.scholarshipType || '').split('(');
+            const category = scholarshipParts[0]?.trim() || (formData.fundingType === 'Internally-Funded' ? 'Internally-Funded' : 'Externally-Funded');
+            const subType = (formData.scholarshipCategory || s.scholarshipType || 'CHED').replace(/[()]/g, '');
+            const courseCode = formData.course || s.answers?.course || 'BSCS';
+            
+            return {
+              id: s.id || `sub-${idx}`,
+              studentId: s.studentId || `2025-CAPSU-${1000 + idx}`,
+              student: s.studentName || `${formData.firstName || 'Student'} ${formData.familyName || ''}`.trim(),
+              yearLevel: formData.yearLevel || '1st year',
+              course: courseCode,
+              courseFull: courseCode === 'BSCS' ? 'Bachelor of Science in Computer Science' : courseCode === 'BAEL' ? 'Bachelor of Arts in English Language' : courseCode === 'BSFT' ? 'Bachelor of Science in Food Technology' : 'Bachelor of Science in Office Administration',
+              category: category.includes('Internal') ? 'Internally-Funded' : 'Externally-Funded',
+              subType: subType.includes('Institutional') ? 'Institutional' : subType.includes('Socio') ? 'Socio-cultural' : subType.includes('Academic') ? 'Academic' : subType.includes('Merit') ? 'Merit' : 'CHED',
+              allocation: formData.scholarshipCategory || s.scholarshipType || 'Pag-Ulikid',
+              gender: (formData.sex === 'Male' || formData.gender === 'Male') ? 'Male' : 'Female',
+              email: formData.email || `${formData.firstName?.toLowerCase() || 'student'}@capsu.edu.ph`,
+              phone: formData.contactNo || '+63 912 345 6789',
+              address: formData.permanentAddress || 'Tapaz, Capiz',
+              gwa: formData.gwa || '1.50',
+              units: Number(formData.units) || 21,
+              status: s.status === 'Approved' || s.status === 'Complete' ? 'Complete' : 'Incomplete',
+              dateSubmitted: new Date(s.submittedAt || Date.now()).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }),
+              requirements: [
+                { name: 'Certificate of Grades (COG)', status: 'Verified' },
+                { name: 'Certificate of Registration (COR)', status: 'Verified' },
+                { name: '2x2 ID Photo', status: 'Verified' },
+              ],
+              remarks: `Application submitted via Student Portal. Current status: ${s.status || 'Pending'}.`,
+              files: s.files || [],
+              data: formData
+            };
+          });
+
+          // Combine with initialBreakdownData
+          const merged = [...dynamicStudents];
+          for (const item of initialBreakdownData) {
+            if (!merged.some(m => m.student.toLowerCase() === item.student.toLowerCase() || m.id === item.id)) {
+              merged.push(item);
+            }
+          }
+          setAllBreakdownData(merged);
+        }
+      } catch (e) {
+        console.warn("Failed to load submissions into reports:", e);
       }
-    });
+    }
+    loadData();
   }, []);
 
   // Filter calculations for Page 1 (Reports & Analytics Overview)
@@ -531,10 +587,12 @@ export function GuidanceReports() {
     });
   };
 
-  const filteredBreakdown = initialBreakdownData.filter(item => {
+  const filteredBreakdown = allBreakdownData.filter(item => {
     const matchCategory = appliedFilters.category === 'Category' || item.category === appliedFilters.category;
     const matchSubType = appliedFilters.subType === 'Sub Type' || item.subType === appliedFilters.subType;
-    const matchAllocation = appliedFilters.allocation === 'Scholarship Allocation' || item.allocation === appliedFilters.allocation;
+    const matchAllocation = appliedFilters.allocation === 'Scholarship Allocation' || 
+      item.allocation.toLowerCase().includes(appliedFilters.allocation.toLowerCase()) || 
+      appliedFilters.allocation.toLowerCase().includes(item.allocation.toLowerCase());
     const matchSearch = !appliedFilters.search || 
       item.student.toLowerCase().includes(appliedFilters.search.toLowerCase()) ||
       item.course.toLowerCase().includes(appliedFilters.search.toLowerCase()) ||
@@ -1233,6 +1291,44 @@ export function GuidanceReports() {
                   </div>
                 </div>
               </div>
+
+              {/* Uploaded Documents & File Attachments */}
+              {selectedStudent.files && selectedStudent.files.length > 0 && (
+                <div className="space-y-2">
+                  <h4 className="font-bold text-xs uppercase tracking-wider text-gray-700 flex items-center gap-1.5">
+                    <HardDrive className="w-4 h-4 text-[#1864db]" /> Attached Uploads & Verification Files ({selectedStudent.files.length})
+                  </h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    {selectedStudent.files.map((file: any, i: number) => (
+                      <div key={i} className="flex items-center justify-between bg-white border border-gray-200 p-2.5 rounded-xl shadow-2xs hover:border-blue-300 transition-colors">
+                        <div className="flex items-center gap-2 overflow-hidden">
+                          <FileText className="w-4 h-4 text-blue-600 shrink-0" />
+                          <div className="truncate">
+                            <p className="text-xs font-semibold text-gray-900 truncate">{file.name || `Document_${i+1}.pdf`}</p>
+                            <p className="text-[10px] text-gray-500">{file.size || 'Stored in Cloud'}</p>
+                          </div>
+                        </div>
+                        {file.data ? (
+                          <a
+                            href={file.data}
+                            download={file.name || 'document'}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-xs bg-blue-50 text-blue-700 hover:bg-blue-100 p-1.5 rounded-lg flex items-center gap-1 font-semibold transition-colors"
+                            title="Download or view file"
+                          >
+                            <Download className="w-3.5 h-3.5" />
+                          </a>
+                        ) : (
+                          <span className="text-[10px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded-md font-medium">
+                            Synced
+                          </span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {/* Documentary Verification Checklist */}
               <div className="space-y-2">

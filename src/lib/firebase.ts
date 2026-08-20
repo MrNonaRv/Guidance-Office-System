@@ -1,6 +1,6 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut } from 'firebase/auth';
-import { getFirestore, Firestore } from 'firebase/firestore';
+import { getFirestore, Firestore, doc, getDocFromServer } from 'firebase/firestore';
 import firebaseConfig from '../../firebase-applet-config.json';
 
 const app = initializeApp(firebaseConfig);
@@ -9,11 +9,33 @@ export const googleProvider = new GoogleAuthProvider();
 
 let firestoreInstance: Firestore | null = null;
 try {
-  firestoreInstance = getFirestore(app);
+  if (firebaseConfig.firestoreDatabaseId && firebaseConfig.firestoreDatabaseId !== '(default)') {
+    firestoreInstance = getFirestore(app, firebaseConfig.firestoreDatabaseId);
+  } else {
+    firestoreInstance = getFirestore(app);
+  }
 } catch (e) {
-  console.warn("Firestore initialization notice:", e);
+  try {
+    firestoreInstance = getFirestore(app);
+  } catch (err) {
+    console.warn("Firestore initialization notice:", err);
+  }
 }
 export const firestoreDb = firestoreInstance;
+export const db = firestoreInstance;
+
+async function testConnection() {
+  try {
+    if (firestoreDb) {
+      await getDocFromServer(doc(firestoreDb, 'test', 'connection'));
+    }
+  } catch (error) {
+    if (error instanceof Error && error.message.includes('the client is offline')) {
+      console.warn("Firebase client is currently operating in offline/cached mode.");
+    }
+  }
+}
+testConnection();
 
 export const signInWithGoogle = async () => {
   try {
@@ -41,4 +63,5 @@ export const logOut = async () => {
     throw error;
   }
 };
+
 
