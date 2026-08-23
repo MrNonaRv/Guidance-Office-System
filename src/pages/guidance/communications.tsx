@@ -209,6 +209,12 @@ export function GuidanceCommunications() {
   // Email Templates
   const defaultTemplates: EmailTemplate[] = useMemo(() => [
     {
+      id: 'blank',
+      name: 'Blank Custom Draft',
+      subject: '',
+      body: (_studentName, _allocation) => ``
+    },
+    {
       id: 'loa',
       name: 'Leave of Absence',
       subject: 'Leave of Absence',
@@ -313,18 +319,16 @@ Capiz State University`
   const [selectedAllocation, setSelectedAllocation] = useState<string>('Scholarship Allocation');
 
   // Email form state
-  const [currentTemplateId, setCurrentTemplateId] = useState<string>('loa');
+  const [currentTemplateId, setCurrentTemplateId] = useState<string>('blank');
   const [isTemplateMenuOpen, setIsTemplateMenuOpen] = useState<boolean>(false);
-  const [subject, setSubject] = useState<string>('Leave of Absence');
-  const [emailBody, setEmailBody] = useState<string>(defaultTemplates[0].body('Anna Marie A. Santos', 'Pag-Ulikid'));
+  const [subject, setSubject] = useState<string>('');
+  const [emailBody, setEmailBody] = useState<string>('');
   const [showCcBcc, setShowCcBcc] = useState<{ cc: boolean; bcc: boolean }>({ cc: false, bcc: false });
   const [ccValue, setCcValue] = useState<string>('');
   const [bccValue, setBccValue] = useState<string>('');
   
   // Attachments State
-  const [attachedFiles, setAttachedFiles] = useState<AttachedFile[]>([
-    { id: 'f-1', name: 'LOA_Notice_Advisory.pdf', size: '240 KB', type: 'application/pdf' }
-  ]);
+  const [attachedFiles, setAttachedFiles] = useState<AttachedFile[]>([]);
   const [previewAttachment, setPreviewAttachment] = useState<AttachedFile | null>(null);
 
   // Formatting & Toolbars State
@@ -1049,7 +1053,7 @@ Capiz State University`
                   onClick={() => setIsTemplateMenuOpen(!isTemplateMenuOpen)}
                   className="bg-[#dce9f9] hover:bg-[#cbe0f8] text-[#154687] border border-[#a8c7ed] px-4 py-2 rounded-xl text-xs font-bold flex items-center justify-between gap-3 min-w-[200px] cursor-pointer shadow-2xs transition-colors"
                 >
-                  <span>{templates.find(t => t.id === currentTemplateId)?.name || 'Leave of Absence'}</span>
+                  <span>{templates.find(t => t.id === currentTemplateId)?.name || 'Blank Custom Draft'}</span>
                   <ChevronDown className="w-4 h-4 stroke-[2.5]" />
                 </button>
 

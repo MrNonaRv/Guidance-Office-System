@@ -246,6 +246,7 @@ export function StudentDashboard() {
   const [files, setFiles] = useState<Record<string, File | null>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showToast, setShowToast] = useState(false);
+  const [existingSubmission, setExistingSubmission] = useState<any>(null);
           
   // Hardcode available semesters for demonstration (1st is available, 2nd is not)
   const availableSemesters = ['1st'];
@@ -253,7 +254,13 @@ export function StudentDashboard() {
   React.useEffect(() => {
     const sessionStr = localStorage.getItem('studentUser');
     if (sessionStr) {
-      setUser(JSON.parse(sessionStr));
+      const u = JSON.parse(sessionStr);
+      setUser(u);
+      const unsub = db.submissions.subscribe(subs => {
+        const existing = subs.find(s => s.studentId === u.email || s.studentId === u.id);
+        setExistingSubmission(existing || null);
+      });
+      return unsub;
     }
   }, []);
 
@@ -327,13 +334,15 @@ export function StudentDashboard() {
         <div className="bg-white rounded-full p-5 px-12 shadow-[0_6px_25px_rgb(0,0,0,0.08)] flex justify-between items-center border border-gray-200 gap-6 h-[110px]">
           <div>
             <h3 className="text-[22px] font-bold text-[#0c2340]">Scholarship Requirements</h3>
-            <p className="text-gray-500 mt-1 text-sm md:text-base">Fill up a scholarship form and upload the required documents <span className="italic font-medium font-serif text-gray-500">(for new students only)</span></p>
+            <p className="text-gray-500 mt-1 text-sm md:text-base">
+              {existingSubmission ? 'Modify your scholarship form and documents' : 'Fill up a scholarship form and upload the required documents'} <span className="italic font-medium font-serif text-gray-500">(for new students only)</span>
+            </p>
           </div>
           <button 
             onClick={() => navigate('/student/submission')}
             className="px-12 py-3.5 bg-gradient-to-r from-[#1e3a8a] to-[#3b82f6] text-white rounded-full font-bold hover:opacity-90 transition-opacity shadow-sm w-auto min-w-[140px]"
           >
-            Enter
+            {existingSubmission ? 'Edit Application' : 'Enter'}
           </button>
         </div>
 
@@ -519,6 +528,36 @@ export function StudentSubmissionForm() {
     chedSubCategory: '', chedCongressionalDistrict: '', chedOneTown: '', chedTulongDunong: '', chedOthers: '', meritSubCategory: '', lguContact: '', dswdMunicipality: '', dswdContact: '', dswdDesignation: '', dswdOthers: '', signature: ''
   });
 
+  const [existingId, setExistingId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const sessionStr = localStorage.getItem('studentUser');
+    if (sessionStr) {
+      const user = JSON.parse(sessionStr);
+      const unsub = db.submissions.subscribe(subs => {
+        const existing = subs.find(s => s.studentId === user.email || s.studentId === user.id);
+        if (existing) {
+          setExistingId(existing.id);
+          setFormData(prev => ({ ...prev, ...(existing.data || {}) }));
+          
+          if (existing.files && Array.isArray(existing.files)) {
+            setFiles(existing.files.map(f => ({
+               id: f.id || `file-${Date.now()}`,
+               name: f.name,
+               category: f.category,
+               type: f.type,
+               size: f.size || '',
+               data: f.data,
+               verified: f.verified || false,
+               status: f.status || 'Pending'
+            })));
+          }
+        }
+      });
+      return unsub;
+    }
+  }, []);
+
   const handleChange = (e: any) => setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
   const handleRadioChange = (name: string, value: string) => setFormData(prev => ({ ...prev, [name]: value }));
   const handleCheckboxChange = (field: string, value: string) => {
@@ -558,7 +597,8 @@ export function StudentSubmissionForm() {
     setIsSubmitting(true);
     try {
       const submission = {
-        id: `SUB-${Date.now()}`, studentId: formData.email || `STU-${Date.now()}`,
+        id: existingId || `SUB-${Date.now()}`,
+        studentId: formData.email || `STU-${Date.now()}`,
         studentName: `${formData.firstName} ${formData.familyName}`.trim() || 'Anonymous Student',
         scholarshipType: formData.internalCategory || formData.chedSubCategory || formData.meritSubCategory || formData.externalCategory || 'General Scholarship',
         status: 'Pending' as const,
@@ -570,17 +610,22 @@ export function StudentSubmissionForm() {
           size: f.size,
           category: f.category,
           data: f.data,
-          uploadedAt: new Date().toISOString(),
-          status: 'Pending' as const,
+          uploadedAt: f.uploadedAt || new Date().toISOString(),
+          status: f.status || 'Pending' as const,
         }))
       };
       
-      await db.submissions.create(submission);
-      alert('Application submitted successfully!');
+      if (existingId) {
+        await db.submissions.update(existingId, submission);
+        alert('Application updated successfully!');
+      } else {
+        await db.submissions.create(submission);
+        alert('Application submitted successfully!');
+      }
       navigate('/student'); // Navigate back to dashboard
     } catch (e) {
       console.error(e);
-      alert('Error submitting application');
+      alert('Error saving application');
     } finally {
       setIsSubmitting(false);
     }
@@ -1067,13 +1112,13 @@ export function StudentSubmissionForm() {
           <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
             <CheckCircle2 className="w-10 h-10 text-green-600" />
           </div>
-          <h2 className="text-2xl font-bold mb-2">Ready to Submit</h2>
-          <p className="text-gray-600 mb-8 max-w-sm mx-auto">All required information and documents have been gathered. You can now submit your application.</p>
+          <h2 className="text-2xl font-bold mb-2">{existingId ? 'Ready to Update' : 'Ready to Submit'}</h2>
+          <p className="text-gray-600 mb-8 max-w-sm mx-auto">All required information and documents have been gathered. You can now {existingId ? 'update' : 'submit'} your application.</p>
           
           <div className="flex justify-center gap-4">
             <button onClick={() => setStep(2)} className="border border-gray-300 text-gray-700 px-8 py-2 rounded-lg font-bold hover:bg-gray-50 transition-colors">Back</button>
             <button onClick={handleSubmit} disabled={isSubmitting} className="bg-green-600 text-white px-8 py-2 rounded-lg font-bold hover:bg-green-700 transition-colors shadow-sm flex items-center gap-2 disabled:opacity-50">
-              {isSubmitting ? 'Submitting...' : <><Check className="w-5 h-5" /> Submit Application</>}
+              {isSubmitting ? (existingId ? 'Updating...' : 'Submitting...') : <><Check className="w-5 h-5" /> {existingId ? 'Update Application' : 'Submit Application'}</>}
             </button>
           </div>
         </div>
