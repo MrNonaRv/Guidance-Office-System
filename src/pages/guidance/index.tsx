@@ -1,9 +1,8 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
-import { mockStudents } from '../../types';
-import { Award, Upload, LayoutDashboard, LayoutGrid, TrendingUp, BookOpen, FileText, Bell, Mail, BarChart2, Settings, LogOut, Filter, ChevronDown, View, User, X, Search, Type, Paperclip, Link2, Smile, Triangle, Image as ImageIcon, Lock, Pen, MoreVertical, Trash2, ChevronRight, Calendar, GraduationCap, Users, Image, Plus, GripVertical, Printer, Star, Check } from 'lucide-react';
+import { LayoutGrid, FileText, Bell, Mail, BarChart2, Settings, User, LogOut, Users, TrendingUp, BookOpen, Filter, Calendar, Award, GraduationCap, ImageIcon, Plus, Pen, Trash2, Paperclip, View } from 'lucide-react';
 import { cn } from '../../lib/utils';
-import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Legend } from 'recharts';
+import React, { useState, useEffect} from 'react';
+import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
+/* import { Award, LayoutGrid, TrendingUp, BookOpen, FileText, Bell, Mail, BarChart2, Settings, LogOut, Filter, View, User, Paperclip, Image as ImageIcon, Pen, Trash2, Calendar, GraduationCap, Users, Plus, } from 'lucide-react'; */
 import { db } from '../../lib/db';
 import { motion } from 'motion/react';
 import { StudentRecordModal } from '../../components/StudentRecordModal';
@@ -29,8 +28,8 @@ export function GuidanceLogin() {
         };
         await db.users.set(user.id, user);
       }
-      sessionStorage.setItem('adminAuth', 'true');
-      sessionStorage.setItem('adminEmail', fbUser.email || '');
+      localStorage.setItem('adminAuth', 'true');
+      localStorage.setItem('adminEmail', fbUser.email || '');
       navigate('/admin/dashboard');
     } catch (err: any) {
       if (err?.code === 'auth/popup-closed-by-user' || err?.code === 'auth/cancelled-popup-request') {
@@ -64,7 +63,7 @@ export function GuidanceLogin() {
         
         <form className="space-y-3" onSubmit={(e) => { 
           e.preventDefault(); 
-          sessionStorage.setItem('adminAuth', 'true');
+          localStorage.setItem('adminAuth', 'true');
           navigate('/admin/dashboard'); 
         }}>
           {error && <div className="text-red-500 text-xs text-center mb-2">{error}</div>}
@@ -128,7 +127,7 @@ export function GuidanceLayout() {
   const [adminEmail, setAdminEmail] = useState<string>('aguilos.relie@capsu.edu');
   
   useEffect(() => {
-    const email = sessionStorage.getItem('adminEmail');
+    const email = localStorage.getItem('adminEmail');
     if (email) setAdminEmail(email);
   }, []);
   
@@ -191,8 +190,8 @@ export function GuidanceLayout() {
             <button 
               onClick={async () => {
                 await logOut();
-                sessionStorage.removeItem('adminAuth');
-                sessionStorage.removeItem('adminEmail');
+                localStorage.removeItem('adminAuth');
+                localStorage.removeItem('adminEmail');
                 navigate('/admin/login');
               }} 
               className="flex items-center gap-3 px-4 py-3 text-white font-bold hover:bg-white/10 rounded-xl transition-all duration-200 w-full text-[15px]"
@@ -213,7 +212,7 @@ export function GuidanceLayout() {
 }
 
 export function GuidanceDashboard() {
-  const [submissions, setSubmissions] = useState<any[]>(() => db.submissions.getCached());
+const [, setSubmissions] = useState<any[]>(() => db.submissions.getCached());
 
   useEffect(() => {
     const unsub = db.submissions.subscribe(subs => {
@@ -419,14 +418,7 @@ export function GuidanceDashboard() {
   );
 }
 
-function UserIcon({ className }: { className?: string }) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-      <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
-      <circle cx="12" cy="7" r="4" />
-    </svg>
-  );
-}
+
 
 export function GuidanceSubmissions() {
   const [filterOpen, setFilterOpen] = useState(false);
@@ -450,6 +442,7 @@ export function GuidanceSubmissions() {
     const unsubSubmissions = db.submissions.subscribe(setSubmissions);
     const unsubCourses = db.courses.subscribe(setCoursesList);
     const unsubAcademicYears = db.academicYears.subscribe(setAcademicYearsList);
+    
 
     return () => {
       unsubSubmissions();
@@ -595,7 +588,7 @@ export function GuidanceSubmissions() {
                   </td>
                   <td className="py-4 px-6 text-sm text-gray-700 font-medium">
                     {/* Inferring course from scholarshipType for demo, or extracting from answers */}
-                    {s.answers?.course || (s.scholarshipType.includes('BS') || s.scholarshipType.includes('BA') ? s.scholarshipType.split(' ')[0] : 'N/A')}
+                    {s.data?.course || s.answers?.course || (s.scholarshipType.includes('BS') || s.scholarshipType.includes('BA') ? s.scholarshipType.split(' ')[0] : 'N/A')}
                   </td>
                   <td className="py-4 px-6 text-sm text-gray-600">
                     {new Date(s.submittedAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
@@ -644,6 +637,10 @@ export function GuidanceSettings() {
   const [activeTab, setActiveTab] = useState<'academic-year' | 'courses' | 'sections' | 'form' | 'files'>('academic-year');
   
   // Academic Years state (Matching the reference screenshot)
+
+  const [scholarships, setScholarships] = useState<any[]>([]);
+/*   const [newRequirement, setNewRequirement] = useState({ name: '', required: true }); */
+
   const [academicYears, setAcademicYears] = useState<any[]>([
     { id: '1', year: '2026-2027', overallStatus: 'Active', firstSemester: 'Active', secondSemester: 'Inactive' },
     { id: '2', year: '2026-2025', overallStatus: 'Inactive', firstSemester: 'Inactive', secondSemester: 'Inactive' },
@@ -716,6 +713,7 @@ export function GuidanceSettings() {
 
   const loadCourses = async () => {
     const list = await db.courses.listAll();
+    db.scholarships.listAll().then(setScholarships);
     if (list && list.length > 0) {
       setCourses(list);
     }
@@ -753,6 +751,9 @@ export function GuidanceSettings() {
   };
 
   // Course Handlers
+  
+
+
   const handleSaveCourse = async () => {
     if (!courseForm.code.trim() || !courseForm.name.trim()) {
       alert("Please enter both Course Code (e.g. BSCS) and Degree Title.");
@@ -913,6 +914,22 @@ export function GuidanceSettings() {
           <Calendar className={cn("w-4 h-4", activeTab === 'academic-year' ? "text-[#1864db]" : "text-[#0c2340]")} />
           <span>Academic Year</span>
           {activeTab === 'academic-year' && (
+          <div className="absolute bottom-0 left-0 right-0 h-[2.5px] bg-[#1864db] rounded-t-full" />
+        )}
+      </button>
+
+      <button
+        onClick={() => setActiveTab('scholarships')}
+        className={cn(
+          "flex items-center gap-2.5 pb-3 text-sm font-bold transition-all relative cursor-pointer",
+          activeTab === 'scholarships'
+            ? "text-[#1864db]"
+            : "text-[#0c2340] hover:text-[#1864db]"
+        )}
+      >
+        <Award className={cn("w-4 h-4", activeTab === 'scholarships' ? "text-[#1864db]" : "text-[#0c2340]")} />
+        <span>Scholarships</span>
+        {activeTab === 'scholarships' && (
             <div className="absolute bottom-0 left-0 right-0 h-[2.5px] bg-[#1864db] rounded-t-full" />
           )}
         </button>
@@ -988,6 +1005,7 @@ export function GuidanceSettings() {
         <div className="p-5 px-6 flex justify-between items-center border-b border-gray-200/80">
           <h2 className="text-lg font-bold text-[#0c2340]">
             {activeTab === 'academic-year' && 'Academic Year'}
+            {activeTab === 'scholarships' && 'Scholarships & Requirements'}
             {activeTab === 'courses' && 'Courses'}
             {activeTab === 'sections' && 'Sections'}
             {activeTab === 'form' && 'Form Requirements'}
@@ -1001,6 +1019,49 @@ export function GuidanceSettings() {
             <span>Add</span>
           </button>
         </div>
+
+        
+        {/* TAB: SCHOLARSHIPS */}
+        {activeTab === 'scholarships' && (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-gray-50 border-b border-gray-200 text-xs font-bold text-gray-500 uppercase tracking-wider">
+                  <th className="p-4 px-6 font-semibold">Scholarship Name</th>
+                  <th className="p-4 px-6 font-semibold">Funding Type</th>
+                  <th className="p-4 px-6 font-semibold">Requirements</th>
+                  <th className="p-4 px-6 font-semibold">Status</th>
+                  <th className="p-4 px-6 font-semibold text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {scholarships.length === 0 ? (
+                  <tr><td colSpan={5} className="p-8 text-center text-gray-500 italic">No scholarships configured.</td></tr>
+                ) : scholarships.map((item: any) => (
+                  <tr key={item.id} className="hover:bg-blue-50/30 transition-colors">
+                    <td className="p-4 px-6 font-semibold text-gray-900">{item.name}</td>
+                    <td className="p-4 px-6 text-gray-600 text-sm">{item.fundingType}</td>
+                    <td className="p-4 px-6 text-gray-600 text-sm">
+                      {item.requirements?.length || 0} document(s)
+                    </td>
+                    <td className="p-4 px-6">
+                      <span className={cn(
+                        "px-2.5 py-1 text-[11px] font-bold rounded-md",
+                        item.status === 'Active' ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-600"
+                      )}>
+                        {item.status}
+                      </span>
+                    </td>
+                    <td className="p-4 px-6 text-right">
+                      <button onClick={() => {   }} className="p-2 text-gray-400 hover:text-[#1864db] transition-colors"><Pen className="w-4 h-4" /></button>
+                      <button onClick={() => db.scholarships.delete(item.id)} className="p-2 text-gray-400 hover:text-red-500 transition-colors ml-1"><Trash2 className="w-4 h-4" /></button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
 
         {/* TAB 1: ACADEMIC YEAR (Matching screenshot exactly) */}
         {activeTab === 'academic-year' && (

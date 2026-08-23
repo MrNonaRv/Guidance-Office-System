@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { 
   X, ArrowLeft, ChevronDown, CheckCircle2, AlertCircle, FileText, Download, 
-  Printer, Eye, Check, CreditCard, PenTool, Camera, ShieldCheck, UserCheck 
+  Printer, Eye, Check 
 } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { db, Submission, SubmissionFile } from '../lib/db';
@@ -36,11 +36,6 @@ export function StudentRecordModal({
   const courseCode = formData.course || localSubmission.answers?.course || (localSubmission.scholarshipType?.includes('BS') || localSubmission.scholarshipType?.includes('BA') ? localSubmission.scholarshipType.split(' ')[0] : 'BAEL');
   const scholarshipType = localSubmission.scholarshipType || formData.scholarshipCategory || 'Externally-Funded (Pag-ulikid)';
   
-  // Extract photo, student ID, and signature from formData or files
-  const photo2x2 = localSubmission.photo2x2 || formData.photo2x2 || localSubmission.files?.find(f => f.category?.includes('2x2') || f.category?.includes('Photo'))?.data;
-  const studentIdCard = localSubmission.studentIdCard || formData.studentIdCard || localSubmission.files?.find(f => f.category?.includes('Student ID'))?.data;
-  const digitalSignature = localSubmission.signature || formData.signature;
-
   // Available Academic Years for dropdowns
   const academicYearsOptions = academicYearsList && academicYearsList.length > 0
     ? academicYearsList.map(ay => (typeof ay === 'string' ? ay : ay.label || ay.year || '2025-2026'))
@@ -74,6 +69,8 @@ export function StudentRecordModal({
     setViewMode('semester_record');
   };
 
+  const photo2x2 = localSubmission.photo2x2 || formData.photo2x2 || localSubmission.files?.find((f: any) => f.category?.includes('2x2') || f.category?.includes('Photo'))?.data;
+
   // Requirements list
   const requirementsList = [
     {
@@ -81,48 +78,40 @@ export function StudentRecordModal({
       name: '2x2 Recent Formal ID Photo',
       category: '2x2 Recent Formal ID Photo',
       fileName: `${studentName.replace(/\s+/g, '_')}_2x2_Photo.png`,
-      status: (photo2x2 || localSubmission.files?.find(f => f.category?.includes('Photo') || f.category?.includes('2x2'))?.verified || localSubmission.status === 'Complete' || localSubmission.status === 'Approved') ? 'Verified' : 'Pending',
-      file: localSubmission.files?.find(f => f.category?.includes('Photo') || f.category?.includes('2x2')) || (photo2x2 ? { name: '2x2_Photo.png', data: photo2x2, type: 'image/png', category: '2x2 Recent Formal ID Photo' } : null)
-    },
-    {
-      id: 'req-id',
-      name: 'Valid Student ID Card',
-      category: 'Valid Student ID',
-      fileName: `${studentName.replace(/\s+/g, '_')}_StudentID.png`,
-      status: (studentIdCard || localSubmission.files?.find(f => f.category?.includes('Student ID'))?.verified || localSubmission.status === 'Complete' || localSubmission.status === 'Approved') ? 'Verified' : 'Pending',
-      file: localSubmission.files?.find(f => f.category?.includes('Student ID')) || (studentIdCard ? { name: 'Student_ID_Card.png', data: studentIdCard, type: 'image/png', category: 'Valid Student ID' } : null)
+      status: (photo2x2 || localSubmission.files?.find((f: any) => f.category?.includes('Photo') || f.category?.includes('2x2'))?.verified || localSubmission.status === 'Complete' || localSubmission.status === 'Approved') ? 'Verified' : 'Pending',
+      file: localSubmission.files?.find((f: any) => f.category?.includes('Photo') || f.category?.includes('2x2')) || (photo2x2 ? { name: '2x2_Photo.png', data: photo2x2, type: 'image/png', category: '2x2 Recent Formal ID Photo' } : null)
     },
     {
       id: 'req-1',
       name: 'Certificate of Grades (COG)',
       category: 'Certificate of Grades (COG)',
       fileName: `${studentName.replace(/\s+/g, '_')}_COG.pdf`,
-      status: (localSubmission.files?.find(f => f.category?.includes('COG') || f.name?.includes('Grade'))?.verified || localSubmission.status === 'Complete' || localSubmission.status === 'Approved') ? 'Verified' : 'Pending',
-      file: localSubmission.files?.find(f => f.category?.includes('COG') || f.name?.includes('Grade'))
+      status: (localSubmission.files?.find((f: any) => f.category?.includes('COG') || f.name?.includes('Grade'))?.verified || localSubmission.status === 'Complete' || localSubmission.status === 'Approved') ? 'Verified' : 'Pending',
+      file: localSubmission.files?.find((f: any) => f.category?.includes('COG') || f.name?.includes('Grade'))
     },
     {
       id: 'req-2',
       name: 'Certificate of Registration (COR)',
       category: 'Certificate of Registration (COR)',
       fileName: `${studentName.replace(/\s+/g, '_')}_COR.pdf`,
-      status: (localSubmission.files?.find(f => f.category?.includes('COR') || f.name?.includes('Registration'))?.verified || localSubmission.status === 'Complete' || localSubmission.status === 'Approved') ? 'Verified' : 'Pending',
-      file: localSubmission.files?.find(f => f.category?.includes('COR') || f.name?.includes('Registration'))
+      status: (localSubmission.files?.find((f: any) => f.category?.includes('COR') || f.name?.includes('Registration'))?.verified || localSubmission.status === 'Complete' || localSubmission.status === 'Approved') ? 'Verified' : 'Pending',
+      file: localSubmission.files?.find((f: any) => f.category?.includes('COR') || f.name?.includes('Registration'))
     },
     {
       id: 'req-3',
       name: 'Proof of Income / Indigency',
       category: 'Proof of Income / Certificate of Indigency',
       fileName: `${studentName.replace(/\s+/g, '_')}_Indigency.pdf`,
-      status: (localSubmission.files?.find(f => f.category?.includes('Income') || f.category?.includes('Indigency'))?.verified || localSubmission.status === 'Complete' || localSubmission.status === 'Approved') ? 'Verified' : 'Pending',
-      file: localSubmission.files?.find(f => f.category?.includes('Income') || f.category?.includes('Indigency'))
+      status: (localSubmission.files?.find((f: any) => f.category?.includes('Income') || f.category?.includes('Indigency'))?.verified || localSubmission.status === 'Complete' || localSubmission.status === 'Approved') ? 'Verified' : 'Pending',
+      file: localSubmission.files?.find((f: any) => f.category?.includes('Income') || f.category?.includes('Indigency'))
     },
     {
       id: 'req-4',
       name: 'Good Moral Character',
       category: 'Certificate of Good Moral Character',
       fileName: `${studentName.replace(/\s+/g, '_')}_GoodMoral.pdf`,
-      status: (localSubmission.files?.find(f => f.category?.includes('Moral'))?.verified || localSubmission.status === 'Complete' || localSubmission.status === 'Approved') ? 'Verified' : 'Pending',
-      file: localSubmission.files?.find(f => f.category?.includes('Moral'))
+      status: (localSubmission.files?.find((f: any) => f.category?.includes('Moral'))?.verified || localSubmission.status === 'Complete' || localSubmission.status === 'Approved') ? 'Verified' : 'Pending',
+      file: localSubmission.files?.find((f: any) => f.category?.includes('Moral'))
     }
   ];
 
@@ -159,12 +148,12 @@ export function StudentRecordModal({
         {/* Scrollable Container */}
         <div className="overflow-y-auto flex-1">
           {/* ------------------------------------------------------------- */}
-          {/* VIEW 1: OVERVIEW (The 3 Folder Dashboard + Student Identity) */}
+          {/* VIEW 1: OVERVIEW */}
           {/* ------------------------------------------------------------- */}
           {viewMode === 'overview' && (
             <div className="p-6 md:p-7 space-y-4 bg-white">
               
-              {/* Student Info & Status Header with 2x2 Photo Avatar */}
+              {/* Student Info & Status Header */}
               <div className="flex items-start justify-between gap-4 mb-2 pb-4 border-b border-gray-100">
                 <div className="flex items-center gap-3.5">
                   {photo2x2 ? (
@@ -186,11 +175,6 @@ export function StudentRecordModal({
                     <p className="text-sm font-bold text-[#003884] tracking-wide mt-0.5">
                       {courseCode} &bull; <span className="text-gray-500 font-normal">{studentIdNumber}</span>
                     </p>
-                    {digitalSignature && (
-                      <span className="inline-flex items-center gap-1 text-[11px] font-bold text-green-700 mt-1">
-                        <ShieldCheck className="w-3.5 h-3.5 text-green-600" /> Digital Signature Affixed
-                      </span>
-                    )}
                   </div>
                 </div>
 
@@ -225,37 +209,13 @@ export function StudentRecordModal({
                     <span className="text-base md:text-[17px] font-bold text-gray-900 block">
                       Scholarship Requirements
                     </span>
-                    <span className="text-xs text-gray-500 font-medium">COG, COR, Indigency, ID & Photos</span>
+                    <span className="text-xs text-gray-500 font-medium">COG, COR, Indigency & Photos</span>
                   </div>
                 </div>
 
                 <button
                   onClick={() => setViewMode('requirements')}
                   className="bg-[#0052cc] hover:bg-[#0041a8] text-white text-sm md:text-base font-bold px-8 py-2 md:py-2.5 rounded-full shadow-xs transition-transform active:scale-95 cursor-pointer whitespace-nowrap"
-                >
-                  View
-                </button>
-              </div>
-
-              {/* Folder 2: Student ID & Digital Signature Card */}
-              <div className="bg-[#f0fdf4] border border-[#bbf7d0] rounded-2xl p-4 md:p-4.5 flex items-center justify-between shadow-xs hover:border-green-400 transition-all">
-                <div className="flex items-center gap-3.5">
-                  <div className="w-9 h-9 rounded-xl bg-green-100 text-green-700 flex items-center justify-center shrink-0">
-                    <UserCheck className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <span className="text-base md:text-[17px] font-bold text-gray-900 block">
-                      Student ID & Signature
-                    </span>
-                    <span className="text-xs text-gray-600 font-medium">
-                      {studentIdCard ? 'ID Uploaded' : 'Pending ID'} &bull; {digitalSignature ? 'Signed Digitally' : 'Unsigned'}
-                    </span>
-                  </div>
-                </div>
-
-                <button
-                  onClick={() => setViewMode('id_signature')}
-                  className="bg-[#15803d] hover:bg-[#166534] text-white text-sm md:text-base font-bold px-8 py-2 md:py-2.5 rounded-full shadow-xs transition-transform active:scale-95 cursor-pointer whitespace-nowrap"
                 >
                   View
                 </button>
@@ -430,121 +390,6 @@ export function StudentRecordModal({
           )}
 
           {/* ------------------------------------------------------------- */}
-          {/* VIEW 3: STUDENT ID & DIGITAL SIGNATURE DEDICATED VIEW */}
-          {/* ------------------------------------------------------------- */}
-          {viewMode === 'id_signature' && (
-            <div className="p-6 space-y-6 bg-gray-50/60">
-              
-              {/* Header & Verification Bar */}
-              <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-xs flex items-center justify-between">
-                <div>
-                  <span className="text-xs font-bold uppercase tracking-wider text-green-700">Identity Verification</span>
-                  <h4 className="text-base font-bold text-gray-900">Student ID & Legal Signature</h4>
-                  <p className="text-xs text-gray-500 mt-0.5">{studentName} &bull; {studentIdNumber}</p>
-                </div>
-
-                <button
-                  onClick={() => window.print()}
-                  className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-xs font-semibold transition-colors cursor-pointer"
-                >
-                  <Printer className="w-3.5 h-3.5" /> Print Records
-                </button>
-              </div>
-
-              {/* 1. Official CapSU Student ID Card */}
-              <div className="bg-white p-5 rounded-2xl border border-gray-200 shadow-xs space-y-3">
-                <div className="flex items-center justify-between">
-                  <h5 className="text-sm font-bold text-[#0f2e60] flex items-center gap-2">
-                    <CreditCard className="w-4 h-4 text-[#1864db]" />
-                    Official Student Identification Card
-                  </h5>
-                  {studentIdCard ? (
-                    <span className="text-xs font-bold text-green-700 bg-green-50 px-2.5 py-0.5 rounded-full border border-green-200 flex items-center gap-1">
-                      <CheckCircle2 className="w-3 h-3" /> Uploaded & Valid
-                    </span>
-                  ) : (
-                    <span className="text-xs font-bold text-amber-700 bg-amber-50 px-2.5 py-0.5 rounded-full border border-amber-200 flex items-center gap-1">
-                      <AlertCircle className="w-3 h-3" /> Missing ID
-                    </span>
-                  )}
-                </div>
-
-                {studentIdCard ? (
-                  <div className="relative border-2 border-dashed border-gray-200 rounded-xl p-3 bg-gray-50 flex flex-col items-center group">
-                    <img 
-                      src={studentIdCard} 
-                      alt="Student ID Card" 
-                      className="max-h-56 w-auto object-contain rounded-lg shadow-sm group-hover:scale-[1.02] transition-transform" 
-                    />
-                    <button
-                      onClick={() => setPreviewFile({ name: 'Student_ID_Card.png', data: studentIdCard, type: 'image/png', category: 'Valid Student ID' })}
-                      className="mt-3 inline-flex items-center gap-1.5 text-xs font-bold text-[#1864db] hover:underline"
-                    >
-                      <Eye className="w-3.5 h-3.5" /> Click to enlarge ID card preview
-                    </button>
-                  </div>
-                ) : (
-                  <div className="p-6 text-center border-2 border-dashed border-gray-200 rounded-xl bg-gray-50 text-gray-400 text-xs">
-                    No student ID card image uploaded by the applicant.
-                  </div>
-                )}
-              </div>
-
-              {/* 2. Affixed Digital Signature */}
-              <div className="bg-white p-5 rounded-2xl border border-gray-200 shadow-xs space-y-3">
-                <div className="flex items-center justify-between">
-                  <h5 className="text-sm font-bold text-[#0f2e60] flex items-center gap-2">
-                    <PenTool className="w-4 h-4 text-[#1864db]" />
-                    Applicant Digital Signature
-                  </h5>
-                  {digitalSignature ? (
-                    <span className="text-xs font-bold text-green-700 bg-green-50 px-2.5 py-0.5 rounded-full border border-green-200 flex items-center gap-1">
-                      <CheckCircle2 className="w-3 h-3" /> Signed & Authenticated
-                    </span>
-                  ) : (
-                    <span className="text-xs font-bold text-amber-700 bg-amber-50 px-2.5 py-0.5 rounded-full border border-amber-200">
-                      No Signature
-                    </span>
-                  )}
-                </div>
-
-                {digitalSignature ? (
-                  <div className="border-2 border-dashed border-blue-100 rounded-xl p-4 bg-[#f9fbff] flex flex-col items-center justify-center">
-                    <img 
-                      src={digitalSignature} 
-                      alt="Student Digital Signature" 
-                      className="h-20 object-contain drop-shadow-xs" 
-                    />
-                    <div className="w-48 border-t border-gray-400 mt-2 text-center">
-                      <p className="text-xs font-bold text-gray-800 uppercase tracking-wide">{studentName}</p>
-                      <p className="text-[10px] text-gray-500">Applicant Signature</p>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="p-6 text-center border-2 border-dashed border-gray-200 rounded-xl bg-gray-50 text-gray-400 text-xs">
-                    No digital signature affixed by the applicant.
-                  </div>
-                )}
-
-                <div className="bg-blue-50 border border-blue-100 rounded-xl p-3 text-[11px] text-blue-900 leading-relaxed">
-                  <strong>Verification Note: </strong> This signature was captured during application submission and is legally binding for all scholarship evaluations.
-                </div>
-              </div>
-
-              {/* Back button */}
-              <div className="pt-2 text-center">
-                <button
-                  onClick={() => setViewMode('overview')}
-                  className="text-xs font-bold text-blue-600 hover:text-blue-800 underline transition-colors cursor-pointer"
-                >
-                  ← Return to Student Records Summary
-                </button>
-              </div>
-
-            </div>
-          )}
-
-          {/* ------------------------------------------------------------- */}
           {/* VIEW 4: SEMESTER RECORD (1st Sem or 2nd Sem) */}
           {/* ------------------------------------------------------------- */}
           {viewMode === 'semester_record' && (
@@ -629,18 +474,19 @@ export function StudentRecordModal({
 
       {/* ----------------- EXACT PRINT LAYOUT FOR BROWSER PRINT ----------------- */}
       <div className="hidden print:block text-black bg-white font-sans w-full">
+        
         {/* PAGE 1: SCHOLARSHIP RECORD FORM */}
         <div className="print-page w-[793px] h-[1122px] mx-auto pt-8 break-after-page">
           {/* Header Box */}
-          <div className="border border-black w-full mb-6">
+          <div className="border border-black w-full mb-6 text-black">
             <div className="flex border-b border-black">
               <div className="w-1/5 p-2 border-r border-black flex flex-col items-center justify-center">
-                <div className="w-12 h-12 bg-gray-200 rounded-full mb-1"></div>
+                <img src="/capsu-logo.png" className="w-12 h-12 object-contain mb-1" alt="Logo" />
               </div>
               <div className="w-3/5 p-2 border-r border-black flex flex-col items-center justify-center text-center">
-                <span className="text-[10px]">Document Type:</span>
+                <div className="text-[10px]">Document Type:</div>
                 <strong className="text-xl tracking-widest mt-1 font-serif">FORM</strong>
-                <span className="text-[8px] mt-1 font-serif">ISO 9001:2015</span>
+                <div className="text-[8px] mt-1 font-serif">ISO 9001:2015</div>
               </div>
               <div className="w-1/5 font-serif">
                 <div className="border-b border-black p-1 text-[10px] flex justify-between"><span>Document Code</span><strong>GCO-F05</strong></div>
@@ -650,133 +496,239 @@ export function StudentRecordModal({
               </div>
             </div>
             <div className="flex font-serif">
-              <div className="w-1/4 p-2 border-r border-black text-xs flex items-center">Document Title:</div>
+              <div className="w-1/4 p-2 border-r border-black text-xs flex items-center">Document Type:</div>
               <div className="w-3/4 p-2 text-center font-bold text-lg tracking-wider flex items-center justify-center">SCHOLARSHIP RECORD FORM</div>
             </div>
           </div>
 
-          {/* Profile Block */}
-          <div className="flex gap-4 mb-6 text-sm font-serif">
-            <div className="flex-1 space-y-3">
-              <div className="flex items-end gap-2">
-                <span className="w-12">Name:</span>
-                <span className="flex-1 border-b border-black text-center">{formData.familyName || 'Santos'}</span>
-                <span className="flex-1 border-b border-black text-center">{formData.firstName || 'Anna Marie'}</span>
-                <span className="flex-1 border-b border-black text-center">{formData.middleName || 'A.'}</span>
-                <span className="ml-2">Age:</span><span className="w-10 border-b border-black text-center">{formData.age || '20'}</span>
-                <span className="ml-2">Sex: ( {formData.sex === 'Male' ? 'x' : ' '} ) Male ( {formData.sex === 'Female' ? 'x' : 'x'} ) Female</span>
-              </div>
-              <div className="flex text-xs text-center text-gray-600 mb-2 mt-0">
-                <span className="w-12"></span>
-                <span className="flex-1">Family Name</span>
-                <span className="flex-1">First Name</span>
-                <span className="flex-1">Middle Name</span>
-                <span className="w-10"></span><span className="w-48"></span>
+          <div className="text-center font-serif mt-4 italic text-sm mb-6 text-black">
+            (Data and Personal Information will be kept with utmost confidentiality and will be protected<br/>through RA 10173 also known as Data Privacy Act of 2012)
+          </div>
+
+          <div className="font-serif text-center font-bold text-lg mb-6 text-black">STUDENT DEMOGRAPHICS</div>
+
+          <div className="font-serif text-black pl-8 pr-4">
+            <div className="font-bold mb-4">A. Personal Information</div>
+            
+            <div className="flex justify-between">
+              <div className="w-[80%] pr-4 space-y-6">
+                <div>
+                  <div className="flex items-end text-sm">
+                    <span className="mr-2">Name:</span>
+                    <span className="flex-1 border-b border-black inline-block text-center">{formData.familyName || ''}</span>
+                    <span className="flex-1 border-b border-black inline-block text-center ml-2">{formData.firstName || ''}</span>
+                    <span className="flex-1 border-b border-black inline-block text-center ml-2">{formData.middleName || ''}</span>
+                  </div>
+                  <div className="flex text-[10px] italic mt-1">
+                    <span className="mr-2 opacity-0">Name:</span>
+                    <span className="flex-1 text-center">Family Name</span>
+                    <span className="flex-1 text-center ml-2">First Name</span>
+                    <span className="flex-1 text-center ml-2">Middle Name</span>
+                  </div>
+                </div>
+
+                <div className="flex items-end text-sm">
+                  <span className="mr-2">Birthdate:</span>
+                  <span className="w-32 border-b border-black inline-block text-center">{formData.birthdate || ''}</span>
+                  <span className="ml-4 mr-2">Age:</span>
+                  <span className="w-24 border-b border-black inline-block text-center">{formData.age || ''}</span>
+                  <span className="ml-4 mr-2">Sex:</span>
+                  <span className="w-24 border-b border-black inline-block text-center">{formData.sex || ''}</span>
+                </div>
+
+                <div className="flex items-end text-sm">
+                  <span className="mr-2">Year Level:</span>
+                  <span className="w-32 border-b border-black inline-block text-center">{formData.yearLevel || ''}</span>
+                  <span className="ml-4 mr-2">Course:</span>
+                  <span className="w-32 border-b border-black inline-block text-center">{formData.course || ''}</span>
+                  <span className="ml-4 mr-2">Section:</span>
+                  <span className="w-24 border-b border-black inline-block text-center">{formData.section || ''}</span>
+                </div>
+
+                <div className="flex items-end text-sm">
+                  <span className="mr-2">Contact No.:</span>
+                  <span className="w-48 border-b border-black inline-block text-center">{formData.contactNo || ''}</span>
+                  <span className="ml-4 mr-2">Gmail:</span>
+                  <span className="flex-1 border-b border-black inline-block text-center">{formData.email || ''}</span>
+                </div>
+
+                <div className="flex items-end text-sm">
+                  <span className="mr-2">Permanent Address:</span>
+                  <span className="flex-1 border-b border-black inline-block text-center">{formData.permanentAddress || ''}</span>
+                </div>
               </div>
               
-              <div className="flex items-end gap-2">
-                <span className="w-24">Course & Year:</span>
-                <span className="flex-1 border-b border-black">{courseCode} - {formData.yearLevel || '2nd Year'}</span>
-                <span className="w-16">Birthdate:</span>
-                <span className="flex-1 border-b border-black">{formData.birthdate || '2004-05-12'}</span>
-                <span className="w-20">Contact No.:</span>
-                <span className="flex-1 border-b border-black">{formData.contactNo || '+63 912 345 6789'}</span>
-              </div>
-              <div className="flex items-end gap-2">
-                <span className="w-36">Permanent Address:</span>
-                <span className="flex-1 border-b border-black">{formData.permanentAddress || 'Tapaz, Capiz'}</span>
-              </div>
-              <div className="flex items-end gap-2">
-                <span className="w-24">Father's Name:</span>
-                <span className="flex-1 border-b border-black">{formData.fatherName || 'Roberto Santos'}</span>
-                <span className="w-24 pl-4">Mother's Name:</span>
-                <span className="flex-1 border-b border-black">{formData.motherName || 'Elena Santos'}</span>
+              <div className="w-[140px] shrink-0">
+                <div className="w-[120px] h-[120px] border border-black flex items-center justify-center p-1">
+                  {photo2x2 ? (
+                    <img src={photo2x2} alt="2x2" className="w-full h-full object-cover" />
+                  ) : (
+                    <span className="text-gray-400 text-xs text-center">2x2 Picture</span>
+                  )}
+                </div>
               </div>
             </div>
+
+            <div className="font-bold mt-10 mb-4">B. Family Background</div>
             
-            {/* 2x2 Picture Box */}
-            <div className="w-32 h-32 border border-black flex items-center justify-center text-center text-xs p-1 shrink-0 font-serif overflow-hidden">
-              {photo2x2 ? (
-                <img src={photo2x2} alt="2x2 Photo" className="w-full h-full object-cover" />
-              ) : (
-                <span>Attach<br/>2x2 Picture</span>
-              )}
-            </div>
-          </div>
+            <div className="space-y-6">
+              <div>
+                <div className="italic font-bold mb-3 text-sm">Father Information</div>
+                <div className="flex items-end text-sm">
+                  <span className="mr-2">Name:</span>
+                  <span className="w-64 border-b border-black inline-block text-center">{formData.fatherName || ''}</span>
+                  <span className="ml-4 mr-2">Occupation:</span>
+                  <span className="w-48 border-b border-black inline-block text-center">{formData.fatherOccupation || ''}</span>
+                  <span className="ml-4 mr-2">Contact No.:</span>
+                  <span className="flex-1 border-b border-black inline-block text-center">{formData.fatherContact || ''}</span>
+                </div>
+              </div>
 
-          {/* Category */}
-          <div className="text-center font-bold text-sm mb-4 font-serif">SCHOLARSHIP CATEGORY</div>
-          <div className="text-sm font-serif">
-            <strong>A. Internally-Funded</strong>
-            <div className="pl-6 mt-1">
-              <em>Entrance</em>
-              <div className="pl-6 grid grid-cols-2 mt-1 mb-2">
-                <div>[ {formData.scholarshipCategory?.includes('Valedictorian') ? 'x' : ' '} ] Valedictorian</div>
-                <div>[ {formData.scholarshipCategory?.includes('Salutatorian') ? 'x' : ' '} ] Salutatorian</div>
+              <div>
+                <div className="italic font-bold mb-3 text-sm">Mother Information</div>
+                <div className="flex items-end text-sm">
+                  <span className="mr-2">Name:</span>
+                  <span className="w-64 border-b border-black inline-block text-center">{formData.motherName || ''}</span>
+                  <span className="ml-4 mr-2">Occupation:</span>
+                  <span className="w-48 border-b border-black inline-block text-center">{formData.motherOccupation || ''}</span>
+                  <span className="ml-4 mr-2">Contact No.:</span>
+                  <span className="flex-1 border-b border-black inline-block text-center">{formData.motherContact || ''}</span>
+                </div>
               </div>
-            </div>
-            <strong className="block mt-4 mb-2">B. Externally-Funded</strong>
-            <div className="pl-6 mt-1">
-              <em>CHED / Local Govt</em>
-              <div className="pl-6 grid grid-cols-1 mt-1 mb-2 gap-y-1">
-                <div>[ {formData.scholarshipCategory?.includes('Pag-ulikid') || scholarshipType.includes('Pag-ulikid') ? 'x' : ' '} ] Pag-ulikid Scholarship Program</div>
-                <div>[ {formData.scholarshipCategory?.includes('Tulong Dunong') ? 'x' : ' '} ] Tulong Dunong</div>
-                <div>[ {formData.scholarshipCategory?.includes('Barangay') ? 'x' : ' '} ] Barangay Dependents</div>
-              </div>
-            </div>
-          </div>
 
-          {/* Signature and Date Section */}
-          <div className="mt-16 flex justify-between items-end text-sm font-serif">
-            <div className="w-48 text-center">
-              <div className="border-b border-black text-center">{new Date(localSubmission.submittedAt).toLocaleDateString()}</div>
-              <div className="mt-1">Date Received</div>
-            </div>
-            <div className="w-64 text-center">
-              <div className="border-b border-black min-h-[48px] flex flex-col justify-end items-center pb-1">
-                {digitalSignature && (
-                  <img src={digitalSignature} alt="Applicant Signature" className="max-h-12 object-contain" />
-                )}
-                <span className="font-bold">{studentName}</span>
+              <div>
+                <div className="italic font-bold mb-3 text-sm">Guardian Information</div>
+                <div className="flex items-end text-sm">
+                  <span className="mr-2">Name:</span>
+                  <span className="w-64 border-b border-black inline-block text-center">{formData.guardianName || ''}</span>
+                  <span className="ml-4 mr-2">Occupation:</span>
+                  <span className="w-48 border-b border-black inline-block text-center">{formData.guardianOccupation || ''}</span>
+                  <span className="ml-4 mr-2">Contact No.:</span>
+                  <span className="flex-1 border-b border-black inline-block text-center">{formData.guardianContact || ''}</span>
+                </div>
+                <div className="flex items-end text-sm mt-6">
+                  <span className="mr-2">Address:</span>
+                  <span className="flex-1 border-b border-black inline-block text-center">{formData.guardianAddress || ''}</span>
+                  <span className="ml-4 mr-2">Relationship:</span>
+                  <span className="w-48 border-b border-black inline-block text-center">{formData.guardianRelationship || ''}</span>
+                </div>
               </div>
-              <div className="mt-1">Signature of Applicant</div>
+            </div>
+
+            <div className="font-bold mt-10 mb-4">C. Scholarship Details</div>
+            
+            <div className="space-y-6">
+              <div className="flex items-end gap-4 font-bold">
+                <span>Scholarship Classification:</span>
+                <div className="flex-1 border-b border-black flex items-center justify-center font-normal">
+                  {formData.scholarshipCategory || ''}
+                </div>
+              </div>
+
+              <div className="space-y-4 pl-12">
+                <div className="flex items-end gap-2">
+                  <span>Municipality:</span>
+                  <span className="flex-1 border-b border-black inline-block">{formData.scholarshipCategory === 'DSWD' ? formData.dswdMunicipality : ''}</span>
+                </div>
+                <div className="flex items-end gap-2">
+                  <span>Contact person:</span>
+                  <span className="flex-1 border-b border-black inline-block">{formData.scholarshipCategory === 'DSWD' ? formData.dswdContactPerson : ''}</span>
+                </div>
+                <div className="flex items-end gap-2">
+                  <span>Designation:</span>
+                  <span className="flex-1 border-b border-black inline-block">{formData.scholarshipCategory === 'DSWD' ? formData.dswdDesignation : ''}</span>
+                </div>
+                <div className="flex items-end gap-2">
+                  <span>Others (specify):</span>
+                  <span className="flex-1 border-b border-black inline-block">{formData.scholarshipCategory === 'DSWD' ? formData.dswdOthers : ''}</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-16 text-center text-sm">
+              I hereby certify that the information I have provided is true and correct to the best of my knowledge.
             </div>
           </div>
         </div>
+{/* PAGE 2: STUDENT DOCUMENTS */}
+        <div className="print-page w-[793px] h-[1122px] mx-auto pt-8 break-after-page">
+          {/* Header Box */}
+          <div className="border border-black w-full mb-6">
+            <div className="flex border-b border-black">
+              <div className="w-1/5 p-2 border-r border-black flex flex-col items-center justify-center">
+                <img src="/capsu-logo.png" className="w-12 h-12 object-contain mb-1" />
+              </div>
+              <div className="w-3/5 p-2 border-r border-black flex flex-col items-center justify-center text-center">
+                <div className="text-[10px]">Document Type:</div>
+                <strong className="text-xl tracking-widest mt-1 font-serif">APPENDIX</strong>
+                <div className="text-[8px] mt-1 font-serif">ATTACHED STUDENT REQUIREMENTS</div>
+              </div>
+              <div className="w-1/5 font-serif">
+                <div className="border-b border-black p-1 text-[10px] flex justify-between"><span>Page</span><strong>1 of 1</strong></div>
+              </div>
+            </div>
+            <div className="flex font-serif bg-gray-100">
+              <div className="w-full p-2 text-center font-bold text-lg tracking-wider">OFFICIAL SUBMISSION DOCUMENTS</div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-8 px-4">
+            {requirementsList.map((req, i) => req.file?.data ? (
+              <div key={i} className="border border-black p-4 flex flex-col items-center justify-center h-[400px]">
+                <h4 className="font-bold font-serif mb-4 text-center border-b border-black w-full pb-2">{req.name}</h4>
+                {req.file.type.includes('image') ? (
+                  <img src={req.file.data} className="max-h-[300px] object-contain" />
+                ) : (
+                  <div className="text-gray-500 italic font-serif flex flex-col items-center gap-2">
+                    <FileText className="w-12 h-12" />
+                    [PDF Document Attached in Digital File]
+                  </div>
+                )}
+              </div>
+            ) : null)}
+          </div>
+        </div>
+
       </div>
 
-      {/* Embedded File Preview Modal */}
       {previewFile && (
-        <div className="fixed inset-0 z-60 bg-black/80 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[85vh] overflow-hidden flex flex-col shadow-2xl">
-            <div className="p-4 bg-gray-900 text-white flex justify-between items-center">
-              <h4 className="text-sm font-bold truncate">{previewFile.name}</h4>
-              <button onClick={() => setPreviewFile(null)} className="p-1 hover:bg-gray-800 rounded-full text-gray-400 hover:text-white cursor-pointer">
-                <X className="w-5 h-5" />
-              </button>
+        <div className="fixed inset-0 z-[60] bg-black/90 flex items-center justify-center p-4 print:hidden">
+          <button 
+            onClick={() => setPreviewFile(null)}
+            className="absolute top-4 right-4 text-white/50 hover:text-white p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors cursor-pointer"
+          >
+            <X className="w-6 h-6" />
+          </button>
+          
+          <div className="w-full max-w-4xl h-full max-h-[85vh] bg-white rounded-xl overflow-hidden flex flex-col shadow-2xl animate-in zoom-in-95 duration-200">
+            <div className="px-4 py-3 bg-gray-50 border-b border-gray-200 flex justify-between items-center shrink-0">
+              <h3 className="font-bold text-gray-800 flex items-center gap-2">
+                <FileText className="w-4 h-4 text-blue-600" />
+                {previewFile.name}
+              </h3>
+              <a 
+                href={previewFile.data} 
+                download={previewFile.name}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold transition-colors cursor-pointer"
+              >
+                <Download className="w-3.5 h-3.5" /> Download
+              </a>
             </div>
-            <div className="p-6 flex-1 overflow-auto flex items-center justify-center bg-gray-100">
-              {previewFile.data.startsWith('data:image/') ? (
-                <img src={previewFile.data} alt={previewFile.name} className="max-h-[60vh] object-contain rounded-lg shadow" />
+            <div className="flex-1 overflow-auto bg-gray-100 flex items-center justify-center p-6">
+              {previewFile.type?.includes('image') ? (
+                <img src={previewFile.data} alt={previewFile.name} className="max-w-full max-h-full object-contain shadow-sm" />
+              ) : previewFile.type?.includes('pdf') ? (
+                <iframe src={previewFile.data} className="w-full h-full border-none bg-white shadow-sm" title={previewFile.name} />
               ) : (
-                <div className="text-center p-8 bg-white rounded-xl shadow-xs">
-                  <FileText className="w-16 h-16 text-blue-600 mx-auto mb-3" />
-                  <p className="font-bold text-gray-800 text-sm">{previewFile.name}</p>
-                  <p className="text-xs text-gray-500 mt-1">{previewFile.category || 'PDF Document'}</p>
-                  <a
-                    href={previewFile.data}
-                    download={previewFile.name}
-                    className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-xs font-bold rounded-lg hover:bg-blue-700 transition-colors shadow-xs"
-                  >
-                    <Download className="w-4 h-4" /> Download Document
-                  </a>
+                <div className="text-center text-gray-500 font-medium">
+                  <FileText className="w-16 h-16 mx-auto text-gray-300 mb-3" />
+                  Cannot preview this file type. <br/> Please download to view.
                 </div>
               )}
             </div>
           </div>
         </div>
       )}
-
     </div>
   );
 }

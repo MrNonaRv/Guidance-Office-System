@@ -10,7 +10,6 @@ import {
   Lock, 
   PenTool, 
   MoreVertical, 
-  Type, 
   Check, 
   Send as SendIcon,
   ChevronLeft,
@@ -25,13 +24,8 @@ import {
   Printer,
   Sparkles,
   Eye,
-  Download,
   Calendar,
   FileText,
-  ShieldCheck,
-  Plus,
-  RefreshCw,
-  HelpCircle,
   History,
   Save
 } from 'lucide-react';

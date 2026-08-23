@@ -2,19 +2,14 @@ import React, { useState } from 'react';
 import { 
   Bell, 
   Search, 
-  Filter, 
   CheckCircle2, 
-  AlertCircle, 
   Clock, 
   Trash2, 
   Check, 
   ChevronLeft, 
   ChevronRight,
-  Eye,
-  FileText,
   Mail,
-  X,
-  Sparkles
+  User
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { useNavigate } from 'react-router-dom';
@@ -328,66 +323,133 @@ export function GuidanceNotifications() {
       {/* Notification Detail Modal */}
       {selectedNotification && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-xs z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-            <div className="p-5 border-b border-gray-100 flex items-center justify-between bg-blue-50/50">
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 bg-blue-100 text-blue-700 rounded-xl flex items-center justify-center">
-                  <Bell className="w-5 h-5" />
-                </div>
-                <div>
-                  <h3 className="font-bold text-gray-900 text-sm">{selectedNotification.title}</h3>
-                  <p className="text-[11px] text-gray-500">{selectedNotification.timestamp}</p>
-                </div>
+          <div className="bg-white rounded-xl w-full max-w-3xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
+            <div className="p-6 overflow-y-auto custom-scrollbar">
+              <div className="bg-[#b3c5e5] text-[#0f2e60] text-center font-black py-3 rounded-xl mb-6 tracking-wide">
+                STUDENT DEMOGRAPHICS
               </div>
-              <button onClick={() => setSelectedNotification(null)} className="text-gray-400 hover:text-gray-600">
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <div className="p-6 space-y-4 text-xs leading-relaxed text-gray-700">
-              <p>{selectedNotification.description}</p>
-
-              {selectedNotification.studentName && (
-                <div className="p-4 bg-gray-50 rounded-xl border border-gray-200/80 space-y-2">
-                  <div className="flex justify-between">
-                    <span className="font-bold text-gray-500">Scholar:</span>
-                    <span className="font-semibold text-gray-900">{selectedNotification.studentName}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="font-bold text-gray-500">Student ID:</span>
-                    <span className="font-mono text-gray-900">{selectedNotification.studentId}</span>
-                  </div>
-                  {selectedNotification.scholarship && (
-                    <div className="flex justify-between">
-                      <span className="font-bold text-gray-500">Scholarship:</span>
-                      <span className="text-blue-700 font-bold">{selectedNotification.scholarship}</span>
-                    </div>
-                  )}
+              
+              {/* PERSONAL INFORMATION */}
+              <div className="border border-[#b3c5e5] rounded-xl overflow-hidden mb-6">
+                <div className="bg-white border-b border-[#b3c5e5] px-4 py-2 flex items-center gap-2 text-[#0f2e60] font-bold text-xs uppercase">
+                   <User className="w-4 h-4 text-[#1864db]" /> PERSONAL INFORMATION
                 </div>
-              )}
+                <table className="w-full text-xs text-left border-collapse">
+                  <tbody className="divide-y divide-gray-200">
+                    <tr>
+                      <td className="py-2.5 px-4 font-bold text-gray-800 w-[40%] border-r border-gray-200">Family Name</td>
+                      <td className="py-2.5 px-4 text-gray-700">{selectedNotification.studentName ? selectedNotification.studentName.split(' ').pop() : 'Santos'}</td>
+                    </tr>
+                    <tr>
+                      <td className="py-2.5 px-4 font-bold text-gray-800 border-r border-gray-200">Middle Name</td>
+                      <td className="py-2.5 px-4 text-gray-700">Abelardo</td>
+                    </tr>
+                    <tr>
+                      <td className="py-2.5 px-4 font-bold text-gray-800 border-r border-gray-200">First Name</td>
+                      <td className="py-2.5 px-4 text-gray-700">{selectedNotification.studentName ? selectedNotification.studentName.split(' ').slice(0, -1).join(' ') : 'Anna Marie'}</td>
+                    </tr>
+                    <tr>
+                      <td className="py-2.5 px-4 font-bold text-gray-800 border-r border-gray-200">Birthdate</td>
+                      <td className="py-2.5 px-4 text-gray-700">06/14/2007</td>
+                    </tr>
+                    <tr>
+                      <td className="py-2.5 px-4 font-bold text-gray-800 border-r border-gray-200">Age</td>
+                      <td className="py-2.5 px-4 text-gray-700">19</td>
+                    </tr>
+                    <tr>
+                      <td className="py-2.5 px-4 font-bold text-gray-800 border-r border-gray-200">Sex</td>
+                      <td className="py-2.5 px-4 text-gray-700">Female</td>
+                    </tr>
+                    <tr>
+                      <td className="py-2.5 px-4 font-bold text-gray-800 border-r border-gray-200">Year Level</td>
+                      <td className="py-2.5 px-4 text-gray-700">2nd Year</td>
+                    </tr>
+                    <tr>
+                      <td className="py-2.5 px-4 font-bold text-gray-800 border-r border-gray-200">Course</td>
+                      <td className="py-2.5 px-4 text-gray-700">BAEL</td>
+                    </tr>
+                    <tr>
+                      <td className="py-2.5 px-4 font-bold text-gray-800 border-r border-gray-200">Section</td>
+                      <td className="py-2.5 px-4 text-gray-700">A</td>
+                    </tr>
+                    <tr>
+                      <td className="py-2.5 px-4 font-bold text-gray-800 border-r border-gray-200">Civil Status</td>
+                      <td className="py-2.5 px-4 text-gray-700">Single</td>
+                    </tr>
+                    <tr>
+                      <td className="py-2.5 px-4 font-bold text-gray-800 border-r border-gray-200">Contact No.</td>
+                      <td className="py-2.5 px-4 text-gray-700">09335691234</td>
+                    </tr>
+                    <tr>
+                      <td className="py-2.5 px-4 font-bold text-gray-800 border-r border-gray-200">Permanent Address</td>
+                      <td className="py-2.5 px-4 text-gray-700">Poblacion Proper Mambusao, Capiz 5807, Philippines</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              
+              {/* FAMILY BACKGROUND */}
+              <div className="border border-[#b3c5e5] rounded-xl overflow-hidden mb-2">
+                <div className="bg-white border-b border-[#b3c5e5] px-4 py-2 flex items-center gap-2 text-[#0f2e60] font-bold text-xs uppercase">
+                   <User className="w-4 h-4 text-[#1864db]" /> FAMILY BACKGROUND
+                </div>
+                <table className="w-full text-xs text-left border-collapse">
+                  <tbody className="divide-y divide-gray-200">
+                    <tr className="bg-gray-50/50">
+                      <td colSpan={2} className="py-2 px-4 font-bold text-[#0f2e60] text-center italic text-[11px] underline">Father Information</td>
+                    </tr>
+                    <tr>
+                      <td className="py-2.5 px-4 font-bold text-gray-800 w-[40%] border-r border-gray-200">Name</td>
+                      <td className="py-2.5 px-4 text-gray-700">John Daniel O. Santos</td>
+                    </tr>
+                    <tr>
+                      <td className="py-2.5 px-4 font-bold text-gray-800 border-r border-gray-200">Occupation</td>
+                      <td className="py-2.5 px-4 text-gray-700">Teacher</td>
+                    </tr>
+                    <tr>
+                      <td className="py-2.5 px-4 font-bold text-gray-800 border-r border-gray-200">Contact No.</td>
+                      <td className="py-2.5 px-4 text-gray-700">0912345678910</td>
+                    </tr>
+                    <tr className="bg-gray-50/50 border-t border-gray-300">
+                      <td colSpan={2} className="py-2 px-4 font-bold text-[#0f2e60] text-center italic text-[11px] underline">Mother Information</td>
+                    </tr>
+                    <tr>
+                      <td className="py-2.5 px-4 font-bold text-gray-800 border-r border-gray-200">Name</td>
+                      <td className="py-2.5 px-4 text-gray-700">Loren C. Abelardo</td>
+                    </tr>
+                    <tr>
+                      <td className="py-2.5 px-4 font-bold text-gray-800 border-r border-gray-200">Occupation</td>
+                      <td className="py-2.5 px-4 text-gray-700">Teacher</td>
+                    </tr>
+                    <tr>
+                      <td className="py-2.5 px-4 font-bold text-gray-800 border-r border-gray-200">Contact No.</td>
+                      <td className="py-2.5 px-4 text-gray-700">0901897654321</td>
+                    </tr>
+                    <tr className="bg-gray-50/50 border-t border-gray-300">
+                      <td colSpan={2} className="py-2 px-4 font-bold text-[#0f2e60] text-center italic text-[11px] underline">Guardian Information</td>
+                    </tr>
+                    <tr>
+                      <td className="py-2.5 px-4 font-bold text-gray-800 border-r border-gray-200">Name</td>
+                      <td className="py-2.5 px-4 text-gray-700">John Daniel O. Santos</td>
+                    </tr>
+                    <tr>
+                      <td className="py-2.5 px-4 font-bold text-gray-800 border-r border-gray-200">Occupation</td>
+                      <td className="py-2.5 px-4 text-gray-700">Teacher</td>
+                    </tr>
+                    <tr>
+                      <td className="py-2.5 px-4 font-bold text-gray-800 border-r border-gray-200">Contact No.</td>
+                      <td className="py-2.5 px-4 text-gray-700">0912345678910</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
             </div>
-
-            <div className="p-4 bg-gray-50 border-t border-gray-100 flex justify-between">
-              <button
-                onClick={() => {
-                  navigate('/admin/communications');
-                  setSelectedNotification(null);
-                }}
-                className="px-4 py-2 bg-[#1864db] text-white rounded-xl text-xs font-bold hover:bg-[#114ba3] transition-colors"
-              >
-                Draft Response in Communications
-              </button>
-              <button
-                onClick={() => setSelectedNotification(null)}
-                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-xl text-xs font-bold hover:bg-gray-300"
-              >
-                Close
-              </button>
+            
+            <div className="px-6 py-4 border-t border-gray-100 flex justify-end shrink-0 bg-white">
+               <button onClick={() => setSelectedNotification(null)} className="px-6 py-2 bg-gray-200 text-gray-700 font-bold rounded-lg hover:bg-gray-300 text-xs">Close</button>
             </div>
           </div>
         </div>
-      )}
-
-    </div>
+      )}    </div>
   );
 }

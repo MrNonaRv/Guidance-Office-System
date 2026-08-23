@@ -10,18 +10,11 @@ import {
   User, 
   FileText, 
   GraduationCap, 
-  Calendar, 
   Mail, 
-  Phone, 
-  MapPin, 
-  Award, 
   RotateCcw,
-  ExternalLink,
-  Search,
   HardDrive,
   Download
 } from 'lucide-react';
-import { cn } from '../../lib/utils';
 
 interface StudentBreakdownItem {
   id: string;
@@ -47,9 +40,38 @@ interface StudentBreakdownItem {
   data?: any;
 }
 
+const scholarshipDataMapping: Record<string, Record<string, string[]>> = {
+  'Internally-Funded': {
+    'Entrance': ['Valedictorian', 'Salutatorian'],
+    'Academic': ['Full', 'Partial', 'Regional', 'National'],
+    'Socio-cultural': ['Regional', 'National'],
+    'Institutional': [
+      'Dependent of Faculty or Staff',
+      'President - SSC',
+      'President - FLP',
+      'Editor-in-Chief (Campus Publication)',
+      'CapSU Band / Chorale'
+    ]
+  },
+  'Externally-Funded': {
+    'CHED': [
+      'Congressional District',
+      'One Town One Scholar',
+      'Tulong Dunong',
+      'ANAC - IP',
+      'Pag - ulikid',
+      'Barangay (Legal dependents of Brgy. Officials)',
+      'ESGP - PA',
+      'UniFast',
+      'Tertiary Education Subsidy (TES)'
+    ],
+    'Merit': ['VIC', 'Capizeño Circle', 'DOST', 'GRF', 'LGU: Barangay'],
+    'DSWD': []
+  }
+};
+
 export function GuidanceReports() {
-  const [submissions, setSubmissions] = useState<any[]>([]);
-  const [selectedCourse, setSelectedCourse] = useState<string>('All courses');
+    const [selectedCourse, setSelectedCourse] = useState<string>('All courses');
   const [selectedYearLevel, setSelectedYearLevel] = useState<string>('All year level');
   const [currentPage, setCurrentPage] = useState<number>(1); // 1 = Reports & Analytics overview, 2 = Scholarship Breakdown
 
@@ -458,7 +480,7 @@ export function GuidanceReports() {
       try {
         const subs = await db.submissions.listAll();
         if (subs && subs.length > 0) {
-          setSubmissions(subs);
+          // setSubmissions(subs);
           const dynamicStudents: StudentBreakdownItem[] = subs.map((s, idx) => {
             const formData = s.data || {};
             const scholarshipParts = (s.scholarshipType || '').split('(');
@@ -1017,8 +1039,16 @@ export function GuidanceReports() {
                     <select
                       value={selectedCategory}
                       onChange={(e) => {
-                        setSelectedCategory(e.target.value);
-                        setAppliedFilters(prev => ({ ...prev, category: e.target.value }));
+                        const newCat = e.target.value;
+                        setSelectedCategory(newCat);
+                        setSelectedSubType('Sub Type');
+                        setSelectedAllocation('Scholarship Allocation');
+                        setAppliedFilters(prev => ({ 
+                          ...prev, 
+                          category: newCat, 
+                          subType: 'Sub Type', 
+                          allocation: 'Scholarship Allocation' 
+                        }));
                       }}
                       className="w-full bg-white border border-gray-300 rounded-xl px-4 py-2.5 text-sm font-medium text-gray-800 appearance-none focus:outline-none focus:ring-2 focus:ring-[#1864db]/30 cursor-pointer shadow-xs"
                     >
@@ -1041,17 +1071,33 @@ export function GuidanceReports() {
                     <select
                       value={selectedSubType}
                       onChange={(e) => {
-                        setSelectedSubType(e.target.value);
-                        setAppliedFilters(prev => ({ ...prev, subType: e.target.value }));
+                        const newSub = e.target.value;
+                        setSelectedSubType(newSub);
+                        setSelectedAllocation('Scholarship Allocation');
+                        setAppliedFilters(prev => ({ 
+                          ...prev, 
+                          subType: newSub, 
+                          allocation: 'Scholarship Allocation' 
+                        }));
                       }}
                       className="w-full bg-white border border-gray-300 rounded-xl px-4 py-2.5 text-sm font-medium text-gray-800 appearance-none focus:outline-none focus:ring-2 focus:ring-[#1864db]/30 cursor-pointer shadow-xs"
                     >
                       <option value="Sub Type">Sub Type</option>
-                      <option value="CHED">CHED</option>
-                      <option value="Institutional">Institutional</option>
-                      <option value="Socio-cultural">Socio-cultural</option>
-                      <option value="Academic">Academic</option>
-                      <option value="Merit">Merit</option>
+                      {selectedCategory !== 'Category' && scholarshipDataMapping[selectedCategory] ? (
+                        Object.keys(scholarshipDataMapping[selectedCategory]).map((subType) => (
+                          <option key={subType} value={subType}>{subType}</option>
+                        ))
+                      ) : (
+                        <>
+                          <option value="Entrance">Entrance</option>
+                          <option value="Academic">Academic</option>
+                          <option value="Socio-cultural">Socio-cultural</option>
+                          <option value="Institutional">Institutional</option>
+                          <option value="CHED">CHED</option>
+                          <option value="Merit">Merit</option>
+                          <option value="DSWD">DSWD</option>
+                        </>
+                      )}
                     </select>
                     <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-700">
                       <ChevronDown className="w-4 h-4 stroke-[2.5]" />
@@ -1074,19 +1120,31 @@ export function GuidanceReports() {
                       className="w-full bg-white border border-gray-300 rounded-xl px-4 py-2.5 text-sm font-medium text-gray-800 appearance-none focus:outline-none focus:ring-2 focus:ring-[#1864db]/30 cursor-pointer shadow-xs"
                     >
                       <option value="Scholarship Allocation">Scholarship Allocation</option>
-                      <option value="Pag-Ulikid">Pag-Ulikid</option>
-                      <option value="Tulong Dunong">Tulong Dunong</option>
-                      <option value="ANAC-IP">ANAC-IP</option>
-                      <option value="President—FLP">President—FLP</option>
-                      <option value="Dependent of Faculty or Staff">Dependent of Faculty or Staff</option>
-                      <option value="Regional">Regional</option>
-                      <option value="Partial">Partial</option>
-                      <option value="UniFast">UniFast</option>
-                      <option value="TES">TES</option>
-                      <option value="DOST">DOST</option>
-                      <option value="LGU">LGU</option>
-                      <option value="Barangay (Legal dependents of Brgy. Officials)">Barangay (Legal dependents of Brgy. Officials)</option>
-                      <option value="ESGP – PA">ESGP – PA</option>
+                      {selectedCategory !== 'Category' && selectedSubType !== 'Sub Type' && scholarshipDataMapping[selectedCategory]?.[selectedSubType] ? (
+                        scholarshipDataMapping[selectedCategory][selectedSubType].map((allocation) => (
+                          <option key={allocation} value={allocation}>{allocation}</option>
+                        ))
+                      ) : (
+                        <>
+                          <option value="Valedictorian">Valedictorian</option>
+                          <option value="Salutatorian">Salutatorian</option>
+                          <option value="Full">Full</option>
+                          <option value="Partial">Partial</option>
+                          <option value="Regional">Regional</option>
+                          <option value="National">National</option>
+                          <option value="Pag-Ulikid">Pag-Ulikid</option>
+                          <option value="Tulong Dunong">Tulong Dunong</option>
+                          <option value="ANAC-IP">ANAC-IP</option>
+                          <option value="President—FLP">President—FLP</option>
+                          <option value="Dependent of Faculty or Staff">Dependent of Faculty or Staff</option>
+                          <option value="UniFast">UniFast</option>
+                          <option value="TES">TES</option>
+                          <option value="DOST">DOST</option>
+                          <option value="LGU">LGU</option>
+                          <option value="Barangay (Legal dependents of Brgy. Officials)">Barangay (Legal dependents of Brgy. Officials)</option>
+                          <option value="ESGP – PA">ESGP – PA</option>
+                        </>
+                      )}
                     </select>
                     <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-700">
                       <ChevronDown className="w-4 h-4 stroke-[2.5]" />

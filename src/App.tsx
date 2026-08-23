@@ -1,7 +1,6 @@
 import { useEffect, lazy, Suspense } from "react";
 import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { seedDatabase } from "./lib/seed";
-import { Home } from './pages/Home';
 
 const GuidanceLogin = lazy(() => import('./pages/guidance').then(module => ({ default: module.GuidanceLogin })));
 const GuidanceLayout = lazy(() => import('./pages/guidance').then(module => ({ default: module.GuidanceLayout })));
@@ -12,9 +11,9 @@ const GuidanceSubmissions = lazy(() => import('./pages/guidance').then(module =>
 
 
 const GuidanceSettings = lazy(() => import('./pages/guidance').then(module => ({ default: module.GuidanceSettings })));
-const GuidanceReports = lazy(() => import('./pages/guidance').then(module => ({ default: module.GuidanceReports })));
-const GuidanceNotifications = lazy(() => import('./pages/guidance').then(module => ({ default: module.GuidanceNotifications })));
-const GuidanceCommunications = lazy(() => import('./pages/guidance').then(module => ({ default: module.GuidanceCommunications })));
+const GuidanceReports = lazy(() => import('./pages/guidance/reports').then(module => ({ default: module.GuidanceReports })));
+const GuidanceNotifications = lazy(() => import('./pages/guidance/notifications').then(module => ({ default: module.GuidanceNotifications })));
+const GuidanceCommunications = lazy(() => import('./pages/guidance/communications').then(module => ({ default: module.GuidanceCommunications })));
 
 
 const StudentLogin = lazy(() => import('./pages/student').then(module => ({ default: module.StudentLogin })));
@@ -23,12 +22,12 @@ const StudentDashboard = lazy(() => import('./pages/student').then(module => ({ 
 const StudentSubmissionForm = lazy(() => import('./pages/student').then(module => ({ default: module.StudentSubmissionForm })));
 
 const AdminAuthGuard = () => {
-  const isAuth = sessionStorage.getItem('adminAuth') === 'true';
+  const isAuth = localStorage.getItem('adminAuth') === 'true';
   return isAuth ? <Outlet /> : <Navigate to="/admin/login" replace />;
 };
 
 const StudentAuthGuard = () => {
-  const isAuth = sessionStorage.getItem('studentAuth') === 'true';
+  const isAuth = localStorage.getItem('studentAuth') === 'true';
   return isAuth ? <Outlet /> : <Navigate to="/student/login" replace />;
 };
 

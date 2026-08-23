@@ -1,6 +1,6 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut } from 'firebase/auth';
-import { getFirestore, Firestore, doc, getDocFromServer } from 'firebase/firestore';
+import { initializeFirestore, Firestore, doc, getDocFromServer } from 'firebase/firestore';
 import firebaseConfig from '../../firebase-applet-config.json';
 
 const app = initializeApp(firebaseConfig);
@@ -10,13 +10,13 @@ export const googleProvider = new GoogleAuthProvider();
 let firestoreInstance: Firestore | null = null;
 try {
   if (firebaseConfig.firestoreDatabaseId && firebaseConfig.firestoreDatabaseId !== '(default)') {
-    firestoreInstance = getFirestore(app, firebaseConfig.firestoreDatabaseId);
+    firestoreInstance = initializeFirestore(app, { experimentalAutoDetectLongPolling: true }, firebaseConfig.firestoreDatabaseId);
   } else {
-    firestoreInstance = getFirestore(app);
+    firestoreInstance = initializeFirestore(app, { experimentalAutoDetectLongPolling: true });
   }
 } catch (e) {
   try {
-    firestoreInstance = getFirestore(app);
+    firestoreInstance = initializeFirestore(app, { experimentalAutoDetectLongPolling: true });
   } catch (err) {
     console.warn("Firestore initialization notice:", err);
   }

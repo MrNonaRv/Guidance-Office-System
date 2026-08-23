@@ -1,5 +1,5 @@
 import localforage from 'localforage';
-import { doc, getDoc, setDoc, deleteDoc, collection, getDocs, onSnapshot, Unsubscribe } from 'firebase/firestore';
+import { doc, getDoc, setDoc, deleteDoc, collection, getDocs, onSnapshot, } from 'firebase/firestore';
 import { firestoreDb, auth } from './firebase';
 import { Course, AcademicYear, defaultCourses, defaultAcademicYears, defaultScholarships, ScholarshipItem } from '../types';
 import { defaultSubmissions, defaultNotifications } from './defaultData';
@@ -51,7 +51,7 @@ export function handleFirestoreError(error: unknown, operationType: OperationTyp
   return errInfo;
 }
 
-export interface Scholarship extends ScholarshipItem {}
+export type Scholarship = ScholarshipItem;
 
 export interface User {
   id: string;
@@ -1112,7 +1112,7 @@ export const db = {
 
       try {
         localStorage.setItem('capsu_system_sync_info', JSON.stringify(syncInfo));
-      } catch (e) {}
+      } catch (e) { /* ignore */ }
 
       return syncInfo;
     },
@@ -1128,7 +1128,7 @@ export const db = {
         if (stored) {
           return JSON.parse(stored);
         }
-      } catch (e) {}
+      } catch (e) { /* ignore */ }
 
       return {
         totalRecords: memorySubmissions.length + memoryScholarships.length,
