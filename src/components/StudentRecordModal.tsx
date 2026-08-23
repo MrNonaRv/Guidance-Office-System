@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { 
   X, ArrowLeft, ChevronDown, CheckCircle2, AlertCircle, FileText, Download, 
-  Printer, Eye, Check 
+  Printer, Eye, Check, Archive
 } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { db, Submission, SubmissionFile } from '../lib/db';
+import JSZip from 'jszip';
+import { saveAs } from 'file-saver';
 
 interface StudentRecordModalProps {
   submission: Submission | any;
@@ -20,7 +22,7 @@ export function StudentRecordModal({
   academicYearsList = []
 }: StudentRecordModalProps) {
   const [currentStatus, setCurrentStatus] = useState<string>(submission.status || 'Incomplete');
-  const [viewMode, setViewMode] = useState<'overview' | 'requirements' | 'id_signature' | 'semester_record'>('overview');
+  const [viewMode, setViewMode] = useState<'overview' | 'requirements' | 'id_signature' | 'semester_record' | 'form'>('requirements');
   const [selectedSemester, setSelectedSemester] = useState<'1st Semester' | '2nd Semester'>('1st Semester');
   const [selectedAcademicYear, setSelectedAcademicYear] = useState<string>('2025-2026');
   const [previewFile, setPreviewFile] = useState<SubmissionFile | null>(null);
@@ -51,6 +53,70 @@ export function StudentRecordModal({
     await db.submissions.update(localSubmission.id, { status: newStatus as any });
   };
 
+  const [isDownloading, setIsDownloading] = useState(false);
+
+  const handleDownloadAll = async () => {
+    if (!localSubmission.files || localSubmission.files.length === 0) {
+      alert("No files attached to this submission.");
+      return;
+    }
+    
+    setIsDownloading(true);
+    try {
+      const zip = new JSZip();
+      
+      // Generate Form Summary text file
+      let summaryText = `STUDENT APPLICATION SUMMARY\n==========================\n\n`;
+      summaryText += `PERSONAL INFORMATION\n--------------------\n`;
+      summaryText += `Name: ${studentName}\n`;
+      summaryText += `Student ID: ${studentIdNumber}\n`;
+      summaryText += `Course: ${courseCode}\n`;
+      summaryText += `Year Level: ${formData.yearLevel || localSubmission.answers?.yearLevel || 'Not specified'}\n`;
+      summaryText += `Email: ${formData.email || 'Not specified'}\n`;
+      summaryText += `Phone: ${formData.phone || 'Not specified'}\n`;
+      summaryText += `Address: ${formData.address || 'Not specified'}\n\n`;
+      
+      summaryText += `SCHOLARSHIP INFORMATION\n-----------------------\n`;
+      summaryText += `Scholarship Type: ${scholarshipType}\n`;
+      summaryText += `Status: ${currentStatus}\n`;
+      summaryText += `Submitted On: ${new Date(localSubmission.submittedAt).toLocaleString()}\n\n`;
+      
+      summaryText += `ADDITIONAL FORM DATA\n--------------------\n`;
+      // Safely append any other plain text/number fields from formData
+      Object.keys(formData).forEach(key => {
+        if (!['firstName', 'middleName', 'familyName', 'studentId', 'course', 'yearLevel', 'email', 'phone', 'address', 'scholarshipCategory'].includes(key)) {
+          if (typeof formData[key] === 'string' || typeof formData[key] === 'number' || typeof formData[key] === 'boolean') {
+             summaryText += `${key}: ${formData[key]}\n`;
+          }
+        }
+      });
+      
+      zip.file(`${studentName.replace(/[^a-zA-Z0-9_-]/g, '_')}_Application_Summary.txt`, summaryText);
+      
+      // Add attachments
+      localSubmission.files.forEach((file: SubmissionFile, index: number) => {
+        if (file.data) {
+          const parts = file.data.split(';base64,');
+          if (parts.length === 2) {
+            const base64Data = parts[1];
+            const fileName = file.name || `document_${index}`;
+            zip.file(fileName, base64Data, { base64: true });
+          }
+        }
+      });
+      
+      const content = await zip.generateAsync({ type: 'blob' });
+      const studentNameSafe = studentName.replace(/[^a-zA-Z0-9_-]/g, '_');
+      const zipName = `${studentNameSafe}_Documents.zip`;
+      saveAs(content, zipName);
+    } catch (e) {
+      console.error("Error zipping files:", e);
+      alert("An error occurred while preparing the zip file.");
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
   const handleVerifyRequirement = async (reqName: string, newStatus: 'Verified' | 'Pending' | 'Missing' | 'Rejected') => {
     const updated = await db.submissions.verifyRequirement(localSubmission.id, reqName, newStatus);
     if (updated) {
@@ -74,44 +140,43 @@ export function StudentRecordModal({
   // Requirements list
   const requirementsList = [
     {
-      id: 'req-photo',
-      name: '2x2 Recent Formal ID Photo',
-      category: '2x2 Recent Formal ID Photo',
-      fileName: `${studentName.replace(/\s+/g, '_')}_2x2_Photo.png`,
-      status: (photo2x2 || localSubmission.files?.find((f: any) => f.category?.includes('Photo') || f.category?.includes('2x2'))?.verified || localSubmission.status === 'Complete' || localSubmission.status === 'Approved') ? 'Verified' : 'Pending',
-      file: localSubmission.files?.find((f: any) => f.category?.includes('Photo') || f.category?.includes('2x2')) || (photo2x2 ? { name: '2x2_Photo.png', data: photo2x2, type: 'image/png', category: '2x2 Recent Formal ID Photo' } : null)
+      id: 'req-rf',
+      name: 'Registration Form (RF)',
+      category: 'RF',
+      fileName: localSubmission.files?.find((f: any) => f.category === 'RF' || f.category === 'Certificate of Registration (COR)')?.name || `${studentName.replace(/\s+/g, '_')}_RF.pdf`,
+      status: (localSubmission.files?.find((f: any) => f.category === 'RF' || f.category === 'Certificate of Registration (COR)')?.verified || localSubmission.status === 'Complete' || localSubmission.status === 'Approved') ? 'Verified' : 'Pending',
+      file: localSubmission.files?.find((f: any) => f.category === 'RF' || f.category === 'Certificate of Registration (COR)') || {
+        name: `${studentName.replace(/\s+/g, '_')}_RF.pdf`,
+        type: 'application/pdf',
+        category: 'RF',
+        data: 'data:application/pdf;base64,JVBERi0xLjQKJcOkw7zDtsOfCjIgMCBvYmoKPDwvTGVuZ3RoIDMgMCBSL0ZpbHRlci9GbGF0ZURlY29kZT4+CnN0cmVhbQp4nDPQM1Qo5ypUMFAwALJMLU31jBQsTAz1LBSK0osS84tKUvPSi1QK0lPykxWLkjOA3KLUxDwlAwjN1wAAg5wP3gplbmRzdHJlYW0KZW5kb2JqCgozIDAgb2JqCjY1CmVuZG9iagoKNCAwIG9iago8PC9UeXBlL1BhZ2UvTWVkaWFCb3hbMCAwIDU5NSA4NDJdL1Jlc291cmNlczw8L0ZvbnQ8PC9GMCAxIDAgUj4+Pj4vQ29udGVudHMgMiAwIFIvUGFyZW50IDUgMCBSPj4KZW5kb2JqCgo1IDAgb2JqCjw8L1R5cGUvUGFnZXMvQ291bnQgMS9LaWRzWzQgMCBSXT4+CmVuZG9iagoKMSAwIG9iago8PC9UeXBlL0ZvbnQvU3VidHlwZS9UeXBlMS9CYXNlRm9udC9IZWx2ZXRpY2EvRW5jb2RpbmcvV2luQW5zaUVuY29kaW5nPj4KZW5kb2JqCgo2IDAgb2JqCjw8L1R5cGUvQ2F0YWxvZy9QYWdlcyA1IDAgUj4+CmVuZG9iagoKNyAwIG9iago8PC9DcmVhdG9yKExvY2FsIE1vY2sgRmlsZSkvUHJvZHVjZXIoTG9jYWwgTW9jayBGaWxlKS9DcmVhdGlvbkRhdGUoRDoyMDI2MDMwOTAwMDAwMFopPj4KZW5kb2JqCgp4cmVmCjAgOAowMDAwMDAwMDAwIDY1NTM1IGYgCjAwMDAwMDAyNjAgMDAwMDAgbiAKMDAwMDAwMDAxNSAwMDAwMCBuIAowMDAwMDAwMTMzIDAwMDAwIG4gCjAwMDAwMDAxNTEgMDAwMDAgbiAKMDAwMDAwMDIwNSAwMDAwMCBuIAowMDAwMDAwMzQ4IDAwMDAwIG4gCjAwMDAwMDAzOTcgMDAwMDAgbiAKdHJhaWxlcgo8PC9TaXplIDgvUm9vdCA2IDAgUi9JbmZvIDcgMCBSPj4Kc3RhcnR4cmVmCjUwMAolJUVPRgo='
+      }
     },
     {
-      id: 'req-1',
-      name: 'Certificate of Grades (COG)',
-      category: 'Certificate of Grades (COG)',
-      fileName: `${studentName.replace(/\s+/g, '_')}_COG.pdf`,
-      status: (localSubmission.files?.find((f: any) => f.category?.includes('COG') || f.name?.includes('Grade'))?.verified || localSubmission.status === 'Complete' || localSubmission.status === 'Approved') ? 'Verified' : 'Pending',
-      file: localSubmission.files?.find((f: any) => f.category?.includes('COG') || f.name?.includes('Grade'))
+      id: 'req-gwa',
+      name: 'General Weighted Average (GWA)',
+      category: 'GWA',
+      fileName: localSubmission.files?.find((f: any) => f.category === 'GWA' || f.category === 'Certificate of Grades (COG)')?.name || `${studentName.replace(/\s+/g, '_')}_GWA.pdf`,
+      status: (localSubmission.files?.find((f: any) => f.category === 'GWA' || f.category === 'Certificate of Grades (COG)')?.verified || localSubmission.status === 'Complete' || localSubmission.status === 'Approved') ? 'Verified' : 'Pending',
+      file: localSubmission.files?.find((f: any) => f.category === 'GWA' || f.category === 'Certificate of Grades (COG)') || {
+        name: `${studentName.replace(/\s+/g, '_')}_GWA.pdf`,
+        type: 'application/pdf',
+        category: 'GWA',
+        data: 'data:application/pdf;base64,JVBERi0xLjQKJcOkw7zDtsOfCjIgMCBvYmoKPDwvTGVuZ3RoIDMgMCBSL0ZpbHRlci9GbGF0ZURlY29kZT4+CnN0cmVhbQp4nDPQM1Qo5ypUMFAwALJMLU31jBQsTAz1LBSK0osS84tKUvPSi1QK0lPykxWLkjOA3KLUxDwlAwjN1wAAg5wP3gplbmRzdHJlYW0KZW5kb2JqCgozIDAgb2JqCjY1CmVuZG9iagoKNCAwIG9iago8PC9UeXBlL1BhZ2UvTWVkaWFCb3hbMCAwIDU5NSA4NDJdL1Jlc291cmNlczw8L0ZvbnQ8PC9GMCAxIDAgUj4+Pj4vQ29udGVudHMgMiAwIFIvUGFyZW50IDUgMCBSPj4KZW5kb2JqCgo1IDAgb2JqCjw8L1R5cGUvUGFnZXMvQ291bnQgMS9LaWRzWzQgMCBSXT4+CmVuZG9iagoKMSAwIG9iago8PC9UeXBlL0ZvbnQvU3VidHlwZS9UeXBlMS9CYXNlRm9udC9IZWx2ZXRpY2EvRW5jb2RpbmcvV2luQW5zaUVuY29kaW5nPj4KZW5kb2JqCgo2IDAgb2JqCjw8L1R5cGUvQ2F0YWxvZy9QYWdlcyA1IDAgUj4+CmVuZG9iagoKNyAwIG9iago8PC9DcmVhdG9yKExvY2FsIE1vY2sgRmlsZSkvUHJvZHVjZXIoTG9jYWwgTW9jayBGaWxlKS9DcmVhdGlvbkRhdGUoRDoyMDI2MDMwOTAwMDAwMFopPj4KZW5kb2JqCgp4cmVmCjAgOAowMDAwMDAwMDAwIDY1NTM1IGYgCjAwMDAwMDAyNjAgMDAwMDAgbiAKMDAwMDAwMDAxNSAwMDAwMCBuIAowMDAwMDAwMTMzIDAwMDAwIG4gCjAwMDAwMDAxNTEgMDAwMDAgbiAKMDAwMDAwMDIwNSAwMDAwMCBuIAowMDAwMDAwMzQ4IDAwMDAwIG4gCjAwMDAwMDAzOTcgMDAwMDAgbiAKdHJhaWxlcgo8PC9TaXplIDgvUm9vdCA2IDAgUi9JbmZvIDcgMCBSPj4Kc3RhcnR4cmVmCjUwMAolJUVPRgo='
+      }
     },
     {
-      id: 'req-2',
-      name: 'Certificate of Registration (COR)',
-      category: 'Certificate of Registration (COR)',
-      fileName: `${studentName.replace(/\s+/g, '_')}_COR.pdf`,
-      status: (localSubmission.files?.find((f: any) => f.category?.includes('COR') || f.name?.includes('Registration'))?.verified || localSubmission.status === 'Complete' || localSubmission.status === 'Approved') ? 'Verified' : 'Pending',
-      file: localSubmission.files?.find((f: any) => f.category?.includes('COR') || f.name?.includes('Registration'))
-    },
-    {
-      id: 'req-3',
-      name: 'Proof of Income / Indigency',
-      category: 'Proof of Income / Certificate of Indigency',
-      fileName: `${studentName.replace(/\s+/g, '_')}_Indigency.pdf`,
-      status: (localSubmission.files?.find((f: any) => f.category?.includes('Income') || f.category?.includes('Indigency'))?.verified || localSubmission.status === 'Complete' || localSubmission.status === 'Approved') ? 'Verified' : 'Pending',
-      file: localSubmission.files?.find((f: any) => f.category?.includes('Income') || f.category?.includes('Indigency'))
-    },
-    {
-      id: 'req-4',
-      name: 'Good Moral Character',
-      category: 'Certificate of Good Moral Character',
-      fileName: `${studentName.replace(/\s+/g, '_')}_GoodMoral.pdf`,
-      status: (localSubmission.files?.find((f: any) => f.category?.includes('Moral'))?.verified || localSubmission.status === 'Complete' || localSubmission.status === 'Approved') ? 'Verified' : 'Pending',
-      file: localSubmission.files?.find((f: any) => f.category?.includes('Moral'))
+      id: 'req-id',
+      name: 'Student ID',
+      category: 'ID',
+      fileName: localSubmission.files?.find((f: any) => f.category === 'ID' || f.category === 'Student ID' || f.category === 'Valid Student ID' || f.category === '2x2 Recent Formal ID Photo')?.name || `${studentName.replace(/\s+/g, '_')}_ID.png`,
+      status: (localSubmission.files?.find((f: any) => f.category === 'ID' || f.category === 'Student ID' || f.category === 'Valid Student ID' || f.category === '2x2 Recent Formal ID Photo')?.verified || localSubmission.status === 'Complete' || localSubmission.status === 'Approved') ? 'Verified' : 'Pending',
+      file: localSubmission.files?.find((f: any) => f.category === 'ID' || f.category === 'Student ID' || f.category === 'Valid Student ID' || f.category === '2x2 Recent Formal ID Photo') || {
+        name: `${studentName.replace(/\s+/g, '_')}_ID.png`,
+        type: 'image/png',
+        category: 'ID',
+        data: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII='
+      }
     }
   ];
 
@@ -119,7 +184,7 @@ export function StudentRecordModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-150 print:p-0 print:bg-white print:block print:relative print:z-0">
       
       {/* Main Dialog Container */}
-      <div className="relative w-full max-w-lg bg-white rounded-2xl shadow-2xl overflow-hidden border border-gray-100 animate-in zoom-in-95 duration-200 print:hidden max-h-[92vh] flex flex-col">
+      <div className={cn("relative w-full max-w-lg bg-white rounded-2xl shadow-2xl overflow-hidden border border-gray-100 animate-in zoom-in-95 duration-200 print:hidden max-h-[92vh] flex flex-col", viewMode === 'form' && "hidden")}>
         
         {/* Top Navy Blue Header Banner */}
         <div className="bg-[#003884] text-white px-6 py-4 flex items-center justify-center relative shadow-md shrink-0">
@@ -306,11 +371,25 @@ export function StudentRecordModal({
 
                 <div className="flex items-center gap-2">
                   <button
+                    onClick={() => setViewMode('form')}
+                    className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-lg text-xs font-semibold transition-colors cursor-pointer"
+                  >
+                    <Eye className="w-3.5 h-3.5" /> View Filled Form
+                  </button>
+                  <button
+                    onClick={handleDownloadAll}
+                    disabled={isDownloading}
+                    className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-xs font-semibold transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                    title="Download all attached documents as a ZIP file"
+                  >
+                    <Archive className="w-3.5 h-3.5" /> {isDownloading ? 'Zipping...' : 'Download All'}
+                  </button>
+                  <button
                     onClick={() => window.print()}
                     className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-xs font-semibold transition-colors cursor-pointer"
                     title="Print official form"
                   >
-                    <Printer className="w-3.5 h-3.5" /> Print Form
+                    <Printer className="w-3.5 h-3.5" /> Print
                   </button>
                   <button
                     onClick={() => handleStatusSelect('Approved')}
@@ -361,7 +440,7 @@ export function StudentRecordModal({
                       )}
 
                       <button
-                        onClick={() => handleVerifyRequirement(req.category, req.status === 'Verified' ? 'Pending' : 'Verified')}
+                        onClick={() => handleVerifyRequirement(req.file?.category || req.category, req.status === 'Verified' ? 'Pending' : 'Verified')}
                         className={cn(
                           "px-2.5 py-1 text-xs font-semibold rounded-lg transition-all cursor-pointer",
                           req.status === 'Verified' 
@@ -473,8 +552,15 @@ export function StudentRecordModal({
       </div>
 
       {/* ----------------- EXACT PRINT LAYOUT FOR BROWSER PRINT ----------------- */}
-      <div className="hidden print:block text-black bg-white font-sans w-full">
-        
+      <div className={cn("text-black bg-white font-sans", viewMode === 'form' ? "block absolute inset-4 md:inset-12 bg-white rounded-2xl overflow-y-auto shadow-2xl p-8" : "hidden print:block print:w-full")}>
+        {viewMode === 'form' && (
+            <button
+              onClick={() => setViewMode('requirements')}
+              className="mb-6 text-sm font-bold text-blue-600 hover:text-blue-800 underline transition-colors cursor-pointer print:hidden"
+            >
+              ← Back to Requirements
+            </button>
+        )}
         {/* PAGE 1: SCHOLARSHIP RECORD FORM */}
         <div className="print-page w-[793px] h-[1122px] mx-auto pt-8 break-after-page">
           {/* Header Box */}

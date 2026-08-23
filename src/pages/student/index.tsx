@@ -1,16 +1,23 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 import { cn } from '../../lib/utils';
-import { User,
-  Upload, CheckCircle2, ChevronDown, ChevronUp, View, RefreshCw, Check,
+import { FileEdit, FileText, ClipboardCheck, Calendar, User, Upload, CheckCircle2, ChevronDown, ChevronUp, View, Eye, EyeOff, RefreshCw, Check,
   Image as ImageIcon} from 'lucide-react';
 import { db } from '../../lib/db';
 import { motion } from 'motion/react';
+import { SignaturePad } from '../../components/SignaturePad';
 
 import { signInWithGoogle, logOut } from '../../lib/firebase';
 
 export function StudentLogin() {
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (localStorage.getItem('studentAuth') === 'true') {
+      navigate('/student/dashboard', { replace: true });
+    }
+  }, [navigate]);
+
   const [isLogin, setIsLogin] = useState(true);
   
   const [email, setEmail] = useState('');
@@ -18,6 +25,7 @@ export function StudentLogin() {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [error, setError] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleGoogleLogin = async () => {
     try {
@@ -158,9 +166,9 @@ export function StudentLogin() {
           <div className="text-left relative">
             <label className="block text-[11px] font-medium text-[#0f2e60] mb-1 ml-1">Password</label>
             <div className="relative">
-              <input type="password" value={password} onChange={e => setPassword(e.target.value)} required className="w-full px-4 py-2.5 bg-white rounded text-sm focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 outline-none transition-all shadow-sm" />
-              <button type="button" className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
-                <View className="w-4 h-4" />
+              <input type={showPassword ? "text" : "password"} value={password} onChange={e => setPassword(e.target.value)} required className="w-full px-4 py-2.5 pr-10 bg-white rounded text-sm focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 outline-none transition-all shadow-sm" />
+              <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none">
+                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
             </div>
             {isLogin ? (
@@ -257,6 +265,11 @@ export function StudentDashboard() {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, key: string) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
+      if (file.size > 5 * 1024 * 1024) {
+        alert("File size exceeds 5MB limit. Please upload a smaller file.");
+        e.target.value = '';
+        return;
+      }
       setFiles(prev => ({ ...prev, [key]: file }));
     }
   };
@@ -457,125 +470,146 @@ export function StudentDashboard() {
 }
 
 
-export function StudentSubmissionForm() {
-    const navigate = useNavigate();
-  
-  // const scholarshipId = searchParams.get('scholarshipId');
-  // const [selectedScholarship, setSelectedScholarship] = useState<any>(null);
+const InputGroup = ({ label, name, value, onChange }: any) => (
+  <div className="flex flex-col">
+    <label className="text-[11px] font-bold text-[#0f2e60] mb-1">{label}</label>
+    <input 
+      type="text" 
+      name={name} 
+      value={value} 
+      onChange={onChange} 
+      className="border border-[#1e3a8a] rounded px-3 py-1.5 text-sm outline-none focus:ring-1 focus:ring-[#1e3a8a]" 
+    />
+  </div>
+);
 
-    const [isSubmitting, setIsSubmitting] = useState(false);
-  
+const SelectGroup = ({ label, name, value, onChange, options }: any) => (
+  <div className="flex flex-col relative">
+    <label className="text-[11px] font-bold text-[#0f2e60] mb-1">{label}</label>
+    <select 
+      name={name} 
+      value={value} 
+      onChange={onChange} 
+      className="border border-[#1e3a8a] rounded px-3 py-1.5 text-sm outline-none focus:ring-1 focus:ring-[#1e3a8a] appearance-none bg-white"
+    >
+      <option value="" disabled>Select {label.toLowerCase()}</option>
+      {options.map((opt: string) => <option key={opt} value={opt}>{opt}</option>)}
+    </select>
+    <ChevronDown className="w-4 h-4 text-[#1e3a8a] absolute right-2 bottom-2 pointer-events-none" />
+  </div>
+);
+
+export function StudentSubmissionForm() {
+  const navigate = useNavigate();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [step, setStep] = useState(1);
+  const [showSignaturePad, setShowSignaturePad] = useState(false);
+  const [files, setFiles] = useState<any[]>([]);
+
   const [formData, setFormData] = useState({
-    photo2x2: '',
-    familyName: '',
-    middleName: '',
-    firstName: '',
-    birthdate: '',
-    age: '',
-    sex: '',
-    yearLevel: '',
-    course: '',
-    section: '',
-    contactNo: '',
-    email: '',
-    permanentAddress: '',
-    fatherName: '',
-    fatherOccupation: '',
-    fatherContact: '',
-    motherName: '',
-    motherOccupation: '',
-    motherContact: '',
-    guardianName: '',
-    guardianOccupation: '',
-    guardianContact: '',
-    
+    // Page 1
+    photo2x2: '', familyName: '', middleName: '', firstName: '', birthdate: '', age: '', sex: '', yearLevel: '', course: '', section: '', civilStatus: '', contactNo: '', email: '', permanentAddress: '', fatherName: '', fatherOccupation: '', fatherContact: '', motherName: '', motherOccupation: '', motherContact: '', guardianName: '', guardianOccupation: '', guardianContact: '',
     // Page 2
-    highestEducationalAttainment: '',
-    monthlyIncome: '',
-    firstInFamilyToAttendCollege: '',
-    livingCondition: '',
-    livingConditionOthers: '',
-    typeOfHousing: '',
-    typeOfHousingOthers: '',
-    
+    parentEduAttainment: '', monthlyIncome: '', firstInFamily: '', livingWith: '', livingWithOthers: '', housingType: '', housingTypeOthers: '',
     // Page 3
-    accessToResources: [] as string[],
-    workingStudent: '',
-    studentClassification: [] as string[],
-    studentClassificationOthers: '',
-    
+    accessToResources: [] as string[], workingStudent: '', studentClassification: [] as string[], studentClassificationOthers: '',
     // Page 4
-    typeOfWorkOrSourceOfIncome: '',
-    specialNeedsOrDisability: '',
-    pdlReason: '',
-    
-    scholarshipCategoryType: '', // A. Internally-Funded, B. Externally-Funded
-    scholarshipCategory: '',
-    scholarshipCategoryOthers: '',
-    
-    // Page 5
-    congressionalDistrict: '',
-    oneTownOneScholar: '',
-    tulongDunong: '',
-    lguContactPerson: '',
-    dswdMunicipality: '',
-    dswdContactPerson: '',
-    dswdDesignation: '',
-    dswdOthers: ''
+    workTypeIncome: '', specialNeedsCondition: '', pdlReason: '', scholarshipFundType: '', internalCategory: '', internalCategoryOthers: '', externalCategory: '', externalCategoryOthers: '',
+    // External specifics
+    chedSubCategory: '', chedCongressionalDistrict: '', chedOneTown: '', chedTulongDunong: '', chedOthers: '', meritSubCategory: '', lguContact: '', dswdMunicipality: '', dswdContact: '', dswdDesignation: '', dswdOthers: '', signature: ''
   });
 
-  
+  const handleChange = (e: any) => setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
+  const handleRadioChange = (name: string, value: string) => setFormData(prev => ({ ...prev, [name]: value }));
+  const handleCheckboxChange = (field: string, value: string) => {
+    setFormData((prev: any) => {
+      const current = prev[field] as string[];
+      if (current.includes(value)) return { ...prev, [field]: current.filter(v => v !== value) };
+      return { ...prev, [field]: [...current, value] };
+    });
+  };
 
-  
-  const [files, setFiles] = useState<any[]>([]);
-  const [showToast, setShowToast] = useState(false);
+
+  const validateStep1 = () => {
+    const required = ['familyName', 'firstName', 'birthdate', 'sex', 'yearLevel', 'course', 'contactNo', 'email', 'permanentAddress'];
+    const missing = required.filter(field => !formData[field as keyof typeof formData]);
+    if (missing.length > 0) {
+      alert('Please fill in all required personal information fields.');
+      return false;
+    }
+    if (!formData.signature) {
+      alert('Please provide your signature at the bottom of the form.');
+      return false;
+    }
+    return true;
+  };
+
+  const validateStep2 = () => {
+    const requiredCats = ['RF', 'GWA', 'ID'];
+    const missing = requiredCats.filter(cat => !files.find((f: any) => f.category === cat));
+    if (missing.length > 0) {
+      alert('Please upload all required documents (Registration Form, GWA, and Student ID).');
+      return false;
+    }
+    return true;
+  };
+
+  const handleSubmit = async () => {
+    setIsSubmitting(true);
+    try {
+      const submission = {
+        id: `SUB-${Date.now()}`, studentId: formData.email || `STU-${Date.now()}`,
+        studentName: `${formData.firstName} ${formData.familyName}`.trim() || 'Anonymous Student',
+        scholarshipType: formData.internalCategory || formData.chedSubCategory || formData.meritSubCategory || formData.externalCategory || 'General Scholarship',
+        status: 'Pending' as const,
+        submittedAt: new Date().toISOString(),
+        data: formData,
+        files: files.map((f: any) => ({
+          name: f.name,
+          type: f.type,
+          size: f.size,
+          category: f.category,
+          data: f.data,
+          uploadedAt: new Date().toISOString(),
+          status: 'Pending' as const,
+        }))
+      };
+      
+      await db.submissions.create(submission);
+      alert('Application submitted successfully!');
+      navigate('/student'); // Navigate back to dashboard
+    } catch (e) {
+      console.error(e);
+      alert('Error submitting application');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   const handleCategoryFileUpload = (category: string, e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
+      if (file.size > 5 * 1024 * 1024) {
+        alert("File size exceeds 5MB limit. Please upload a smaller file.");
+        e.target.value = '';
+        return;
+      }
       const reader = new FileReader();
       reader.onload = (event) => {
         const dataUrl = event.target?.result as string;
-        const sizeStr = file.size > 1024 * 1024 
-           ? `${(file.size / (1024 * 1024)).toFixed(1)} MB` 
-           : `${Math.round(file.size / 1024)} KB`;
-        const newFileObj = {
-          id: `file-${Date.now()}`,
-          name: file.name,
-          category: category,
-          type: file.type,
-          size: sizeStr,
-          data: dataUrl,
-          verified: false,
-          status: 'Pending'
-        };
-        setFiles(prev => {
-          const filtered = prev.filter(f => f.category !== category);
-          return [...filtered, newFileObj];
-        });
+        const sizeStr = file.size > 1024 * 1024 ? `${(file.size / (1024 * 1024)).toFixed(1)} MB` : `${Math.round(file.size / 1024)} KB`;
+        const newFileObj = { id: `file-${Date.now()}`, name: file.name, category, type: file.type, size: sizeStr, data: dataUrl, verified: false, status: 'Pending' };
+        setFiles(prev => [...prev.filter(f => f.category !== category), newFileObj]);
       };
       reader.readAsDataURL(file);
     }
   };
 
-        
-  
-  const [step, setStep] = useState(1);
-  const handleNext = () => setStep(s => Math.min(3, s + 1));
-  const handlePrev = () => setStep(s => Math.max(1, s - 1));
-  const handleChange = (e: any) => setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
-  const handleRadioChange = (name: string, value: string) => setFormData(prev => ({ ...prev, [name]: value }));
-
-  const renderFileUpload = (label: string, id: string, description?: string) => {
+  const renderFileUpload = (label: string, id: string) => {
     const existingFile = files.find((f: any) => f.category === id);
     return (
       <div className="border border-dashed border-gray-300 p-6 rounded-lg text-center relative overflow-hidden bg-white hover:bg-gray-50 transition-colors">
-        <input 
-          type="file" 
-          id={id}
-          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-          onChange={(e) => handleCategoryFileUpload(id, e)}
-        />
+        <input type="file" id={id} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" onChange={(e) => handleCategoryFileUpload(id, e)} />
         {existingFile ? (
           <div className="flex flex-col items-center gap-2">
             <CheckCircle2 className="w-8 h-8 text-[#16a34a]" />
@@ -586,7 +620,6 @@ export function StudentSubmissionForm() {
           <div className="flex flex-col items-center gap-2">
             <Upload className="w-8 h-8 text-gray-400" />
             <p className="text-[#0c2340] font-bold text-sm">{label}</p>
-            {description && <p className="text-gray-500 text-xs">{description}</p>}
             <p className="text-[#d97706] text-xs font-semibold mt-2">Click or drag file to upload</p>
           </div>
         )}
@@ -594,171 +627,458 @@ export function StudentSubmissionForm() {
     );
   };
 
+  const SectionHeader = ({ title }: { title: string }) => (
+    <div className="bg-[#1846b0] text-white text-center py-2.5 rounded-lg font-bold tracking-wider mb-6 text-sm mt-8">{title}</div>
+  );
+
   return (
-    <div className="max-w-4xl mx-auto py-8">
-      {/* progress bar omitted for brevity or simplified */}
-      <div className="mb-8">
-        <div className="flex items-center justify-between mb-2">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm ${step >= i ? 'bg-[#30416b] text-white' : 'bg-gray-200 text-gray-500'}`}>
-              {i}
-            </div>
-          ))}
+    <div className="max-w-4xl mx-auto py-8 px-4">
+      {/* Progress Stepper */}
+      <div className="bg-white rounded-[2rem] shadow-sm py-8 px-12 mb-8 flex items-center justify-center gap-2">
+        <div className="flex flex-col items-center">
+          <div className={`w-16 h-16 rounded-[18px] flex items-center justify-center shadow-md mb-3 z-10 relative ${step >= 1 ? 'bg-[#1864db] shadow-blue-500/20' : 'bg-gray-200'}`}>
+            <FileEdit className={`w-7 h-7 ${step >= 1 ? 'text-white' : 'text-gray-500'}`} />
+          </div>
+          <span className={`text-[11px] font-bold uppercase ${step >= 1 ? 'text-[#1e3a8a]' : 'text-gray-400'}`}>Student Information</span>
+        </div>
+        <div className={`w-24 h-[2px] -mt-8 ${step >= 2 ? 'bg-[#1864db]' : 'bg-gray-300'}`}></div>
+        <div className="flex flex-col items-center">
+          <div className={`w-16 h-16 rounded-[18px] flex items-center justify-center shadow-md mb-3 z-10 relative ${step >= 2 ? 'bg-[#1864db] shadow-blue-500/20' : 'bg-gray-200'}`}>
+            <FileText className={`w-7 h-7 ${step >= 2 ? 'text-white' : 'text-gray-500'}`} />
+          </div>
+          <span className={`text-[11px] font-bold uppercase ${step >= 2 ? 'text-[#1e3a8a]' : 'text-gray-400'}`}>Upload Files</span>
+        </div>
+        <div className={`w-24 h-[2px] -mt-8 ${step >= 3 ? 'bg-[#1864db]' : 'bg-gray-300'}`}></div>
+        <div className="flex flex-col items-center">
+          <div className={`w-16 h-16 rounded-[18px] flex items-center justify-center shadow-md mb-3 z-10 relative ${step >= 3 ? 'bg-[#1864db] shadow-blue-500/20' : 'bg-gray-200'}`}>
+            <ClipboardCheck className={`w-7 h-7 ${step >= 3 ? 'text-white' : 'text-gray-500'}`} />
+          </div>
+          <span className={`text-[11px] font-bold uppercase ${step >= 3 ? 'text-[#1e3a8a]' : 'text-gray-400'}`}>Review</span>
         </div>
       </div>
 
-      {step === 1 && (
-        <div className="space-y-8">
-          <div className="bg-white p-8 rounded-lg shadow-sm border border-gray-200">
-             <h2 className="text-2xl font-bold mb-6">Personal Information</h2>
-             <div className="grid grid-cols-3 gap-4 mb-4">
-                <input type="text" name="firstName" value={formData.firstName} onChange={handleChange} placeholder="First Name" className="border p-2 rounded" />
-                <input type="text" name="middleName" value={formData.middleName} onChange={handleChange} placeholder="Middle Name" className="border p-2 rounded" />
-                <input type="text" name="familyName" value={formData.familyName} onChange={handleChange} placeholder="Last Name" className="border p-2 rounded" />
-             </div>
-             <div className="grid grid-cols-2 gap-4 mb-4">
-                <input type="text" name="course" value={formData.course} onChange={handleChange} placeholder="Course" className="border p-2 rounded" />
-                <input type="text" name="yearLevel" value={formData.yearLevel} onChange={handleChange} placeholder="Year Level" className="border p-2 rounded" />
-             </div>
-             <div className="grid grid-cols-2 gap-4 mb-4">
-                <input type="text" name="contactNo" value={formData.contactNo} onChange={handleChange} placeholder="Contact No" className="border p-2 rounded" />
-                <input type="email" name="email" value={formData.email} onChange={handleChange} placeholder="Email" className="border p-2 rounded" />
-             </div>
-          </div>
-          <div className="bg-white p-8 rounded-lg shadow-sm border border-gray-200">
-             <h2 className="text-2xl font-bold mb-6">Scholarship Type</h2>
-             <div className="space-y-4">
-               <label className="flex items-center gap-2">
-                 <input type="radio" name="scholarshipCategory" value="DSWD" checked={formData.scholarshipCategory === 'DSWD'} onChange={() => handleRadioChange('scholarshipCategory', 'DSWD')} /> DSWD
-               </label>
-               {formData.scholarshipCategory === 'DSWD' && (
-                 <div className="pl-6 space-y-2">
-                   <input type="text" name="dswdMunicipality" value={formData.dswdMunicipality} onChange={handleChange} placeholder="Municipality" className="border p-1 text-sm w-full" />
-                   <input type="text" name="dswdContactPerson" value={formData.dswdContactPerson} onChange={handleChange} placeholder="Contact Person" className="border p-1 text-sm w-full" />
-                   <input type="text" name="dswdDesignation" value={formData.dswdDesignation} onChange={handleChange} placeholder="Designation" className="border p-1 text-sm w-full" />
-                   <input type="text" name="dswdOthers" value={formData.dswdOthers} onChange={handleChange} placeholder="Others (specify)" className="border p-1 text-sm w-full" />
-                 </div>
-               )}
-               <label className="flex items-center gap-2 mt-4">
-                 <input type="radio" name="scholarshipCategory" value="LGU" checked={formData.scholarshipCategory === 'LGU'} onChange={() => handleRadioChange('scholarshipCategory', 'LGU')} /> LGU
-               </label>
-               {formData.scholarshipCategory === 'LGU' && (
-                 <div className="pl-6 mt-2">
-                   <input type="text" name="lguContactPerson" value={formData.lguContactPerson} onChange={handleChange} placeholder="Contact person or issuing office" className="border p-1 text-sm w-full" />
-                 </div>
-               )}
-             </div>
-          </div>
-          <div className="flex justify-end mt-8">
-            <button onClick={handleNext} className="bg-[#30416b] text-white w-32 py-3.5 rounded-xl font-bold hover:bg-[#1e2f5c] transition-colors shadow-md text-sm">Next</button>
-          </div>
+      <div className="bg-white rounded-xl shadow-sm overflow-hidden mb-4 border-t-[5px] border-[#eab308]">
+        <div className="p-6 text-center">
+          <h2 className="text-3xl font-bold font-serif text-gray-900 mb-3">Scholarship Record Form</h2>
+          <p className="text-[13px] font-serif text-gray-700 max-w-2xl mx-auto">
+            Data and Personal Information will be kept with utmost confidentiality and will be protected through RA 10173 also known as Data Privacy Act of 2012
+          </p>
         </div>
+      </div>
+      <div className="bg-[#fef9c3] border border-[#facc15] rounded-lg p-3 mb-6">
+        <p className="text-[#a16207] text-[13px] text-center">
+          Please fill out all required fields accurately and completely. This form will be reviewed by the Guidance Office prior to processing.
+        </p>
+      </div>
+
+      {step === 1 && (
+        <>
+          <SectionHeader title="STUDENT DEMOGRAPHICS" />
+
+          {/* Personal Information */}
+          <div className="border border-[#93c5fd] rounded-lg mb-6 bg-white overflow-hidden shadow-sm">
+            <div className="bg-[#e0e7ff] px-4 py-2 flex items-center gap-2 border-b border-[#93c5fd]">
+              <User className="w-4 h-4 text-[#1e3a8a] font-bold" />
+              <h3 className="font-bold text-[#1e3a8a] text-[13px]">A. Personal Information</h3>
+            </div>
+            <div className="p-4 flex gap-6">
+              <div className="w-[120px] flex-shrink-0 flex flex-col items-center">
+                <div className="w-[110px] h-[110px] border border-[#1e3a8a] mb-2 flex flex-col items-center justify-center overflow-hidden bg-white">
+                  {formData.photo2x2 ? <img src={formData.photo2x2} className="w-full h-full object-cover" /> : <User className="w-10 h-10 text-gray-200" />}
+                </div>
+                <button className="text-[11px] font-bold text-[#1e3a8a] underline underline-offset-2">2 × 2 Picture</button>
+              </div>
+              <div className="flex-1 space-y-4">
+                <div className="grid grid-cols-3 gap-4">
+                  <InputGroup label="Family Name" name="familyName" value={formData.familyName} onChange={handleChange} />
+                  <InputGroup label="Middle Name" name="middleName" value={formData.middleName} onChange={handleChange} />
+                  <InputGroup label="First Name" name="firstName" value={formData.firstName} onChange={handleChange} />
+                </div>
+                <div className="grid grid-cols-[1.5fr_1fr_1.5fr] gap-4">
+                  <div className="flex flex-col relative">
+                    <label className="text-[11px] font-bold text-[#0f2e60] mb-1">Birthdate</label>
+                    <div className="relative">
+                      <input type="date" name="birthdate" value={formData.birthdate} onChange={handleChange} className="w-full border border-[#1e3a8a] rounded px-3 py-1.5 text-sm outline-none focus:ring-1 focus:ring-[#1e3a8a] pr-8" />
+                      <Calendar className="w-4 h-4 text-[#1e3a8a] absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                    </div>
+                  </div>
+                  <InputGroup label="Age" name="age" value={formData.age} onChange={handleChange} />
+                  <div className="flex flex-col">
+                    <label className="text-[11px] font-bold text-[#0f2e60] mb-2">Sex</label>
+                    <div className="flex items-center gap-4">
+                      <label className="flex items-center gap-1.5 text-xs font-semibold text-[#0f2e60]"><input type="radio" name="sex" value="Male" checked={formData.sex === 'Male'} onChange={() => handleRadioChange('sex', 'Male')} className="w-3.5 h-3.5" /> Male</label>
+                      <label className="flex items-center gap-1.5 text-xs font-semibold text-[#0f2e60]"><input type="radio" name="sex" value="Female" checked={formData.sex === 'Female'} onChange={() => handleRadioChange('sex', 'Female')} className="w-3.5 h-3.5" /> Female</label>
+                    </div>
+                  </div>
+                </div>
+                <div className="grid grid-cols-[1fr_1fr_1fr_1.5fr] gap-4">
+                  <SelectGroup label="Year Level" name="yearLevel" value={formData.yearLevel} onChange={handleChange} options={['1st Year', '2nd Year', '3rd Year', '4th Year']} />
+                  <SelectGroup label="Course" name="course" value={formData.course} onChange={handleChange} options={['BSCS', 'BSOA', 'BSFT', 'BAEL']} />
+                  <SelectGroup label="Section" name="section" value={formData.section} onChange={handleChange} options={['A', 'B', 'C']} />
+                  <div className="flex flex-col">
+                    <label className="text-[11px] font-bold text-[#0f2e60] mb-2">Civil Status</label>
+                    <div className="flex items-center gap-4">
+                      <label className="flex items-center gap-1.5 text-xs font-semibold text-[#0f2e60]"><input type="radio" name="civilStatus" value="Single" checked={formData.civilStatus === 'Single'} onChange={() => handleRadioChange('civilStatus', 'Single')} className="w-3.5 h-3.5" /> Single</label>
+                      <label className="flex items-center gap-1.5 text-xs font-semibold text-[#0f2e60]"><input type="radio" name="civilStatus" value="Married" checked={formData.civilStatus === 'Married'} onChange={() => handleRadioChange('civilStatus', 'Married')} className="w-3.5 h-3.5" /> Married</label>
+                    </div>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <InputGroup label="Contact No." name="contactNo" value={formData.contactNo} onChange={handleChange} />
+                  <InputGroup label="Email / Gmail" name="email" value={formData.email} onChange={handleChange} />
+                </div>
+                <InputGroup label="Permanent Address" name="permanentAddress" value={formData.permanentAddress} onChange={handleChange} />
+              </div>
+            </div>
+          </div>
+
+          {/* Family Background */}
+          <div className="border border-[#93c5fd] rounded-lg mb-6 bg-white overflow-hidden shadow-sm">
+            <div className="bg-[#e0e7ff] px-4 py-2 flex items-center gap-2 border-b border-[#93c5fd]">
+              <User className="w-4 h-4 text-[#1e3a8a] font-bold" />
+              <h3 className="font-bold text-[#1e3a8a] text-[13px]">B. Family Background</h3>
+            </div>
+            <div className="p-4 space-y-6">
+              <div><div className="inline-block bg-[#e0e7ff] border border-[#1e3a8a] text-[#1e3a8a] text-[11px] font-bold px-4 py-0.5 rounded-sm mb-3">Father Information</div>
+                <div className="grid grid-cols-[2fr_1.5fr_1.5fr] gap-4"><InputGroup label="Name" name="fatherName" value={formData.fatherName} onChange={handleChange} /><InputGroup label="Occupation" name="fatherOccupation" value={formData.fatherOccupation} onChange={handleChange} /><InputGroup label="Contact No." name="fatherContact" value={formData.fatherContact} onChange={handleChange} /></div></div>
+              <div><div className="inline-block bg-[#e0e7ff] border border-[#1e3a8a] text-[#1e3a8a] text-[11px] font-bold px-4 py-0.5 rounded-sm mb-3">Mother Information</div>
+                <div className="grid grid-cols-[2fr_1.5fr_1.5fr] gap-4"><InputGroup label="Name" name="motherName" value={formData.motherName} onChange={handleChange} /><InputGroup label="Occupation" name="motherOccupation" value={formData.motherOccupation} onChange={handleChange} /><InputGroup label="Contact No." name="motherContact" value={formData.motherContact} onChange={handleChange} /></div></div>
+              <div><div className="inline-block bg-[#e0e7ff] border border-[#1e3a8a] text-[#1e3a8a] text-[11px] font-bold px-4 py-0.5 rounded-sm mb-3">Guardian Information</div>
+                <div className="grid grid-cols-[2fr_1.5fr_1.5fr] gap-4"><InputGroup label="Name" name="guardianName" value={formData.guardianName} onChange={handleChange} /><InputGroup label="Occupation" name="guardianOccupation" value={formData.guardianOccupation} onChange={handleChange} /><InputGroup label="Contact No." name="guardianContact" value={formData.guardianContact} onChange={handleChange} /></div></div>
+            </div>
+          </div>
+          
+          <SectionHeader title="SOCIO-ECONOMIC STATUS" />
+          
+          {/* Parent Edu Attainment & Monthly Income */}
+          <div className="grid grid-cols-2 gap-6 mb-6">
+            <div className="bg-white p-4 rounded-lg border border-[#93c5fd] shadow-sm">
+              <label className="block text-[12px] font-bold text-[#0f2e60] mb-3">Highest Educational Attainment of your Parent/Guardian?</label>
+              <div className="space-y-2">
+                {['Elementary Level', 'Elementary Graduate', 'High school Graduate', 'College Graduate', 'High School Level', 'College Level', 'post Graduate level/degree'].map(opt => (
+                  <label key={opt} className="flex items-center gap-2 text-xs font-semibold text-[#0f2e60]">
+                    <input type="radio" name="parentEduAttainment" value={opt} checked={formData.parentEduAttainment === opt} onChange={(e) => handleRadioChange('parentEduAttainment', e.target.value)} className="w-3.5 h-3.5" /> {opt}
+                  </label>
+                ))}
+              </div>
+            </div>
+            <div className="bg-white p-4 rounded-lg border border-[#93c5fd] shadow-sm">
+              <label className="block text-[12px] font-bold text-[#0f2e60] mb-3">What is your family's approximate monthly income?</label>
+              <div className="space-y-2">
+                {['below ₱ 10,000', '₱ 10,001 - ₱ 20,000', '₱ 20,001 - ₱ 30,000', 'Above ₱ 30,000'].map(opt => (
+                  <label key={opt} className="flex items-center gap-2 text-xs font-semibold text-[#0f2e60]">
+                    <input type="radio" name="monthlyIncome" value={opt} checked={formData.monthlyIncome === opt} onChange={(e) => handleRadioChange('monthlyIncome', e.target.value)} className="w-3.5 h-3.5" /> {opt}
+                  </label>
+                ))}
+              </div>
+              <div className="mt-6">
+                <label className="block text-[12px] font-bold text-[#0f2e60] mb-3">Are you the first in the family to attend College?</label>
+                <div className="flex gap-4">
+                  <label className="flex items-center gap-2 text-xs font-semibold text-[#0f2e60]"><input type="radio" name="firstInFamily" value="Yes" checked={formData.firstInFamily === 'Yes'} onChange={() => handleRadioChange('firstInFamily', 'Yes')} className="w-3.5 h-3.5" /> Yes</label>
+                  <label className="flex items-center gap-2 text-xs font-semibold text-[#0f2e60]"><input type="radio" name="firstInFamily" value="No" checked={formData.firstInFamily === 'No'} onChange={() => handleRadioChange('firstInFamily', 'No')} className="w-3.5 h-3.5" /> No</label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white p-4 rounded-lg border border-[#93c5fd] shadow-sm mb-6">
+            <h3 className="font-bold text-[#1e3a8a] text-[13px] mb-4">C. Living Condition</h3>
+            <div className="grid grid-cols-2 gap-6">
+              <div>
+                <label className="block text-[12px] font-bold text-[#0f2e60] mb-3">With whom do you currently live?</label>
+                <div className="space-y-2">
+                  {['Parents/Guardians', 'Relatives', 'Alone', 'Boarding house'].map(opt => (
+                    <label key={opt} className="flex items-center gap-2 text-xs font-semibold text-[#0f2e60]">
+                      <input type="radio" name="livingWith" value={opt} checked={formData.livingWith === opt} onChange={(e) => handleRadioChange('livingWith', e.target.value)} className="w-3.5 h-3.5" /> {opt}
+                    </label>
+                  ))}
+                  <label className="flex items-center gap-2 text-xs font-semibold text-[#0f2e60]">
+                    <input type="radio" name="livingWith" value="Others" checked={formData.livingWith === 'Others'} onChange={(e) => handleRadioChange('livingWith', e.target.value)} className="w-3.5 h-3.5" /> others (please specify)
+                  </label>
+                  {formData.livingWith === 'Others' && (
+                    <input type="text" name="livingWithOthers" value={formData.livingWithOthers} onChange={handleChange} className="border-b border-[#1e3a8a] outline-none text-xs ml-6 mt-1 w-full max-w-[200px]" />
+                  )}
+                </div>
+              </div>
+              <div>
+                <label className="block text-[12px] font-bold text-[#0f2e60] mb-3">Type of Housing</label>
+                <div className="space-y-2">
+                  {['Own house', 'Rented house or apartment', 'Boarding house'].map(opt => (
+                    <label key={opt} className="flex items-center gap-2 text-xs font-semibold text-[#0f2e60]">
+                      <input type="radio" name="housingType" value={opt} checked={formData.housingType === opt} onChange={(e) => handleRadioChange('housingType', e.target.value)} className="w-3.5 h-3.5" /> {opt}
+                    </label>
+                  ))}
+                  <label className="flex items-center gap-2 text-xs font-semibold text-[#0f2e60]">
+                    <input type="radio" name="housingType" value="Others" checked={formData.housingType === 'Others'} onChange={(e) => handleRadioChange('housingType', e.target.value)} className="w-3.5 h-3.5" /> others (please specify)
+                  </label>
+                  {formData.housingType === 'Others' && (
+                    <input type="text" name="housingTypeOthers" value={formData.housingTypeOthers} onChange={handleChange} className="border-b border-[#1e3a8a] outline-none text-xs ml-6 mt-1 w-full max-w-[200px]" />
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white p-4 rounded-lg border border-[#93c5fd] shadow-sm mb-6">
+            <h3 className="font-bold text-[#1e3a8a] text-[13px] mb-4">D. Access to Resources</h3>
+            <div className="grid grid-cols-2 gap-6">
+              <div>
+                <label className="block text-[12px] font-bold text-[#0f2e60] mb-3">Do you have access of the following at home?</label>
+                <div className="space-y-2">
+                  {['Personal Computer/Laptop', 'Internet Connection', 'Study space', 'Textbooks and learning materials'].map(opt => (
+                    <label key={opt} className="flex items-center gap-2 text-xs font-semibold text-[#0f2e60]">
+                      <input type="checkbox" checked={formData.accessToResources.includes(opt)} onChange={() => handleCheckboxChange('accessToResources', opt)} className="w-3.5 h-3.5 rounded-sm text-blue-600 focus:ring-blue-500" /> {opt}
+                    </label>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <label className="block text-[12px] font-bold text-[#0f2e60] mb-3">Do you work while studying?</label>
+                <div className="flex gap-4">
+                  <label className="flex items-center gap-2 text-xs font-semibold text-[#0f2e60]"><input type="radio" name="workingStudent" value="Yes, full-time" checked={formData.workingStudent === 'Yes, full-time'} onChange={() => handleRadioChange('workingStudent', 'Yes, full-time')} className="w-3.5 h-3.5" /> Yes, full-time</label>
+                  <label className="flex items-center gap-2 text-xs font-semibold text-[#0f2e60]"><input type="radio" name="workingStudent" value="Yes, part-time" checked={formData.workingStudent === 'Yes, part-time'} onChange={() => handleRadioChange('workingStudent', 'Yes, part-time')} className="w-3.5 h-3.5" /> Yes, part-time</label>
+                  <label className="flex items-center gap-2 text-xs font-semibold text-[#0f2e60]"><input type="radio" name="workingStudent" value="No" checked={formData.workingStudent === 'No'} onChange={() => handleRadioChange('workingStudent', 'No')} className="w-3.5 h-3.5" /> No</label>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div className="bg-white p-4 rounded-lg border border-[#93c5fd] shadow-sm mb-6">
+            <h3 className="font-bold text-[#1e3a8a] text-[13px] mb-4">E. Student Classification</h3>
+            <label className="block text-[12px] font-bold text-[#0f2e60] mb-3">Which of the following classification best describe your current status? (Multiple responses)</label>
+            <div className="grid grid-cols-2 gap-x-6 gap-y-2">
+              {[
+                'Indigenous Peoples (IPs)', 'Solo Parent', 'Child of a solo parent', 'Persons with disabilities (PWDs)', 'Child of Person with Disabilities (PWD)',
+                'Drop out or learner who returned to school', 'Child of drop out or learner who returned to school', 'Rebel returnees', 'Child of a rebel returnees',
+                'Dependent or child of OFW', 'Member of 4Ps', 'Member of Calamity or Disaster Affected Family', 'Orphan/Child in need of special protection',
+                'Working Student', 'From geographically isolated & disadvantaged area (GIDA)', 'Muslim Student', 'Low income family/ Economically disadvantaged student',
+                'Senior Citizen student', 'First Generation student (Parents did not complete a college degree, first in the immediate family to seek college admission)',
+                'LGBTQ+ Community', 'Regular student (I do not belong to any of this group classification)'
+              ].map(opt => (
+                <label key={opt} className="flex items-start gap-2 text-xs font-semibold text-[#0f2e60]">
+                  <input type="checkbox" checked={formData.studentClassification.includes(opt)} onChange={() => handleCheckboxChange('studentClassification', opt)} className="w-3.5 h-3.5 mt-0.5 rounded-sm text-blue-600 focus:ring-blue-500" />
+                  <span className="leading-snug">{opt}</span>
+                </label>
+              ))}
+              <div className="col-span-2 mt-2">
+                <label className="flex items-center gap-2 text-xs font-semibold text-[#0f2e60]">
+                  <input type="checkbox" checked={formData.studentClassification.includes('Others')} onChange={() => handleCheckboxChange('studentClassification', 'Others')} className="w-3.5 h-3.5 rounded-sm text-blue-600 focus:ring-blue-500" /> others (Please specify)
+                </label>
+                {formData.studentClassification.includes('Others') && (
+                  <input type="text" name="studentClassificationOthers" value={formData.studentClassificationOthers} onChange={handleChange} className="border-b border-[#1e3a8a] outline-none text-xs ml-6 mt-1 w-full max-w-lg" />
+                )}
+              </div>
+            </div>
+            
+            <div className="mt-8 space-y-6">
+              <div>
+                <label className="block text-[12px] font-bold text-[#0f2e60] mb-2">If you are working student, please indicate your type of work or source of income</label>
+                <input type="text" name="workTypeIncome" value={formData.workTypeIncome} onChange={handleChange} className="border-b border-gray-400 focus:border-[#1e3a8a] outline-none w-full pb-1 text-sm text-gray-700" />
+              </div>
+              <div>
+                <label className="block text-[12px] font-bold text-[#0f2e60] mb-2">If you are a student with special needs/Person with disability (PWD), please specify your condition or disability</label>
+                <input type="text" name="specialNeedsCondition" value={formData.specialNeedsCondition} onChange={handleChange} className="border-b border-gray-400 focus:border-[#1e3a8a] outline-none w-full pb-1 text-sm text-gray-700" />
+              </div>
+              <div>
+                <label className="block text-[12px] font-bold text-[#0f2e60] mb-2">If you are a PDL (Drop out, or learner with interrupted schooling), please state the reason why your schooling was previously interrupted.</label>
+                <input type="text" name="pdlReason" value={formData.pdlReason} onChange={handleChange} className="border-b border-gray-400 focus:border-[#1e3a8a] outline-none w-full pb-1 text-sm text-gray-700" />
+              </div>
+            </div>
+          </div>
+
+          <SectionHeader title="SCHOLARSHIP CATEGORY" />
+          
+          <div className="bg-white p-6 rounded-lg border border-[#93c5fd] shadow-sm mb-6">
+            
+            <div className="mb-8">
+              <label className="flex items-center gap-2 font-bold text-[#1e3a8a] text-[14px] mb-4">
+                <input type="radio" name="scholarshipFundType" value="Internal" checked={formData.scholarshipFundType === 'Internal'} onChange={(e) => handleRadioChange('scholarshipFundType', e.target.value)} className="w-4 h-4" /> A. Internally-Funded
+              </label>
+              
+              {formData.scholarshipFundType === 'Internal' && (
+                <div className="pl-6 space-y-6">
+                  <div>
+                    <h4 className="font-bold text-[12px] text-[#0f2e60] mb-2">Entrance</h4>
+                    <div className="flex gap-8">
+                      <label className="flex items-center gap-2 text-xs font-semibold text-[#0f2e60]"><input type="radio" name="internalCategory" value="Valedictorian" checked={formData.internalCategory === 'Valedictorian'} onChange={(e) => handleRadioChange('internalCategory', e.target.value)} /> Valedictorian</label>
+                      <label className="flex items-center gap-2 text-xs font-semibold text-[#0f2e60]"><input type="radio" name="internalCategory" value="Salutatorian" checked={formData.internalCategory === 'Salutatorian'} onChange={(e) => handleRadioChange('internalCategory', e.target.value)} /> Salutatorian</label>
+                    </div>
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-[12px] text-[#0f2e60] mb-2">Academic</h4>
+                    <div className="flex gap-8">
+                      <label className="flex items-center gap-2 text-xs font-semibold text-[#0f2e60]"><input type="radio" name="internalCategory" value="Full" checked={formData.internalCategory === 'Full'} onChange={(e) => handleRadioChange('internalCategory', e.target.value)} /> Full</label>
+                      <label className="flex items-center gap-2 text-xs font-semibold text-[#0f2e60]"><input type="radio" name="internalCategory" value="Partial" checked={formData.internalCategory === 'Partial'} onChange={(e) => handleRadioChange('internalCategory', e.target.value)} /> Partial</label>
+                      <label className="flex items-center gap-2 text-xs font-semibold text-[#0f2e60]"><input type="radio" name="internalCategory" value="Regional" checked={formData.internalCategory === 'Regional'} onChange={(e) => handleRadioChange('internalCategory', e.target.value)} /> Regional</label>
+                      <label className="flex items-center gap-2 text-xs font-semibold text-[#0f2e60]"><input type="radio" name="internalCategory" value="National" checked={formData.internalCategory === 'National'} onChange={(e) => handleRadioChange('internalCategory', e.target.value)} /> National</label>
+                    </div>
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-[12px] text-[#0f2e60] mb-2">Socio-cultural</h4>
+                    <div className="flex gap-8">
+                      <label className="flex items-center gap-2 text-xs font-semibold text-[#0f2e60]"><input type="radio" name="internalCategory" value="SC-Regional" checked={formData.internalCategory === 'SC-Regional'} onChange={(e) => handleRadioChange('internalCategory', e.target.value)} /> Regional</label>
+                      <label className="flex items-center gap-2 text-xs font-semibold text-[#0f2e60]"><input type="radio" name="internalCategory" value="SC-National" checked={formData.internalCategory === 'SC-National'} onChange={(e) => handleRadioChange('internalCategory', e.target.value)} /> National</label>
+                    </div>
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-[12px] text-[#0f2e60] mb-2">Institutional</h4>
+                    <div className="grid grid-cols-2 gap-y-2 gap-x-8">
+                      <label className="flex items-center gap-2 text-xs font-semibold text-[#0f2e60]"><input type="radio" name="internalCategory" value="Dependent of Faculty" checked={formData.internalCategory === 'Dependent of Faculty'} onChange={(e) => handleRadioChange('internalCategory', e.target.value)} /> Dependent of Faculty or Staff</label>
+                      <label className="flex items-center gap-2 text-xs font-semibold text-[#0f2e60]"><input type="radio" name="internalCategory" value="President - SSC" checked={formData.internalCategory === 'President - SSC'} onChange={(e) => handleRadioChange('internalCategory', e.target.value)} /> President – SSC</label>
+                      <label className="flex items-center gap-2 text-xs font-semibold text-[#0f2e60]"><input type="radio" name="internalCategory" value="President - FLP" checked={formData.internalCategory === 'President - FLP'} onChange={(e) => handleRadioChange('internalCategory', e.target.value)} /> President – FLP</label>
+                      <label className="flex items-center gap-2 text-xs font-semibold text-[#0f2e60]"><input type="radio" name="internalCategory" value="Editor-in-Chief" checked={formData.internalCategory === 'Editor-in-Chief'} onChange={(e) => handleRadioChange('internalCategory', e.target.value)} /> Editor-in-Chief (Campus Publication)</label>
+                      <label className="flex items-center gap-2 text-xs font-semibold text-[#0f2e60]"><input type="radio" name="internalCategory" value="CapSU Band / Chorale" checked={formData.internalCategory === 'CapSU Band / Chorale'} onChange={(e) => handleRadioChange('internalCategory', e.target.value)} /> CapSU Band / Chorale</label>
+                    </div>
+                  </div>
+                  <div className="mt-4">
+                    <label className="flex items-center gap-2 text-xs font-semibold text-[#0f2e60]">
+                      <input type="radio" name="internalCategory" value="Others" checked={formData.internalCategory === 'Others'} onChange={(e) => handleRadioChange('internalCategory', e.target.value)} /> Others (specify)
+                    </label>
+                    {formData.internalCategory === 'Others' && (
+                      <input type="text" name="internalCategoryOthers" value={formData.internalCategoryOthers} onChange={handleChange} className="border-b border-[#1e3a8a] outline-none text-xs ml-6 mt-1 w-full max-w-lg" />
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="pt-4 border-t border-gray-200">
+              <label className="flex items-center gap-2 font-bold text-[#1e3a8a] text-[14px] mb-4">
+                <input type="radio" name="scholarshipFundType" value="External" checked={formData.scholarshipFundType === 'External'} onChange={(e) => handleRadioChange('scholarshipFundType', e.target.value)} className="w-4 h-4" /> B. Externally-Funded
+              </label>
+              
+              {formData.scholarshipFundType === 'External' && (
+                <div className="pl-6 space-y-6">
+                  <div>
+                    <h4 className="font-bold text-[12px] text-[#0f2e60] mb-2">CHED</h4>
+                    <div className="flex flex-col gap-2">
+                      {['ANAC – IP', 'Pag – ulikid', 'Barangay (Legal dependents of Brgy. Officials)', 'ESGP – PA', 'UniFast', 'Tertiary Education Subsidy (TES)'].map(opt => (
+                        <label key={opt} className="flex items-center gap-2 text-xs font-semibold text-[#0f2e60]"><input type="radio" name="chedSubCategory" value={opt} checked={formData.chedSubCategory === opt} onChange={(e) => handleRadioChange('chedSubCategory', e.target.value)} /> {opt}</label>
+                      ))}
+                      <div className="flex items-center gap-2 text-xs font-semibold text-[#0f2e60] mt-1">
+                        <input type="radio" name="chedSubCategory" value="Congressional District" checked={formData.chedSubCategory === 'Congressional District'} onChange={(e) => handleRadioChange('chedSubCategory', e.target.value)} /> Congressional District (specify)
+                        {formData.chedSubCategory === 'Congressional District' && <input type="text" name="chedCongressionalDistrict" value={formData.chedCongressionalDistrict} onChange={handleChange} className="border-b border-[#1e3a8a] outline-none ml-2 flex-1 max-w-[300px]" />}
+                      </div>
+                      <div className="flex items-center gap-2 text-xs font-semibold text-[#0f2e60] mt-1">
+                        <input type="radio" name="chedSubCategory" value="One Town One Scholar" checked={formData.chedSubCategory === 'One Town One Scholar'} onChange={(e) => handleRadioChange('chedSubCategory', e.target.value)} /> One Town One Scholar (specify)
+                        {formData.chedSubCategory === 'One Town One Scholar' && <input type="text" name="chedOneTown" value={formData.chedOneTown} onChange={handleChange} className="border-b border-[#1e3a8a] outline-none ml-2 flex-1 max-w-[300px]" />}
+                      </div>
+                      <div className="flex items-center gap-2 text-xs font-semibold text-[#0f2e60] mt-1">
+                        <input type="radio" name="chedSubCategory" value="Tulong Dunong" checked={formData.chedSubCategory === 'Tulong Dunong'} onChange={(e) => handleRadioChange('chedSubCategory', e.target.value)} /> Tulong Dunong (specify)
+                        {formData.chedSubCategory === 'Tulong Dunong' && <input type="text" name="chedTulongDunong" value={formData.chedTulongDunong} onChange={handleChange} className="border-b border-[#1e3a8a] outline-none ml-2 flex-1 max-w-[300px]" />}
+                      </div>
+                      <div className="flex items-center gap-2 text-xs font-semibold text-[#0f2e60] mt-1">
+                        <input type="radio" name="chedSubCategory" value="Others" checked={formData.chedSubCategory === 'Others'} onChange={(e) => handleRadioChange('chedSubCategory', e.target.value)} /> Others (specify)
+                        {formData.chedSubCategory === 'Others' && <input type="text" name="chedOthers" value={formData.chedOthers} onChange={handleChange} className="border-b border-[#1e3a8a] outline-none ml-2 flex-1 max-w-[300px]" />}
+                      </div>
+                    </div>
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-[12px] text-[#0f2e60] mb-2">Merit</h4>
+                    <div className="grid grid-cols-2 gap-y-2 max-w-[400px]">
+                      <label className="flex items-center gap-2 text-xs font-semibold text-[#0f2e60]"><input type="radio" name="meritSubCategory" value="VIC" checked={formData.meritSubCategory === 'VIC'} onChange={(e) => handleRadioChange('meritSubCategory', e.target.value)} /> VIC</label>
+                      <label className="flex items-center gap-2 text-xs font-semibold text-[#0f2e60]"><input type="radio" name="meritSubCategory" value="Capizeño Circle" checked={formData.meritSubCategory === 'Capizeño Circle'} onChange={(e) => handleRadioChange('meritSubCategory', e.target.value)} /> Capizeño Circle</label>
+                      <label className="flex items-center gap-2 text-xs font-semibold text-[#0f2e60]"><input type="radio" name="meritSubCategory" value="DOST" checked={formData.meritSubCategory === 'DOST'} onChange={(e) => handleRadioChange('meritSubCategory', e.target.value)} /> DOST</label>
+                      <label className="flex items-center gap-2 text-xs font-semibold text-[#0f2e60]"><input type="radio" name="meritSubCategory" value="GRF" checked={formData.meritSubCategory === 'GRF'} onChange={(e) => handleRadioChange('meritSubCategory', e.target.value)} /> GRF</label>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="flex items-center gap-2 text-[12px] font-bold text-[#0f2e60] mb-2">
+                      <input type="radio" name="externalCategory" value="LGU" checked={formData.externalCategory === 'LGU'} onChange={(e) => handleRadioChange('externalCategory', e.target.value)} /> LGU: Barangay, Municipality, Province (Landline) Contact person or issuing office:
+                    </label>
+                    {formData.externalCategory === 'LGU' && (
+                      <input type="text" name="lguContact" value={formData.lguContact} onChange={handleChange} className="border-b border-[#1e3a8a] outline-none text-xs ml-6 w-full max-w-lg" />
+                    )}
+                  </div>
+                  <div>
+                    <label className="flex items-center gap-2 text-[12px] font-bold text-[#0f2e60] mb-2">
+                      <input type="radio" name="externalCategory" value="DSWD" checked={formData.externalCategory === 'DSWD'} onChange={(e) => handleRadioChange('externalCategory', e.target.value)} /> DSWD:
+                    </label>
+                    {formData.externalCategory === 'DSWD' && (
+                      <div className="pl-6 space-y-3 mt-3 max-w-lg">
+                        <div className="flex items-center gap-3"><span className="text-xs font-semibold text-gray-700 w-24">Municipality:</span> <input type="text" name="dswdMunicipality" value={formData.dswdMunicipality} onChange={handleChange} className="border-b border-gray-400 focus:border-[#1e3a8a] outline-none flex-1 text-sm" /></div>
+                        <div className="flex items-center gap-3"><span className="text-xs font-semibold text-gray-700 w-24">Contact person:</span> <input type="text" name="dswdContact" value={formData.dswdContact} onChange={handleChange} className="border-b border-gray-400 focus:border-[#1e3a8a] outline-none flex-1 text-sm" /></div>
+                        <div className="flex items-center gap-3"><span className="text-xs font-semibold text-gray-700 w-24">Designation:</span> <input type="text" name="dswdDesignation" value={formData.dswdDesignation} onChange={handleChange} className="border-b border-gray-400 focus:border-[#1e3a8a] outline-none flex-1 text-sm" /></div>
+                        <div className="flex items-center gap-3"><span className="text-xs font-semibold text-gray-700 w-24">Others (specify):</span> <input type="text" name="dswdOthers" value={formData.dswdOthers} onChange={handleChange} className="border-b border-gray-400 focus:border-[#1e3a8a] outline-none flex-1 text-sm" /></div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+            
+            <div className="mt-8 pt-8 border-t border-gray-200 text-center">
+              <p className="text-[13px] text-gray-700 mb-8 italic">I hereby certify that the information I have provided is true and correct to the best of my knowledge.</p>
+              
+              <div 
+                className="mx-auto w-64 h-24 border-2 border-dashed border-gray-300 rounded-xl mb-2 flex items-center justify-center cursor-pointer hover:bg-gray-50 transition-colors bg-white relative overflow-hidden group"
+                onClick={() => setShowSignaturePad(true)}
+              >
+                {formData.signature ? (
+                  <img src={formData.signature} alt="Signature" className="w-full h-full object-contain" />
+                ) : (
+                  <span className="text-gray-400 text-sm font-medium group-hover:text-[#1e3a8a]">Click to sign</span>
+                )}
+              </div>
+              <div className="inline-block border-t-2 border-black w-64 pt-2 text-sm font-bold text-[#0f2e60]">
+                Applicant's Signature
+              </div>
+
+              {showSignaturePad && (
+                <SignaturePad 
+                  onSave={(dataUrl) => {
+                    setFormData(prev => ({ ...prev, signature: dataUrl }));
+                    setShowSignaturePad(false);
+                  }} 
+                  onCancel={() => setShowSignaturePad(false)} 
+                />
+              )}
+            </div>
+          </div>
+          
+          <div className="flex justify-end mt-4">
+            <button onClick={() => { if(validateStep1()) setStep(2); }} className="bg-[#1e3a8a] text-white px-8 py-2 rounded-lg font-bold hover:bg-[#152c6b] transition-colors shadow-sm">
+              Next
+            </button>
+          </div>
+        </>
       )}
 
       {step === 2 && (
         <div className="bg-white p-8 rounded-lg shadow-sm border border-gray-200">
-          <h2 className="text-2xl font-bold mb-6">Upload Documents</h2>
-          <div className="grid grid-cols-2 gap-6">
-            {renderFileUpload('Registration Form (RF)', 'RF')}
-            {renderFileUpload('General Weighted Average (GWA)', 'GWA')}
+          <SectionHeader title="STUDENT DOCUMENTS" />
+          <div className="grid grid-cols-2 gap-6 mb-6">
+            {renderFileUpload('Registration Form', 'RF')}
+            {renderFileUpload('General Weighted Average', 'GWA')}
           </div>
-          <div className="flex justify-between mt-8">
-            <button onClick={handlePrev} className="border border-gray-300 text-gray-700 px-8 py-3 rounded-md font-bold hover:bg-gray-50 transition-colors">Back</button>
-            <button onClick={handleNext} className="bg-[#30416b] text-white w-32 py-3.5 rounded-xl font-bold hover:bg-[#1e2f5c] transition-colors shadow-md text-sm">Next</button>
+          <div className="max-w-md mx-auto">
+            {renderFileUpload('Student ID', 'ID')}
+          </div>
+          
+          <div className="flex justify-between mt-12">
+            <button onClick={() => setStep(1)} className="border border-gray-300 text-gray-700 px-8 py-2 rounded-lg font-bold hover:bg-gray-50 transition-colors">Back</button>
+            <button onClick={() => { if(validateStep2()) setStep(3); }} className="bg-[#1e3a8a] text-white px-8 py-2 rounded-lg font-bold hover:bg-[#152c6b] transition-colors shadow-sm">Next</button>
           </div>
         </div>
       )}
 
       {step === 3 && (
-        <div className="bg-white p-8 rounded-lg shadow-sm border border-gray-200">
-          <h2 className="text-2xl font-bold mb-4">Review & Submit</h2>
-          <p className="text-gray-600 mb-6">Review your information before submitting.</p>
-          
-          <div className="bg-gray-50 p-6 rounded-lg border border-gray-200 space-y-4 mb-8">
-             <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-xs text-gray-500 uppercase tracking-wider font-bold">Applicant Name</p>
-                  <p className="text-[#0c2340] font-medium">{formData.firstName} {formData.middleName} {formData.familyName}</p>
-                </div>
-                <div>
-                  <p className="text-xs text-gray-500 uppercase tracking-wider font-bold">Course & Year</p>
-                  <p className="text-[#0c2340] font-medium">{formData.course} - {formData.yearLevel}</p>
-                </div>
-                <div>
-                  <p className="text-xs text-gray-500 uppercase tracking-wider font-bold">Contact</p>
-                  <p className="text-[#0c2340] font-medium">{formData.contactNo}</p>
-                </div>
-                <div>
-                  <p className="text-xs text-gray-500 uppercase tracking-wider font-bold">Email</p>
-                  <p className="text-[#0c2340] font-medium">{formData.email}</p>
-                </div>
-             </div>
-             
-             <div className="mt-6 border-t border-gray-200 pt-4">
-               <p className="text-xs text-gray-500 uppercase tracking-wider font-bold mb-2">Uploaded Files</p>
-               <ul className="space-y-2">
-                 {files.map((f: any) => (
-                   <li key={f.id} className="flex items-center gap-2 text-sm text-[#0c2340]">
-                     <CheckCircle2 className="w-4 h-4 text-[#16a34a]" /> {f.category}: <span className="font-medium">{f.name}</span>
-                   </li>
-                 ))}
-                 {files.length === 0 && <li className="text-sm text-gray-400 italic">No files uploaded</li>}
-               </ul>
-             </div>
+        <div className="bg-white p-8 rounded-lg shadow-sm border border-gray-200 text-center py-16">
+          <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+            <CheckCircle2 className="w-10 h-10 text-green-600" />
           </div>
-          <div className="flex justify-between mt-8">
-            <button 
-              onClick={handlePrev}
-              className="border border-gray-300 text-gray-700 px-8 py-3 rounded-md font-bold hover:bg-gray-50 transition-colors"
-            >
-              Back
-            </button>
-            <button 
-              onClick={async () => {
-                setIsSubmitting(true);
-                const submissionId = `sub-${Date.now()}`;
-                const newSubmission = {
-                  id: submissionId,
-                  studentId: (undefined as any)?.studentId || '2024-CAPSU-001',
-                  studentName: `${formData.firstName} ${formData.middleName ? formData.middleName + ' ' : ''}${formData.familyName}`.trim(),
-                  scholarshipType: 'Academic Scholarship',
-                  status: 'Pending' as any,
-                  submittedAt: new Date().toISOString(),
-                  data: formData,
-                  files: files
-                };
-            
-                try {
-                  await db.submissions.create(newSubmission);
-                  setIsSubmitting(false);
-                  setShowToast(true);
-                  setTimeout(() => {
-                    setShowToast(false);
-                    navigate('/student/dashboard');
-                  }, 4000);
-                } catch (e) {
-                  console.error(e);
-                  setIsSubmitting(false);
-                }
-              }}
-              disabled={isSubmitting}
-              className="bg-[#16a34a] text-white px-8 py-3 rounded-md font-bold hover:bg-[#15803d] transition-colors"
-            >
-              {isSubmitting ? 'Submitting...' : 'Submit Application'}
+          <h2 className="text-2xl font-bold mb-2">Ready to Submit</h2>
+          <p className="text-gray-600 mb-8 max-w-sm mx-auto">All required information and documents have been gathered. You can now submit your application.</p>
+          
+          <div className="flex justify-center gap-4">
+            <button onClick={() => setStep(2)} className="border border-gray-300 text-gray-700 px-8 py-2 rounded-lg font-bold hover:bg-gray-50 transition-colors">Back</button>
+            <button onClick={handleSubmit} disabled={isSubmitting} className="bg-green-600 text-white px-8 py-2 rounded-lg font-bold hover:bg-green-700 transition-colors shadow-sm flex items-center gap-2 disabled:opacity-50">
+              {isSubmitting ? 'Submitting...' : <><Check className="w-5 h-5" /> Submit Application</>}
             </button>
           </div>
         </div>
       )}
-      {/* Toast */}
-      <div className={cn(
-        "fixed bottom-6 left-6 flex items-center gap-3 bg-white border border-[#22c55e] text-[#166534] px-4 py-3 rounded-lg shadow-[0_4px_12px_rgba(34,197,94,0.2)] transition-all duration-300 z-50",
-        showToast ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0 pointer-events-none"
-      )}>
-        <div className="bg-[#22c55e] text-white rounded-full p-1">
-          <Check className="w-4 h-4" />
-        </div>
-        <span className="font-medium text-sm">Successfully submitted!</span>
-      </div>
+
     </div>
   );
 }

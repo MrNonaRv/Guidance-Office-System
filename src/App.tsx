@@ -1,6 +1,9 @@
-import { useEffect, lazy, Suspense } from "react";
+import { useEffect, lazy, Suspense, useState } from "react";
 import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { seedDatabase } from "./lib/seed";
+import { auth } from "./lib/firebase";
+import { onAuthStateChanged } from "firebase/auth";
+import { db } from "./lib/db";
 
 const GuidanceLogin = lazy(() => import('./pages/guidance').then(module => ({ default: module.GuidanceLogin })));
 const GuidanceLayout = lazy(() => import('./pages/guidance').then(module => ({ default: module.GuidanceLayout })));
@@ -22,13 +25,64 @@ const StudentDashboard = lazy(() => import('./pages/student').then(module => ({ 
 const StudentSubmissionForm = lazy(() => import('./pages/student').then(module => ({ default: module.StudentSubmissionForm })));
 
 const AdminAuthGuard = () => {
-  const isAuth = localStorage.getItem('adminAuth') === 'true';
+  const [isAuth, setIsAuth] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        try {
+          // Double check they have admin role in DB
+          const userDoc = await db.users.get(user.uid);
+          if (userDoc?.role === 'admin') {
+            setIsAuth(true);
+            return;
+          }
+        } catch (e) {
+          console.warn("Could not verify admin role, falling back.", e);
+        }
+        setIsAuth(localStorage.getItem('adminAuth') === 'true');
+      } else {
+        setIsAuth(false);
+      }
+    });
+    return () => unsubscribe();
+  }, []);
+
+  if (isAuth === null) {
+    return <div className="min-h-screen flex items-center justify-center bg-gray-50"><div className="w-8 h-8 border-4 border-[#0f2e60] border-t-transparent rounded-full animate-spin"></div></div>;
+  }
+
   return isAuth ? <Outlet /> : <Navigate to="/admin/login" replace />;
 };
 
 const StudentAuthGuard = () => {
-  const isAuth = localStorage.getItem('studentAuth') === 'true';
+  const [isAuth, setIsAuth] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setIsAuth(localStorage.getItem('studentAuth') === 'true');
+      } else {
+        setIsAuth(false);
+      }
+    });
+    return () => unsubscribe();
+  }, []);
+
+  if (isAuth === null) {
+    return <div className="min-h-screen flex items-center justify-center bg-gray-50"><div className="w-8 h-8 border-4 border-[#0f2e60] border-t-transparent rounded-full animate-spin"></div></div>;
+  }
+
   return isAuth ? <Outlet /> : <Navigate to="/student/login" replace />;
+};
+
+const RootRedirect = () => {
+  const isAdminAuth = localStorage.getItem('adminAuth') === 'true';
+  const isStudentAuth = localStorage.getItem('studentAuth') === 'true';
+  
+  if (isAdminAuth) return <Navigate to="/admin/dashboard" replace />;
+  if (isStudentAuth) return <Navigate to="/student/dashboard" replace />;
+  return <Navigate to="/student/login" replace />;
 };
 
 export default function App() {
@@ -40,7 +94,7 @@ export default function App() {
     <BrowserRouter>
       <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-gray-50"><div className="w-8 h-8 border-4 border-[#0f2e60] border-t-transparent rounded-full animate-spin"></div></div>}>
         <Routes>
-          <Route path="/" element={<Navigate to="/student/login" replace />} />
+          <Route path="/" element={<RootRedirect />} />
           
           {/* Guidance Portal Routes */}
         <Route path="/admin/login" element={<GuidanceLogin />} />

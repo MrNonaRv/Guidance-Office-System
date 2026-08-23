@@ -501,6 +501,15 @@ Capiz State University`
     }
   };
 
+  React.useEffect(() => {
+    setSelectedSubType('Sub Type');
+    setSelectedAllocation('Scholarship Allocation');
+  }, [selectedCategory]);
+
+  React.useEffect(() => {
+    setSelectedAllocation('Scholarship Allocation');
+  }, [selectedSubType]);
+
   // Load sent history from db
   React.useEffect(() => {
     async function loadComms() {
@@ -888,11 +897,23 @@ Capiz State University`
                   className="w-full bg-white border border-gray-300 rounded-lg px-2.5 py-1.5 text-[11px] font-medium text-gray-800 appearance-none focus:outline-none focus:ring-1 focus:ring-[#1864db] cursor-pointer truncate pr-6 shadow-2xs"
                 >
                   <option value="Sub Type">Sub Type</option>
-                  <option value="CHED">CHED</option>
-                  <option value="Institutional">Institutional</option>
-                  <option value="Socio-cultural">Socio-cultural</option>
-                  <option value="Academic">Academic</option>
-                  <option value="Merit">Merit</option>
+                  {(selectedCategory === 'Category' || selectedCategory === 'Internally-Funded') && (
+                    <>
+                      <option value="Entrance">Entrance</option>
+                      <option value="Academic">Academic</option>
+                      <option value="Socio-cultural">Socio-cultural</option>
+                      <option value="Institutional">Institutional</option>
+                      <option value="Others">Others</option>
+                    </>
+                  )}
+                  {(selectedCategory === 'Category' || selectedCategory === 'Externally-Funded') && (
+                    <>
+                      <option value="CHED">CHED</option>
+                      <option value="Merit">Merit</option>
+                      <option value="LGU">LGU</option>
+                      <option value="DSWD">DSWD</option>
+                    </>
+                  )}
                 </select>
                 <ChevronDown className="w-3.5 h-3.5 text-gray-600 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" />
               </div>

@@ -1,4 +1,4 @@
-import { LayoutGrid, FileText, Bell, Mail, BarChart2, Settings, User, LogOut, Users, TrendingUp, BookOpen, Filter, Calendar, Award, GraduationCap, ImageIcon, Plus, Pen, Trash2, Paperclip, View } from 'lucide-react';
+import { LayoutGrid, FileText, Bell, Mail, BarChart2, Settings, User, LogOut, Users, TrendingUp, BookOpen, Filter, Calendar, Award, GraduationCap, ImageIcon, Plus, Pen, Trash2, Paperclip, View, Eye, EyeOff } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import React, { useState, useEffect} from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
@@ -11,6 +11,14 @@ import { signInWithGoogle } from '../../lib/firebase';
 
 export function GuidanceLogin() {
   const navigate = useNavigate();
+  const [showPassword, setShowPassword] = useState(false);
+
+  useEffect(() => {
+    if (localStorage.getItem('adminAuth') === 'true') {
+      navigate('/admin/dashboard', { replace: true });
+    }
+  }, [navigate]);
+
   const [error, setError] = useState('');
 
   const handleGoogleLogin = async () => {
@@ -74,9 +82,9 @@ export function GuidanceLogin() {
           <div className="text-left relative">
             <label className="block text-[11px] font-medium text-[#0f2e60] mb-1 ml-1">Password</label>
             <div className="relative">
-              <input type="password" defaultValue="********" className="w-full px-4 py-2.5 bg-white rounded text-sm focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 outline-none transition-all shadow-sm" />
-              <button type="button" className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
-                <View className="w-4 h-4" />
+              <input type={showPassword ? "text" : "password"} defaultValue="********" className="w-full px-4 py-2.5 pr-10 bg-white rounded text-sm focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 outline-none transition-all shadow-sm" />
+              <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none">
+                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
             </div>
             <div className="text-right mt-1">
@@ -212,6 +220,7 @@ export function GuidanceLayout() {
 }
 
 export function GuidanceDashboard() {
+  const navigate = useNavigate();
 const [, setSubmissions] = useState<any[]>(() => db.submissions.getCached());
 
   useEffect(() => {
@@ -259,8 +268,11 @@ const [, setSubmissions] = useState<any[]>(() => db.submissions.getCached());
       {/* 3 Stat Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Blue Card */}
-        <div className="bg-gradient-to-b from-[#1c64db] to-[#12429f] text-white p-6 rounded-2xl shadow-md flex flex-col justify-between h-52 relative">
-          <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center">
+        <div 
+          onClick={() => navigate('/admin/submissions', { state: { filterStatus: 'All status' } })}
+          className="bg-gradient-to-b from-[#1c64db] to-[#12429f] text-white p-6 rounded-2xl shadow-md flex flex-col justify-between h-52 relative cursor-pointer hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group"
+        >
+          <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
             <Users className="w-6 h-6 text-white" />
           </div>
           <div>
@@ -273,8 +285,11 @@ const [, setSubmissions] = useState<any[]>(() => db.submissions.getCached());
         </div>
         
         {/* Green Card */}
-        <div className="bg-gradient-to-b from-[#3fa52a] to-[#287b1a] text-white p-6 rounded-2xl shadow-md flex flex-col justify-between h-52 relative">
-          <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center">
+        <div 
+          onClick={() => navigate('/admin/submissions', { state: { filterStatus: 'Complete' } })}
+          className="bg-gradient-to-b from-[#3fa52a] to-[#287b1a] text-white p-6 rounded-2xl shadow-md flex flex-col justify-between h-52 relative cursor-pointer hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group"
+        >
+          <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
             <Users className="w-6 h-6 text-white" />
           </div>
           <div>
@@ -287,8 +302,11 @@ const [, setSubmissions] = useState<any[]>(() => db.submissions.getCached());
         </div>
         
         {/* Yellow/Gold Card */}
-        <div className="bg-gradient-to-b from-[#c88d00] to-[#e69f00] text-white p-6 rounded-2xl shadow-md flex flex-col justify-between h-52 relative">
-          <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center">
+        <div 
+          onClick={() => navigate('/admin/submissions', { state: { filterStatus: 'Incomplete' } })}
+          className="bg-gradient-to-b from-[#c88d00] to-[#e69f00] text-white p-6 rounded-2xl shadow-md flex flex-col justify-between h-52 relative cursor-pointer hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group"
+        >
+          <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
             <Users className="w-6 h-6 text-white" />
           </div>
           <div>
@@ -421,12 +439,13 @@ const [, setSubmissions] = useState<any[]>(() => db.submissions.getCached());
 
 
 export function GuidanceSubmissions() {
+  const location = useLocation();
   const [filterOpen, setFilterOpen] = useState(false);
   const [submissions, setSubmissions] = useState<any[]>(() => db.submissions.getCached());
   const [selectedSubmission, setSelectedSubmission] = useState<any | null>(null);
   
   const [searchQuery, setSearchQuery] = useState('');
-  const [filterStatus, setFilterStatus] = useState('All status');
+  const [filterStatus, setFilterStatus] = useState(location.state?.filterStatus || 'All status');
   const [filterCourse, setFilterCourse] = useState('All courses');
   const [filterAcademicYear, setFilterAcademicYear] = useState('All academic years');
   const [coursesList, setCoursesList] = useState<any[]>(() => db.courses.getCached());
@@ -439,6 +458,7 @@ export function GuidanceSubmissions() {
   };
 
   useEffect(() => {
+    fetchSubmissions();
     const unsubSubmissions = db.submissions.subscribe(setSubmissions);
     const unsubCourses = db.courses.subscribe(setCoursesList);
     const unsubAcademicYears = db.academicYears.subscribe(setAcademicYearsList);
