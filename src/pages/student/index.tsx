@@ -3,7 +3,7 @@ import { Outlet, useNavigate } from 'react-router-dom';
 import { cn } from '../../lib/utils';
 import { FileEdit, FileText, ClipboardCheck, Calendar, User, Upload, CheckCircle2, ChevronDown, ChevronUp, View, Eye, EyeOff, RefreshCw, Check,
   Image as ImageIcon, AlertCircle, Edit3, X, ArrowRight, ArrowLeft } from 'lucide-react';
-import { db, ensureStudentSubmission } from '../../lib/db';
+import { db } from '../../lib/db';
 import { dummyBase64Pdf, dummyBase64Photo2x2, dummyBase64StudentId, dummyBase64Signature } from '../../lib/defaultData';
 import { motion } from 'motion/react';
 import { SignaturePad } from '../../components/SignaturePad';
@@ -53,7 +53,6 @@ export function StudentLogin() {
       }
       localStorage.setItem('studentAuth', 'true');
       localStorage.setItem('studentUser', JSON.stringify(user));
-      await ensureStudentSubmission(user);
       navigate('/student/dashboard');
     } catch (err: any) {
       if (err?.code === 'auth/popup-closed-by-user' || err?.code === 'auth/cancelled-popup-request') {
@@ -78,7 +77,6 @@ export function StudentLogin() {
       if (user && user.password === password) {
         localStorage.setItem('studentAuth', 'true');
         localStorage.setItem('studentUser', JSON.stringify(user));
-        await ensureStudentSubmission(user);
         navigate('/student/dashboard');
       } else {
         setError('Invalid email or password');
@@ -100,7 +98,6 @@ export function StudentLogin() {
       await db.users.set(newUser.id, newUser);
       localStorage.setItem('studentAuth', 'true');
       localStorage.setItem('studentUser', JSON.stringify(newUser));
-      await ensureStudentSubmission(newUser);
       navigate('/student/dashboard');
     }
   };
@@ -220,6 +217,35 @@ export function StudentLogin() {
   );
 }
 
+export function findUserSubmission(subs: any[], u: { id?: string; email?: string; firstName?: string; lastName?: string } | null): any | null {
+  if (!u || (!u.email && !u.id && !u.firstName && !u.lastName)) return null;
+
+  const uEmail = (u.email || '').toLowerCase().trim();
+  const uId = (u.id || '').trim();
+  const uFirst = (u.firstName || '').toLowerCase().trim();
+  const uLast = (u.lastName || '').toLowerCase().trim();
+  const uFullName = `${uFirst} ${uLast}`.trim();
+
+  return subs.find(s => {
+    if (!s) return false;
+    const sStudentId = (s.studentId || '').toLowerCase().trim();
+    const sDataEmail = (s.data?.email || '').toLowerCase().trim();
+    const sStudentName = (s.studentName || '').toLowerCase().trim();
+
+    // 1. Match by Email / Student ID
+    if (uEmail && (sStudentId === uEmail || sDataEmail === uEmail)) return true;
+    if (uId && (s.studentId === uId || sStudentId === uId.toLowerCase())) return true;
+
+    // 2. Match by exact Full Name
+    if (uFullName && sStudentName === uFullName) return true;
+
+    // 3. Match if both first name and last name exist in student name
+    if (uFirst && uLast && sStudentName.includes(uFirst) && sStudentName.includes(uLast)) return true;
+
+    return false;
+  }) || null;
+}
+
 export function StudentLayout() {
   const navigate = useNavigate();
   const [user, setUser] = useState<{email?: string; firstName?: string; lastName?: string; id?: string} | null>(null);
@@ -229,7 +255,6 @@ export function StudentLayout() {
     if (sessionStr) {
       const u = JSON.parse(sessionStr);
       setUser(u);
-      ensureStudentSubmission(u);
     }
   }, []);
 
@@ -288,25 +313,12 @@ export function StudentDashboard() {
       const u = JSON.parse(sessionStr);
       setUser(u);
 
-      // Proactively ensure scholarship submission is created for this student account
-      ensureStudentSubmission(u).then((sub) => {
-        if (sub) setExistingSubmission(sub);
+      db.submissions.listAll().then(subs => {
+        setExistingSubmission(findUserSubmission(subs, u));
       });
 
       const unsub = db.submissions.subscribe(subs => {
-        const uEmail = (u.email || '').toLowerCase();
-        const uId = u.id;
-        const uName = `${u.firstName || ''} ${u.lastName || ''}`.trim().toLowerCase();
-
-        const existing = subs.find(s => 
-          (uEmail && s.studentId && s.studentId.toLowerCase() === uEmail) || 
-          (uId && s.studentId === uId) ||
-          (uEmail && s.data?.email && s.data.email.toLowerCase() === uEmail) ||
-          (uName && s.studentName && s.studentName.toLowerCase() === uName)
-        );
-        if (existing) {
-          setExistingSubmission(existing);
-        }
+        setExistingSubmission(findUserSubmission(subs, u));
       });
       return unsub;
     }
@@ -383,14 +395,21 @@ export function StudentDashboard() {
           <div>
             <h3 className="text-[22px] font-bold text-[#0c2340]">Scholarship Requirements</h3>
             <p className="text-gray-500 mt-1 text-sm md:text-base">
-              {existingSubmission ? 'Modify your scholarship form and documents' : 'Fill up a scholarship form and upload the required documents'} <span className="italic font-medium font-serif text-gray-500">(for new students only)</span>
+              {existingSubmission ? 'Modify your scholarship form and documents' : 'Fill up a scholarship form and upload the required documents'} <span className="italic font-medium font-serif text-gray-500">({existingSubmission ? 'for current students' : 'for new students only'})</span>
             </p>
           </div>
           <button 
             onClick={() => navigate('/student/submission')}
-            className="px-12 py-3.5 bg-gradient-to-r from-[#1e3a8a] to-[#3b82f6] text-white rounded-full font-bold hover:opacity-90 transition-opacity shadow-sm w-auto min-w-[140px]"
+            className="px-12 py-3.5 bg-gradient-to-r from-[#1e3a8a] to-[#3b82f6] text-white rounded-full font-bold hover:opacity-90 transition-opacity shadow-sm w-auto min-w-[140px] flex items-center justify-center gap-2"
           >
-            {existingSubmission ? 'Edit Application' : 'Enter'}
+            {existingSubmission ? (
+              <>
+                <Edit3 className="w-4 h-4" />
+                Edit Application
+              </>
+            ) : (
+              'Enter'
+            )}
           </button>
         </div>
 
@@ -597,26 +616,71 @@ export function StudentSubmissionForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [step, setStep] = useState(1);
   const [showSignaturePad, setShowSignaturePad] = useState(false);
-  const [files, setFiles] = useState<any[]>([
-    { id: 'f-rf-default', name: 'Registration_Form_RF.pdf', category: 'RF', type: 'application/pdf', size: '850 KB', data: dummyBase64Pdf, verified: false, status: 'Pending' },
-    { id: 'f-gwa-default', name: 'GWA_Grade_Slip.pdf', category: 'GWA', type: 'application/pdf', size: '1.2 MB', data: dummyBase64Pdf, verified: false, status: 'Pending' },
-    { id: 'f-id-default', name: 'Student_ID_Card.png', category: 'ID', type: 'image/png', size: '450 KB', data: dummyBase64StudentId, verified: false, status: 'Pending' }
-  ]);
+  const [files, setFiles] = useState<any[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [validationWarning, setValidationWarning] = useState<{ title: string; details: string[] } | null>(null);
   const [submittedSuccess, setSubmittedSuccess] = useState(false);
 
   const [formData, setFormData] = useState({
     // Page 1
-    photo2x2: dummyBase64Photo2x2, familyName: '', middleName: '', firstName: '', birthdate: '2005-01-15', age: '21', sex: 'Male', yearLevel: '1st Year', course: 'BSCS', section: 'A', civilStatus: 'Single', contactNo: '09123456789', email: '', permanentAddress: 'Capiz, Philippines', fatherName: '', fatherOccupation: '', fatherContact: '', motherName: '', motherOccupation: '', motherContact: '', guardianName: '', guardianOccupation: '', guardianContact: '',
+    photo2x2: '', 
+    familyName: '', 
+    middleName: '', 
+    firstName: '', 
+    birthdate: '', 
+    age: '', 
+    sex: '', 
+    yearLevel: '', 
+    course: '', 
+    section: '', 
+    civilStatus: '', 
+    contactNo: '', 
+    email: '', 
+    permanentAddress: '', 
+    fatherName: '', 
+    fatherOccupation: '', 
+    fatherContact: '', 
+    motherName: '', 
+    motherOccupation: '', 
+    motherContact: '', 
+    guardianName: '', 
+    guardianOccupation: '', 
+    guardianContact: '',
     // Page 2
-    parentEduAttainment: 'High school Graduate', monthlyIncome: 'below Php10,000', firstInFamily: 'Yes', livingWith: 'Parents/Guardians', livingWithOthers: '', housingType: 'Own house', housingTypeOthers: '',
+    parentEduAttainment: '', 
+    monthlyIncome: '', 
+    firstInFamily: '', 
+    livingWith: '', 
+    livingWithOthers: '', 
+    housingType: '', 
+    housingTypeOthers: '',
     // Page 3
-    accessToResources: ['Study space', 'Textbooks and learning materials'] as string[], workingStudent: 'No', studentClassification: ['Low income family/ Economically disadvantaged student'] as string[], studentClassificationOthers: '',
+    accessToResources: [] as string[], 
+    workingStudent: '', 
+    studentClassification: [] as string[], 
+    studentClassificationOthers: '',
     // Page 4
-    workTypeIncome: '', specialNeedsCondition: '', pdlReason: '', scholarshipFundType: 'External', internalCategory: '', internalCategoryOthers: '', externalCategory: 'CHED Tulong Dunong Program (TDP)', externalCategoryOthers: '',
+    workTypeIncome: '', 
+    specialNeedsCondition: '', 
+    pdlReason: '', 
+    scholarshipFundType: '', 
+    internalCategory: '', 
+    internalCategoryOthers: '', 
+    externalCategory: '', 
+    externalCategoryOthers: '',
     // External specifics
-    chedSubCategory: 'Tulong Dunong Program (TDP)', chedCongressionalDistrict: '', chedOneTown: '', chedTulongDunong: '', chedOthers: '', meritSubCategory: '', lguContact: '', dswdMunicipality: '', dswdContact: '', dswdDesignation: '', dswdOthers: '', signature: dummyBase64Signature
+    chedSubCategory: '', 
+    chedCongressionalDistrict: '', 
+    chedOneTown: '', 
+    chedTulongDunong: '', 
+    chedOthers: '', 
+    meritSubCategory: '', 
+    lguContact: '', 
+    dswdMunicipality: '', 
+    dswdContact: '', 
+    dswdDesignation: '', 
+    dswdOthers: '', 
+    signature: ''
   });
 
   const [existingId, setExistingId] = useState<string | null>(null);
@@ -625,52 +689,16 @@ export function StudentSubmissionForm() {
     const sessionStr = localStorage.getItem('studentUser');
     if (sessionStr) {
       const user = JSON.parse(sessionStr);
-      const uEmail = (user.email || '').toLowerCase();
-      const uId = user.id;
-      const uName = `${user.firstName || ''} ${user.lastName || ''}`.trim().toLowerCase();
 
-      // Pre-fill initial student info if not already set
+      // Pre-fill initial student name/email from account
       setFormData(prev => ({
         ...prev,
-        firstName: user.firstName || prev.firstName,
-        familyName: user.lastName || prev.familyName,
-        email: user.email || prev.email
+        firstName: prev.firstName || user.firstName || '',
+        familyName: prev.familyName || user.lastName || '',
+        email: prev.email || user.email || ''
       }));
 
-      // Ensure the starter submission exists in database
-      ensureStudentSubmission(user).then((sub) => {
-        if (sub) {
-          setExistingId(sub.id);
-          setFormData(prev => ({
-            ...prev,
-            firstName: user.firstName || prev.firstName,
-            familyName: user.lastName || prev.familyName,
-            email: user.email || prev.email,
-            ...(sub.data || {})
-          }));
-          if (sub.files && Array.isArray(sub.files) && sub.files.length > 0) {
-            setFiles(sub.files.map(f => ({
-              id: f.id || `file-${Date.now()}`,
-              name: f.name,
-              category: f.category,
-              type: f.type,
-              size: f.size || '',
-              data: f.data,
-              verified: f.verified || false,
-              status: f.status || 'Pending',
-              uploadedAt: f.uploadedAt
-            })));
-          }
-        }
-      });
-
-      const unsub = db.submissions.subscribe(subs => {
-        const existing = subs.find(s => 
-          (uEmail && s.studentId && s.studentId.toLowerCase() === uEmail) ||
-          (uId && s.studentId === uId) ||
-          (uEmail && s.data?.email && s.data.email.toLowerCase() === uEmail) ||
-          (uName && s.studentName && s.studentName.toLowerCase() === uName)
-        );
+      const loadExisting = (existing: any) => {
         if (existing) {
           setExistingId(existing.id);
           setFormData(prev => ({
@@ -682,7 +710,7 @@ export function StudentSubmissionForm() {
           }));
           
           if (existing.files && Array.isArray(existing.files) && existing.files.length > 0) {
-            setFiles(existing.files.map(f => ({
+            setFiles(existing.files.map((f: any) => ({
               id: f.id || `file-${Date.now()}`,
               name: f.name,
               category: f.category,
@@ -694,7 +722,17 @@ export function StudentSubmissionForm() {
               uploadedAt: f.uploadedAt
             })));
           }
+        } else {
+          setExistingId(null);
         }
+      };
+
+      db.submissions.listAll().then(subs => {
+        loadExisting(findUserSubmission(subs, user));
+      });
+
+      const unsub = db.submissions.subscribe(subs => {
+        loadExisting(findUserSubmission(subs, user));
       });
       return unsub;
     }
@@ -838,14 +876,24 @@ export function StudentSubmissionForm() {
   const handleSubmit = async () => {
     setIsSubmitting(true);
     try {
+      const sessionStr = localStorage.getItem('studentUser');
+      const user = sessionStr ? JSON.parse(sessionStr) : null;
+      const effectiveStudentId = user?.email || user?.id || formData.email || `STU-${Date.now()}`;
+      const effectiveStudentName = `${formData.firstName} ${formData.familyName}`.trim() || `${user?.firstName || ''} ${user?.lastName || ''}`.trim() || 'Anonymous Student';
+
       const submission = {
         id: existingId || `SUB-${Date.now()}`,
-        studentId: formData.email || `STU-${Date.now()}`,
-        studentName: `${formData.firstName} ${formData.familyName}`.trim() || 'Anonymous Student',
+        studentId: effectiveStudentId,
+        studentName: effectiveStudentName,
         scholarshipType: formData.internalCategory || formData.chedSubCategory || formData.meritSubCategory || formData.externalCategory || 'General Scholarship',
         status: 'Pending' as const,
         submittedAt: new Date().toISOString(),
-        data: formData,
+        data: {
+          ...formData,
+          email: formData.email || user?.email || '',
+          firstName: formData.firstName || user?.firstName || '',
+          familyName: formData.familyName || user?.lastName || ''
+        },
         files: files.map((f: any) => ({
           name: f.name,
           type: f.type,
@@ -865,7 +913,7 @@ export function StudentSubmissionForm() {
       setSubmittedSuccess(true);
       setTimeout(() => {
         navigate('/student/dashboard');
-      }, 2000);
+      }, 1500);
     } catch (e) {
       console.error(e);
       setValidationWarning({

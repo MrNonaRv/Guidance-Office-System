@@ -701,7 +701,47 @@ export function GuidanceSettings() {
   // Academic Years state (Matching the reference screenshot)
 
   const [scholarships, setScholarships] = useState<any[]>([]);
-/*   const [newRequirement, setNewRequirement] = useState({ name: '', required: true }); */
+  const [showScholarshipModal, setShowScholarshipModal] = useState(false);
+  const [editingScholarship, setEditingScholarship] = useState<any>(null);
+  const [scholarshipForm, setScholarshipForm] = useState({
+    name: '',
+    fundingType: 'Government / CHED',
+    status: 'Active' as 'Active' | 'Inactive',
+    description: ''
+  });
+
+  const handleSaveScholarship = async () => {
+    if (!scholarshipForm.name.trim()) {
+      alert("Please enter a scholarship name.");
+      return;
+    }
+    if (editingScholarship) {
+      await db.scholarships.update(editingScholarship.id, scholarshipForm);
+      setScholarships(scholarships.map(s => s.id === editingScholarship.id ? { ...s, ...scholarshipForm } : s));
+    } else {
+      const newScholarship = await db.scholarships.create(scholarshipForm);
+      setScholarships([...scholarships, newScholarship || { id: `sch-${Date.now()}`, ...scholarshipForm }]);
+    }
+    setShowScholarshipModal(false);
+  };
+
+  const handleEditScholarship = (s: any) => {
+    setEditingScholarship(s);
+    setScholarshipForm({
+      name: s.name || '',
+      fundingType: s.fundingType || 'Government / CHED',
+      status: s.status || 'Active',
+      description: s.description || ''
+    });
+    setShowScholarshipModal(true);
+  };
+
+  const handleDeleteScholarship = async (id: string) => {
+    if (confirm("Are you sure you want to delete this scholarship?")) {
+      await db.scholarships.delete(id);
+      setScholarships(scholarships.filter(s => s.id !== id));
+    }
+  };
 
   const [academicYears, setAcademicYears] = useState<any[]>([
     { id: '1', year: '2026-2027', overallStatus: 'Active', firstSemester: 'Active', secondSemester: 'Inactive' },
@@ -939,6 +979,10 @@ export function GuidanceSettings() {
       setEditingAcademicYear(null);
       setAcademicYearForm({ year: '2027-2028', overallStatus: 'Active', firstSemester: 'Active', secondSemester: 'Inactive' });
       setShowAcademicYearModal(true);
+    } else if (activeTab === 'scholarships') {
+      setEditingScholarship(null);
+      setScholarshipForm({ name: '', fundingType: 'Government / CHED', status: 'Active', description: '' });
+      setShowScholarshipModal(true);
     } else if (activeTab === 'courses') {
       setEditingCourse(null);
       setCourseForm({ code: '', name: '', department: '', status: 'Active' });
@@ -1115,8 +1159,8 @@ export function GuidanceSettings() {
                       </span>
                     </td>
                     <td className="p-4 px-6 text-right">
-                      <button onClick={() => {   }} className="p-2 text-gray-400 hover:text-[#1864db] transition-colors"><Pen className="w-4 h-4" /></button>
-                      <button onClick={() => db.scholarships.delete(item.id)} className="p-2 text-gray-400 hover:text-red-500 transition-colors ml-1"><Trash2 className="w-4 h-4" /></button>
+                      <button onClick={() => handleEditScholarship(item)} className="p-2 text-gray-400 hover:text-[#1864db] transition-colors" title="Edit"><Pen className="w-4 h-4" /></button>
+                      <button onClick={() => handleDeleteScholarship(item.id)} className="p-2 text-gray-400 hover:text-red-500 transition-colors ml-1" title="Delete"><Trash2 className="w-4 h-4" /></button>
                     </td>
                   </tr>
                 ))}
@@ -1394,6 +1438,70 @@ export function GuidanceSettings() {
           </div>
         )}
       </div>
+
+      {/* Modal for Scholarship */}
+      {showScholarshipModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden">
+            <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+              <h3 className="font-bold text-lg text-gray-900">{editingScholarship ? 'Edit Scholarship' : 'Add Scholarship'}</h3>
+              <button onClick={() => setShowScholarshipModal(false)} className="text-gray-400 hover:text-gray-600 text-xl font-bold">×</button>
+            </div>
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1">Scholarship Name</label>
+                <input 
+                  type="text" 
+                  value={scholarshipForm.name} 
+                  onChange={e => setScholarshipForm({...scholarshipForm, name: e.target.value})} 
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#1864db] text-sm" 
+                  placeholder="e.g. Tertiary Education Subsidy (TES)" 
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1">Funding Type</label>
+                  <select 
+                    value={scholarshipForm.fundingType} 
+                    onChange={e => setScholarshipForm({...scholarshipForm, fundingType: e.target.value})} 
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none text-sm"
+                  >
+                    <option value="Government / CHED">Government / CHED</option>
+                    <option value="Institutional / Academic">Institutional / Academic</option>
+                    <option value="LGU / Local Government">LGU / Local Government</option>
+                    <option value="Private / Corporate">Private / Corporate</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1">Status</label>
+                  <select 
+                    value={scholarshipForm.status} 
+                    onChange={e => setScholarshipForm({...scholarshipForm, status: e.target.value as any})} 
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none text-sm"
+                  >
+                    <option value="Active">Active</option>
+                    <option value="Inactive">Inactive</option>
+                  </select>
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1">Description / Notes</label>
+                <textarea 
+                  value={scholarshipForm.description} 
+                  onChange={e => setScholarshipForm({...scholarshipForm, description: e.target.value})} 
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#1864db] text-sm" 
+                  placeholder="e.g. For enrolled students with passing grades and GWA requirement"
+                  rows={2}
+                />
+              </div>
+            </div>
+            <div className="px-6 py-4 border-t border-gray-100 bg-gray-50 flex justify-end gap-3">
+              <button onClick={() => setShowScholarshipModal(false)} className="px-4 py-2 font-bold text-sm text-gray-600 hover:bg-gray-200 rounded-lg">Cancel</button>
+              <button onClick={handleSaveScholarship} className="px-6 py-2 bg-[#072b6b] hover:bg-[#051c47] text-white rounded-full font-bold text-sm">Save Scholarship</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Modal for Academic Year */}
       {showAcademicYearModal && (
