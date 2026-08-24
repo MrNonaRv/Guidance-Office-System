@@ -74,6 +74,7 @@ export function GuidanceLogin() {
         <form className="space-y-3" onSubmit={(e) => { 
           e.preventDefault(); 
           localStorage.setItem('adminAuth', 'true');
+          localStorage.setItem('adminEmail', adminEmailInput || 'guidancestaff@capsu.edu');
           navigate('/admin/dashboard'); 
         }}>
           {error && <div className="text-red-500 text-xs text-center mb-2">{error}</div>}
@@ -155,12 +156,9 @@ import { logOut } from '../../lib/firebase';
 export function GuidanceLayout() {
   const location = useLocation();
   const navigate = useNavigate();
-  const [adminEmail, setAdminEmail] = useState<string>('aguilos.relie@capsu.edu');
-  
-  useEffect(() => {
-    const email = localStorage.getItem('adminEmail');
-    if (email) setAdminEmail(email);
-  }, []);
+  const [adminEmail, setAdminEmail] = useState<string>(() => {
+    return typeof window !== 'undefined' ? localStorage.getItem('adminEmail') || 'aguilos.relie@capsu.edu' : 'aguilos.relie@capsu.edu';
+  });
   
   return (
     <div className="h-screen w-screen max-h-screen overflow-hidden flex flex-col bg-[#eef3f8] font-sans">
@@ -264,7 +262,7 @@ export function GuidanceDashboard() {
     .map(s => ({
       studentName: s.studentName || `${s.data?.firstName || ''} ${s.data?.familyName || ''}`.trim() || 'New Applicant',
       course: s.data?.course || s.answers?.course || 'BSCS',
-      date: new Date(s.submittedAt || Date.now()).toLocaleDateString('en-US', { month: 'long', day: '2-digit', year: 'numeric' }),
+      date: s.submittedAt ? new Date(s.submittedAt).toLocaleDateString('en-US', { month: 'long', day: '2-digit', year: 'numeric' }) : 'March 11, 2026',
       status: s.status || 'Incomplete'
     }));
 
@@ -537,8 +535,8 @@ export function GuidanceSubmissions() {
   });
   
   return (
-    <div className="space-y-8">
-      <h1 className="text-[32px] font-serif font-bold text-[#0f2e60]">Scholarship Submissions</h1>
+    <div className="p-8 space-y-6 max-w-[1600px] mx-auto">
+      <h1 className="text-4xl font-serif font-bold text-[#0c2340] tracking-tight">Scholarship Submissions</h1>
       
       <div className="bg-white rounded-[20px] shadow-[0_2px_10px_rgba(0,0,0,0.04)] border border-gray-100 overflow-visible">
         <div className="p-6 pb-4">
@@ -810,16 +808,19 @@ export function GuidanceSettings() {
   });
 
   useEffect(() => {
-    loadCourses();
+    let isMounted = true;
+    db.courses.listAll().then(list => {
+      if (isMounted && list && list.length > 0) {
+        setCourses(list);
+      }
+    });
+    db.scholarships.listAll().then(schs => {
+      if (isMounted && schs) {
+        setScholarships(schs);
+      }
+    });
+    return () => { isMounted = false; };
   }, []);
-
-  const loadCourses = async () => {
-    const list = await db.courses.listAll();
-    db.scholarships.listAll().then(setScholarships);
-    if (list && list.length > 0) {
-      setCourses(list);
-    }
-  };
 
   // Academic Year Handlers
   const handleSaveAcademicYear = () => {

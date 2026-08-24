@@ -25,55 +25,82 @@ const StudentDashboard = lazy(() => import('./pages/student').then(module => ({ 
 const StudentSubmissionForm = lazy(() => import('./pages/student').then(module => ({ default: module.StudentSubmissionForm })));
 
 const AdminAuthGuard = () => {
-  const [isAuth, setIsAuth] = useState<boolean | null>(null);
+  const [isAuth, setIsAuth] = useState<boolean>(() => {
+    return typeof window !== 'undefined' && localStorage.getItem('adminAuth') === 'true';
+  });
 
   useEffect(() => {
+    const checkAuth = () => {
+      const adminStored = localStorage.getItem('adminAuth') === 'true';
+      setIsAuth(adminStored);
+    };
+
+    checkAuth();
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
         try {
-          // Double check they have admin role in DB
+          // Verify admin role if registered in DB
           const userDoc = await db.users.get(user.uid);
           if (userDoc?.role === 'admin') {
+            localStorage.setItem('adminAuth', 'true');
             setIsAuth(true);
             return;
           }
         } catch (e) {
           console.warn("Could not verify admin role, falling back.", e);
         }
-        setIsAuth(localStorage.getItem('adminAuth') === 'true');
-      } else {
-        setIsAuth(false);
       }
+      // Maintain localStorage auth flag for admin portal access
+      setIsAuth(localStorage.getItem('adminAuth') === 'true');
     });
-    return () => unsubscribe();
+
+    window.addEventListener('storage', checkAuth);
+    return () => {
+      unsubscribe();
+      window.removeEventListener('storage', checkAuth);
+    };
   }, []);
 
-  if (isAuth === null) {
-    return <div className="min-h-screen flex items-center justify-center bg-gray-50"><div className="w-8 h-8 border-4 border-[#0f2e60] border-t-transparent rounded-full animate-spin"></div></div>;
+  if (!isAuth) {
+    return <Navigate to="/admin/login" replace />;
   }
 
-  return isAuth ? <Outlet /> : <Navigate to="/admin/login" replace />;
+  return <Outlet />;
 };
 
 const StudentAuthGuard = () => {
-  const [isAuth, setIsAuth] = useState<boolean | null>(null);
+  const [isAuth, setIsAuth] = useState<boolean>(() => {
+    return typeof window !== 'undefined' && localStorage.getItem('studentAuth') === 'true';
+  });
 
   useEffect(() => {
+    const checkAuth = () => {
+      const studentStored = localStorage.getItem('studentAuth') === 'true';
+      setIsAuth(studentStored);
+    };
+
+    checkAuth();
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
-        setIsAuth(localStorage.getItem('studentAuth') === 'true');
+        localStorage.setItem('studentAuth', 'true');
+        setIsAuth(true);
       } else {
-        setIsAuth(false);
+        setIsAuth(localStorage.getItem('studentAuth') === 'true');
       }
     });
-    return () => unsubscribe();
+
+    window.addEventListener('storage', checkAuth);
+    return () => {
+      unsubscribe();
+      window.removeEventListener('storage', checkAuth);
+    };
   }, []);
 
-  if (isAuth === null) {
-    return <div className="min-h-screen flex items-center justify-center bg-gray-50"><div className="w-8 h-8 border-4 border-[#0f2e60] border-t-transparent rounded-full animate-spin"></div></div>;
+  if (!isAuth) {
+    return <Navigate to="/student/login" replace />;
   }
 
-  return isAuth ? <Outlet /> : <Navigate to="/student/login" replace />;
+  return <Outlet />;
 };
 
 const RootRedirect = () => {

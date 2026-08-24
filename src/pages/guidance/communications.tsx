@@ -505,15 +505,6 @@ Capiz State University`
     }
   };
 
-  React.useEffect(() => {
-    setSelectedSubType('Sub Type');
-    setSelectedAllocation('Scholarship Allocation');
-  }, [selectedCategory]);
-
-  React.useEffect(() => {
-    setSelectedAllocation('Scholarship Allocation');
-  }, [selectedSubType]);
-
   // Load sent history from db
   React.useEffect(() => {
     async function loadComms() {
@@ -640,11 +631,12 @@ Capiz State University`
 
   // File Upload Handlers
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files || files.length === 0) return;
+    const uploaded = e.target.files;
+    if (!uploaded || uploaded.length === 0) return;
 
-    const newFiles: AttachedFile[] = Array.from(files).map((file: File, idx) => ({
-      id: `file-${Date.now()}-${idx}`,
+    const stamp = String(Date.now());
+    const newFiles: AttachedFile[] = Array.from(uploaded).map((file: File, idx) => ({
+      id: `file-${stamp}-${idx}`,
       name: file.name,
       size: `${Math.max(1, Math.round(file.size / 1024))} KB`,
       type: file.type || 'application/octet-stream',
@@ -657,12 +649,13 @@ Capiz State University`
   };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files || files.length === 0) return;
+    const uploaded = e.target.files;
+    if (!uploaded || uploaded.length === 0) return;
 
-    const newImage = files[0];
+    const newImage = uploaded[0];
+    const stamp = String(Date.now());
     const fileItem: AttachedFile = {
-      id: `img-${Date.now()}`,
+      id: `img-${stamp}`,
       name: newImage.name,
       size: `${Math.max(1, Math.round(newImage.size / 1024))} KB`,
       type: newImage.type || 'image/png',
@@ -677,8 +670,9 @@ Capiz State University`
 
   // Add file from Google Drive
   const handleAttachFromDrive = (doc: { name: string; size: string; category: string }) => {
+    const stamp = String(Date.now());
     const newFile: AttachedFile = {
-      id: `drive-${Date.now()}`,
+      id: `drive-${stamp}`,
       name: doc.name,
       size: doc.size,
       type: 'application/pdf'
@@ -699,14 +693,7 @@ Capiz State University`
 
   // Insert Emoji Helper
   const handleInsertEmoji = (emoji: string) => {
-    const textarea = textareaRef.current;
-    if (textarea) {
-      const start = textarea.selectionStart;
-      const end = textarea.selectionEnd;
-      setEmailBody(emailBody.substring(0, start) + emoji + emailBody.substring(end));
-    } else {
-      setEmailBody(prev => prev + ' ' + emoji);
-    }
+    setEmailBody(prev => prev + ' ' + emoji);
     setShowEmojiPicker(false);
   };
 
@@ -883,7 +870,11 @@ Capiz State University`
               <div className="relative">
                 <select
                   value={selectedCategory}
-                  onChange={(e) => setSelectedCategory(e.target.value)}
+                  onChange={(e) => {
+                    setSelectedCategory(e.target.value);
+                    setSelectedSubType('Sub Type');
+                    setSelectedAllocation('Scholarship Allocation');
+                  }}
                   className="w-full bg-white border border-gray-300 rounded-lg px-2.5 py-1.5 text-[11px] font-medium text-gray-800 appearance-none focus:outline-none focus:ring-1 focus:ring-[#1864db] cursor-pointer truncate pr-6 shadow-2xs"
                 >
                   <option value="Category">Category</option>
@@ -897,7 +888,10 @@ Capiz State University`
               <div className="relative">
                 <select
                   value={selectedSubType}
-                  onChange={(e) => setSelectedSubType(e.target.value)}
+                  onChange={(e) => {
+                    setSelectedSubType(e.target.value);
+                    setSelectedAllocation('Scholarship Allocation');
+                  }}
                   className="w-full bg-white border border-gray-300 rounded-lg px-2.5 py-1.5 text-[11px] font-medium text-gray-800 appearance-none focus:outline-none focus:ring-1 focus:ring-[#1864db] cursor-pointer truncate pr-6 shadow-2xs"
                 >
                   <option value="Sub Type">Sub Type</option>

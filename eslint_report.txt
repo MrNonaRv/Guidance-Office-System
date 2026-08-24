@@ -1,0 +1,301 @@
+
+/app/applet/src/pages/guidance/communications.tsx
+   509:5   error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/app/applet/src/pages/guidance/communications.tsx:509:5
+  507 |
+  508 |   React.useEffect(() => {
+> 509 |     setSelectedSubType('Sub Type');
+      |     ^^^^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  510 |     setSelectedAllocation('Scholarship Allocation');
+  511 |   }, [selectedCategory]);
+  512 |  react-hooks/set-state-in-effect
+   514:5   error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/app/applet/src/pages/guidance/communications.tsx:514:5
+  512 |
+  513 |   React.useEffect(() => {
+> 514 |     setSelectedAllocation('Scholarship Allocation');
+      |     ^^^^^^^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  515 |   }, [selectedSubType]);
+  516 |
+  517 |   // Load sent history from db     react-hooks/set-state-in-effect
+   681:20  error  Error: Cannot call impure function during render
+
+`Date.now` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+/app/applet/src/pages/guidance/communications.tsx:681:20
+  679 |   const handleAttachFromDrive = (doc: { name: string; size: string; category: string }) => {
+  680 |     const newFile: AttachedFile = {
+> 681 |       id: `drive-${Date.now()}`,
+      |                    ^^^^^^^^^^ Cannot call impure function
+  682 |       name: doc.name,
+  683 |       size: doc.size,
+  684 |       type: 'application/pdf'                                                                                                                                                                                                                                                                                                      react-hooks/purity
+  1434:44  error  Error: Cannot access refs during render
+
+React refs are values that are not needed for rendering. Refs should only be accessed outside of render, such as in event handlers or effects. Accessing a ref value (the `current` property) during render can cause your component not to update as expected (https://react.dev/reference/react/useRef).
+
+/app/applet/src/pages/guidance/communications.tsx:1434:44
+  1432 |                           <button
+  1433 |                             key={emoji}
+> 1434 |                             onClick={() => handleInsertEmoji(emoji)}
+       |                                            ^^^^^^^^^^^^^^^^^ Passing a ref to a function may read its value during render
+  1435 |                             className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer hover:scale-110"
+  1436 |                           >
+  1437 |                             {emoji}                                                                                                         react-hooks/refs
+  1443:44  error  Error: Cannot access refs during render
+
+React refs are values that are not needed for rendering. Refs should only be accessed outside of render, such as in event handlers or effects. Accessing a ref value (the `current` property) during render can cause your component not to update as expected (https://react.dev/reference/react/useRef).
+
+/app/applet/src/pages/guidance/communications.tsx:1443:44
+  1441 |                           <button
+  1442 |                             key={emoji}
+> 1443 |                             onClick={() => handleInsertEmoji(emoji)}
+       |                                            ^^^^^^^^^^^^^^^^^ Passing a ref to a function may read its value during render
+  1444 |                             className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer hover:scale-110"
+  1445 |                           >
+  1446 |                             {emoji}                                                                                                         react-hooks/refs
+  1452:44  error  Error: Cannot access refs during render
+
+React refs are values that are not needed for rendering. Refs should only be accessed outside of render, such as in event handlers or effects. Accessing a ref value (the `current` property) during render can cause your component not to update as expected (https://react.dev/reference/react/useRef).
+
+/app/applet/src/pages/guidance/communications.tsx:1452:44
+  1450 |                           <button
+  1451 |                             key={emoji}
+> 1452 |                             onClick={() => handleInsertEmoji(emoji)}
+       |                                            ^^^^^^^^^^^^^^^^^ Passing a ref to a function may read its value during render
+  1453 |                             className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer hover:scale-110"
+  1454 |                           >
+  1455 |                             {emoji}                                                                                                         react-hooks/refs
+
+/app/applet/src/pages/guidance/index.tsx
+  162:16  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/app/applet/src/pages/guidance/index.tsx:162:16
+  160 |   useEffect(() => {
+  161 |     const email = localStorage.getItem('adminEmail');
+> 162 |     if (email) setAdminEmail(email);
+      |                ^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  163 |   }, []);
+  164 |   
+  165 |   return (                                                                                                                                                                                                                react-hooks/set-state-in-effect
+  267:39  error  Error: Cannot call impure function during render
+
+`Date.now` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+/app/applet/src/pages/guidance/index.tsx:267:39
+  265 |       studentName: s.studentName || `${s.data?.firstName || ''} ${s.data?.familyName || ''}`.trim() || 'New Applicant',
+  266 |       course: s.data?.course || s.answers?.course || 'BSCS',
+> 267 |       date: new Date(s.submittedAt || Date.now()).toLocaleDateString('en-US', { month: 'long', day: '2-digit', year: 'numeric' }),
+      |                                       ^^^^^^^^^^ Cannot call impure function
+  268 |       status: s.status || 'Incomplete'
+  269 |     }));
+  270 |                                                                                                                                                                                                                                                                                                                                                                      react-hooks/purity
+  813:5   error  Error: Cannot access variable before it is declared
+
+`loadCourses` is accessed before it is declared, which prevents the earlier access from updating when this value changes over time.
+
+/app/applet/src/pages/guidance/index.tsx:813:5
+  811 |
+  812 |   useEffect(() => {
+> 813 |     loadCourses();
+      |     ^^^^^^^^^^^ `loadCourses` accessed before it is declared
+  814 |   }, []);
+  815 |
+  816 |   const loadCourses = async () => {
+
+/app/applet/src/pages/guidance/index.tsx:816:3
+  814 |   }, []);
+  815 |
+> 816 |   const loadCourses = async () => {
+      |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 817 |     const list = await db.courses.listAll();
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 818 |     db.scholarships.listAll().then(setScholarships);
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 819 |     if (list && list.length > 0) {
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 820 |       setCourses(list);
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 821 |     }
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 822 |   };
+      | ^^^^^ `loadCourses` is declared here
+  823 |
+  824 |   // Academic Year Handlers
+  825 |   const handleSaveAcademicYear = () => {  react-hooks/immutability
+
+/app/applet/src/pages/guidance/reports.tsx
+  534:6  warning  React Hook useEffect has a missing dependency: 'initialBreakdownData'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+/app/applet/src/pages/student/index.tsx
+   257:7   error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/app/applet/src/pages/student/index.tsx:257:7
+  255 |     if (sessionStr) {
+  256 |       const u = JSON.parse(sessionStr);
+> 257 |       setUser(u);
+      |       ^^^^^^^ Avoid calling setState() directly within an effect
+  258 |     }
+  259 |   }, []);
+  260 |                                                                                                                                                                                                                                                                                                                                                                                  react-hooks/set-state-in-effect
+   314:7   error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/app/applet/src/pages/student/index.tsx:314:7
+  312 |     if (sessionStr) {
+  313 |       const u = JSON.parse(sessionStr);
+> 314 |       setUser(u);
+      |       ^^^^^^^ Avoid calling setState() directly within an effect
+  315 |
+  316 |       db.submissions.listAll().then(subs => {
+  317 |         setExistingSubmission(findUserSubmission(subs, u));                                                                                                                                                                                                                                                                                        react-hooks/set-state-in-effect
+   694:7   error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/app/applet/src/pages/student/index.tsx:694:7
+  692 |
+  693 |       // Pre-fill initial student name/email from account
+> 694 |       setFormData(prev => ({
+      |       ^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  695 |         ...prev,
+  696 |         firstName: prev.firstName || user.firstName || '',
+  697 |         familyName: prev.familyName || user.lastName || '',                                                                                                                                                                                                                                               react-hooks/set-state-in-effect
+  1071:12  error  Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+/app/applet/src/pages/student/index.tsx:1071:12
+  1069 |       {step === 1 && (
+  1070 |         <>
+> 1071 |           <SectionHeader title="STUDENT DEMOGRAPHICS" />
+       |            ^^^^^^^^^^^^^ This component is created during render
+  1072 |
+  1073 |           {/* Personal Information */}
+  1074 |           <div className="border border-[#93c5fd] rounded-lg mb-6 bg-white overflow-hidden shadow-sm">
+
+/app/applet/src/pages/student/index.tsx:990:25
+  988 |   };
+  989 |
+> 990 |   const SectionHeader = ({ title }: { title: string }) => (
+      |                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 991 |     <div className="bg-[#1846b0] text-white text-center py-2.5 rounded-lg font-bold tracking-wider mb-6 text-sm mt-8">{title}</div>
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 992 |   );
+      | ^^^^ The component is created during render here
+  993 |
+  994 |   return (
+  995 |     <div className="max-w-4xl mx-auto py-8 px-4">                                                                                                         react-hooks/static-components
+  1235:12  error  Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+/app/applet/src/pages/student/index.tsx:1235:12
+  1233 |           </div>
+  1234 |           
+> 1235 |           <SectionHeader title="SOCIO-ECONOMIC STATUS" />
+       |            ^^^^^^^^^^^^^ This component is created during render
+  1236 |           
+  1237 |           {/* Parent Edu Attainment & Monthly Income */}
+  1238 |           <div className="grid grid-cols-2 gap-6 mb-6">
+
+/app/applet/src/pages/student/index.tsx:990:25
+  988 |   };
+  989 |
+> 990 |   const SectionHeader = ({ title }: { title: string }) => (
+      |                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 991 |     <div className="bg-[#1846b0] text-white text-center py-2.5 rounded-lg font-bold tracking-wider mb-6 text-sm mt-8">{title}</div>
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 992 |   );
+      | ^^^^ The component is created during render here
+  993 |
+  994 |   return (
+  995 |     <div className="max-w-4xl mx-auto py-8 px-4">                                                                                                                                react-hooks/static-components
+  1373:12  error  Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+/app/applet/src/pages/student/index.tsx:1373:12
+  1371 |           </div>
+  1372 |
+> 1373 |           <SectionHeader title="SCHOLARSHIP CATEGORY" />
+       |            ^^^^^^^^^^^^^ This component is created during render
+  1374 |           
+  1375 |           <div className="bg-white p-6 rounded-lg border border-[#93c5fd] shadow-sm mb-6">
+  1376 |             
+
+/app/applet/src/pages/student/index.tsx:990:25
+  988 |   };
+  989 |
+> 990 |   const SectionHeader = ({ title }: { title: string }) => (
+      |                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 991 |     <div className="bg-[#1846b0] text-white text-center py-2.5 rounded-lg font-bold tracking-wider mb-6 text-sm mt-8">{title}</div>
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 992 |   );
+      | ^^^^ The component is created during render here
+  993 |
+  994 |   return (
+  995 |     <div className="max-w-4xl mx-auto py-8 px-4">                                                                                                                                                     react-hooks/static-components
+  1562:12  error  Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+/app/applet/src/pages/student/index.tsx:1562:12
+  1560 |       {step === 2 && (
+  1561 |         <div className="bg-white p-8 rounded-lg shadow-sm border border-gray-200">
+> 1562 |           <SectionHeader title="STUDENT DOCUMENTS" />
+       |            ^^^^^^^^^^^^^ This component is created during render
+  1563 |           <p className="text-xs text-gray-500 mb-6 text-center">
+  1564 |             Please attach valid copies for all 3 required documents. Files up to 10MB accepted.
+  1565 |           </p>
+
+/app/applet/src/pages/student/index.tsx:990:25
+  988 |   };
+  989 |
+> 990 |   const SectionHeader = ({ title }: { title: string }) => (
+      |                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 991 |     <div className="bg-[#1846b0] text-white text-center py-2.5 rounded-lg font-bold tracking-wider mb-6 text-sm mt-8">{title}</div>
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 992 |   );
+      | ^^^^ The component is created during render here
+  993 |
+  994 |   return (
+  995 |     <div className="max-w-4xl mx-auto py-8 px-4">  react-hooks/static-components
+
+✖ 17 problems (16 errors, 1 warning)
+

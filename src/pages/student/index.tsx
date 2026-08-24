@@ -221,7 +221,7 @@ export function findUserSubmission(subs: any[], u: { id?: string; email?: string
   if (!u || (!u.email && !u.id && !u.firstName && !u.lastName)) return null;
 
   const uEmail = (u.email || '').toLowerCase().trim();
-  const uId = (u.id || '').trim();
+  const uId = (u.id || '').trim().toLowerCase();
   const uFirst = (u.firstName || '').toLowerCase().trim();
   const uLast = (u.lastName || '').toLowerCase().trim();
   const uFullName = `${uFirst} ${uLast}`.trim();
@@ -229,18 +229,23 @@ export function findUserSubmission(subs: any[], u: { id?: string; email?: string
   return subs.find(s => {
     if (!s) return false;
     const sStudentId = (s.studentId || '').toLowerCase().trim();
+    const sEmail = (s.email || '').toLowerCase().trim();
     const sDataEmail = (s.data?.email || '').toLowerCase().trim();
-    const sStudentName = (s.studentName || '').toLowerCase().trim();
+    const sStudentName = (s.studentName || s.student || '').toLowerCase().trim();
+    const sDataFirst = (s.data?.firstName || '').toLowerCase().trim();
+    const sDataLast = (s.data?.familyName || '').toLowerCase().trim();
 
-    // 1. Match by Email / Student ID
-    if (uEmail && (sStudentId === uEmail || sDataEmail === uEmail)) return true;
-    if (uId && (s.studentId === uId || sStudentId === uId.toLowerCase())) return true;
+    // 1. Match by Email
+    if (uEmail && (sEmail === uEmail || sDataEmail === uEmail || sStudentId === uEmail)) return true;
+    
+    // 2. Match by Student ID
+    if (uId && (sStudentId === uId || s.id === uId)) return true;
 
-    // 2. Match by exact Full Name
-    if (uFullName && sStudentName === uFullName) return true;
+    // 3. Match by exact Full Name or data fields
+    if (uFullName && (sStudentName === uFullName || (sDataFirst === uFirst && sDataLast === uLast))) return true;
 
-    // 3. Match if both first name and last name exist in student name
-    if (uFirst && uLast && sStudentName.includes(uFirst) && sStudentName.includes(uLast)) return true;
+    // 4. Match if both first name and last name exist in student name
+    if (uFirst && uLast && (sStudentName.includes(uFirst) && sStudentName.includes(uLast))) return true;
 
     return false;
   }) || null;
@@ -248,15 +253,11 @@ export function findUserSubmission(subs: any[], u: { id?: string; email?: string
 
 export function StudentLayout() {
   const navigate = useNavigate();
-  const [user, setUser] = useState<{email?: string; firstName?: string; lastName?: string; id?: string} | null>(null);
-
-  React.useEffect(() => {
+  const [user] = useState<{email?: string; firstName?: string; lastName?: string; id?: string} | null>(() => {
+    if (typeof window === 'undefined') return null;
     const sessionStr = localStorage.getItem('studentUser');
-    if (sessionStr) {
-      const u = JSON.parse(sessionStr);
-      setUser(u);
-    }
-  }, []);
+    return sessionStr ? JSON.parse(sessionStr) : null;
+  });
 
   return (
     <div className="min-h-screen bg-[#f4f7fb] font-sans">
@@ -297,7 +298,11 @@ export function StudentLayout() {
 
 export function StudentDashboard() {
   const navigate = useNavigate();
-  const [user, setUser] = useState<{id: string, firstName: string, lastName: string, email?: string} | null>(null);
+  const [user] = useState<{id: string, firstName: string, lastName: string, email?: string} | null>(() => {
+    if (typeof window === 'undefined') return null;
+    const sessionStr = localStorage.getItem('studentUser');
+    return sessionStr ? JSON.parse(sessionStr) : null;
+  });
   const [openDropdown, setOpenDropdown] = useState<'1st' | '2nd' | null>(null);
   const [files, setFiles] = useState<Record<string, File | null>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -308,21 +313,16 @@ export function StudentDashboard() {
   const availableSemesters = ['1st'];
 
   React.useEffect(() => {
-    const sessionStr = localStorage.getItem('studentUser');
-    if (sessionStr) {
-      const u = JSON.parse(sessionStr);
-      setUser(u);
+    if (!user) return;
+    db.submissions.listAll().then(subs => {
+      setExistingSubmission(findUserSubmission(subs, user));
+    });
 
-      db.submissions.listAll().then(subs => {
-        setExistingSubmission(findUserSubmission(subs, u));
-      });
-
-      const unsub = db.submissions.subscribe(subs => {
-        setExistingSubmission(findUserSubmission(subs, u));
-      });
-      return unsub;
-    }
-  }, []);
+    const unsub = db.submissions.subscribe(subs => {
+      setExistingSubmission(findUserSubmission(subs, user));
+    });
+    return unsub;
+  }, [user]);
 
   const toggleDropdown = (sem: '1st' | '2nd') => {
     if (!availableSemesters.includes(sem)) return;
@@ -611,6 +611,10 @@ const SelectGroup = ({ label, name, value, onChange, options, required, error, i
   </div>
 );
 
+const SectionHeader = ({ title }: { title: string }) => (
+  <div className="bg-[#1846b0] text-white text-center py-2.5 rounded-lg font-bold tracking-wider mb-6 text-sm mt-8">{title}</div>
+);
+
 export function StudentSubmissionForm() {
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -621,66 +625,75 @@ export function StudentSubmissionForm() {
   const [validationWarning, setValidationWarning] = useState<{ title: string; details: string[] } | null>(null);
   const [submittedSuccess, setSubmittedSuccess] = useState(false);
 
-  const [formData, setFormData] = useState({
-    // Page 1
-    photo2x2: '', 
-    familyName: '', 
-    middleName: '', 
-    firstName: '', 
-    birthdate: '', 
-    age: '', 
-    sex: '', 
-    yearLevel: '', 
-    course: '', 
-    section: '', 
-    civilStatus: '', 
-    contactNo: '', 
-    email: '', 
-    permanentAddress: '', 
-    fatherName: '', 
-    fatherOccupation: '', 
-    fatherContact: '', 
-    motherName: '', 
-    motherOccupation: '', 
-    motherContact: '', 
-    guardianName: '', 
-    guardianOccupation: '', 
-    guardianContact: '',
-    // Page 2
-    parentEduAttainment: '', 
-    monthlyIncome: '', 
-    firstInFamily: '', 
-    livingWith: '', 
-    livingWithOthers: '', 
-    housingType: '', 
-    housingTypeOthers: '',
-    // Page 3
-    accessToResources: [] as string[], 
-    workingStudent: '', 
-    studentClassification: [] as string[], 
-    studentClassificationOthers: '',
-    // Page 4
-    workTypeIncome: '', 
-    specialNeedsCondition: '', 
-    pdlReason: '', 
-    scholarshipFundType: '', 
-    internalCategory: '', 
-    internalCategoryOthers: '', 
-    externalCategory: '', 
-    externalCategoryOthers: '',
-    // External specifics
-    chedSubCategory: '', 
-    chedCongressionalDistrict: '', 
-    chedOneTown: '', 
-    chedTulongDunong: '', 
-    chedOthers: '', 
-    meritSubCategory: '', 
-    lguContact: '', 
-    dswdMunicipality: '', 
-    dswdContact: '', 
-    dswdDesignation: '', 
-    dswdOthers: '', 
-    signature: ''
+  const [formData, setFormData] = useState(() => {
+    let initialUser: any = {};
+    if (typeof window !== 'undefined') {
+      const sessionStr = localStorage.getItem('studentUser');
+      if (sessionStr) {
+        try { initialUser = JSON.parse(sessionStr); } catch { /* ignore */ }
+      }
+    }
+    return {
+      // Page 1
+      photo2x2: '', 
+      familyName: initialUser.lastName || '', 
+      middleName: '', 
+      firstName: initialUser.firstName || '', 
+      birthdate: '', 
+      age: '', 
+      sex: '', 
+      yearLevel: '', 
+      course: '', 
+      section: '', 
+      civilStatus: '', 
+      contactNo: '', 
+      email: initialUser.email || '', 
+      permanentAddress: '', 
+      fatherName: '', 
+      fatherOccupation: '', 
+      fatherContact: '', 
+      motherName: '', 
+      motherOccupation: '', 
+      motherContact: '', 
+      guardianName: '', 
+      guardianOccupation: '', 
+      guardianContact: '',
+      // Page 2
+      parentEduAttainment: '', 
+      monthlyIncome: '', 
+      firstInFamily: '', 
+      livingWith: '', 
+      livingWithOthers: '', 
+      housingType: '', 
+      housingTypeOthers: '',
+      // Page 3
+      accessToResources: [] as string[], 
+      workingStudent: '', 
+      studentClassification: [] as string[], 
+      studentClassificationOthers: '',
+      // Page 4
+      workTypeIncome: '', 
+      specialNeedsCondition: '', 
+      pdlReason: '', 
+      scholarshipFundType: '', 
+      internalCategory: '', 
+      internalCategoryOthers: '', 
+      externalCategory: '', 
+      externalCategoryOthers: '',
+      // External specifics
+      chedSubCategory: '', 
+      chedCongressionalDistrict: '', 
+      chedOneTown: '', 
+      chedTulongDunong: '', 
+      chedOthers: '', 
+      meritSubCategory: '', 
+      lguContact: '', 
+      dswdMunicipality: '', 
+      dswdContact: '', 
+      dswdDesignation: '', 
+      dswdOthers: '', 
+      signature: ''
+    };
   });
 
   const [existingId, setExistingId] = useState<string | null>(null);
@@ -689,14 +702,6 @@ export function StudentSubmissionForm() {
     const sessionStr = localStorage.getItem('studentUser');
     if (sessionStr) {
       const user = JSON.parse(sessionStr);
-
-      // Pre-fill initial student name/email from account
-      setFormData(prev => ({
-        ...prev,
-        firstName: prev.firstName || user.firstName || '',
-        familyName: prev.familyName || user.lastName || '',
-        email: prev.email || user.email || ''
-      }));
 
       const loadExisting = (existing: any) => {
         if (existing) {
@@ -986,10 +991,6 @@ export function StudentSubmissionForm() {
       </div>
     );
   };
-
-  const SectionHeader = ({ title }: { title: string }) => (
-    <div className="bg-[#1846b0] text-white text-center py-2.5 rounded-lg font-bold tracking-wider mb-6 text-sm mt-8">{title}</div>
-  );
 
   return (
     <div className="max-w-4xl mx-auto py-8 px-4">
