@@ -132,12 +132,12 @@ export function GuidanceNotifications() {
   };
 
   return (
-    <div className="p-8 max-w-[1550px] mx-auto space-y-6 select-none font-sans">
+    <div className="p-4 sm:p-6 md:p-8 max-w-[1550px] mx-auto space-y-6 select-none font-sans">
       
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-4xl font-serif font-bold text-[#0c2340] tracking-tight flex items-center gap-3">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-serif font-bold text-[#0c2340] tracking-tight flex flex-wrap items-center gap-3">
             <span>Notifications & Alerts</span>
             {unreadCount > 0 && (
               <span className="px-3 py-1 bg-rose-100 text-rose-800 text-xs font-bold rounded-full border border-rose-200">
@@ -176,7 +176,7 @@ export function GuidanceNotifications() {
       <div className="bg-white p-4 rounded-2xl border border-gray-200/80 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
         
         {/* Tabs */}
-        <div className="flex items-center gap-1 bg-gray-100/80 p-1 rounded-xl">
+        <div className="flex items-center gap-1 bg-gray-100/80 p-1 rounded-xl overflow-x-auto scrollbar-none flex-nowrap">
           {[
             { id: 'all', label: 'All Alerts', count: notifications.length },
             { id: 'unread', label: 'Unread', count: unreadCount },
@@ -187,7 +187,7 @@ export function GuidanceNotifications() {
               key={tab.id}
               onClick={() => setActiveFilter(tab.id as any)}
               className={cn(
-                "px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-2 cursor-pointer",
+                "px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap shrink-0",
                 activeFilter === tab.id
                   ? "bg-white text-[#0c2340] shadow-xs"
                   : "text-gray-600 hover:text-gray-900"

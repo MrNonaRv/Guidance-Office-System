@@ -204,7 +204,7 @@ export function GuidanceReports() {
   };
 
   return (
-    <div className="p-8 max-w-[1500px] mx-auto space-y-6">
+    <div className="p-4 sm:p-6 md:p-8 max-w-[1500px] mx-auto space-y-6">
       {/* =========================================================================
           PRINT LAYOUT (Visible only during window.print() / Export as PDF)
           ========================================================================= */}
@@ -436,15 +436,15 @@ export function GuidanceReports() {
           ========================================================================= */}
       <div className="print:hidden space-y-6">
         {/* Top Header */}
-        <div className="flex justify-between items-center">
-          <h1 className="text-4xl font-serif font-bold text-[#0c2340] tracking-tight">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-serif font-bold text-[#0c2340] tracking-tight">
             {currentPage === 1 ? 'Reports & Analytics' : 'Scholarship Breakdown'}
           </h1>
 
           <div className="flex items-center gap-3">
             <button
               onClick={handleExportPDF}
-              className="bg-[#dce9f9] hover:bg-[#cbe0f8] text-[#154687] border border-[#a8c7ed] px-7 py-2.5 rounded-full font-bold text-sm shadow-sm transition-all hover:scale-[1.02] cursor-pointer flex items-center gap-2"
+              className="bg-[#dce9f9] hover:bg-[#cbe0f8] text-[#154687] border border-[#a8c7ed] px-5 sm:px-7 py-2 sm:py-2.5 rounded-full font-bold text-xs sm:text-sm shadow-sm transition-all hover:scale-[1.02] cursor-pointer flex items-center gap-2"
             >
               <Printer className="w-4 h-4" />
               <span>Export as PDF</span>

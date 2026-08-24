@@ -737,7 +737,7 @@ Capiz State University`
   };
 
   return (
-    <div className="p-8 max-w-[1550px] mx-auto space-y-6 select-none font-sans">
+    <div className="p-4 sm:p-6 md:p-8 max-w-[1550px] mx-auto space-y-6 select-none font-sans">
       
       {/* Hidden native file inputs for real interactive uploads */}
       <input 
@@ -782,7 +782,7 @@ Capiz State University`
       )}
 
       {/* Page Title */}
-      <h1 className="text-4xl font-serif font-bold text-[#0c2340] tracking-tight">
+      <h1 className="text-2xl sm:text-3xl md:text-4xl font-serif font-bold text-[#0c2340] tracking-tight">
         Communications
       </h1>
 
@@ -792,7 +792,7 @@ Capiz State University`
         {/* =========================================================================
             LEFT COLUMN: STUDENT SELECTOR & SEARCH PANEL (approx 5 cols)
             ========================================================================= */}
-        <div className="lg:col-span-5 bg-white border border-gray-300 rounded-2xl p-4 shadow-xs h-[720px] flex flex-col justify-between">
+        <div className="lg:col-span-5 bg-white border border-gray-300 rounded-2xl p-4 shadow-xs min-h-[420px] lg:h-[720px] flex flex-col justify-between">
           
           <div className="space-y-3 flex-1 flex flex-col min-h-0">
             {/* 1. Search Bar */}
@@ -1023,7 +1023,7 @@ Capiz State University`
         {/* =========================================================================
             RIGHT COLUMN: DRAFT RESPONSE EMAIL COMPOSER (approx 7 cols)
             ========================================================================= */}
-        <div className="lg:col-span-7 bg-white border border-gray-300 rounded-2xl p-6 shadow-xs h-[720px] flex flex-col justify-between">
+        <div className="lg:col-span-7 bg-white border border-gray-300 rounded-2xl p-4 sm:p-6 shadow-xs min-h-[500px] lg:h-[720px] flex flex-col justify-between">
           
           {/* TOP SECTION: Header, Template Dropdown, To, Subject */}
           <div className="space-y-4">

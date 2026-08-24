@@ -1,4 +1,4 @@
-import { LayoutGrid, FileText, Bell, Mail, BarChart2, Settings, User, LogOut, Users, TrendingUp, BookOpen, Filter, Calendar, Award, GraduationCap, ImageIcon, Plus, Pen, Trash2, Paperclip, View, Eye, EyeOff } from 'lucide-react';
+import { LayoutGrid, FileText, Bell, Mail, BarChart2, Settings, User, LogOut, Users, TrendingUp, BookOpen, Filter, Calendar, Award, GraduationCap, ImageIcon, Plus, Pen, Trash2, Paperclip, View, Eye, EyeOff, Menu, X, ChevronRight } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import React, { useState, useEffect} from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
@@ -156,29 +156,118 @@ import { logOut } from '../../lib/firebase';
 export function GuidanceLayout() {
   const location = useLocation();
   const navigate = useNavigate();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [adminEmail, setAdminEmail] = useState<string>(() => {
     return typeof window !== 'undefined' ? localStorage.getItem('adminEmail') || 'aguilos.relie@capsu.edu' : 'aguilos.relie@capsu.edu';
   });
+
+  // Close mobile drawer on route navigation
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [location.pathname]);
   
   return (
     <div className="h-screen w-screen max-h-screen overflow-hidden flex flex-col bg-[#eef3f8] font-sans">
       {/* Top Banner Navbar (Fixed) */}
-      <header className="w-full bg-[#1257c7] text-white px-6 py-3.5 flex items-center justify-between shadow-md z-30 shrink-0">
-        <div className="flex items-center gap-3.5">
-          <img src="/capsu-logo.png" alt="CapSU Logo" className="w-12 h-12 object-contain" />
-          <div>
-            <h1 className="text-xl font-serif font-bold text-white tracking-wide leading-tight">
+      <header className="w-full bg-[#1257c7] text-white px-3 sm:px-6 py-3 flex items-center justify-between shadow-md z-30 shrink-0">
+        <div className="flex items-center gap-2.5 sm:gap-3.5 min-w-0">
+          <img src="/capsu-logo.png" alt="CapSU Logo" className="w-10 h-10 sm:w-12 sm:h-12 object-contain shrink-0" />
+          <div className="min-w-0">
+            <h1 className="text-sm sm:text-base md:text-xl font-serif font-bold text-white tracking-wide leading-tight truncate">
               Web-Based Scholarship Submission Alert System
             </h1>
-            <p className="text-xs text-blue-100 font-medium">Guidance Portal</p>
+            <p className="text-[11px] sm:text-xs text-blue-100 font-medium">Guidance Portal</p>
           </div>
         </div>
+
+        {/* Mobile Hamburger Menu Button */}
+        <button 
+          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          className="md:hidden p-2 rounded-xl bg-white/10 hover:bg-white/20 active:bg-white/30 text-white transition-colors shrink-0 ml-2 cursor-pointer focus:outline-none"
+          aria-label="Toggle navigation menu"
+        >
+          {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+        </button>
       </header>
 
+      {/* Mobile Slide-Over Drawer */}
+      {mobileMenuOpen && (
+        <div className="fixed inset-0 z-50 md:hidden flex">
+          {/* Backdrop */}
+          <div 
+            className="fixed inset-0 bg-black/50 backdrop-blur-xs transition-opacity animate-in fade-in duration-200"
+            onClick={() => setMobileMenuOpen(false)}
+          />
+          {/* Drawer Canvas */}
+          <aside className="relative w-[280px] max-w-[82vw] bg-[#072b6b] text-white flex flex-col justify-between p-4 shadow-2xl z-10 h-full overflow-hidden animate-in slide-in-from-left duration-200">
+            <div className="flex flex-col min-h-0">
+              {/* User Profile */}
+              <div className="flex items-center justify-between pb-3 mb-3 border-b border-blue-900/40 shrink-0">
+                <div className="flex items-center gap-3 overflow-hidden">
+                  <div className="w-10 h-10 rounded-full border-2 border-white/80 flex items-center justify-center bg-transparent shrink-0">
+                    <User className="w-5 h-5 text-white stroke-[1.75]" />
+                  </div>
+                  <div className="overflow-hidden">
+                    <p className="font-bold text-sm text-white truncate">Relie Aguilos</p>
+                    <p className="text-[11px] text-blue-200 truncate">{adminEmail}</p>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="p-1.5 rounded-lg text-blue-200 hover:text-white hover:bg-white/10"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Navigation Menu */}
+              <nav className="space-y-1 overflow-y-auto pr-1">
+                {navItems.map((item) => {
+                  const isActive = location.pathname === item.path;
+                  return (
+                    <Link
+                      key={item.path}
+                      to={item.path}
+                      onClick={() => setMobileMenuOpen(false)}
+                      className={cn(
+                        "flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all duration-200 text-sm font-semibold",
+                        isActive 
+                          ? "bg-[#fbc02d] text-[#0f2e60] shadow-sm font-bold" 
+                          : "text-white hover:bg-white/10"
+                      )}
+                    >
+                      <item.icon className={cn("w-5 h-5", isActive ? "text-[#0f2e60]" : "text-white")} />
+                      <span>{item.label}</span>
+                    </Link>
+                  );
+                })}
+              </nav>
+            </div>
+
+            {/* Mobile Log Out Button */}
+            <div className="pt-3 pb-1 border-t border-blue-900/40 shrink-0">
+              <button 
+                onClick={async () => {
+                  setMobileMenuOpen(false);
+                  await logOut();
+                  localStorage.removeItem('adminAuth');
+                  localStorage.removeItem('adminEmail');
+                  navigate('/admin/login');
+                }} 
+                className="flex items-center gap-3 px-3.5 py-2.5 text-white font-bold hover:bg-white/10 rounded-xl transition-all duration-200 w-full text-sm"
+              >
+                <LogOut className="w-5 h-5 stroke-[2.5]" />
+                <span>Log Out</span>
+              </button>
+            </div>
+          </aside>
+        </div>
+      )}
+
       {/* Main Content with Fixed Sidebar and Independent Content Scrolling */}
-      <div className="flex-1 min-h-0 flex overflow-hidden">
-        {/* Left Sidebar (Fixed in viewport, Log Out always visible) */}
-        <aside className="w-64 bg-[#072b6b] text-white flex flex-col justify-between p-4 shrink-0 shadow-lg z-20 h-full overflow-hidden select-none">
+      <div className="flex-1 min-h-0 flex overflow-hidden relative">
+        {/* Left Sidebar (Desktop Only) */}
+        <aside className="hidden md:flex w-64 bg-[#072b6b] text-white flex-col justify-between p-4 shrink-0 shadow-lg z-20 h-full overflow-hidden select-none">
           <div className="flex flex-col min-h-0">
             {/* User Profile */}
             <div className="flex items-center gap-3.5 px-2 py-3 mb-3 border-b border-blue-900/40 shrink-0">
@@ -232,9 +321,29 @@ export function GuidanceLayout() {
         </aside>
 
         {/* Dynamic Outlet Canvas (Scrolls smoothly and independently) */}
-        <main className="flex-1 h-full min-h-0 overflow-y-auto bg-[#eef3f8]">
+        <main className="flex-1 h-full min-h-0 overflow-y-auto bg-[#eef3f8] pb-16 md:pb-0">
           <Outlet />
         </main>
+      </div>
+
+      {/* Mobile Bottom Navigation Bar (Fast 1-tap switching on phones) */}
+      <div className="md:hidden bg-[#072b6b] border-t border-blue-900/60 flex items-center justify-around py-1.5 px-1 text-white shrink-0 z-30 shadow-lg">
+        {navItems.slice(0, 5).map((item) => {
+          const isActive = location.pathname === item.path;
+          return (
+            <Link
+              key={item.path}
+              to={item.path}
+              className={cn(
+                "flex flex-col items-center justify-center py-1 px-1.5 rounded-lg transition-all min-w-[50px]",
+                isActive ? "text-[#fbc02d] font-bold" : "text-blue-100/70 hover:text-white"
+              )}
+            >
+              <item.icon className="w-5 h-5" />
+              <span className="text-[10px] mt-0.5 tracking-tight font-medium">{item.label}</span>
+            </Link>
+          );
+        })}
       </div>
     </div>
   );
@@ -301,23 +410,23 @@ export function GuidanceDashboard() {
 
 
   return (
-    <div className="p-8 space-y-6 max-w-[1600px] mx-auto">
+    <div className="p-4 sm:p-6 md:p-8 space-y-6 max-w-[1600px] mx-auto">
       {/* Title */}
-      <h1 className="text-4xl font-serif font-bold text-[#0c2340] tracking-tight">Dashboard</h1>
+      <h1 className="text-2xl sm:text-3xl md:text-4xl font-serif font-bold text-[#0c2340] tracking-tight">Dashboard</h1>
       
       {/* 3 Stat Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
         {/* Blue Card */}
         <div 
           onClick={() => navigate('/admin/submissions', { state: { filterStatus: 'All status' } })}
-          className="bg-gradient-to-b from-[#1c64db] to-[#12429f] text-white p-6 rounded-2xl shadow-md flex flex-col justify-between h-52 relative cursor-pointer hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group"
+          className="bg-gradient-to-b from-[#1c64db] to-[#12429f] text-white p-5 sm:p-6 rounded-2xl shadow-md flex flex-col justify-between h-44 sm:h-52 relative cursor-pointer hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group"
         >
-          <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-            <Users className="w-6 h-6 text-white" />
+          <div className="w-10 h-10 sm:w-12 sm:h-12 bg-white/20 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+            <Users className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
           </div>
           <div>
-            <div className="text-5xl font-bold font-serif tracking-tight">{totalCount}</div>
-            <div className="text-base font-semibold text-white mt-1">Total Submissions</div>
+            <div className="text-4xl sm:text-5xl font-bold font-serif tracking-tight">{totalCount}</div>
+            <div className="text-sm sm:text-base font-semibold text-white mt-1">Total Submissions</div>
             <div className="flex items-center gap-1.5 text-xs text-blue-100 mt-2 font-medium">
               <TrendingUp className="w-3.5 h-3.5" /> + 4 this week
             </div>
@@ -327,14 +436,14 @@ export function GuidanceDashboard() {
         {/* Green Card */}
         <div 
           onClick={() => navigate('/admin/submissions', { state: { filterStatus: 'Complete' } })}
-          className="bg-gradient-to-b from-[#3fa52a] to-[#287b1a] text-white p-6 rounded-2xl shadow-md flex flex-col justify-between h-52 relative cursor-pointer hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group"
+          className="bg-gradient-to-b from-[#3fa52a] to-[#287b1a] text-white p-5 sm:p-6 rounded-2xl shadow-md flex flex-col justify-between h-44 sm:h-52 relative cursor-pointer hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group"
         >
-          <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-            <Users className="w-6 h-6 text-white" />
+          <div className="w-10 h-10 sm:w-12 sm:h-12 bg-white/20 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+            <Users className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
           </div>
           <div>
-            <div className="text-5xl font-bold font-serif tracking-tight">{completeCount}</div>
-            <div className="text-base font-semibold text-white mt-1">Complete Submissions</div>
+            <div className="text-4xl sm:text-5xl font-bold font-serif tracking-tight">{completeCount}</div>
+            <div className="text-sm sm:text-base font-semibold text-white mt-1">Complete Submissions</div>
             <div className="flex items-center gap-1.5 text-xs text-green-100 mt-2 font-medium">
               <TrendingUp className="w-3.5 h-3.5" /> + 3 new today
             </div>
@@ -344,14 +453,14 @@ export function GuidanceDashboard() {
         {/* Yellow/Gold Card */}
         <div 
           onClick={() => navigate('/admin/submissions', { state: { filterStatus: 'Incomplete' } })}
-          className="bg-gradient-to-b from-[#c88d00] to-[#e69f00] text-white p-6 rounded-2xl shadow-md flex flex-col justify-between h-52 relative cursor-pointer hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group"
+          className="bg-gradient-to-b from-[#c88d00] to-[#e69f00] text-white p-5 sm:p-6 rounded-2xl shadow-md flex flex-col justify-between h-44 sm:h-52 relative cursor-pointer hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group sm:col-span-2 md:col-span-1"
         >
-          <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-            <Users className="w-6 h-6 text-white" />
+          <div className="w-10 h-10 sm:w-12 sm:h-12 bg-white/20 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+            <Users className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
           </div>
           <div>
-            <div className="text-5xl font-bold font-serif tracking-tight">{incompleteCount}</div>
-            <div className="text-base font-semibold text-white mt-1">Incomplete Submissions</div>
+            <div className="text-4xl sm:text-5xl font-bold font-serif tracking-tight">{incompleteCount}</div>
+            <div className="text-sm sm:text-base font-semibold text-white mt-1">Incomplete Submissions</div>
             <div className="flex items-center gap-1.5 text-xs text-amber-100 mt-2 font-medium">
               <TrendingUp className="w-3.5 h-3.5" /> + 4 this month
             </div>
@@ -363,40 +472,40 @@ export function GuidanceDashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* Left Column: Recent Submissions Table */}
         <div className="lg:col-span-8 bg-white rounded-2xl shadow-sm border border-gray-200/80 overflow-hidden">
-          <div className="p-5 px-6 flex justify-between items-center border-b border-gray-100">
-            <h2 className="text-base font-bold text-[#0c2340]">Recent Submissions</h2>
+          <div className="p-4 sm:p-5 px-5 sm:px-6 flex justify-between items-center border-b border-gray-100">
+            <h2 className="text-sm sm:text-base font-bold text-[#0c2340]">Recent Submissions</h2>
             <Link to="/admin/submissions" className="text-xs font-semibold text-[#1864db] hover:underline">View all</Link>
           </div>
           <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
+            <table className="w-full text-left border-collapse min-w-[500px]">
               <thead>
                 <tr className="bg-[#edf3fa] text-[#486581] text-[11px] font-bold uppercase tracking-wider">
-                  <th className="py-3 px-6 font-bold">STUDENT</th>
-                  <th className="py-3 px-4 font-bold">COURSE</th>
-                  <th className="py-3 px-4 font-bold">DATE</th>
-                  <th className="py-3 px-6 font-bold text-center">STATUS</th>
+                  <th className="py-3 px-4 sm:px-6 font-bold">STUDENT</th>
+                  <th className="py-3 px-3 sm:px-4 font-bold">COURSE</th>
+                  <th className="py-3 px-3 sm:px-4 font-bold">DATE</th>
+                  <th className="py-3 px-4 sm:px-6 font-bold text-center">STATUS</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
                 {displaySubmissions.map((s, idx) => (
                   <tr key={idx} className="hover:bg-blue-50/20 transition-colors">
-                    <td className="py-3.5 px-6 text-xs font-bold text-gray-900 flex items-center gap-3">
+                    <td className="py-3.5 px-4 sm:px-6 text-xs font-bold text-gray-900 flex items-center gap-2.5 sm:gap-3">
                       <div className="w-6 h-6 rounded-full border border-gray-300 flex items-center justify-center text-gray-400 shrink-0">
                         <User className="w-3.5 h-3.5" />
                       </div>
-                      <span>{s.studentName}</span>
+                      <span className="truncate max-w-[180px] sm:max-w-none">{s.studentName}</span>
                     </td>
-                    <td className="py-3.5 px-4 text-xs font-bold text-gray-800">{s.course}</td>
-                    <td className="py-3.5 px-4 text-xs font-medium text-gray-600">{s.date}</td>
-                    <td className="py-3.5 px-6 text-center">
+                    <td className="py-3.5 px-3 sm:px-4 text-xs font-bold text-gray-800">{s.course}</td>
+                    <td className="py-3.5 px-3 sm:px-4 text-xs font-medium text-gray-600 whitespace-nowrap">{s.date}</td>
+                    <td className="py-3.5 px-4 sm:px-6 text-center">
                       {s.status === 'Incomplete' ? (
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-[#fef3c7] text-[#b45309] border border-[#fde68a]">
-                          <span className="w-2 h-2 rounded-full bg-[#f59e0b] border border-black/40"></span>
+                        <span className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded-full text-[10px] sm:text-[11px] font-bold bg-[#fef3c7] text-[#b45309] border border-[#fde68a]">
+                          <span className="w-1.5 sm:w-2 h-1.5 sm:h-2 rounded-full bg-[#f59e0b] border border-black/40"></span>
                           Incomplete
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-[#dcfce7] text-[#15803d] border border-[#bbf7d0]">
-                          <span className="w-2 h-2 rounded-full bg-[#22c55e]"></span>
+                        <span className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded-full text-[10px] sm:text-[11px] font-bold bg-[#dcfce7] text-[#15803d] border border-[#bbf7d0]">
+                          <span className="w-1.5 sm:w-2 h-1.5 sm:h-2 rounded-full bg-[#22c55e]"></span>
                           Complete
                         </span>
                       )}
@@ -535,18 +644,18 @@ export function GuidanceSubmissions() {
   });
   
   return (
-    <div className="p-8 space-y-6 max-w-[1600px] mx-auto">
-      <h1 className="text-4xl font-serif font-bold text-[#0c2340] tracking-tight">Scholarship Submissions</h1>
+    <div className="p-4 sm:p-6 md:p-8 space-y-6 max-w-[1600px] mx-auto">
+      <h1 className="text-2xl sm:text-3xl md:text-4xl font-serif font-bold text-[#0c2340] tracking-tight">Scholarship Submissions</h1>
       
-      <div className="bg-white rounded-[20px] shadow-[0_2px_10px_rgba(0,0,0,0.04)] border border-gray-100 overflow-visible">
-        <div className="p-6 pb-4">
-          <h2 className="text-xl font-bold text-[#0f2e60] mb-4">No. of Submissions ({filteredSubmissions.length})</h2>
-          <div className="flex flex-col sm:flex-row gap-4 relative">
+      <div className="bg-white rounded-2xl shadow-[0_2px_10px_rgba(0,0,0,0.04)] border border-gray-100 overflow-visible">
+        <div className="p-4 sm:p-6 pb-4">
+          <h2 className="text-lg sm:text-xl font-bold text-[#0f2e60] mb-3 sm:mb-4">No. of Submissions ({filteredSubmissions.length})</h2>
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 relative">
             <div className="relative flex-1">
               <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
               <input 
                 type="text" 
-                placeholder="Search by student"
+                placeholder="Search by student name..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full pl-11 pr-4 py-2.5 bg-white border border-gray-300 rounded-full text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-shadow"
@@ -556,20 +665,20 @@ export function GuidanceSubmissions() {
             <div className="relative">
               <button 
                 onClick={() => setFilterOpen(!filterOpen)}
-                className="flex items-center justify-center gap-2 px-8 py-2.5 bg-[#1748a0] text-white rounded-full text-sm font-medium hover:bg-[#123675] hover:scale-[1.02] transition-all duration-300 shadow-sm whitespace-nowrap w-full sm:w-auto"
+                className="flex items-center justify-center gap-2 px-6 sm:px-8 py-2.5 bg-[#1748a0] text-white rounded-full text-sm font-medium hover:bg-[#123675] hover:scale-[1.02] transition-all duration-300 shadow-sm whitespace-nowrap w-full sm:w-auto cursor-pointer"
               >
                 <Filter className="w-4 h-4" /> Filter
               </button>
               
               {filterOpen && (
-                <div className="absolute right-0 top-full mt-2 w-64 bg-white rounded-xl shadow-xl border border-gray-100 p-4 z-20">
-                  <div className="space-y-4">
+                <div className="absolute right-0 left-0 sm:left-auto top-full mt-2 sm:w-72 bg-white rounded-2xl shadow-xl border border-gray-100 p-4 z-30 animate-in fade-in zoom-in-95 duration-150">
+                  <div className="space-y-3.5">
                     <div>
                       <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1.5">By Status</label>
                       <select 
                         value={filterStatus}
                         onChange={(e) => setFilterStatus(e.target.value)}
-                        className="w-full text-sm border border-gray-200 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 outline-none"
+                        className="w-full text-sm border border-gray-200 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 outline-none bg-white"
                       >
                         <option>All status</option>
                         <option>Complete</option>
@@ -584,7 +693,7 @@ export function GuidanceSubmissions() {
                       <select 
                         value={filterCourse}
                         onChange={(e) => setFilterCourse(e.target.value)}
-                        className="w-full text-sm border border-gray-200 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 outline-none"
+                        className="w-full text-sm border border-gray-200 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 outline-none bg-white"
                       >
                         <option>All courses</option>
                         {coursesList.map(c => (
@@ -597,7 +706,7 @@ export function GuidanceSubmissions() {
                       <select 
                         value={filterAcademicYear}
                         onChange={(e) => setFilterAcademicYear(e.target.value)}
-                        className="w-full text-sm border border-gray-200 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 outline-none"
+                        className="w-full text-sm border border-gray-200 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 outline-none bg-white"
                       >
                         <option>All academic years</option>
                         {academicYearsList.map(ay => (
@@ -608,11 +717,11 @@ export function GuidanceSubmissions() {
                     <div className="flex justify-end gap-2 pt-2 border-t border-gray-100">
                       <button 
                         onClick={() => { setFilterStatus('All status'); setFilterCourse('All courses'); setFilterAcademicYear('All academic years'); setFilterOpen(false); }} 
-                        className="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-900 font-medium transition-all duration-300 hover:scale-[1.02]"
+                        className="px-3 py-1.5 text-xs text-gray-600 hover:text-gray-900 font-medium transition-all duration-300"
                       >
                         Reset
                       </button>
-                      <button onClick={() => setFilterOpen(false)} className="px-3 py-1.5 text-sm bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-all duration-300 hover:scale-[1.02]">Apply</button>
+                      <button onClick={() => setFilterOpen(false)} className="px-4 py-1.5 text-xs bg-blue-600 text-white rounded-lg font-bold hover:bg-blue-700 transition-all duration-300">Apply</button>
                     </div>
                   </div>
                 </div>
@@ -622,7 +731,7 @@ export function GuidanceSubmissions() {
         </div>
 
         <div className="overflow-x-auto border-t border-gray-200">
-          <table className="w-full text-center border-collapse">
+          <table className="w-full text-center border-collapse min-w-[650px]">
             <thead>
               <tr className="bg-[#f0f2f5] text-gray-600 text-[11px] font-bold uppercase tracking-widest border-b border-gray-200">
                 <th className="py-4 px-6 text-left w-1/4">Student</th>
@@ -1003,16 +1112,16 @@ export function GuidanceSettings() {
   };
 
   return (
-    <div className="p-8 space-y-6 max-w-[1600px] mx-auto">
+    <div className="p-4 sm:p-6 md:p-8 space-y-6 max-w-[1600px] mx-auto">
       {/* Title */}
-      <h1 className="text-4xl font-serif font-bold text-[#0c2340] tracking-tight">Settings</h1>
+      <h1 className="text-2xl sm:text-3xl md:text-4xl font-serif font-bold text-[#0c2340] tracking-tight">Settings</h1>
 
       {/* Tabs Row matching the reference image */}
-      <div className="flex items-center gap-8 border-b border-gray-300/80 px-2 pt-1">
+      <div className="flex items-center gap-4 sm:gap-8 border-b border-gray-300/80 px-1 sm:px-2 pt-1 overflow-x-auto scrollbar-none flex-nowrap">
         <button
           onClick={() => setActiveTab('academic-year')}
           className={cn(
-            "flex items-center gap-2.5 pb-3 text-sm font-bold transition-all relative cursor-pointer",
+            "flex items-center gap-2 pb-3 text-xs sm:text-sm font-bold transition-all relative cursor-pointer whitespace-nowrap shrink-0",
             activeTab === 'academic-year'
               ? "text-[#1864db]"
               : "text-[#0c2340] hover:text-[#1864db]"
@@ -1028,7 +1137,7 @@ export function GuidanceSettings() {
       <button
         onClick={() => setActiveTab('scholarships')}
         className={cn(
-          "flex items-center gap-2.5 pb-3 text-sm font-bold transition-all relative cursor-pointer",
+          "flex items-center gap-2 pb-3 text-xs sm:text-sm font-bold transition-all relative cursor-pointer whitespace-nowrap shrink-0",
           activeTab === 'scholarships'
             ? "text-[#1864db]"
             : "text-[#0c2340] hover:text-[#1864db]"
@@ -1044,7 +1153,7 @@ export function GuidanceSettings() {
         <button
           onClick={() => setActiveTab('courses')}
           className={cn(
-            "flex items-center gap-2.5 pb-3 text-sm font-bold transition-all relative cursor-pointer",
+            "flex items-center gap-2 pb-3 text-xs sm:text-sm font-bold transition-all relative cursor-pointer whitespace-nowrap shrink-0",
             activeTab === 'courses'
               ? "text-[#1864db]"
               : "text-[#0c2340] hover:text-[#1864db]"
@@ -1060,7 +1169,7 @@ export function GuidanceSettings() {
         <button
           onClick={() => setActiveTab('sections')}
           className={cn(
-            "flex items-center gap-2.5 pb-3 text-sm font-bold transition-all relative cursor-pointer",
+            "flex items-center gap-2 pb-3 text-xs sm:text-sm font-bold transition-all relative cursor-pointer whitespace-nowrap shrink-0",
             activeTab === 'sections'
               ? "text-[#1864db]"
               : "text-[#0c2340] hover:text-[#1864db]"
@@ -1076,7 +1185,7 @@ export function GuidanceSettings() {
         <button
           onClick={() => setActiveTab('form')}
           className={cn(
-            "flex items-center gap-2.5 pb-3 text-sm font-bold transition-all relative cursor-pointer",
+            "flex items-center gap-2 pb-3 text-xs sm:text-sm font-bold transition-all relative cursor-pointer whitespace-nowrap shrink-0",
             activeTab === 'form'
               ? "text-[#1864db]"
               : "text-[#0c2340] hover:text-[#1864db]"
@@ -1092,7 +1201,7 @@ export function GuidanceSettings() {
         <button
           onClick={() => setActiveTab('files')}
           className={cn(
-            "flex items-center gap-2.5 pb-3 text-sm font-bold transition-all relative cursor-pointer",
+            "flex items-center gap-2 pb-3 text-xs sm:text-sm font-bold transition-all relative cursor-pointer whitespace-nowrap shrink-0",
             activeTab === 'files'
               ? "text-[#1864db]"
               : "text-[#0c2340] hover:text-[#1864db]"

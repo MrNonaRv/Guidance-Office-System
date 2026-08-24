@@ -552,7 +552,7 @@ export function StudentRecordModal({
       </div>
 
       {/* ----------------- EXACT PRINT LAYOUT FOR BROWSER PRINT ----------------- */}
-      <div className={cn("text-black bg-white font-sans", viewMode === 'form' ? "block absolute inset-4 md:inset-12 bg-white rounded-2xl overflow-y-auto shadow-2xl p-8" : "hidden print:block print:w-full")}>
+      <div className={cn("text-black bg-white font-sans", viewMode === 'form' ? "block absolute inset-2 sm:inset-4 md:inset-12 bg-white rounded-2xl overflow-y-auto overflow-x-auto shadow-2xl p-4 sm:p-8" : "hidden print:block print:w-full")}>
         {viewMode === 'form' && (
             <button
               onClick={() => setViewMode('requirements')}
