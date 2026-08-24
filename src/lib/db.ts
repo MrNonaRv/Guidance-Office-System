@@ -1,5 +1,6 @@
 import localforage from 'localforage';
-import { doc, getDoc, setDoc, deleteDoc, collection, getDocs, onSnapshot, } from 'firebase/firestore';
+import { doc, getDoc, setDoc, deleteDoc, collection, getDocs, onSnapshot } from 'firebase/firestore';
+import { onAuthStateChanged } from 'firebase/auth';
 import { firestoreDb, auth } from './firebase';
 import { Course, AcademicYear, defaultCourses, defaultAcademicYears, defaultScholarships, ScholarshipItem } from '../types';
 import { defaultSubmissions, defaultNotifications, dummyBase64Pdf, dummyBase64Photo2x2, dummyBase64StudentId, dummyBase64Signature } from './defaultData';
@@ -270,9 +271,20 @@ function notifyScholarshipListeners() {
 })();
 
 // Real-Time Firestore Synchronization using onSnapshot
-if (firestoreDb) {
+let unsubscribeSubmissions: (() => void) | null = null;
+let unsubscribeNotifications: (() => void) | null = null;
+let unsubscribeScholarships: (() => void) | null = null;
+
+function setupRealtimeListeners() {
+  if (!firestoreDb) return;
+
+  // Clean up any existing listeners
+  if (unsubscribeSubmissions) { try { unsubscribeSubmissions(); } catch (e) { /* ignore */ } unsubscribeSubmissions = null; }
+  if (unsubscribeNotifications) { try { unsubscribeNotifications(); } catch (e) { /* ignore */ } unsubscribeNotifications = null; }
+  if (unsubscribeScholarships) { try { unsubscribeScholarships(); } catch (e) { /* ignore */ } unsubscribeScholarships = null; }
+
   try {
-    onSnapshot(collection(firestoreDb, 'submissions'), (snap) => {
+    unsubscribeSubmissions = onSnapshot(collection(firestoreDb, 'submissions'), (snap) => {
       if (!snap.empty) {
         const remoteSubs: Submission[] = [];
         snap.forEach(docSnap => {
@@ -285,10 +297,10 @@ if (firestoreDb) {
         }
       }
     }, (err) => {
-      console.warn("Submissions realtime listener notice:", err);
+      handleFirestoreError(err, OperationType.GET, 'submissions');
     });
 
-    onSnapshot(collection(firestoreDb, 'notifications'), (snap) => {
+    unsubscribeNotifications = onSnapshot(collection(firestoreDb, 'notifications'), (snap) => {
       if (!snap.empty) {
         const remoteNotifs: NotificationItem[] = [];
         snap.forEach(docSnap => {
@@ -301,10 +313,10 @@ if (firestoreDb) {
         }
       }
     }, (err) => {
-      console.warn("Notifications realtime listener notice:", err);
+      handleFirestoreError(err, OperationType.GET, 'notifications');
     });
 
-    onSnapshot(collection(firestoreDb, 'scholarships'), (snap) => {
+    unsubscribeScholarships = onSnapshot(collection(firestoreDb, 'scholarships'), (snap) => {
       if (!snap.empty) {
         const remoteScholarships: Scholarship[] = [];
         snap.forEach(docSnap => {
@@ -317,12 +329,23 @@ if (firestoreDb) {
         }
       }
     }, (err) => {
-      console.warn("Scholarships realtime listener notice:", err);
+      handleFirestoreError(err, OperationType.GET, 'scholarships');
     });
   } catch (err) {
     console.warn("Realtime Firestore setup notice:", err);
   }
 }
+
+// Reactively attach listeners when user is authenticated
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    setupRealtimeListeners();
+  } else {
+    if (unsubscribeSubmissions) { try { unsubscribeSubmissions(); } catch (e) { /* ignore */ } unsubscribeSubmissions = null; }
+    if (unsubscribeNotifications) { try { unsubscribeNotifications(); } catch (e) { /* ignore */ } unsubscribeNotifications = null; }
+    if (unsubscribeScholarships) { try { unsubscribeScholarships(); } catch (e) { /* ignore */ } unsubscribeScholarships = null; }
+  }
+});
 
 export const db = {
   scholarships: {

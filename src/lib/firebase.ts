@@ -1,28 +1,17 @@
-import { initializeApp } from 'firebase/app';
+import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut } from 'firebase/auth';
-import { initializeFirestore, Firestore, doc, getDocFromServer } from 'firebase/firestore';
+import { getFirestore, doc, getDocFromServer } from 'firebase/firestore';
 import firebaseConfig from '../../firebase-applet-config.json';
 
-const app = initializeApp(firebaseConfig);
+const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
 
-let firestoreInstance: Firestore | null = null;
-try {
-  if (firebaseConfig.firestoreDatabaseId && firebaseConfig.firestoreDatabaseId !== '(default)') {
-    firestoreInstance = initializeFirestore(app, { experimentalAutoDetectLongPolling: true }, firebaseConfig.firestoreDatabaseId);
-  } else {
-    firestoreInstance = initializeFirestore(app, { experimentalAutoDetectLongPolling: true });
-  }
-} catch (e) {
-  try {
-    firestoreInstance = initializeFirestore(app, { experimentalAutoDetectLongPolling: true });
-  } catch (err) {
-    console.warn("Firestore initialization notice:", err);
-  }
-}
-export const firestoreDb = firestoreInstance;
-export const db = firestoreInstance;
+export const firestoreDb = firebaseConfig.firestoreDatabaseId && firebaseConfig.firestoreDatabaseId !== '(default)'
+  ? getFirestore(app, firebaseConfig.firestoreDatabaseId)
+  : getFirestore(app);
+
+export const db = firestoreDb;
 
 async function testConnection() {
   try {
