@@ -244,7 +244,7 @@ export function GuidanceLayout() {
 
 export function GuidanceDashboard() {
   const navigate = useNavigate();
-const [, setSubmissions] = useState<any[]>(() => db.submissions.getCached());
+  const [submissions, setSubmissions] = useState<any[]>(() => db.submissions.getCached());
 
   useEffect(() => {
     const unsub = db.submissions.subscribe(subs => {
@@ -255,12 +255,20 @@ const [, setSubmissions] = useState<any[]>(() => db.submissions.getCached());
     return () => unsub();
   }, []);
 
-  const totalCount = 213;
-  const completeCount = 150;
-  const incompleteCount = 63;
+  const totalCount = 213 + Math.max(0, submissions.filter(s => !s.id.startsWith('sub-seed-')).length);
+  const completeCount = 150 + submissions.filter(s => !s.id.startsWith('sub-seed-') && s.status === 'Complete').length;
+  const incompleteCount = 63 + submissions.filter(s => !s.id.startsWith('sub-seed-') && s.status !== 'Complete').length;
 
-  // Exact 10 table rows matching the reference image
-  const displaySubmissions = [
+  const customSubmissions = submissions
+    .filter(s => !s.id.startsWith('sub-seed-'))
+    .map(s => ({
+      studentName: s.studentName || `${s.data?.firstName || ''} ${s.data?.familyName || ''}`.trim() || 'New Applicant',
+      course: s.data?.course || s.answers?.course || 'BSCS',
+      date: new Date(s.submittedAt || Date.now()).toLocaleDateString('en-US', { month: 'long', day: '2-digit', year: 'numeric' }),
+      status: s.status || 'Incomplete'
+    }));
+
+  const seedSubmissions = [
     { studentName: 'Anna Marie A. Santos', course: 'BAEL', date: 'March 11, 2026', status: 'Incomplete' },
     { studentName: 'Patricia Jane K. Manalo', course: 'BAEL', date: 'March 11, 2026', status: 'Incomplete' },
     { studentName: 'Damian James O. Emilio', course: 'BSFT', date: 'March 11, 2026', status: 'Incomplete' },
@@ -273,8 +281,16 @@ const [, setSubmissions] = useState<any[]>(() => db.submissions.getCached());
     { studentName: 'William George I. Diaz', course: 'BSFT', date: 'March 08, 2026', status: 'Complete' },
   ];
 
+  const displaySubmissions = [...customSubmissions, ...seedSubmissions].slice(0, 10);
+
+  const customNotifications = customSubmissions.slice(0, 3).map(s => ({
+    studentName: s.studentName,
+    action: 'submitted scholarship requirements',
+    time: 'Just now'
+  }));
+
   // Exact 6 notifications matching the reference image
-  const displayNotifications = [
+  const seedNotifications = [
     { studentName: 'Anna Marie A. Santos', action: 'submitted scholarship requirements', time: 'Today, 1:03 PM' },
     { studentName: 'Patricia Jane K. Manalo', action: 'submitted scholarship requirements', time: 'Today, 10:17 AM' },
     { studentName: 'Damian James O. Emilio', action: 'submitted scholarship requirements', time: 'Today, 8:44 AM' },
@@ -282,6 +298,9 @@ const [, setSubmissions] = useState<any[]>(() => db.submissions.getCached());
     { studentName: 'Charlotte Alexis N. Tuvera', action: 'submitted scholarship requirements', time: 'Yesterday, 2:30 PM' },
     { studentName: 'Michael O. Burata', action: 'submitted scholarship requirements for.....', time: 'Yesterday, 9:01 PM' },
   ];
+
+  const displayNotifications = [...customNotifications, ...seedNotifications].slice(0, 6);
+
 
   return (
     <div className="p-8 space-y-6 max-w-[1600px] mx-auto">

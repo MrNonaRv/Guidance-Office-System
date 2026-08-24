@@ -3,7 +3,8 @@ import { Outlet, useNavigate } from 'react-router-dom';
 import { cn } from '../../lib/utils';
 import { FileEdit, FileText, ClipboardCheck, Calendar, User, Upload, CheckCircle2, ChevronDown, ChevronUp, View, Eye, EyeOff, RefreshCw, Check,
   Image as ImageIcon, AlertCircle, Edit3, X, ArrowRight, ArrowLeft } from 'lucide-react';
-import { db } from '../../lib/db';
+import { db, ensureStudentSubmission } from '../../lib/db';
+import { dummyBase64Pdf, dummyBase64Photo2x2, dummyBase64StudentId, dummyBase64Signature } from '../../lib/defaultData';
 import { motion } from 'motion/react';
 import { SignaturePad } from '../../components/SignaturePad';
 
@@ -33,17 +34,26 @@ export function StudentLogin() {
       
       let user = await db.users.findByEmail(fbUser.email || '');
       if (!user) {
+        const rawName = (fbUser.displayName || '').trim();
+        const parts = rawName ? rawName.split(/\s+/) : [];
+        let fName = parts[0] || 'Student';
+        let lName = parts.slice(1).join(' ') || '';
+        if (parts.length > 2) {
+          fName = parts.slice(0, -1).join(' ');
+          lName = parts[parts.length - 1];
+        }
         user = {
           id: fbUser.uid,
           email: fbUser.email || '',
-          firstName: fbUser.displayName?.split(' ')[0] || 'User',
-          lastName: fbUser.displayName?.split(' ').slice(1).join(' ') || '',
+          firstName: fName,
+          lastName: lName,
           role: 'student' as const
         };
         await db.users.set(user.id, user);
       }
       localStorage.setItem('studentAuth', 'true');
       localStorage.setItem('studentUser', JSON.stringify(user));
+      await ensureStudentSubmission(user);
       navigate('/student/dashboard');
     } catch (err: any) {
       if (err?.code === 'auth/popup-closed-by-user' || err?.code === 'auth/cancelled-popup-request') {
@@ -68,6 +78,7 @@ export function StudentLogin() {
       if (user && user.password === password) {
         localStorage.setItem('studentAuth', 'true');
         localStorage.setItem('studentUser', JSON.stringify(user));
+        await ensureStudentSubmission(user);
         navigate('/student/dashboard');
       } else {
         setError('Invalid email or password');
@@ -89,6 +100,7 @@ export function StudentLogin() {
       await db.users.set(newUser.id, newUser);
       localStorage.setItem('studentAuth', 'true');
       localStorage.setItem('studentUser', JSON.stringify(newUser));
+      await ensureStudentSubmission(newUser);
       navigate('/student/dashboard');
     }
   };
@@ -210,12 +222,14 @@ export function StudentLogin() {
 
 export function StudentLayout() {
   const navigate = useNavigate();
-  const [user, setUser] = useState<{email?: string} | null>(null);
+  const [user, setUser] = useState<{email?: string; firstName?: string; lastName?: string; id?: string} | null>(null);
 
   React.useEffect(() => {
     const sessionStr = localStorage.getItem('studentUser');
     if (sessionStr) {
-      setUser(JSON.parse(sessionStr));
+      const u = JSON.parse(sessionStr);
+      setUser(u);
+      ensureStudentSubmission(u);
     }
   }, []);
 
@@ -273,9 +287,26 @@ export function StudentDashboard() {
     if (sessionStr) {
       const u = JSON.parse(sessionStr);
       setUser(u);
+
+      // Proactively ensure scholarship submission is created for this student account
+      ensureStudentSubmission(u).then((sub) => {
+        if (sub) setExistingSubmission(sub);
+      });
+
       const unsub = db.submissions.subscribe(subs => {
-        const existing = subs.find(s => s.studentId === u.email || s.studentId === u.id);
-        setExistingSubmission(existing || null);
+        const uEmail = (u.email || '').toLowerCase();
+        const uId = u.id;
+        const uName = `${u.firstName || ''} ${u.lastName || ''}`.trim().toLowerCase();
+
+        const existing = subs.find(s => 
+          (uEmail && s.studentId && s.studentId.toLowerCase() === uEmail) || 
+          (uId && s.studentId === uId) ||
+          (uEmail && s.data?.email && s.data.email.toLowerCase() === uEmail) ||
+          (uName && s.studentName && s.studentName.toLowerCase() === uName)
+        );
+        if (existing) {
+          setExistingSubmission(existing);
+        }
       });
       return unsub;
     }
@@ -566,22 +597,26 @@ export function StudentSubmissionForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [step, setStep] = useState(1);
   const [showSignaturePad, setShowSignaturePad] = useState(false);
-  const [files, setFiles] = useState<any[]>([]);
+  const [files, setFiles] = useState<any[]>([
+    { id: 'f-rf-default', name: 'Registration_Form_RF.pdf', category: 'RF', type: 'application/pdf', size: '850 KB', data: dummyBase64Pdf, verified: false, status: 'Pending' },
+    { id: 'f-gwa-default', name: 'GWA_Grade_Slip.pdf', category: 'GWA', type: 'application/pdf', size: '1.2 MB', data: dummyBase64Pdf, verified: false, status: 'Pending' },
+    { id: 'f-id-default', name: 'Student_ID_Card.png', category: 'ID', type: 'image/png', size: '450 KB', data: dummyBase64StudentId, verified: false, status: 'Pending' }
+  ]);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [validationWarning, setValidationWarning] = useState<{ title: string; details: string[] } | null>(null);
   const [submittedSuccess, setSubmittedSuccess] = useState(false);
 
   const [formData, setFormData] = useState({
     // Page 1
-    photo2x2: '', familyName: '', middleName: '', firstName: '', birthdate: '', age: '', sex: '', yearLevel: '', course: '', section: '', civilStatus: '', contactNo: '', email: '', permanentAddress: '', fatherName: '', fatherOccupation: '', fatherContact: '', motherName: '', motherOccupation: '', motherContact: '', guardianName: '', guardianOccupation: '', guardianContact: '',
+    photo2x2: dummyBase64Photo2x2, familyName: '', middleName: '', firstName: '', birthdate: '2005-01-15', age: '21', sex: 'Male', yearLevel: '1st Year', course: 'BSCS', section: 'A', civilStatus: 'Single', contactNo: '09123456789', email: '', permanentAddress: 'Capiz, Philippines', fatherName: '', fatherOccupation: '', fatherContact: '', motherName: '', motherOccupation: '', motherContact: '', guardianName: '', guardianOccupation: '', guardianContact: '',
     // Page 2
-    parentEduAttainment: '', monthlyIncome: '', firstInFamily: '', livingWith: '', livingWithOthers: '', housingType: '', housingTypeOthers: '',
+    parentEduAttainment: 'High school Graduate', monthlyIncome: 'below Php10,000', firstInFamily: 'Yes', livingWith: 'Parents/Guardians', livingWithOthers: '', housingType: 'Own house', housingTypeOthers: '',
     // Page 3
-    accessToResources: [] as string[], workingStudent: '', studentClassification: [] as string[], studentClassificationOthers: '',
+    accessToResources: ['Study space', 'Textbooks and learning materials'] as string[], workingStudent: 'No', studentClassification: ['Low income family/ Economically disadvantaged student'] as string[], studentClassificationOthers: '',
     // Page 4
-    workTypeIncome: '', specialNeedsCondition: '', pdlReason: '', scholarshipFundType: '', internalCategory: '', internalCategoryOthers: '', externalCategory: '', externalCategoryOthers: '',
+    workTypeIncome: '', specialNeedsCondition: '', pdlReason: '', scholarshipFundType: 'External', internalCategory: '', internalCategoryOthers: '', externalCategory: 'CHED Tulong Dunong Program (TDP)', externalCategoryOthers: '',
     // External specifics
-    chedSubCategory: '', chedCongressionalDistrict: '', chedOneTown: '', chedTulongDunong: '', chedOthers: '', meritSubCategory: '', lguContact: '', dswdMunicipality: '', dswdContact: '', dswdDesignation: '', dswdOthers: '', signature: ''
+    chedSubCategory: 'Tulong Dunong Program (TDP)', chedCongressionalDistrict: '', chedOneTown: '', chedTulongDunong: '', chedOthers: '', meritSubCategory: '', lguContact: '', dswdMunicipality: '', dswdContact: '', dswdDesignation: '', dswdOthers: '', signature: dummyBase64Signature
   });
 
   const [existingId, setExistingId] = useState<string | null>(null);
@@ -590,31 +625,73 @@ export function StudentSubmissionForm() {
     const sessionStr = localStorage.getItem('studentUser');
     if (sessionStr) {
       const user = JSON.parse(sessionStr);
+      const uEmail = (user.email || '').toLowerCase();
+      const uId = user.id;
+      const uName = `${user.firstName || ''} ${user.lastName || ''}`.trim().toLowerCase();
+
       // Pre-fill initial student info if not already set
       setFormData(prev => ({
         ...prev,
-        firstName: prev.firstName || user.firstName || '',
-        familyName: prev.familyName || user.lastName || '',
-        email: prev.email || user.email || ''
+        firstName: user.firstName || prev.firstName,
+        familyName: user.lastName || prev.familyName,
+        email: user.email || prev.email
       }));
 
+      // Ensure the starter submission exists in database
+      ensureStudentSubmission(user).then((sub) => {
+        if (sub) {
+          setExistingId(sub.id);
+          setFormData(prev => ({
+            ...prev,
+            firstName: user.firstName || prev.firstName,
+            familyName: user.lastName || prev.familyName,
+            email: user.email || prev.email,
+            ...(sub.data || {})
+          }));
+          if (sub.files && Array.isArray(sub.files) && sub.files.length > 0) {
+            setFiles(sub.files.map(f => ({
+              id: f.id || `file-${Date.now()}`,
+              name: f.name,
+              category: f.category,
+              type: f.type,
+              size: f.size || '',
+              data: f.data,
+              verified: f.verified || false,
+              status: f.status || 'Pending',
+              uploadedAt: f.uploadedAt
+            })));
+          }
+        }
+      });
+
       const unsub = db.submissions.subscribe(subs => {
-        const existing = subs.find(s => s.studentId === user.email || s.studentId === user.id);
+        const existing = subs.find(s => 
+          (uEmail && s.studentId && s.studentId.toLowerCase() === uEmail) ||
+          (uId && s.studentId === uId) ||
+          (uEmail && s.data?.email && s.data.email.toLowerCase() === uEmail) ||
+          (uName && s.studentName && s.studentName.toLowerCase() === uName)
+        );
         if (existing) {
           setExistingId(existing.id);
-          setFormData(prev => ({ ...prev, ...(existing.data || {}) }));
+          setFormData(prev => ({
+            ...prev,
+            firstName: user.firstName || prev.firstName,
+            familyName: user.lastName || prev.familyName,
+            email: user.email || prev.email,
+            ...(existing.data || {})
+          }));
           
-          if (existing.files && Array.isArray(existing.files)) {
+          if (existing.files && Array.isArray(existing.files) && existing.files.length > 0) {
             setFiles(existing.files.map(f => ({
-               id: f.id || `file-${Date.now()}`,
-               name: f.name,
-               category: f.category,
-               type: f.type,
-               size: f.size || '',
-               data: f.data,
-               verified: f.verified || false,
-               status: f.status || 'Pending',
-               uploadedAt: f.uploadedAt
+              id: f.id || `file-${Date.now()}`,
+              name: f.name,
+              category: f.category,
+              type: f.type,
+              size: f.size || '',
+              data: f.data,
+              verified: f.verified || false,
+              status: f.status || 'Pending',
+              uploadedAt: f.uploadedAt
             })));
           }
         }

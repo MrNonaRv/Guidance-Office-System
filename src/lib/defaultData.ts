@@ -1,6 +1,6 @@
 import { Submission, NotificationItem } from './db';
 
-const dummyBase64Pdf = "data:application/pdf;base64,JVBERi0xLjQKJcTl8uXrp/Og0MTGCjQgMCBvYmoKPDwgL0xlbmd0aCA1IDAgUiAvRmlsdGVyIC9GbGF0ZURlY29kZSA+PgpzdHJlYW0KeJzLSM3JyVcozy/KSVEEAELnBfUKZW5kc3RyZWFtCmVuZG9iago1IDAgb2JqCjE4CmVuZG9iagoxIDAgb2JqCjw8IC9UeXBlIC9DYXRhbG9nIC9QYWdlcyAyIDAgUiA+PgplbmRvYmoK";
+export const dummyBase64Pdf = "data:application/pdf;base64,JVBERi0xLjQKJcTl8uXrp/Og0MTGCjQgMCBvYmoKPDwgL0xlbmd0aCA1IDAgUiAvRmlsdGVyIC9GbGF0ZURlY29kZSA+PgpzdHJlYW0KeJzLSM3JyVcozy/KSVEEAELnBfUKZW5kc3RyZWFtCmVuZG9iago1IDAgb2JqCjE4CmVuZG9iagoxIDAgb2JqCjw8IC9UeXBlIC9DYXRhbG9nIC9QYWdlcyAyIDAgUiA+PgplbmRvYmoK";
 
 export const dummyBase64Photo2x2 = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240' viewBox='0 0 240 240'><rect width='240' height='240' fill='%23e2e8f0'/><rect x='8' y='8' width='224' height='224' fill='%23003884' rx='6'/><circle cx='120' cy='90' r='42' fill='%23fde047'/><circle cx='120' cy='85' r='38' fill='%23cbd5e1'/><path d='M45 205 C 45 145, 195 145, 195 205 Z' fill='%23ffffff'/><rect x='16' y='195' width='208' height='25' fill='%230a192f' rx='4'/><text x='120' y='212' fill='%23ffffff' font-family='Arial, sans-serif' font-size='11' font-weight='bold' text-anchor='middle' letter-spacing='1'>CAPSU OFFICIAL 2x2 ID</text></svg>";
 
