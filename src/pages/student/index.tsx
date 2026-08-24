@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 import { cn } from '../../lib/utils';
 import { FileEdit, FileText, ClipboardCheck, Calendar, User, Upload, CheckCircle2, ChevronDown, ChevronUp, View, Eye, EyeOff, RefreshCw, Check,
-  Image as ImageIcon} from 'lucide-react';
+  Image as ImageIcon, AlertCircle, Edit3, X, ArrowRight, ArrowLeft } from 'lucide-react';
 import { db } from '../../lib/db';
 import { motion } from 'motion/react';
 import { SignaturePad } from '../../components/SignaturePad';
@@ -163,12 +163,29 @@ export function StudentLogin() {
             <input type="email" value={email} onChange={e => setEmail(e.target.value)} required className="w-full px-4 py-2.5 bg-white rounded text-sm focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 outline-none transition-all shadow-sm" />
           </div>
 
-          <div className="text-left relative">
+          <div className="text-left">
             <label className="block text-[11px] font-medium text-[#0f2e60] mb-1 ml-1">Password</label>
-            <div className="relative">
-              <input type={showPassword ? "text" : "password"} value={password} onChange={e => setPassword(e.target.value)} required className="w-full px-4 py-2.5 pr-10 bg-white rounded text-sm focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 outline-none transition-all shadow-sm" />
-              <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none">
-                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+            <div className="relative flex items-center">
+              <input 
+                type={showPassword ? "text" : "password"} 
+                value={password} 
+                onChange={e => setPassword(e.target.value)} 
+                required 
+                placeholder="Enter password"
+                className="w-full px-4 py-2.5 pr-11 bg-white rounded-lg text-sm text-gray-800 placeholder-gray-400 focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 outline-none transition-all shadow-sm" 
+              />
+              <button 
+                type="button" 
+                onClick={() => setShowPassword(!showPassword)} 
+                aria-label={showPassword ? "Hide password" : "Show password"}
+                title={showPassword ? "Hide password" : "Show password"}
+                className="absolute right-2.5 p-1.5 rounded-lg text-gray-400 hover:text-[#0f2e60] hover:bg-gray-100 active:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all flex items-center justify-center cursor-pointer"
+              >
+                {showPassword ? (
+                  <EyeOff className="w-4 h-4 text-[#1864db]" />
+                ) : (
+                  <Eye className="w-4 h-4 text-gray-500 hover:text-gray-700" />
+                )}
               </button>
             </div>
             {isLogin ? (
@@ -479,32 +496,68 @@ export function StudentDashboard() {
 }
 
 
-const InputGroup = ({ label, name, value, onChange }: any) => (
-  <div className="flex flex-col">
-    <label className="text-[11px] font-bold text-[#0f2e60] mb-1">{label}</label>
+interface InputGroupProps {
+  label: string;
+  name: string;
+  value: string;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  required?: boolean;
+  error?: string;
+  id?: string;
+  placeholder?: string;
+  type?: string;
+}
+
+const InputGroup = ({ label, name, value, onChange, required, error, id, placeholder, type = "text" }: InputGroupProps) => (
+  <div className="flex flex-col" id={id || `field-${name}`}>
+    <label className="text-[11px] font-bold text-[#0f2e60] mb-1 flex items-center gap-1">
+      {label}
+      {required && <span className="text-red-500 font-bold">*</span>}
+    </label>
     <input 
-      type="text" 
+      type={type} 
       name={name} 
-      value={value} 
+      value={value || ''} 
+      placeholder={placeholder}
       onChange={onChange} 
-      className="border border-[#1e3a8a] rounded px-3 py-1.5 text-sm outline-none focus:ring-1 focus:ring-[#1e3a8a]" 
+      className={`border rounded px-3 py-1.5 text-sm outline-none transition-colors ${
+        error ? 'border-red-500 bg-red-50/30 focus:ring-1 focus:ring-red-500' : 'border-[#1e3a8a] focus:ring-1 focus:ring-[#1e3a8a]'
+      }`} 
     />
+    {error && <span className="text-[10px] text-red-600 font-semibold mt-0.5">{error}</span>}
   </div>
 );
 
-const SelectGroup = ({ label, name, value, onChange, options }: any) => (
-  <div className="flex flex-col relative">
-    <label className="text-[11px] font-bold text-[#0f2e60] mb-1">{label}</label>
+interface SelectGroupProps {
+  label: string;
+  name: string;
+  value: string;
+  onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
+  options: string[];
+  required?: boolean;
+  error?: string;
+  id?: string;
+}
+
+const SelectGroup = ({ label, name, value, onChange, options, required, error, id }: SelectGroupProps) => (
+  <div className="flex flex-col relative" id={id || `field-${name}`}>
+    <label className="text-[11px] font-bold text-[#0f2e60] mb-1 flex items-center gap-1">
+      {label}
+      {required && <span className="text-red-500 font-bold">*</span>}
+    </label>
     <select 
       name={name} 
-      value={value} 
+      value={value || ''} 
       onChange={onChange} 
-      className="border border-[#1e3a8a] rounded px-3 py-1.5 text-sm outline-none focus:ring-1 focus:ring-[#1e3a8a] appearance-none bg-white"
+      className={`border rounded px-3 py-1.5 text-sm outline-none appearance-none bg-white transition-colors ${
+        error ? 'border-red-500 bg-red-50/30 focus:ring-1 focus:ring-red-500' : 'border-[#1e3a8a] focus:ring-1 focus:ring-[#1e3a8a]'
+      }`}
     >
       <option value="" disabled>Select {label.toLowerCase()}</option>
       {options.map((opt: string) => <option key={opt} value={opt}>{opt}</option>)}
     </select>
     <ChevronDown className="w-4 h-4 text-[#1e3a8a] absolute right-2 bottom-2 pointer-events-none" />
+    {error && <span className="text-[10px] text-red-600 font-semibold mt-0.5">{error}</span>}
   </div>
 );
 
@@ -514,6 +567,9 @@ export function StudentSubmissionForm() {
   const [step, setStep] = useState(1);
   const [showSignaturePad, setShowSignaturePad] = useState(false);
   const [files, setFiles] = useState<any[]>([]);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [validationWarning, setValidationWarning] = useState<{ title: string; details: string[] } | null>(null);
+  const [submittedSuccess, setSubmittedSuccess] = useState(false);
 
   const [formData, setFormData] = useState({
     // Page 1
@@ -534,6 +590,14 @@ export function StudentSubmissionForm() {
     const sessionStr = localStorage.getItem('studentUser');
     if (sessionStr) {
       const user = JSON.parse(sessionStr);
+      // Pre-fill initial student info if not already set
+      setFormData(prev => ({
+        ...prev,
+        firstName: prev.firstName || user.firstName || '',
+        familyName: prev.familyName || user.lastName || '',
+        email: prev.email || user.email || ''
+      }));
+
       const unsub = db.submissions.subscribe(subs => {
         const existing = subs.find(s => s.studentId === user.email || s.studentId === user.id);
         if (existing) {
@@ -549,7 +613,8 @@ export function StudentSubmissionForm() {
                size: f.size || '',
                data: f.data,
                verified: f.verified || false,
-               status: f.status || 'Pending'
+               status: f.status || 'Pending',
+               uploadedAt: f.uploadedAt
             })));
           }
         }
@@ -558,8 +623,29 @@ export function StudentSubmissionForm() {
     }
   }, []);
 
-  const handleChange = (e: any) => setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
-  const handleRadioChange = (name: string, value: string) => setFormData(prev => ({ ...prev, [name]: value }));
+  const handleChange = (e: any) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+    if (errors[name]) {
+      setErrors(prev => {
+        const next = { ...prev };
+        delete next[name];
+        return next;
+      });
+    }
+  };
+
+  const handleRadioChange = (name: string, value: string) => {
+    setFormData(prev => ({ ...prev, [name]: value }));
+    if (errors[name]) {
+      setErrors(prev => {
+        const next = { ...prev };
+        delete next[name];
+        return next;
+      });
+    }
+  };
+
   const handleCheckboxChange = (field: string, value: string) => {
     setFormData((prev: any) => {
       const current = prev[field] as string[];
@@ -568,28 +654,107 @@ export function StudentSubmissionForm() {
     });
   };
 
+  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      if (file.size > 5 * 1024 * 1024) {
+        setValidationWarning({
+          title: 'Photo is too large',
+          details: ['Please upload an image smaller than 5MB.']
+        });
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setFormData(prev => ({ ...prev, photo2x2: event.target?.result as string }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const validateStep1 = () => {
-    const required = ['familyName', 'firstName', 'birthdate', 'sex', 'yearLevel', 'course', 'contactNo', 'email', 'permanentAddress'];
-    const missing = required.filter(field => !formData[field as keyof typeof formData]);
-    if (missing.length > 0) {
-      alert('Please fill in all required personal information fields.');
-      return false;
+    const newErrors: Record<string, string> = {};
+    const missingLabels: string[] = [];
+
+    if (!formData.familyName || !formData.familyName.trim()) {
+      newErrors.familyName = 'Family Name is required';
+      missingLabels.push('Family Name');
+    }
+    if (!formData.firstName || !formData.firstName.trim()) {
+      newErrors.firstName = 'First Name is required';
+      missingLabels.push('First Name');
+    }
+    if (!formData.birthdate) {
+      newErrors.birthdate = 'Birthdate is required';
+      missingLabels.push('Birthdate');
+    }
+    if (!formData.sex) {
+      newErrors.sex = 'Sex is required';
+      missingLabels.push('Sex (Male / Female)');
+    }
+    if (!formData.yearLevel) {
+      newErrors.yearLevel = 'Year Level is required';
+      missingLabels.push('Year Level');
+    }
+    if (!formData.course) {
+      newErrors.course = 'Course is required';
+      missingLabels.push('Course');
+    }
+    if (!formData.contactNo || !formData.contactNo.trim()) {
+      newErrors.contactNo = 'Contact No. is required';
+      missingLabels.push('Contact No.');
+    }
+    if (!formData.email || !formData.email.trim()) {
+      newErrors.email = 'Email is required';
+      missingLabels.push('Email / Gmail');
+    }
+    if (!formData.permanentAddress || !formData.permanentAddress.trim()) {
+      newErrors.permanentAddress = 'Permanent Address is required';
+      missingLabels.push('Permanent Address');
     }
     if (!formData.signature) {
-      alert('Please provide your signature at the bottom of the form.');
+      newErrors.signature = 'Applicant Signature is required';
+      missingLabels.push("Applicant's Signature (Click signature box at the bottom to sign)");
+    }
+
+    setErrors(newErrors);
+
+    if (missingLabels.length > 0) {
+      setValidationWarning({
+        title: `Please complete the following ${missingLabels.length} required item${missingLabels.length > 1 ? 's' : ''}:`,
+        details: missingLabels
+      });
+
+      // Scroll smoothly to the first missing element
+      const firstErrorKey = Object.keys(newErrors)[0];
+      const targetId = firstErrorKey === 'signature' ? 'signature-box' : `field-${firstErrorKey}`;
+      const elem = document.getElementById(targetId);
+      if (elem) {
+        elem.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
       return false;
     }
+
+    setValidationWarning(null);
     return true;
   };
 
   const validateStep2 = () => {
-    const requiredCats = ['RF', 'GWA', 'ID'];
-    const missing = requiredCats.filter(cat => !files.find((f: any) => f.category === cat));
+    const requiredDocs = [
+      { key: 'RF', label: 'Registration Form (RF)' },
+      { key: 'GWA', label: 'General Weighted Average (GWA)' },
+      { key: 'ID', label: 'Student ID' }
+    ];
+
+    const missing = requiredDocs.filter(d => !files.find((f: any) => f.category === d.key));
     if (missing.length > 0) {
-      alert('Please upload all required documents (Registration Form, GWA, and Student ID).');
+      setValidationWarning({
+        title: `Please upload the following ${missing.length} required document${missing.length > 1 ? 's' : ''}:`,
+        details: missing.map(m => m.label)
+      });
       return false;
     }
+    setValidationWarning(null);
     return true;
   };
 
@@ -617,15 +782,19 @@ export function StudentSubmissionForm() {
       
       if (existingId) {
         await db.submissions.update(existingId, submission);
-        alert('Application updated successfully!');
       } else {
         await db.submissions.create(submission);
-        alert('Application submitted successfully!');
       }
-      navigate('/student'); // Navigate back to dashboard
+      setSubmittedSuccess(true);
+      setTimeout(() => {
+        navigate('/student/dashboard');
+      }, 2000);
     } catch (e) {
       console.error(e);
-      alert('Error saving application');
+      setValidationWarning({
+        title: 'Error saving application',
+        details: ['An error occurred while saving your application. Please try again.']
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -634,8 +803,11 @@ export function StudentSubmissionForm() {
   const handleCategoryFileUpload = (category: string, e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
-      if (file.size > 5 * 1024 * 1024) {
-        alert("File size exceeds 5MB limit. Please upload a smaller file.");
+      if (file.size > 10 * 1024 * 1024) {
+        setValidationWarning({
+          title: 'File is too large',
+          details: ['File size exceeds 10MB limit. Please upload a smaller file.']
+        });
         e.target.value = '';
         return;
       }
@@ -643,8 +815,9 @@ export function StudentSubmissionForm() {
       reader.onload = (event) => {
         const dataUrl = event.target?.result as string;
         const sizeStr = file.size > 1024 * 1024 ? `${(file.size / (1024 * 1024)).toFixed(1)} MB` : `${Math.round(file.size / 1024)} KB`;
-        const newFileObj = { id: `file-${Date.now()}`, name: file.name, category, type: file.type, size: sizeStr, data: dataUrl, verified: false, status: 'Pending' };
+        const newFileObj = { id: `file-${Date.now()}`, name: file.name, category, type: file.type, size: sizeStr, data: dataUrl, verified: false, status: 'Pending', uploadedAt: new Date().toISOString() };
         setFiles(prev => [...prev.filter(f => f.category !== category), newFileObj]);
+        setValidationWarning(null);
       };
       reader.readAsDataURL(file);
     }
@@ -652,20 +825,37 @@ export function StudentSubmissionForm() {
 
   const renderFileUpload = (label: string, id: string) => {
     const existingFile = files.find((f: any) => f.category === id);
+    const isMissing = validationWarning && validationWarning.details.some(d => d.toLowerCase().includes(label.toLowerCase()) || d.includes(id));
+
     return (
-      <div className="border border-dashed border-gray-300 p-6 rounded-lg text-center relative overflow-hidden bg-white hover:bg-gray-50 transition-colors">
+      <div className={`border-2 ${
+        existingFile 
+          ? 'border-green-400 bg-green-50/20' 
+          : isMissing 
+          ? 'border-red-400 bg-red-50/30' 
+          : 'border-dashed border-gray-300 bg-white hover:bg-gray-50'
+      } p-6 rounded-xl text-center relative overflow-hidden transition-all shadow-sm`}>
         <input type="file" id={id} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" onChange={(e) => handleCategoryFileUpload(id, e)} />
         {existingFile ? (
           <div className="flex flex-col items-center gap-2">
-            <CheckCircle2 className="w-8 h-8 text-[#16a34a]" />
+            <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+              <CheckCircle2 className="w-6 h-6 text-[#16a34a]" />
+            </div>
             <p className="text-[#0c2340] font-bold text-sm">{existingFile.name}</p>
             <p className="text-gray-500 text-xs">{existingFile.size}</p>
+            <span className="text-[11px] text-blue-600 font-semibold hover:underline mt-1">Click to replace file</span>
           </div>
         ) : (
           <div className="flex flex-col items-center gap-2">
-            <Upload className="w-8 h-8 text-gray-400" />
-            <p className="text-[#0c2340] font-bold text-sm">{label}</p>
-            <p className="text-[#d97706] text-xs font-semibold mt-2">Click or drag file to upload</p>
+            <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center">
+              <Upload className={`w-6 h-6 ${isMissing ? 'text-red-500' : 'text-gray-400'}`} />
+            </div>
+            <p className="text-[#0c2340] font-bold text-sm flex items-center gap-1">
+              {label} <span className="text-red-500">*</span>
+            </p>
+            <p className={`${isMissing ? 'text-red-600 font-bold' : 'text-[#d97706] font-semibold'} text-xs mt-1`}>
+              {isMissing ? 'Document Required — Click to upload' : 'Click or drag file to upload (PDF, PNG, JPG)'}
+            </p>
           </div>
         )}
       </div>
@@ -702,6 +892,41 @@ export function StudentSubmissionForm() {
         </div>
       </div>
 
+      {submittedSuccess && (
+        <div className="bg-green-50 border-2 border-green-500 rounded-2xl p-6 mb-8 text-center shadow-lg animate-in zoom-in-95 duration-300">
+          <div className="w-14 h-14 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
+            <CheckCircle2 className="w-8 h-8 text-green-600" />
+          </div>
+          <h3 className="text-xl font-bold text-green-900 mb-1">
+            Application {existingId ? 'Updated' : 'Submitted'} Successfully!
+          </h3>
+          <p className="text-sm text-green-700">Redirecting to your student dashboard...</p>
+        </div>
+      )}
+
+      {/* Validation Warning Alert */}
+      {validationWarning && (
+        <div className="bg-red-50 border-2 border-red-400 rounded-xl p-4 mb-6 shadow-md animate-in slide-in-from-top-2 fade-in duration-200">
+          <div className="flex items-start gap-3">
+            <AlertCircle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <h4 className="font-bold text-sm text-red-900">{validationWarning.title}</h4>
+              <ul className="list-disc list-inside text-xs text-red-700 font-medium mt-1.5 space-y-0.5">
+                {validationWarning.details.map((item, idx) => (
+                  <li key={idx}>{item}</li>
+                ))}
+              </ul>
+            </div>
+            <button 
+              onClick={() => setValidationWarning(null)} 
+              className="text-red-500 hover:text-red-700 font-bold text-sm p-1 rounded hover:bg-red-100 transition-colors"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="bg-white rounded-xl shadow-sm overflow-hidden mb-4 border-t-[5px] border-[#eab308]">
         <div className="p-6 text-center">
           <h2 className="text-3xl font-bold font-serif text-gray-900 mb-3">Scholarship Record Form</h2>
@@ -712,7 +937,7 @@ export function StudentSubmissionForm() {
       </div>
       <div className="bg-[#fef9c3] border border-[#facc15] rounded-lg p-3 mb-6">
         <p className="text-[#a16207] text-[13px] text-center">
-          Please fill out all required fields accurately and completely. This form will be reviewed by the Guidance Office prior to processing.
+          Please fill out all required fields (<span className="text-red-600 font-bold">*</span>) accurately and completely. This form will be reviewed by the Guidance Office prior to processing.
         </p>
       </div>
 
@@ -728,51 +953,140 @@ export function StudentSubmissionForm() {
             </div>
             <div className="p-4 flex gap-6">
               <div className="w-[120px] flex-shrink-0 flex flex-col items-center">
-                <div className="w-[110px] h-[110px] border border-[#1e3a8a] mb-2 flex flex-col items-center justify-center overflow-hidden bg-white">
-                  {formData.photo2x2 ? <img src={formData.photo2x2} className="w-full h-full object-cover" /> : <User className="w-10 h-10 text-gray-200" />}
-                </div>
-                <button className="text-[11px] font-bold text-[#1e3a8a] underline underline-offset-2">2 × 2 Picture</button>
+                <label className="w-[110px] h-[110px] border-2 border-dashed border-[#1e3a8a] mb-2 flex flex-col items-center justify-center overflow-hidden bg-white cursor-pointer hover:bg-blue-50/50 transition-colors group relative rounded">
+                  {formData.photo2x2 ? (
+                    <img src={formData.photo2x2} alt="2x2" className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="flex flex-col items-center justify-center p-2 text-center">
+                      <User className="w-8 h-8 text-gray-300 group-hover:text-[#1e3a8a] transition-colors" />
+                      <span className="text-[9px] text-gray-500 group-hover:text-[#1e3a8a] mt-1 font-semibold">Upload Photo</span>
+                    </div>
+                  )}
+                  <input type="file" accept="image/*" className="hidden" onChange={handlePhotoUpload} />
+                </label>
+                <label className="text-[11px] font-bold text-[#1e3a8a] underline underline-offset-2 cursor-pointer hover:text-blue-700">
+                  2 × 2 Picture
+                  <input type="file" accept="image/*" className="hidden" onChange={handlePhotoUpload} />
+                </label>
               </div>
               <div className="flex-1 space-y-4">
                 <div className="grid grid-cols-3 gap-4">
-                  <InputGroup label="Family Name" name="familyName" value={formData.familyName} onChange={handleChange} />
-                  <InputGroup label="Middle Name" name="middleName" value={formData.middleName} onChange={handleChange} />
-                  <InputGroup label="First Name" name="firstName" value={formData.firstName} onChange={handleChange} />
+                  <InputGroup 
+                    label="Family Name" 
+                    name="familyName" 
+                    value={formData.familyName} 
+                    onChange={handleChange} 
+                    required 
+                    error={errors.familyName} 
+                  />
+                  <InputGroup 
+                    label="Middle Name" 
+                    name="middleName" 
+                    value={formData.middleName} 
+                    onChange={handleChange} 
+                  />
+                  <InputGroup 
+                    label="First Name" 
+                    name="firstName" 
+                    value={formData.firstName} 
+                    onChange={handleChange} 
+                    required 
+                    error={errors.firstName} 
+                  />
                 </div>
                 <div className="grid grid-cols-[1.5fr_1fr_1.5fr] gap-4">
-                  <div className="flex flex-col relative">
-                    <label className="text-[11px] font-bold text-[#0f2e60] mb-1">Birthdate</label>
+                  <div className="flex flex-col relative" id="field-birthdate">
+                    <label className="text-[11px] font-bold text-[#0f2e60] mb-1 flex items-center gap-1">
+                      Birthdate <span className="text-red-500 font-bold">*</span>
+                    </label>
                     <div className="relative">
-                      <input type="date" name="birthdate" value={formData.birthdate} onChange={handleChange} className="w-full border border-[#1e3a8a] rounded px-3 py-1.5 text-sm outline-none focus:ring-1 focus:ring-[#1e3a8a] pr-8" />
+                      <input 
+                        type="date" 
+                        name="birthdate" 
+                        value={formData.birthdate} 
+                        onChange={handleChange} 
+                        className={`w-full border rounded px-3 py-1.5 text-sm outline-none pr-8 transition-colors ${
+                          errors.birthdate ? 'border-red-500 bg-red-50/30 focus:ring-1 focus:ring-red-500' : 'border-[#1e3a8a] focus:ring-1 focus:ring-[#1e3a8a]'
+                        }`} 
+                      />
                       <Calendar className="w-4 h-4 text-[#1e3a8a] absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                     </div>
+                    {errors.birthdate && <span className="text-[10px] text-red-600 font-semibold mt-0.5">{errors.birthdate}</span>}
                   </div>
                   <InputGroup label="Age" name="age" value={formData.age} onChange={handleChange} />
-                  <div className="flex flex-col">
-                    <label className="text-[11px] font-bold text-[#0f2e60] mb-2">Sex</label>
-                    <div className="flex items-center gap-4">
-                      <label className="flex items-center gap-1.5 text-xs font-semibold text-[#0f2e60]"><input type="radio" name="sex" value="Male" checked={formData.sex === 'Male'} onChange={() => handleRadioChange('sex', 'Male')} className="w-3.5 h-3.5" /> Male</label>
-                      <label className="flex items-center gap-1.5 text-xs font-semibold text-[#0f2e60]"><input type="radio" name="sex" value="Female" checked={formData.sex === 'Female'} onChange={() => handleRadioChange('sex', 'Female')} className="w-3.5 h-3.5" /> Female</label>
+                  <div className="flex flex-col" id="field-sex">
+                    <label className="text-[11px] font-bold text-[#0f2e60] mb-2 flex items-center gap-1">
+                      Sex <span className="text-red-500 font-bold">*</span>
+                    </label>
+                    <div className={`flex items-center gap-4 p-1 rounded ${errors.sex ? 'bg-red-50 border border-red-300' : ''}`}>
+                      <label className="flex items-center gap-1.5 text-xs font-semibold text-[#0f2e60] cursor-pointer">
+                        <input type="radio" name="sex" value="Male" checked={formData.sex === 'Male'} onChange={() => handleRadioChange('sex', 'Male')} className="w-3.5 h-3.5" /> Male
+                      </label>
+                      <label className="flex items-center gap-1.5 text-xs font-semibold text-[#0f2e60] cursor-pointer">
+                        <input type="radio" name="sex" value="Female" checked={formData.sex === 'Female'} onChange={() => handleRadioChange('sex', 'Female')} className="w-3.5 h-3.5" /> Female
+                      </label>
                     </div>
+                    {errors.sex && <span className="text-[10px] text-red-600 font-semibold mt-0.5">{errors.sex}</span>}
                   </div>
                 </div>
                 <div className="grid grid-cols-[1fr_1fr_1fr_1.5fr] gap-4">
-                  <SelectGroup label="Year Level" name="yearLevel" value={formData.yearLevel} onChange={handleChange} options={['1st Year', '2nd Year', '3rd Year', '4th Year']} />
-                  <SelectGroup label="Course" name="course" value={formData.course} onChange={handleChange} options={['BSCS', 'BSOA', 'BSFT', 'BAEL']} />
+                  <SelectGroup 
+                    label="Year Level" 
+                    name="yearLevel" 
+                    value={formData.yearLevel} 
+                    onChange={handleChange} 
+                    options={['1st Year', '2nd Year', '3rd Year', '4th Year']} 
+                    required 
+                    error={errors.yearLevel} 
+                  />
+                  <SelectGroup 
+                    label="Course" 
+                    name="course" 
+                    value={formData.course} 
+                    onChange={handleChange} 
+                    options={['BSCS', 'BSOA', 'BSFT', 'BAEL']} 
+                    required 
+                    error={errors.course} 
+                  />
                   <SelectGroup label="Section" name="section" value={formData.section} onChange={handleChange} options={['A', 'B', 'C']} />
                   <div className="flex flex-col">
                     <label className="text-[11px] font-bold text-[#0f2e60] mb-2">Civil Status</label>
                     <div className="flex items-center gap-4">
-                      <label className="flex items-center gap-1.5 text-xs font-semibold text-[#0f2e60]"><input type="radio" name="civilStatus" value="Single" checked={formData.civilStatus === 'Single'} onChange={() => handleRadioChange('civilStatus', 'Single')} className="w-3.5 h-3.5" /> Single</label>
-                      <label className="flex items-center gap-1.5 text-xs font-semibold text-[#0f2e60]"><input type="radio" name="civilStatus" value="Married" checked={formData.civilStatus === 'Married'} onChange={() => handleRadioChange('civilStatus', 'Married')} className="w-3.5 h-3.5" /> Married</label>
+                      <label className="flex items-center gap-1.5 text-xs font-semibold text-[#0f2e60] cursor-pointer">
+                        <input type="radio" name="civilStatus" value="Single" checked={formData.civilStatus === 'Single'} onChange={() => handleRadioChange('civilStatus', 'Single')} className="w-3.5 h-3.5" /> Single
+                      </label>
+                      <label className="flex items-center gap-1.5 text-xs font-semibold text-[#0f2e60] cursor-pointer">
+                        <input type="radio" name="civilStatus" value="Married" checked={formData.civilStatus === 'Married'} onChange={() => handleRadioChange('civilStatus', 'Married')} className="w-3.5 h-3.5" /> Married
+                      </label>
                     </div>
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
-                  <InputGroup label="Contact No." name="contactNo" value={formData.contactNo} onChange={handleChange} />
-                  <InputGroup label="Email / Gmail" name="email" value={formData.email} onChange={handleChange} />
+                  <InputGroup 
+                    label="Contact No." 
+                    name="contactNo" 
+                    value={formData.contactNo} 
+                    onChange={handleChange} 
+                    required 
+                    error={errors.contactNo} 
+                  />
+                  <InputGroup 
+                    label="Email / Gmail" 
+                    name="email" 
+                    value={formData.email} 
+                    onChange={handleChange} 
+                    required 
+                    error={errors.email} 
+                  />
                 </div>
-                <InputGroup label="Permanent Address" name="permanentAddress" value={formData.permanentAddress} onChange={handleChange} />
+                <InputGroup 
+                  label="Permanent Address" 
+                  name="permanentAddress" 
+                  value={formData.permanentAddress} 
+                  onChange={handleChange} 
+                  required 
+                  error={errors.permanentAddress} 
+                />
               </div>
             </div>
           </div>
@@ -1052,27 +1366,48 @@ export function StudentSubmissionForm() {
               )}
             </div>
             
-            <div className="mt-8 pt-8 border-t border-gray-200 text-center">
-              <p className="text-[13px] text-gray-700 mb-8 italic">I hereby certify that the information I have provided is true and correct to the best of my knowledge.</p>
+            <div className="mt-8 pt-8 border-t border-gray-200 text-center" id="signature-box">
+              <p className="text-[13px] text-gray-700 mb-6 italic">I hereby certify that the information I have provided is true and correct to the best of my knowledge.</p>
               
               <div 
-                className="mx-auto w-64 h-24 border-2 border-dashed border-gray-300 rounded-xl mb-2 flex items-center justify-center cursor-pointer hover:bg-gray-50 transition-colors bg-white relative overflow-hidden group"
+                className={`mx-auto w-64 h-24 border-2 rounded-xl mb-2 flex items-center justify-center cursor-pointer transition-all bg-white relative overflow-hidden group ${
+                  errors.signature 
+                    ? 'border-red-500 bg-red-50/20 ring-2 ring-red-300' 
+                    : formData.signature 
+                    ? 'border-green-400 bg-green-50/10' 
+                    : 'border-dashed border-gray-300 hover:bg-gray-50'
+                }`}
                 onClick={() => setShowSignaturePad(true)}
               >
                 {formData.signature ? (
-                  <img src={formData.signature} alt="Signature" className="w-full h-full object-contain" />
+                  <img src={formData.signature} alt="Signature" className="w-full h-full object-contain p-2" />
                 ) : (
-                  <span className="text-gray-400 text-sm font-medium group-hover:text-[#1e3a8a]">Click to sign</span>
+                  <div className="flex flex-col items-center gap-1">
+                    <Edit3 className={`w-5 h-5 ${errors.signature ? 'text-red-500' : 'text-gray-400 group-hover:text-[#1e3a8a]'}`} />
+                    <span className={`text-xs font-semibold ${errors.signature ? 'text-red-600' : 'text-gray-400 group-hover:text-[#1e3a8a]'}`}>
+                      Click to sign (Required)
+                    </span>
+                  </div>
                 )}
               </div>
               <div className="inline-block border-t-2 border-black w-64 pt-2 text-sm font-bold text-[#0f2e60]">
-                Applicant's Signature
+                Applicant's Signature <span className="text-red-500">*</span>
               </div>
+              {errors.signature && (
+                <p className="text-red-600 text-xs font-semibold mt-1">
+                  {errors.signature}
+                </p>
+              )}
 
               {showSignaturePad && (
                 <SignaturePad 
                   onSave={(dataUrl) => {
                     setFormData(prev => ({ ...prev, signature: dataUrl }));
+                    setErrors(prev => {
+                      const copy = { ...prev };
+                      delete copy.signature;
+                      return copy;
+                    });
                     setShowSignaturePad(false);
                   }} 
                   onCancel={() => setShowSignaturePad(false)} 
@@ -1082,8 +1417,16 @@ export function StudentSubmissionForm() {
           </div>
           
           <div className="flex justify-end mt-4">
-            <button onClick={() => { if(validateStep1()) setStep(2); }} className="bg-[#1e3a8a] text-white px-8 py-2 rounded-lg font-bold hover:bg-[#152c6b] transition-colors shadow-sm">
-              Next
+            <button 
+              onClick={() => { 
+                if (validateStep1()) { 
+                  setStep(2); 
+                  window.scrollTo({ top: 0, behavior: 'smooth' }); 
+                } 
+              }} 
+              className="bg-[#1e3a8a] text-white px-8 py-2.5 rounded-lg font-bold hover:bg-[#152c6b] transition-colors shadow-sm flex items-center gap-2"
+            >
+              Next <ArrowRight className="w-4 h-4" />
             </button>
           </div>
         </>
@@ -1092,17 +1435,35 @@ export function StudentSubmissionForm() {
       {step === 2 && (
         <div className="bg-white p-8 rounded-lg shadow-sm border border-gray-200">
           <SectionHeader title="STUDENT DOCUMENTS" />
+          <p className="text-xs text-gray-500 mb-6 text-center">
+            Please attach valid copies for all 3 required documents. Files up to 10MB accepted.
+          </p>
           <div className="grid grid-cols-2 gap-6 mb-6">
-            {renderFileUpload('Registration Form', 'RF')}
-            {renderFileUpload('General Weighted Average', 'GWA')}
+            {renderFileUpload('Registration Form (RF)', 'RF')}
+            {renderFileUpload('General Weighted Average (GWA)', 'GWA')}
           </div>
           <div className="max-w-md mx-auto">
             {renderFileUpload('Student ID', 'ID')}
           </div>
           
           <div className="flex justify-between mt-12">
-            <button onClick={() => setStep(1)} className="border border-gray-300 text-gray-700 px-8 py-2 rounded-lg font-bold hover:bg-gray-50 transition-colors">Back</button>
-            <button onClick={() => { if(validateStep2()) setStep(3); }} className="bg-[#1e3a8a] text-white px-8 py-2 rounded-lg font-bold hover:bg-[#152c6b] transition-colors shadow-sm">Next</button>
+            <button 
+              onClick={() => { setStep(1); window.scrollTo({ top: 0, behavior: 'smooth' }); }} 
+              className="border border-gray-300 text-gray-700 px-8 py-2.5 rounded-lg font-bold hover:bg-gray-50 transition-colors flex items-center gap-2"
+            >
+              <ArrowLeft className="w-4 h-4" /> Back
+            </button>
+            <button 
+              onClick={() => { 
+                if (validateStep2()) { 
+                  setStep(3); 
+                  window.scrollTo({ top: 0, behavior: 'smooth' }); 
+                } 
+              }} 
+              className="bg-[#1e3a8a] text-white px-8 py-2.5 rounded-lg font-bold hover:bg-[#152c6b] transition-colors shadow-sm flex items-center gap-2"
+            >
+              Next <ArrowRight className="w-4 h-4" />
+            </button>
           </div>
         </div>
       )}
@@ -1113,11 +1474,20 @@ export function StudentSubmissionForm() {
             <CheckCircle2 className="w-10 h-10 text-green-600" />
           </div>
           <h2 className="text-2xl font-bold mb-2">{existingId ? 'Ready to Update' : 'Ready to Submit'}</h2>
-          <p className="text-gray-600 mb-8 max-w-sm mx-auto">All required information and documents have been gathered. You can now {existingId ? 'update' : 'submit'} your application.</p>
+          <p className="text-gray-600 mb-8 max-w-sm mx-auto">All required information and documents have been verified. You can now {existingId ? 'update' : 'submit'} your application.</p>
           
           <div className="flex justify-center gap-4">
-            <button onClick={() => setStep(2)} className="border border-gray-300 text-gray-700 px-8 py-2 rounded-lg font-bold hover:bg-gray-50 transition-colors">Back</button>
-            <button onClick={handleSubmit} disabled={isSubmitting} className="bg-green-600 text-white px-8 py-2 rounded-lg font-bold hover:bg-green-700 transition-colors shadow-sm flex items-center gap-2 disabled:opacity-50">
+            <button 
+              onClick={() => { setStep(2); window.scrollTo({ top: 0, behavior: 'smooth' }); }} 
+              className="border border-gray-300 text-gray-700 px-8 py-2.5 rounded-lg font-bold hover:bg-gray-50 transition-colors flex items-center gap-2"
+            >
+              <ArrowLeft className="w-4 h-4" /> Back
+            </button>
+            <button 
+              onClick={handleSubmit} 
+              disabled={isSubmitting} 
+              className="bg-green-600 text-white px-8 py-2.5 rounded-lg font-bold hover:bg-green-700 transition-colors shadow-sm flex items-center gap-2 disabled:opacity-50"
+            >
               {isSubmitting ? (existingId ? 'Updating...' : 'Submitting...') : <><Check className="w-5 h-5" /> {existingId ? 'Update Application' : 'Submit Application'}</>}
             </button>
           </div>

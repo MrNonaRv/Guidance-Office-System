@@ -12,6 +12,8 @@ import { signInWithGoogle } from '../../lib/firebase';
 export function GuidanceLogin() {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
+  const [adminEmailInput, setAdminEmailInput] = useState('guidancestaff@capsu.edu');
+  const [adminPasswordInput, setAdminPasswordInput] = useState('admin123');
 
   useEffect(() => {
     if (localStorage.getItem('adminAuth') === 'true') {
@@ -77,14 +79,35 @@ export function GuidanceLogin() {
           {error && <div className="text-red-500 text-xs text-center mb-2">{error}</div>}
           <div className="text-left">
             <label className="block text-[11px] font-medium text-[#0f2e60] mb-1 ml-1">Gmail</label>
-            <input type="email" defaultValue="guidancestaff@capsu.edu" className="w-full px-4 py-2.5 bg-white rounded text-sm focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 outline-none transition-all shadow-sm" />
+            <input 
+              type="email" 
+              value={adminEmailInput} 
+              onChange={(e) => setAdminEmailInput(e.target.value)} 
+              className="w-full px-4 py-2.5 bg-white rounded-lg text-sm text-gray-800 focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 outline-none transition-all shadow-sm" 
+            />
           </div>
-          <div className="text-left relative">
+          <div className="text-left">
             <label className="block text-[11px] font-medium text-[#0f2e60] mb-1 ml-1">Password</label>
-            <div className="relative">
-              <input type={showPassword ? "text" : "password"} defaultValue="********" className="w-full px-4 py-2.5 pr-10 bg-white rounded text-sm focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 outline-none transition-all shadow-sm" />
-              <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none">
-                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+            <div className="relative flex items-center">
+              <input 
+                type={showPassword ? "text" : "password"} 
+                value={adminPasswordInput} 
+                onChange={(e) => setAdminPasswordInput(e.target.value)} 
+                placeholder="Enter password"
+                className="w-full px-4 py-2.5 pr-11 bg-white rounded-lg text-sm text-gray-800 focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 outline-none transition-all shadow-sm" 
+              />
+              <button 
+                type="button" 
+                onClick={() => setShowPassword(!showPassword)} 
+                aria-label={showPassword ? "Hide password" : "Show password"}
+                title={showPassword ? "Hide password" : "Show password"}
+                className="absolute right-2.5 p-1.5 rounded-lg text-gray-400 hover:text-[#0f2e60] hover:bg-gray-100 active:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all flex items-center justify-center cursor-pointer"
+              >
+                {showPassword ? (
+                  <EyeOff className="w-4 h-4 text-[#1864db]" />
+                ) : (
+                  <Eye className="w-4 h-4 text-gray-500 hover:text-gray-700" />
+                )}
               </button>
             </div>
             <div className="text-right mt-1">
