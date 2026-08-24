@@ -1,5 +1,14 @@
 import { initializeApp, getApps, getApp } from 'firebase/app';
-import { getAuth, GoogleAuthProvider, signInWithPopup, signOut } from 'firebase/auth';
+import { 
+  getAuth, 
+  GoogleAuthProvider, 
+  signInWithPopup, 
+  signOut,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  updateProfile,
+  User as FirebaseUser
+} from 'firebase/auth';
 import { getFirestore, doc, getDocFromServer } from 'firebase/firestore';
 import firebaseConfig from '../../firebase-applet-config.json';
 
@@ -26,7 +35,7 @@ async function testConnection() {
 }
 testConnection();
 
-export const signInWithGoogle = async () => {
+export const signInWithGoogle = async (): Promise<FirebaseUser> => {
   try {
     const result = await signInWithPopup(auth, googleProvider);
     return result.user;
@@ -44,6 +53,37 @@ export const signInWithGoogle = async () => {
   }
 };
 
+export const signInWithEmail = async (email: string, password: string): Promise<FirebaseUser> => {
+  try {
+    const result = await signInWithEmailAndPassword(auth, email.trim(), password);
+    return result.user;
+  } catch (error: any) {
+    console.error("Error signing in with Email/Password", error);
+    throw error;
+  }
+};
+
+export const signUpWithEmail = async (
+  email: string, 
+  password: string, 
+  displayName?: string
+): Promise<FirebaseUser> => {
+  try {
+    const result = await createUserWithEmailAndPassword(auth, email.trim(), password);
+    if (displayName && result.user) {
+      try {
+        await updateProfile(result.user, { displayName });
+      } catch (profileErr) {
+        console.warn("Could not update Firebase displayName:", profileErr);
+      }
+    }
+    return result.user;
+  } catch (error: any) {
+    console.error("Error signing up with Email/Password", error);
+    throw error;
+  }
+};
+
 export const logOut = async () => {
   try {
     await signOut(auth);
@@ -52,5 +92,6 @@ export const logOut = async () => {
     throw error;
   }
 };
+
 
 

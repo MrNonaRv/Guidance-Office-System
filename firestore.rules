@@ -96,10 +96,10 @@ service cloud.firestore {
     // System Notifications
     match /notifications/{id} {
       allow read: if isAuthenticated();
-      allow create, update: if isAdmin() && isValidId(id) && 
+      allow create: if isAuthenticated() && isValidId(id) && 
         hasRequiredKeys(request.resource.data, ['id', 'type', 'title', 'description', 'timestamp']) &&
         request.resource.data.title is string;
-      allow delete: if isAdmin();
+      allow update, delete: if isAdmin();
     }
 
     // Guidance Communications & Advisories
