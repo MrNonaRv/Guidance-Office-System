@@ -2,11 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 import { cn } from '../../lib/utils';
 import { FileEdit, FileText, ClipboardCheck, Calendar, User, Upload, CheckCircle2, ChevronDown, ChevronUp, View, Eye, EyeOff, RefreshCw, Check,
-  Image as ImageIcon, AlertCircle, Edit3, X, ArrowRight, ArrowLeft } from 'lucide-react';
+  Image as ImageIcon, AlertCircle, Edit3, X, ArrowRight, ArrowLeft, Printer } from 'lucide-react';
 import { db } from '../../lib/db';
 import { dummyBase64Pdf, dummyBase64Photo2x2, dummyBase64StudentId, dummyBase64Signature } from '../../lib/defaultData';
 import { motion } from 'motion/react';
 import { SignaturePad } from '../../components/SignaturePad';
+import { SubmissionReviewSummary } from '../../components/SubmissionReviewSummary';
+import { SubmissionSuccessModal } from '../../components/SubmissionSuccessModal';
+import { DocumentPreviewModal } from '../../components/DocumentPreviewModal';
 
 import { signInWithGoogle, logOut } from '../../lib/firebase';
 
@@ -262,28 +265,33 @@ export function StudentLayout() {
   return (
     <div className="min-h-screen bg-[#f4f7fb] font-sans">
       {/* Top Navbar */}
-      <header className="bg-[#2b64b1] text-white py-3 px-8 shadow-sm flex flex-col md:flex-row justify-between items-center sticky top-0 z-50">
-        <div className="flex items-center gap-4">
-          <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center overflow-hidden">
-            <img src="/capsu-logo.png" alt="CAPSU Logo" className="w-10 h-10 object-contain" />
+      <header className="bg-[#2b64b1] text-white py-2.5 sm:py-3 px-3 sm:px-6 md:px-8 shadow-sm flex flex-wrap justify-between items-center sticky top-0 z-50 gap-2 sm:gap-4">
+        <div className="flex items-center gap-2.5 sm:gap-4 min-w-0">
+          <div className="w-9 h-9 sm:w-11 sm:h-11 bg-white rounded-full flex items-center justify-center overflow-hidden shrink-0 shadow-xs">
+            <img src="/capsu-logo.png" alt="CAPSU Logo" className="w-7 h-7 sm:w-9 sm:h-9 object-contain" />
           </div>
-          <div>
-            <h1 className="text-[17px] font-bold tracking-tight">Web-Based Scholarship Submission Alert System</h1>
-            <p className="text-[13px] font-semibold text-blue-100">Student Portal</p>
+          <div className="min-w-0">
+            <h1 className="text-xs sm:text-sm md:text-[16px] font-bold tracking-tight leading-tight truncate sm:whitespace-normal">
+              Web-Based Scholarship Submission Alert System
+            </h1>
+            <p className="text-[10px] sm:text-xs font-semibold text-blue-100 leading-tight">Student Portal</p>
           </div>
         </div>
         
-        <div className="flex items-center gap-3 mt-4 md:mt-0">
-          <div className="flex items-center gap-2 text-xs font-bold text-white bg-white/20 hover:bg-white/30 transition-colors px-4 py-2 rounded-full shadow-sm">
-            <User className="w-4 h-4 text-white" />
-            {user?.email || 'student@gmail.com'}
+        <div className="flex items-center gap-2 sm:gap-3 shrink-0 ml-auto">
+          <div className="flex items-center gap-1.5 text-[11px] sm:text-xs font-semibold text-white bg-white/20 hover:bg-white/30 transition-colors px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-full shadow-sm max-w-[170px] sm:max-w-[240px] truncate">
+            <User className="w-3.5 h-3.5 shrink-0 text-white" />
+            <span className="truncate">{user?.email || 'student@gmail.com'}</span>
           </div>
-          <button onClick={async () => {
+          <button 
+            onClick={async () => {
               await logOut();
               localStorage.removeItem('studentAuth');
               localStorage.removeItem('studentUser');
               navigate('/student/login');
-          }} className="text-xs font-bold text-white bg-white/20 hover:bg-white/30 transition-colors px-6 py-2 rounded-full shadow-sm flex items-center gap-2">
+            }} 
+            className="text-[11px] sm:text-xs font-bold text-white bg-white/20 hover:bg-white/30 transition-colors px-3 sm:px-5 py-1.5 sm:py-2 rounded-full shadow-sm flex items-center gap-1.5 shrink-0 whitespace-nowrap cursor-pointer"
+          >
             Log out
           </button>
         </div>
@@ -368,65 +376,66 @@ export function StudentDashboard() {
     const file = files[key];
     if (file) {
       return (
-        <label className="flex items-center gap-2 border border-[#9ca3af] text-[#0c2340] bg-[#eef2ff] px-4 py-2 rounded-md text-[11px] font-semibold hover:bg-[#e0e7ff] transition-colors cursor-pointer w-[220px] overflow-hidden shadow-sm">
-          <ImageIcon className="w-3.5 h-3.5 shrink-0 text-[#1e3a8a]" />
-          <span className="truncate">{file.name}</span>
+        <label className="flex items-center gap-2 border border-[#9ca3af] text-[#0c2340] bg-[#eef2ff] px-3 sm:px-4 py-2 rounded-lg text-xs font-semibold hover:bg-[#e0e7ff] transition-colors cursor-pointer w-full sm:w-[220px] overflow-hidden shadow-xs shrink-0">
+          <ImageIcon className="w-4 h-4 shrink-0 text-[#1e3a8a]" />
+          <span className="truncate flex-1">{file.name}</span>
           <input type="file" className="hidden" accept=".pdf,.png,.jpg,.jpeg" onChange={(e) => handleFileChange(e, key)} />
         </label>
       );
     }
     return (
-      <label className="flex items-center justify-center gap-2 border border-[#9ca3af] text-[#0c2340] bg-[#f8fafc] px-6 py-2 rounded-md text-[11px] font-bold hover:bg-[#e2e8f0] transition-colors cursor-pointer w-[220px] shadow-sm">
-        <Upload className="w-3.5 h-3.5 shrink-0" /> Add File
+      <label className="flex items-center justify-center gap-2 border border-[#9ca3af] text-[#0c2340] bg-[#f8fafc] px-4 sm:px-6 py-2 rounded-lg text-xs font-bold hover:bg-[#e2e8f0] transition-colors cursor-pointer w-full sm:w-[220px] shadow-xs shrink-0">
+        <Upload className="w-4 h-4 shrink-0 text-[#1e3a8a]" />
+        <span>Add File</span>
         <input type="file" className="hidden" accept=".pdf,.png,.jpg,.jpeg" onChange={(e) => handleFileChange(e, key)} />
       </label>
     );
   };
 
   return (
-    <div className="space-y-10 max-w-[900px] mx-auto mt-6 pb-32 relative">
-      <div className="bg-gradient-to-r from-[#3b82f6] to-[#1e5088] rounded-[10px] px-12 py-10 text-white shadow-md mx-6 md:mx-0">
-        <h2 className="text-[32px] font-bold tracking-tight">Hello, {user ? `${user.firstName} ${user.lastName}` : 'Anna Santos'}!</h2>
+    <div className="space-y-6 sm:space-y-8 max-w-[900px] mx-auto mt-4 sm:mt-6 pb-32 relative px-4 sm:px-6 md:px-0">
+      {/* Hello Banner */}
+      <div className="bg-gradient-to-r from-[#3b82f6] to-[#1e5088] rounded-2xl md:rounded-[10px] p-5 sm:p-8 md:px-12 md:py-10 text-white shadow-md">
+        <h2 className="text-xl sm:text-2xl md:text-[32px] font-bold tracking-tight">
+          Hello, {user ? `${user.firstName} ${user.lastName}` : 'Anna Santos'}!
+        </h2>
       </div>
 
-      <div className="space-y-6 px-6 md:px-0">
-        {/* Card 1 */}
-        <div className="bg-white rounded-full p-5 px-12 shadow-[0_6px_25px_rgb(0,0,0,0.08)] flex justify-between items-center border border-gray-200 gap-6 h-[110px]">
-          <div>
-            <h3 className="text-[22px] font-bold text-[#0c2340]">Scholarship Requirements</h3>
-            <p className="text-gray-500 mt-1 text-sm md:text-base">
-              {existingSubmission ? 'Modify your scholarship form and documents' : 'Fill up a scholarship form and upload the required documents'} <span className="italic font-medium font-serif text-gray-500">({existingSubmission ? 'for current students' : 'for new students only'})</span>
+      <div className="space-y-4 sm:space-y-6">
+        {/* Card 1: Scholarship Requirements */}
+        <div className="bg-white rounded-2xl md:rounded-full p-5 sm:p-6 md:px-12 shadow-[0_4px_20px_rgb(0,0,0,0.06)] flex flex-col sm:flex-row justify-between items-start sm:items-center border border-gray-200 gap-4 min-h-[100px]">
+          <div className="flex-1 min-w-0">
+            <h3 className="text-lg sm:text-xl md:text-[22px] font-bold text-[#0c2340] leading-snug">
+              Scholarship Requirements
+            </h3>
+            <p className="text-gray-500 mt-1 text-xs sm:text-sm md:text-base leading-relaxed">
+              Fill up a scholarship form and upload the required documents.
             </p>
           </div>
           <button 
             onClick={() => navigate('/student/submission')}
-            className="px-12 py-3.5 bg-gradient-to-r from-[#1e3a8a] to-[#3b82f6] text-white rounded-full font-bold hover:opacity-90 transition-opacity shadow-sm w-auto min-w-[140px] flex items-center justify-center gap-2"
+            className="w-full sm:w-auto px-6 sm:px-8 md:px-12 py-2.5 sm:py-3.5 bg-gradient-to-r from-[#1e3a8a] to-[#3b82f6] text-white rounded-full font-bold hover:opacity-90 transition-opacity shadow-sm min-w-[130px] flex items-center justify-center text-xs sm:text-sm shrink-0 cursor-pointer"
           >
-            {existingSubmission ? (
-              <>
-                <Edit3 className="w-4 h-4" />
-                Edit Application
-              </>
-            ) : (
-              'Enter'
-            )}
+            {existingSubmission ? 'Edit' : 'Enter'}
           </button>
         </div>
 
-        {/* Card 2 with Dropdown */}
-        <div className={cn("relative", openDropdown === '1st' ? "z-50" : "z-10")}>
-          <div className="bg-white rounded-full p-5 px-12 shadow-[0_6px_25px_rgb(0,0,0,0.08)] flex justify-between items-center border border-gray-200 gap-6 h-[110px] relative z-20">
-            <div>
-              <h3 className={cn("text-[22px] font-bold", availableSemesters.includes('1st') ? "text-[#0c2340]" : "text-[#6b7280]")}>
+        {/* Card 2 with Dropdown: 1st Semester */}
+        <div className="bg-white rounded-2xl md:rounded-[28px] shadow-[0_4px_20px_rgb(0,0,0,0.06)] border border-gray-200 overflow-hidden transition-all">
+          <div className="p-5 sm:p-6 md:px-12 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 min-h-[100px]">
+            <div className="flex-1 min-w-0">
+              <h3 className={cn("text-lg sm:text-xl md:text-[22px] font-bold leading-snug", availableSemesters.includes('1st') ? "text-[#0c2340]" : "text-[#6b7280]")}>
                 1st Semester <span className={cn("underline underline-offset-[6px] decoration-2", availableSemesters.includes('1st') ? "text-[#0c2340]" : "text-[#9ca3af]")}>(2026-2027)</span>
               </h3>
-              <p className="text-gray-500 mt-1 text-sm md:text-base">Upload the required documents <span className="italic font-medium font-serif text-gray-500">(for current students)</span></p>
+              <p className="text-gray-500 mt-1 text-xs sm:text-sm md:text-base leading-relaxed">
+                Upload the required documents <span className="italic font-medium font-serif text-gray-500">(for current students)</span>
+              </p>
             </div>
             <button 
               onClick={() => toggleDropdown('1st')}
               disabled={!availableSemesters.includes('1st')}
               className={cn(
-                "px-8 py-3.5 rounded-full font-bold flex items-center justify-center gap-2 border w-auto min-w-[140px] transition-colors",
+                "w-full sm:w-auto px-6 sm:px-8 py-2.5 sm:py-3.5 rounded-full font-bold flex items-center justify-center gap-2 border min-w-[130px] transition-colors text-xs sm:text-sm shrink-0 cursor-pointer",
                 !availableSemesters.includes('1st') 
                   ? "bg-[#e2e8f0] text-[#94a3b8] border-[#cbd5e1] cursor-not-allowed" 
                   : openDropdown === '1st'
@@ -434,58 +443,62 @@ export function StudentDashboard() {
                     : "bg-[#dbeafe] text-[#1e3a8a] border-[#93c5fd] hover:bg-[#bfdbfe]"
               )}
             >
-              Submit
+              <span>Submit</span>
               {openDropdown === '1st' ? (
-                <ChevronUp className="w-5 h-5" />
+                <ChevronUp className="w-4 h-4 sm:w-5 sm:h-5 shrink-0" />
               ) : (
-                <ChevronDown className="w-5 h-5" />
+                <ChevronDown className="w-4 h-4 sm:w-5 sm:h-5 shrink-0" />
               )}
             </button>
           </div>
           
           {openDropdown === '1st' && (
-            <div className="absolute top-[90px] right-4 w-full max-w-[650px] bg-white rounded-2xl shadow-[0_10px_40px_rgb(0,0,0,0.15)] border border-gray-300 p-8 pt-10 z-10 animate-in fade-in slide-in-from-top-4 duration-200">
-              <div className="flex justify-between items-center mb-5">
-                <div>
-                  <h4 className="font-bold text-[#0c2340] text-[18px] leading-tight">RF</h4>
-                  <p className="text-[#0c2340] text-[15px]">Registration Form</p>
+            <div className="border-t border-gray-100 bg-[#f8fafc] p-4 sm:p-6 md:p-8 animate-in fade-in slide-in-from-top-2 duration-200">
+              <div className="max-w-2xl mx-auto space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3 bg-white rounded-xl border border-gray-200">
+                  <div>
+                    <h4 className="font-bold text-[#0c2340] text-sm sm:text-base leading-tight">RF</h4>
+                    <p className="text-gray-500 text-xs sm:text-sm">Registration Form</p>
+                  </div>
+                  {renderFileButton('1st_rf')}
                 </div>
-                {renderFileButton('1st_rf')}
-              </div>
-              
-              <div className="flex justify-between items-center mb-8">
-                <div>
-                  <h4 className="font-bold text-[#0c2340] text-[18px] leading-tight">GWA</h4>
-                  <p className="text-[#0c2340] text-[15px]">General Weighted Average</p>
+                
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3 bg-white rounded-xl border border-gray-200">
+                  <div>
+                    <h4 className="font-bold text-[#0c2340] text-sm sm:text-base leading-tight">GWA</h4>
+                    <p className="text-gray-500 text-xs sm:text-sm">General Weighted Average</p>
+                  </div>
+                  {renderFileButton('1st_gwa')}
                 </div>
-                {renderFileButton('1st_gwa')}
+                
+                <button 
+                  onClick={() => handleSubmit('1st')}
+                  disabled={isSubmitting}
+                  className="w-full bg-[#2b4c8a] text-white py-3 sm:py-3.5 rounded-xl font-bold text-xs sm:text-sm hover:bg-[#1e3a8a] transition-colors shadow-sm disabled:opacity-70 flex justify-center items-center gap-2 cursor-pointer mt-2"
+                >
+                  {isSubmitting ? <RefreshCw className="w-4 h-4 animate-spin" /> : 'Submit Documents'}
+                </button>
               </div>
-              
-              <button 
-                onClick={() => handleSubmit('1st')}
-                disabled={isSubmitting}
-                className="w-full bg-[#2b4c8a] text-white py-3.5 rounded-lg font-bold text-[15px] hover:bg-[#1e3a8a] transition-colors shadow-sm disabled:opacity-70 flex justify-center items-center gap-2"
-              >
-                {isSubmitting ? <RefreshCw className="w-5 h-5 animate-spin" /> : 'Submit'}
-              </button>
             </div>
           )}
         </div>
 
-        {/* Card 3 with Dropdown */}
-        <div className={cn("relative", openDropdown === '2nd' ? "z-50" : "z-10")}>
-          <div className="bg-white rounded-full p-5 px-12 shadow-[0_6px_25px_rgb(0,0,0,0.08)] flex justify-between items-center border border-gray-200 gap-6 h-[110px] relative z-20">
-            <div>
-              <h3 className={cn("text-[22px] font-bold", availableSemesters.includes('2nd') ? "text-[#0c2340]" : "text-[#6b7280]")}>
+        {/* Card 3 with Dropdown: 2nd Semester */}
+        <div className="bg-white rounded-2xl md:rounded-[28px] shadow-[0_4px_20px_rgb(0,0,0,0.06)] border border-gray-200 overflow-hidden transition-all">
+          <div className="p-5 sm:p-6 md:px-12 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 min-h-[100px]">
+            <div className="flex-1 min-w-0">
+              <h3 className={cn("text-lg sm:text-xl md:text-[22px] font-bold leading-snug", availableSemesters.includes('2nd') ? "text-[#0c2340]" : "text-[#6b7280]")}>
                 2nd Semester <span className={cn("underline underline-offset-[6px] decoration-2", availableSemesters.includes('2nd') ? "text-[#0c2340]" : "text-[#9ca3af]")}>(2026-2027)</span>
               </h3>
-              <p className="text-gray-500 mt-1 text-sm md:text-base">Upload the required documents <span className="italic font-medium font-serif text-gray-500">(for current students)</span></p>
+              <p className="text-gray-500 mt-1 text-xs sm:text-sm md:text-base leading-relaxed">
+                Upload the required documents <span className="italic font-medium font-serif text-gray-500">(for current students)</span>
+              </p>
             </div>
             <button 
               onClick={() => toggleDropdown('2nd')}
               disabled={!availableSemesters.includes('2nd')}
               className={cn(
-                "px-8 py-3.5 rounded-full font-bold flex items-center justify-center gap-2 border w-auto min-w-[140px] transition-colors",
+                "w-full sm:w-auto px-6 sm:px-8 py-2.5 sm:py-3.5 rounded-full font-bold flex items-center justify-center gap-2 border min-w-[130px] transition-colors text-xs sm:text-sm shrink-0 cursor-pointer",
                 !availableSemesters.includes('2nd') 
                   ? "bg-[#e2e8f0] text-[#94a3b8] border-[#cbd5e1] cursor-not-allowed" 
                   : openDropdown === '2nd'
@@ -493,40 +506,42 @@ export function StudentDashboard() {
                     : "bg-[#dbeafe] text-[#1e3a8a] border-[#93c5fd] hover:bg-[#bfdbfe]"
               )}
             >
-              Submit
+              <span>Submit</span>
               {openDropdown === '2nd' ? (
-                <ChevronUp className="w-5 h-5" />
+                <ChevronUp className="w-4 h-4 sm:w-5 sm:h-5 shrink-0" />
               ) : (
-                <ChevronDown className="w-5 h-5" />
+                <ChevronDown className="w-4 h-4 sm:w-5 sm:h-5 shrink-0" />
               )}
             </button>
           </div>
           
           {openDropdown === '2nd' && (
-            <div className="absolute top-[90px] right-4 w-full max-w-[650px] bg-white rounded-2xl shadow-[0_10px_40px_rgb(0,0,0,0.15)] border border-gray-300 p-8 pt-10 z-10 animate-in fade-in slide-in-from-top-4 duration-200">
-              <div className="flex justify-between items-center mb-5">
-                <div>
-                  <h4 className="font-bold text-[#0c2340] text-[18px] leading-tight">RF</h4>
-                  <p className="text-[#0c2340] text-[15px]">Registration Form</p>
+            <div className="border-t border-gray-100 bg-[#f8fafc] p-4 sm:p-6 md:p-8 animate-in fade-in slide-in-from-top-2 duration-200">
+              <div className="max-w-2xl mx-auto space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3 bg-white rounded-xl border border-gray-200">
+                  <div>
+                    <h4 className="font-bold text-[#0c2340] text-sm sm:text-base leading-tight">RF</h4>
+                    <p className="text-gray-500 text-xs sm:text-sm">Registration Form</p>
+                  </div>
+                  {renderFileButton('2nd_rf')}
                 </div>
-                {renderFileButton('2nd_rf')}
-              </div>
-              
-              <div className="flex justify-between items-center mb-8">
-                <div>
-                  <h4 className="font-bold text-[#0c2340] text-[18px] leading-tight">GWA</h4>
-                  <p className="text-[#0c2340] text-[15px]">General Weighted Average</p>
+                
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3 bg-white rounded-xl border border-gray-200">
+                  <div>
+                    <h4 className="font-bold text-[#0c2340] text-sm sm:text-base leading-tight">GWA</h4>
+                    <p className="text-gray-500 text-xs sm:text-sm">General Weighted Average</p>
+                  </div>
+                  {renderFileButton('2nd_gwa')}
                 </div>
-                {renderFileButton('2nd_gwa')}
+                
+                <button 
+                  onClick={() => handleSubmit('2nd')}
+                  disabled={isSubmitting}
+                  className="w-full bg-[#2b4c8a] text-white py-3 sm:py-3.5 rounded-xl font-bold text-xs sm:text-sm hover:bg-[#1e3a8a] transition-colors shadow-sm disabled:opacity-70 flex justify-center items-center gap-2 cursor-pointer mt-2"
+                >
+                  {isSubmitting ? <RefreshCw className="w-4 h-4 animate-spin" /> : 'Submit Documents'}
+                </button>
               </div>
-              
-              <button 
-                onClick={() => handleSubmit('2nd')}
-                disabled={isSubmitting}
-                className="w-full bg-[#2b4c8a] text-white py-3.5 rounded-lg font-bold text-[15px] hover:bg-[#1e3a8a] transition-colors shadow-sm disabled:opacity-70 flex justify-center items-center gap-2"
-              >
-                {isSubmitting ? <RefreshCw className="w-5 h-5 animate-spin" /> : 'Submit'}
-              </button>
             </div>
           )}
         </div>
@@ -534,7 +549,7 @@ export function StudentDashboard() {
       
       {/* Toast Notification */}
       {showToast && (
-        <div className="fixed bottom-10 left-10 bg-[#bbf7d0] border border-[#86efac] px-6 py-3.5 rounded-full shadow-lg flex items-center gap-3 z-50 animate-in slide-in-from-bottom-5 fade-in duration-300">
+        <div className="fixed bottom-10 left-1/2 -translate-x-1/2 sm:left-10 sm:translate-x-0 bg-[#bbf7d0] border border-[#86efac] px-6 py-3.5 rounded-full shadow-lg flex items-center gap-3 z-50 animate-in slide-in-from-bottom-5 fade-in duration-300">
           <div className="w-6 h-6 bg-[#16a34a] rounded-full flex items-center justify-center shrink-0">
             <Check className="w-4 h-4 text-white" strokeWidth={4} />
           </div>
@@ -544,7 +559,6 @@ export function StudentDashboard() {
     </div>
   );
 }
-
 
 interface InputGroupProps {
   label: string;
@@ -624,6 +638,18 @@ export function StudentSubmissionForm() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [validationWarning, setValidationWarning] = useState<{ title: string; details: string[] } | null>(null);
   const [submittedSuccess, setSubmittedSuccess] = useState(false);
+  const [successModalData, setSuccessModalData] = useState<{
+    referenceNo: string;
+    studentName: string;
+    studentId: string;
+    scholarshipType: string;
+    submittedAt: string;
+    filesCount: number;
+    course?: string;
+    yearLevel?: string;
+    data: any;
+  } | null>(null);
+  const [previewFile, setPreviewFile] = useState<any | null>(null);
 
   const [formData, setFormData] = useState(() => {
     let initialUser: any = {};
@@ -706,13 +732,18 @@ export function StudentSubmissionForm() {
       const loadExisting = (existing: any) => {
         if (existing) {
           setExistingId(existing.id);
-          setFormData(prev => ({
-            ...prev,
-            firstName: user.firstName || prev.firstName,
-            familyName: user.lastName || prev.familyName,
-            email: user.email || prev.email,
-            ...(existing.data || {})
-          }));
+          setFormData(prev => {
+            const data = existing.data || {};
+            const unifiedExternal = data.externalCategory || data.chedSubCategory || data.meritSubCategory || '';
+            return {
+              ...prev,
+              firstName: user.firstName || prev.firstName,
+              familyName: user.lastName || prev.familyName,
+              email: user.email || prev.email,
+              ...data,
+              externalCategory: unifiedExternal
+            };
+          });
           
           if (existing.files && Array.isArray(existing.files) && existing.files.length > 0) {
             setFiles(existing.files.map((f: any) => ({
@@ -756,7 +787,23 @@ export function StudentSubmissionForm() {
   };
 
   const handleRadioChange = (name: string, value: string) => {
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData(prev => {
+      const updated = { ...prev, [name]: value };
+      if (name === 'externalCategory') {
+        updated.externalCategory = value;
+        if (['VIC', 'Capizeño Circle', 'DOST', 'GRF'].includes(value)) {
+          updated.meritSubCategory = value;
+          updated.chedSubCategory = '';
+        } else if (['LGU', 'DSWD'].includes(value)) {
+          updated.meritSubCategory = '';
+          updated.chedSubCategory = '';
+        } else {
+          updated.chedSubCategory = value;
+          updated.meritSubCategory = '';
+        }
+      }
+      return updated;
+    });
     if (errors[name]) {
       setErrors(prev => {
         const next = { ...prev };
@@ -878,6 +925,89 @@ export function StudentSubmissionForm() {
     return true;
   };
 
+  const handleEditStep = (targetStep: number, sectionTargetId?: string) => {
+    setStep(targetStep);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (sectionTargetId) {
+      setTimeout(() => {
+        const elem = document.getElementById(sectionTargetId);
+        if (elem) {
+          elem.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 150);
+    }
+  };
+
+  const handlePrintOrDownloadSummary = () => {
+    if (!successModalData) return;
+    
+    let summaryText = `CAPIZ STATE UNIVERSITY - GUIDANCE & COUNSELING OFFICE\n`;
+    summaryText += `OFFICIAL SCHOLARSHIP SUBMISSION SUMMARY & RECEIPT\n`;
+    summaryText += `======================================================================\n\n`;
+    summaryText += `Tracking Reference Code : ${successModalData.referenceNo}\n`;
+    summaryText += `Submission Timestamp   : ${new Date(successModalData.submittedAt).toLocaleString()}\n`;
+    summaryText += `Evaluation Status      : Pending Guidance Verification\n\n`;
+    
+    summaryText += `I. APPLICANT PERSONAL DETAILS\n`;
+    summaryText += `----------------------------------------------------------------------\n`;
+    summaryText += `Full Name              : ${successModalData.studentName}\n`;
+    summaryText += `Student ID / Email     : ${successModalData.studentId}\n`;
+    summaryText += `Course & Program       : ${formData.course || 'BSCS'}\n`;
+    summaryText += `Year Level & Section   : ${formData.yearLevel || '1st Year'} ${formData.section ? `(Section ${formData.section})` : ''}\n`;
+    summaryText += `Date of Birth & Age    : ${formData.birthdate || 'N/A'} (${formData.age || 'N/A'} years old)\n`;
+    summaryText += `Sex & Civil Status     : ${formData.sex || 'N/A'} | ${formData.civilStatus || 'Single'}\n`;
+    summaryText += `Contact Number         : ${formData.contactNo || 'N/A'}\n`;
+    summaryText += `Email Address          : ${formData.email || 'N/A'}\n`;
+    summaryText += `Permanent Home Address : ${formData.permanentAddress || 'N/A'}\n\n`;
+
+    summaryText += `II. FAMILY BACKGROUND\n`;
+    summaryText += `----------------------------------------------------------------------\n`;
+    summaryText += `Father                 : ${formData.fatherName || 'N/A'} | Occupation: ${formData.fatherOccupation || 'N/A'} | Contact: ${formData.fatherContact || 'N/A'}\n`;
+    summaryText += `Mother                 : ${formData.motherName || 'N/A'} | Occupation: ${formData.motherOccupation || 'N/A'} | Contact: ${formData.motherContact || 'N/A'}\n`;
+    if (formData.guardianName) {
+      summaryText += `Guardian               : ${formData.guardianName} | Occupation: ${formData.guardianOccupation || 'N/A'} | Contact: ${formData.guardianContact || 'N/A'}\n`;
+    }
+    summaryText += `\n`;
+
+    summaryText += `III. SOCIO-ECONOMIC STATUS\n`;
+    summaryText += `----------------------------------------------------------------------\n`;
+    summaryText += `Parent Highest Education: ${formData.parentEduAttainment || 'N/A'}\n`;
+    summaryText += `Monthly Household Income: ${formData.monthlyIncome || 'N/A'}\n`;
+    summaryText += `First-Gen College Student: ${formData.firstInFamily || 'N/A'}\n`;
+    summaryText += `Living Arrangement     : ${formData.livingWith || 'N/A'}\n`;
+    summaryText += `Housing Type           : ${formData.housingType || 'N/A'}\n`;
+    summaryText += `Working Student        : ${formData.workingStudent || 'No'} ${formData.workTypeIncome ? `(${formData.workTypeIncome})` : ''}\n`;
+    if (formData.accessToResources && formData.accessToResources.length > 0) {
+      summaryText += `Access to Resources    : ${formData.accessToResources.join(', ')}\n`;
+    }
+    summaryText += `\n`;
+
+    summaryText += `IV. SCHOLARSHIP PROGRAM DETAILS\n`;
+    summaryText += `----------------------------------------------------------------------\n`;
+    summaryText += `Fund Classification    : ${formData.scholarshipFundType || 'External'}\n`;
+    summaryText += `Scholarship Program    : ${successModalData.scholarshipType}\n\n`;
+
+    summaryText += `V. SUBMITTED DOCUMENTARY REQUIREMENTS (${files.length})\n`;
+    summaryText += `----------------------------------------------------------------------\n`;
+    files.forEach((f, idx) => {
+      summaryText += `${idx + 1}. [${f.category || 'DOC'}] ${f.name} — ${f.size || 'Attached'}\n`;
+    });
+
+    summaryText += `\n======================================================================\n`;
+    summaryText += `Certification: All information provided herein has been certified authentic by the applicant.\n`;
+    summaryText += `Guidance and Counseling Office - Capiz State University\n`;
+
+    const blob = new Blob([summaryText], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${successModalData.studentName.replace(/[^a-zA-Z0-9_-]/g, '_')}_Scholarship_Summary.txt`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
   const handleSubmit = async () => {
     setIsSubmitting(true);
     try {
@@ -886,11 +1016,28 @@ export function StudentSubmissionForm() {
       const effectiveStudentId = user?.email || user?.id || formData.email || `STU-${Date.now()}`;
       const effectiveStudentName = `${formData.firstName} ${formData.familyName}`.trim() || `${user?.firstName || ''} ${user?.lastName || ''}`.trim() || 'Anonymous Student';
 
+      let scholarshipProgram = 'General Scholarship';
+      if (formData.scholarshipFundType === 'Internal') {
+        scholarshipProgram = `Internally-Funded (${formData.internalCategory || 'Institutional'}${formData.internalCategoryOthers ? ` - ${formData.internalCategoryOthers}` : ''})`;
+      } else if (formData.scholarshipFundType === 'External') {
+        const ext = formData.externalCategory || formData.chedSubCategory || formData.meritSubCategory || 'External Scholarship';
+        let detail = ext;
+        if (ext === 'Congressional District' && formData.chedCongressionalDistrict) detail += ` - ${formData.chedCongressionalDistrict}`;
+        else if (ext === 'One Town One Scholar' && formData.chedOneTown) detail += ` - ${formData.chedOneTown}`;
+        else if (ext === 'Tulong Dunong' && formData.chedTulongDunong) detail += ` - ${formData.chedTulongDunong}`;
+        else if (ext === 'Others' && formData.chedOthers) detail += ` - ${formData.chedOthers}`;
+        else if (ext === 'LGU' && formData.lguContact) detail += ` (${formData.lguContact})`;
+        else if (ext === 'DSWD' && formData.dswdMunicipality) detail += ` (${formData.dswdMunicipality})`;
+        scholarshipProgram = `Externally-Funded (${detail})`;
+      } else {
+        scholarshipProgram = formData.externalCategory || formData.internalCategory || 'General Scholarship';
+      }
+
       const submission = {
         id: existingId || `SUB-${Date.now()}`,
         studentId: effectiveStudentId,
         studentName: effectiveStudentName,
-        scholarshipType: formData.internalCategory || formData.chedSubCategory || formData.meritSubCategory || formData.externalCategory || 'General Scholarship',
+        scholarshipType: scholarshipProgram,
         status: 'Pending' as const,
         submittedAt: new Date().toISOString(),
         data: {
@@ -909,16 +1056,44 @@ export function StudentSubmissionForm() {
           status: f.status || 'Pending' as const,
         }))
       };
+
+      const referenceNo = `CAPSU-SCH-2026-${Math.floor(10000 + Math.random() * 90000)}`;
       
       if (existingId) {
         await db.submissions.update(existingId, submission);
       } else {
         await db.submissions.create(submission);
       }
+
+      // Add real-time notification alert to Guidance Office
+      try {
+        await db.notifications.create({
+          type: 'submission',
+          title: existingId ? 'Scholarship Application Updated' : 'New Scholarship Application Submitted',
+          description: `${effectiveStudentName} (${formData.course || 'BSCS'}) submitted requirements for ${scholarshipProgram}.`,
+          studentName: effectiveStudentName,
+          studentId: effectiveStudentId,
+          scholarship: scholarshipProgram,
+          timestamp: 'Just now',
+          read: false,
+          priority: 'high'
+        });
+      } catch (notifErr) {
+        console.warn("Notification sync notice:", notifErr);
+      }
+
+      setSuccessModalData({
+        referenceNo,
+        studentName: effectiveStudentName,
+        studentId: effectiveStudentId,
+        scholarshipType: scholarshipProgram,
+        submittedAt: submission.submittedAt,
+        filesCount: submission.files.length,
+        course: formData.course,
+        yearLevel: formData.yearLevel,
+        data: submission.data
+      });
       setSubmittedSuccess(true);
-      setTimeout(() => {
-        navigate('/student/dashboard');
-      }, 1500);
     } catch (e) {
       console.error(e);
       setValidationWarning({
@@ -965,15 +1140,27 @@ export function StudentSubmissionForm() {
           ? 'border-red-400 bg-red-50/30' 
           : 'border-dashed border-gray-300 bg-white hover:bg-gray-50'
       } p-6 rounded-xl text-center relative overflow-hidden transition-all shadow-sm`}>
-        <input type="file" id={id} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" onChange={(e) => handleCategoryFileUpload(id, e)} />
+        <input type="file" id={id} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-0" onChange={(e) => handleCategoryFileUpload(id, e)} />
         {existingFile ? (
-          <div className="flex flex-col items-center gap-2">
+          <div className="flex flex-col items-center gap-2 relative z-10">
             <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
               <CheckCircle2 className="w-6 h-6 text-[#16a34a]" />
             </div>
             <p className="text-[#0c2340] font-bold text-sm">{existingFile.name}</p>
             <p className="text-gray-500 text-xs">{existingFile.size}</p>
-            <span className="text-[11px] text-blue-600 font-semibold hover:underline mt-1">Click to replace file</span>
+            <div className="flex items-center gap-3 mt-1">
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setPreviewFile(existingFile);
+                }}
+                className="text-[11px] bg-white border border-green-300 hover:bg-green-100 text-green-800 font-bold px-2.5 py-0.5 rounded flex items-center gap-1 transition-colors cursor-pointer"
+              >
+                <Eye className="w-3 h-3" /> Preview
+              </button>
+              <span className="text-[11px] text-blue-600 font-semibold hover:underline">Replace file</span>
+            </div>
           </div>
         ) : (
           <div className="flex flex-col items-center gap-2">
@@ -995,49 +1182,49 @@ export function StudentSubmissionForm() {
   return (
     <div className="max-w-4xl mx-auto py-8 px-4">
       {/* Progress Stepper */}
-      <div className="bg-white rounded-[2rem] shadow-sm py-8 px-12 mb-8 flex items-center justify-center gap-2">
-        <div className="flex flex-col items-center">
-          <div className={`w-16 h-16 rounded-[18px] flex items-center justify-center shadow-md mb-3 z-10 relative ${step >= 1 ? 'bg-[#1864db] shadow-blue-500/20' : 'bg-gray-200'}`}>
-            <FileEdit className={`w-7 h-7 ${step >= 1 ? 'text-white' : 'text-gray-500'}`} />
+      <div className="bg-white rounded-2xl md:rounded-[2rem] shadow-sm py-4 sm:py-8 px-4 sm:px-12 mb-6 sm:mb-8 flex items-center justify-center gap-1 sm:gap-2 overflow-x-auto">
+        <div className="flex flex-col items-center shrink-0">
+          <div className={`w-10 h-10 sm:w-16 sm:h-16 rounded-xl sm:rounded-[18px] flex items-center justify-center shadow-md mb-2 sm:mb-3 z-10 relative ${step >= 1 ? 'bg-[#1864db] shadow-blue-500/20' : 'bg-gray-200'}`}>
+            <FileEdit className={`w-5 h-5 sm:w-7 sm:h-7 ${step >= 1 ? 'text-white' : 'text-gray-500'}`} />
           </div>
-          <span className={`text-[11px] font-bold uppercase ${step >= 1 ? 'text-[#1e3a8a]' : 'text-gray-400'}`}>Student Information</span>
+          <span className={`text-[9px] sm:text-[11px] font-bold uppercase text-center ${step >= 1 ? 'text-[#1e3a8a]' : 'text-gray-400'}`}>Student Info</span>
         </div>
-        <div className={`w-24 h-[2px] -mt-8 ${step >= 2 ? 'bg-[#1864db]' : 'bg-gray-300'}`}></div>
-        <div className="flex flex-col items-center">
-          <div className={`w-16 h-16 rounded-[18px] flex items-center justify-center shadow-md mb-3 z-10 relative ${step >= 2 ? 'bg-[#1864db] shadow-blue-500/20' : 'bg-gray-200'}`}>
-            <FileText className={`w-7 h-7 ${step >= 2 ? 'text-white' : 'text-gray-500'}`} />
+        <div className={`w-6 sm:w-16 md:w-24 h-[2px] -mt-5 sm:-mt-8 shrink-0 ${step >= 2 ? 'bg-[#1864db]' : 'bg-gray-300'}`}></div>
+        <div className="flex flex-col items-center shrink-0">
+          <div className={`w-10 h-10 sm:w-16 sm:h-16 rounded-xl sm:rounded-[18px] flex items-center justify-center shadow-md mb-2 sm:mb-3 z-10 relative ${step >= 2 ? 'bg-[#1864db] shadow-blue-500/20' : 'bg-gray-200'}`}>
+            <FileText className={`w-5 h-5 sm:w-7 sm:h-7 ${step >= 2 ? 'text-white' : 'text-gray-500'}`} />
           </div>
-          <span className={`text-[11px] font-bold uppercase ${step >= 2 ? 'text-[#1e3a8a]' : 'text-gray-400'}`}>Upload Files</span>
+          <span className={`text-[9px] sm:text-[11px] font-bold uppercase text-center ${step >= 2 ? 'text-[#1e3a8a]' : 'text-gray-400'}`}>Upload Files</span>
         </div>
-        <div className={`w-24 h-[2px] -mt-8 ${step >= 3 ? 'bg-[#1864db]' : 'bg-gray-300'}`}></div>
-        <div className="flex flex-col items-center">
-          <div className={`w-16 h-16 rounded-[18px] flex items-center justify-center shadow-md mb-3 z-10 relative ${step >= 3 ? 'bg-[#1864db] shadow-blue-500/20' : 'bg-gray-200'}`}>
-            <ClipboardCheck className={`w-7 h-7 ${step >= 3 ? 'text-white' : 'text-gray-500'}`} />
+        <div className={`w-6 sm:w-16 md:w-24 h-[2px] -mt-5 sm:-mt-8 shrink-0 ${step >= 3 ? 'bg-[#1864db]' : 'bg-gray-300'}`}></div>
+        <div className="flex flex-col items-center shrink-0">
+          <div className={`w-10 h-10 sm:w-16 sm:h-16 rounded-xl sm:rounded-[18px] flex items-center justify-center shadow-md mb-2 sm:mb-3 z-10 relative ${step >= 3 ? 'bg-[#1864db] shadow-blue-500/20' : 'bg-gray-200'}`}>
+            <ClipboardCheck className={`w-5 h-5 sm:w-7 sm:h-7 ${step >= 3 ? 'text-white' : 'text-gray-500'}`} />
           </div>
-          <span className={`text-[11px] font-bold uppercase ${step >= 3 ? 'text-[#1e3a8a]' : 'text-gray-400'}`}>Review</span>
+          <span className={`text-[9px] sm:text-[11px] font-bold uppercase text-center ${step >= 3 ? 'text-[#1e3a8a]' : 'text-gray-400'}`}>Review</span>
         </div>
       </div>
 
       {submittedSuccess && (
-        <div className="bg-green-50 border-2 border-green-500 rounded-2xl p-6 mb-8 text-center shadow-lg animate-in zoom-in-95 duration-300">
-          <div className="w-14 h-14 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
-            <CheckCircle2 className="w-8 h-8 text-green-600" />
+        <div className="bg-green-50 border-2 border-green-500 rounded-2xl p-4 sm:p-6 mb-6 sm:mb-8 text-center shadow-lg animate-in zoom-in-95 duration-300">
+          <div className="w-12 h-12 sm:w-14 sm:h-14 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-3">
+            <CheckCircle2 className="w-7 h-7 sm:w-8 sm:h-8 text-green-600" />
           </div>
-          <h3 className="text-xl font-bold text-green-900 mb-1">
+          <h3 className="text-lg sm:text-xl font-bold text-green-900 mb-1">
             Application {existingId ? 'Updated' : 'Submitted'} Successfully!
           </h3>
-          <p className="text-sm text-green-700">Redirecting to your student dashboard...</p>
+          <p className="text-xs sm:text-sm text-green-700">Redirecting to your student dashboard...</p>
         </div>
       )}
 
       {/* Validation Warning Alert */}
       {validationWarning && (
-        <div className="bg-red-50 border-2 border-red-400 rounded-xl p-4 mb-6 shadow-md animate-in slide-in-from-top-2 fade-in duration-200">
-          <div className="flex items-start gap-3">
+        <div className="bg-red-50 border-2 border-red-400 rounded-xl p-3.5 sm:p-4 mb-6 shadow-md animate-in slide-in-from-top-2 fade-in duration-200">
+          <div className="flex items-start gap-2.5 sm:gap-3">
             <AlertCircle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
-            <div className="flex-1">
-              <h4 className="font-bold text-sm text-red-900">{validationWarning.title}</h4>
-              <ul className="list-disc list-inside text-xs text-red-700 font-medium mt-1.5 space-y-0.5">
+            <div className="flex-1 min-w-0">
+              <h4 className="font-bold text-xs sm:text-sm text-red-900">{validationWarning.title}</h4>
+              <ul className="list-disc list-inside text-[11px] sm:text-xs text-red-700 font-medium mt-1.5 space-y-0.5">
                 {validationWarning.details.map((item, idx) => (
                   <li key={idx}>{item}</li>
                 ))}
@@ -1054,15 +1241,15 @@ export function StudentSubmissionForm() {
       )}
 
       <div className="bg-white rounded-xl shadow-sm overflow-hidden mb-4 border-t-[5px] border-[#eab308]">
-        <div className="p-6 text-center">
-          <h2 className="text-3xl font-bold font-serif text-gray-900 mb-3">Scholarship Record Form</h2>
-          <p className="text-[13px] font-serif text-gray-700 max-w-2xl mx-auto">
+        <div className="p-4 sm:p-6 text-center">
+          <h2 className="text-xl sm:text-2xl md:text-3xl font-bold font-serif text-gray-900 mb-2 sm:mb-3">Scholarship Record Form</h2>
+          <p className="text-xs sm:text-[13px] font-serif text-gray-700 max-w-2xl mx-auto leading-relaxed">
             Data and Personal Information will be kept with utmost confidentiality and will be protected through RA 10173 also known as Data Privacy Act of 2012
           </p>
         </div>
       </div>
       <div className="bg-[#fef9c3] border border-[#facc15] rounded-lg p-3 mb-6">
-        <p className="text-[#a16207] text-[13px] text-center">
+        <p className="text-[#a16207] text-xs sm:text-[13px] text-center leading-relaxed">
           Please fill out all required fields (<span className="text-red-600 font-bold">*</span>) accurately and completely. This form will be reviewed by the Guidance Office prior to processing.
         </p>
       </div>
@@ -1077,7 +1264,7 @@ export function StudentSubmissionForm() {
               <User className="w-4 h-4 text-[#1e3a8a] font-bold" />
               <h3 className="font-bold text-[#1e3a8a] text-[13px]">A. Personal Information</h3>
             </div>
-            <div className="p-4 flex gap-6">
+            <div className="p-3 sm:p-4 flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6">
               <div className="w-[120px] flex-shrink-0 flex flex-col items-center">
                 <label className="w-[110px] h-[110px] border-2 border-dashed border-[#1e3a8a] mb-2 flex flex-col items-center justify-center overflow-hidden bg-white cursor-pointer hover:bg-blue-50/50 transition-colors group relative rounded">
                   {formData.photo2x2 ? (
@@ -1095,8 +1282,8 @@ export function StudentSubmissionForm() {
                   <input type="file" accept="image/*" className="hidden" onChange={handlePhotoUpload} />
                 </label>
               </div>
-              <div className="flex-1 space-y-4">
-                <div className="grid grid-cols-3 gap-4">
+              <div className="flex-1 w-full space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
                   <InputGroup 
                     label="Family Name" 
                     name="familyName" 
@@ -1120,7 +1307,7 @@ export function StudentSubmissionForm() {
                     error={errors.firstName} 
                   />
                 </div>
-                <div className="grid grid-cols-[1.5fr_1fr_1.5fr] gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-[1.5fr_1fr_1.5fr] gap-3 sm:gap-4">
                   <div className="flex flex-col relative" id="field-birthdate">
                     <label className="text-[11px] font-bold text-[#0f2e60] mb-1 flex items-center gap-1">
                       Birthdate <span className="text-red-500 font-bold">*</span>
@@ -1155,7 +1342,7 @@ export function StudentSubmissionForm() {
                     {errors.sex && <span className="text-[10px] text-red-600 font-semibold mt-0.5">{errors.sex}</span>}
                   </div>
                 </div>
-                <div className="grid grid-cols-[1fr_1fr_1fr_1.5fr] gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-[1fr_1fr_1fr_1.5fr] gap-3 sm:gap-4">
                   <SelectGroup 
                     label="Year Level" 
                     name="yearLevel" 
@@ -1187,7 +1374,7 @@ export function StudentSubmissionForm() {
                     </div>
                   </div>
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                   <InputGroup 
                     label="Contact No." 
                     name="contactNo" 
@@ -1223,25 +1410,43 @@ export function StudentSubmissionForm() {
               <User className="w-4 h-4 text-[#1e3a8a] font-bold" />
               <h3 className="font-bold text-[#1e3a8a] text-[13px]">B. Family Background</h3>
             </div>
-            <div className="p-4 space-y-6">
-              <div><div className="inline-block bg-[#e0e7ff] border border-[#1e3a8a] text-[#1e3a8a] text-[11px] font-bold px-4 py-0.5 rounded-sm mb-3">Father Information</div>
-                <div className="grid grid-cols-[2fr_1.5fr_1.5fr] gap-4"><InputGroup label="Name" name="fatherName" value={formData.fatherName} onChange={handleChange} /><InputGroup label="Occupation" name="fatherOccupation" value={formData.fatherOccupation} onChange={handleChange} /><InputGroup label="Contact No." name="fatherContact" value={formData.fatherContact} onChange={handleChange} /></div></div>
-              <div><div className="inline-block bg-[#e0e7ff] border border-[#1e3a8a] text-[#1e3a8a] text-[11px] font-bold px-4 py-0.5 rounded-sm mb-3">Mother Information</div>
-                <div className="grid grid-cols-[2fr_1.5fr_1.5fr] gap-4"><InputGroup label="Name" name="motherName" value={formData.motherName} onChange={handleChange} /><InputGroup label="Occupation" name="motherOccupation" value={formData.motherOccupation} onChange={handleChange} /><InputGroup label="Contact No." name="motherContact" value={formData.motherContact} onChange={handleChange} /></div></div>
-              <div><div className="inline-block bg-[#e0e7ff] border border-[#1e3a8a] text-[#1e3a8a] text-[11px] font-bold px-4 py-0.5 rounded-sm mb-3">Guardian Information</div>
-                <div className="grid grid-cols-[2fr_1.5fr_1.5fr] gap-4"><InputGroup label="Name" name="guardianName" value={formData.guardianName} onChange={handleChange} /><InputGroup label="Occupation" name="guardianOccupation" value={formData.guardianOccupation} onChange={handleChange} /><InputGroup label="Contact No." name="guardianContact" value={formData.guardianContact} onChange={handleChange} /></div></div>
+            <div className="p-3 sm:p-4 space-y-6">
+              <div>
+                <div className="inline-block bg-[#e0e7ff] border border-[#1e3a8a] text-[#1e3a8a] text-[11px] font-bold px-4 py-0.5 rounded-sm mb-3">Father Information</div>
+                <div className="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-[2fr_1.5fr_1.5fr] gap-3 sm:gap-4">
+                  <InputGroup label="Name" name="fatherName" value={formData.fatherName} onChange={handleChange} />
+                  <InputGroup label="Occupation" name="fatherOccupation" value={formData.fatherOccupation} onChange={handleChange} />
+                  <InputGroup label="Contact No." name="fatherContact" value={formData.fatherContact} onChange={handleChange} />
+                </div>
+              </div>
+              <div>
+                <div className="inline-block bg-[#e0e7ff] border border-[#1e3a8a] text-[#1e3a8a] text-[11px] font-bold px-4 py-0.5 rounded-sm mb-3">Mother Information</div>
+                <div className="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-[2fr_1.5fr_1.5fr] gap-3 sm:gap-4">
+                  <InputGroup label="Name (maiden name)" name="motherName" value={formData.motherName} onChange={handleChange} placeholder="e.g. Maria Santos Dela Cruz" />
+                  <InputGroup label="Occupation" name="motherOccupation" value={formData.motherOccupation} onChange={handleChange} />
+                  <InputGroup label="Contact No." name="motherContact" value={formData.motherContact} onChange={handleChange} />
+                </div>
+              </div>
+              <div>
+                <div className="inline-block bg-[#e0e7ff] border border-[#1e3a8a] text-[#1e3a8a] text-[11px] font-bold px-4 py-0.5 rounded-sm mb-3">Guardian Information</div>
+                <div className="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-[2fr_1.5fr_1.5fr] gap-3 sm:gap-4">
+                  <InputGroup label="Name" name="guardianName" value={formData.guardianName} onChange={handleChange} />
+                  <InputGroup label="Occupation" name="guardianOccupation" value={formData.guardianOccupation} onChange={handleChange} />
+                  <InputGroup label="Contact No." name="guardianContact" value={formData.guardianContact} onChange={handleChange} />
+                </div>
+              </div>
             </div>
           </div>
           
           <SectionHeader title="SOCIO-ECONOMIC STATUS" />
           
           {/* Parent Edu Attainment & Monthly Income */}
-          <div className="grid grid-cols-2 gap-6 mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mb-6">
             <div className="bg-white p-4 rounded-lg border border-[#93c5fd] shadow-sm">
               <label className="block text-[12px] font-bold text-[#0f2e60] mb-3">Highest Educational Attainment of your Parent/Guardian?</label>
               <div className="space-y-2">
                 {['Elementary Level', 'Elementary Graduate', 'High school Graduate', 'College Graduate', 'High School Level', 'College Level', 'post Graduate level/degree'].map(opt => (
-                  <label key={opt} className="flex items-center gap-2 text-xs font-semibold text-[#0f2e60]">
+                  <label key={opt} className="flex items-center gap-2 text-xs font-semibold text-[#0f2e60] cursor-pointer">
                     <input type="radio" name="parentEduAttainment" value={opt} checked={formData.parentEduAttainment === opt} onChange={(e) => handleRadioChange('parentEduAttainment', e.target.value)} className="w-3.5 h-3.5" /> {opt}
                   </label>
                 ))}
@@ -1251,7 +1456,7 @@ export function StudentSubmissionForm() {
               <label className="block text-[12px] font-bold text-[#0f2e60] mb-3">What is your family's approximate monthly income?</label>
               <div className="space-y-2">
                 {['below ₱ 10,000', '₱ 10,001 - ₱ 20,000', '₱ 20,001 - ₱ 30,000', 'Above ₱ 30,000'].map(opt => (
-                  <label key={opt} className="flex items-center gap-2 text-xs font-semibold text-[#0f2e60]">
+                  <label key={opt} className="flex items-center gap-2 text-xs font-semibold text-[#0f2e60] cursor-pointer">
                     <input type="radio" name="monthlyIncome" value={opt} checked={formData.monthlyIncome === opt} onChange={(e) => handleRadioChange('monthlyIncome', e.target.value)} className="w-3.5 h-3.5" /> {opt}
                   </label>
                 ))}
@@ -1259,8 +1464,8 @@ export function StudentSubmissionForm() {
               <div className="mt-6">
                 <label className="block text-[12px] font-bold text-[#0f2e60] mb-3">Are you the first in the family to attend College?</label>
                 <div className="flex gap-4">
-                  <label className="flex items-center gap-2 text-xs font-semibold text-[#0f2e60]"><input type="radio" name="firstInFamily" value="Yes" checked={formData.firstInFamily === 'Yes'} onChange={() => handleRadioChange('firstInFamily', 'Yes')} className="w-3.5 h-3.5" /> Yes</label>
-                  <label className="flex items-center gap-2 text-xs font-semibold text-[#0f2e60]"><input type="radio" name="firstInFamily" value="No" checked={formData.firstInFamily === 'No'} onChange={() => handleRadioChange('firstInFamily', 'No')} className="w-3.5 h-3.5" /> No</label>
+                  <label className="flex items-center gap-2 text-xs font-semibold text-[#0f2e60] cursor-pointer"><input type="radio" name="firstInFamily" value="Yes" checked={formData.firstInFamily === 'Yes'} onChange={() => handleRadioChange('firstInFamily', 'Yes')} className="w-3.5 h-3.5" /> Yes</label>
+                  <label className="flex items-center gap-2 text-xs font-semibold text-[#0f2e60] cursor-pointer"><input type="radio" name="firstInFamily" value="No" checked={formData.firstInFamily === 'No'} onChange={() => handleRadioChange('firstInFamily', 'No')} className="w-3.5 h-3.5" /> No</label>
                 </div>
               </div>
             </div>
@@ -1268,16 +1473,16 @@ export function StudentSubmissionForm() {
 
           <div className="bg-white p-4 rounded-lg border border-[#93c5fd] shadow-sm mb-6">
             <h3 className="font-bold text-[#1e3a8a] text-[13px] mb-4">C. Living Condition</h3>
-            <div className="grid grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
               <div>
                 <label className="block text-[12px] font-bold text-[#0f2e60] mb-3">With whom do you currently live?</label>
                 <div className="space-y-2">
                   {['Parents/Guardians', 'Relatives', 'Alone', 'Boarding house'].map(opt => (
-                    <label key={opt} className="flex items-center gap-2 text-xs font-semibold text-[#0f2e60]">
+                    <label key={opt} className="flex items-center gap-2 text-xs font-semibold text-[#0f2e60] cursor-pointer">
                       <input type="radio" name="livingWith" value={opt} checked={formData.livingWith === opt} onChange={(e) => handleRadioChange('livingWith', e.target.value)} className="w-3.5 h-3.5" /> {opt}
                     </label>
                   ))}
-                  <label className="flex items-center gap-2 text-xs font-semibold text-[#0f2e60]">
+                  <label className="flex items-center gap-2 text-xs font-semibold text-[#0f2e60] cursor-pointer">
                     <input type="radio" name="livingWith" value="Others" checked={formData.livingWith === 'Others'} onChange={(e) => handleRadioChange('livingWith', e.target.value)} className="w-3.5 h-3.5" /> others (please specify)
                   </label>
                   {formData.livingWith === 'Others' && (
@@ -1289,11 +1494,11 @@ export function StudentSubmissionForm() {
                 <label className="block text-[12px] font-bold text-[#0f2e60] mb-3">Type of Housing</label>
                 <div className="space-y-2">
                   {['Own house', 'Rented house or apartment', 'Boarding house'].map(opt => (
-                    <label key={opt} className="flex items-center gap-2 text-xs font-semibold text-[#0f2e60]">
+                    <label key={opt} className="flex items-center gap-2 text-xs font-semibold text-[#0f2e60] cursor-pointer">
                       <input type="radio" name="housingType" value={opt} checked={formData.housingType === opt} onChange={(e) => handleRadioChange('housingType', e.target.value)} className="w-3.5 h-3.5" /> {opt}
                     </label>
                   ))}
-                  <label className="flex items-center gap-2 text-xs font-semibold text-[#0f2e60]">
+                  <label className="flex items-center gap-2 text-xs font-semibold text-[#0f2e60] cursor-pointer">
                     <input type="radio" name="housingType" value="Others" checked={formData.housingType === 'Others'} onChange={(e) => handleRadioChange('housingType', e.target.value)} className="w-3.5 h-3.5" /> others (please specify)
                   </label>
                   {formData.housingType === 'Others' && (
@@ -1306,12 +1511,12 @@ export function StudentSubmissionForm() {
 
           <div className="bg-white p-4 rounded-lg border border-[#93c5fd] shadow-sm mb-6">
             <h3 className="font-bold text-[#1e3a8a] text-[13px] mb-4">D. Access to Resources</h3>
-            <div className="grid grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
               <div>
                 <label className="block text-[12px] font-bold text-[#0f2e60] mb-3">Do you have access of the following at home?</label>
                 <div className="space-y-2">
                   {['Personal Computer/Laptop', 'Internet Connection', 'Study space', 'Textbooks and learning materials'].map(opt => (
-                    <label key={opt} className="flex items-center gap-2 text-xs font-semibold text-[#0f2e60]">
+                    <label key={opt} className="flex items-center gap-2 text-xs font-semibold text-[#0f2e60] cursor-pointer">
                       <input type="checkbox" checked={formData.accessToResources.includes(opt)} onChange={() => handleCheckboxChange('accessToResources', opt)} className="w-3.5 h-3.5 rounded-sm text-blue-600 focus:ring-blue-500" /> {opt}
                     </label>
                   ))}
@@ -1319,10 +1524,10 @@ export function StudentSubmissionForm() {
               </div>
               <div>
                 <label className="block text-[12px] font-bold text-[#0f2e60] mb-3">Do you work while studying?</label>
-                <div className="flex gap-4">
-                  <label className="flex items-center gap-2 text-xs font-semibold text-[#0f2e60]"><input type="radio" name="workingStudent" value="Yes, full-time" checked={formData.workingStudent === 'Yes, full-time'} onChange={() => handleRadioChange('workingStudent', 'Yes, full-time')} className="w-3.5 h-3.5" /> Yes, full-time</label>
-                  <label className="flex items-center gap-2 text-xs font-semibold text-[#0f2e60]"><input type="radio" name="workingStudent" value="Yes, part-time" checked={formData.workingStudent === 'Yes, part-time'} onChange={() => handleRadioChange('workingStudent', 'Yes, part-time')} className="w-3.5 h-3.5" /> Yes, part-time</label>
-                  <label className="flex items-center gap-2 text-xs font-semibold text-[#0f2e60]"><input type="radio" name="workingStudent" value="No" checked={formData.workingStudent === 'No'} onChange={() => handleRadioChange('workingStudent', 'No')} className="w-3.5 h-3.5" /> No</label>
+                <div className="flex flex-wrap gap-3 sm:gap-4">
+                  <label className="flex items-center gap-2 text-xs font-semibold text-[#0f2e60] cursor-pointer"><input type="radio" name="workingStudent" value="Yes, full-time" checked={formData.workingStudent === 'Yes, full-time'} onChange={() => handleRadioChange('workingStudent', 'Yes, full-time')} className="w-3.5 h-3.5" /> Yes, full-time</label>
+                  <label className="flex items-center gap-2 text-xs font-semibold text-[#0f2e60] cursor-pointer"><input type="radio" name="workingStudent" value="Yes, part-time" checked={formData.workingStudent === 'Yes, part-time'} onChange={() => handleRadioChange('workingStudent', 'Yes, part-time')} className="w-3.5 h-3.5" /> Yes, part-time</label>
+                  <label className="flex items-center gap-2 text-xs font-semibold text-[#0f2e60] cursor-pointer"><input type="radio" name="workingStudent" value="No" checked={formData.workingStudent === 'No'} onChange={() => handleRadioChange('workingStudent', 'No')} className="w-3.5 h-3.5" /> No</label>
                 </div>
               </div>
             </div>
@@ -1331,7 +1536,7 @@ export function StudentSubmissionForm() {
           <div className="bg-white p-4 rounded-lg border border-[#93c5fd] shadow-sm mb-6">
             <h3 className="font-bold text-[#1e3a8a] text-[13px] mb-4">E. Student Classification</h3>
             <label className="block text-[12px] font-bold text-[#0f2e60] mb-3">Which of the following classification best describe your current status? (Multiple responses)</label>
-            <div className="grid grid-cols-2 gap-x-6 gap-y-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2">
               {[
                 'Indigenous Peoples (IPs)', 'Solo Parent', 'Child of a solo parent', 'Persons with disabilities (PWDs)', 'Child of Person with Disabilities (PWD)',
                 'Drop out or learner who returned to school', 'Child of drop out or learner who returned to school', 'Rebel returnees', 'Child of a rebel returnees',
@@ -1340,14 +1545,14 @@ export function StudentSubmissionForm() {
                 'Senior Citizen student', 'First Generation student (Parents did not complete a college degree, first in the immediate family to seek college admission)',
                 'LGBTQ+ Community', 'Regular student (I do not belong to any of this group classification)'
               ].map(opt => (
-                <label key={opt} className="flex items-start gap-2 text-xs font-semibold text-[#0f2e60]">
-                  <input type="checkbox" checked={formData.studentClassification.includes(opt)} onChange={() => handleCheckboxChange('studentClassification', opt)} className="w-3.5 h-3.5 mt-0.5 rounded-sm text-blue-600 focus:ring-blue-500" />
+                <label key={opt} className="flex items-start gap-2 text-xs font-semibold text-[#0f2e60] cursor-pointer">
+                  <input type="checkbox" checked={formData.studentClassification.includes(opt)} onChange={() => handleCheckboxChange('studentClassification', opt)} className="w-3.5 h-3.5 mt-0.5 rounded-sm text-blue-600 focus:ring-blue-500 shrink-0" />
                   <span className="leading-snug">{opt}</span>
                 </label>
               ))}
-              <div className="col-span-2 mt-2">
-                <label className="flex items-center gap-2 text-xs font-semibold text-[#0f2e60]">
-                  <input type="checkbox" checked={formData.studentClassification.includes('Others')} onChange={() => handleCheckboxChange('studentClassification', 'Others')} className="w-3.5 h-3.5 rounded-sm text-blue-600 focus:ring-blue-500" /> others (Please specify)
+              <div className="col-span-1 sm:col-span-2 mt-2">
+                <label className="flex items-center gap-2 text-xs font-semibold text-[#0f2e60] cursor-pointer">
+                  <input type="checkbox" checked={formData.studentClassification.includes('Others')} onChange={() => handleCheckboxChange('studentClassification', 'Others')} className="w-3.5 h-3.5 rounded-sm text-blue-600 focus:ring-blue-500 shrink-0" /> others (Please specify)
                 </label>
                 {formData.studentClassification.includes('Others') && (
                   <input type="text" name="studentClassificationOthers" value={formData.studentClassificationOthers} onChange={handleChange} className="border-b border-[#1e3a8a] outline-none text-xs ml-6 mt-1 w-full max-w-lg" />
@@ -1373,50 +1578,50 @@ export function StudentSubmissionForm() {
 
           <SectionHeader title="SCHOLARSHIP CATEGORY" />
           
-          <div className="bg-white p-6 rounded-lg border border-[#93c5fd] shadow-sm mb-6">
+          <div className="bg-white p-4 sm:p-6 rounded-lg border border-[#93c5fd] shadow-sm mb-6">
             
             <div className="mb-8">
-              <label className="flex items-center gap-2 font-bold text-[#1e3a8a] text-[14px] mb-4">
+              <label className="flex items-center gap-2 font-bold text-[#1e3a8a] text-[14px] mb-4 cursor-pointer">
                 <input type="radio" name="scholarshipFundType" value="Internal" checked={formData.scholarshipFundType === 'Internal'} onChange={(e) => handleRadioChange('scholarshipFundType', e.target.value)} className="w-4 h-4" /> A. Internally-Funded
               </label>
               
               {formData.scholarshipFundType === 'Internal' && (
-                <div className="pl-6 space-y-6">
+                <div className="pl-3 sm:pl-6 space-y-6">
                   <div>
                     <h4 className="font-bold text-[12px] text-[#0f2e60] mb-2">Entrance</h4>
-                    <div className="flex gap-8">
-                      <label className="flex items-center gap-2 text-xs font-semibold text-[#0f2e60]"><input type="radio" name="internalCategory" value="Valedictorian" checked={formData.internalCategory === 'Valedictorian'} onChange={(e) => handleRadioChange('internalCategory', e.target.value)} /> Valedictorian</label>
-                      <label className="flex items-center gap-2 text-xs font-semibold text-[#0f2e60]"><input type="radio" name="internalCategory" value="Salutatorian" checked={formData.internalCategory === 'Salutatorian'} onChange={(e) => handleRadioChange('internalCategory', e.target.value)} /> Salutatorian</label>
+                    <div className="flex flex-wrap gap-4 sm:gap-8">
+                      <label className="flex items-center gap-2 text-xs font-semibold text-[#0f2e60] cursor-pointer"><input type="radio" name="internalCategory" value="Valedictorian" checked={formData.internalCategory === 'Valedictorian'} onChange={(e) => handleRadioChange('internalCategory', e.target.value)} /> Valedictorian</label>
+                      <label className="flex items-center gap-2 text-xs font-semibold text-[#0f2e60] cursor-pointer"><input type="radio" name="internalCategory" value="Salutatorian" checked={formData.internalCategory === 'Salutatorian'} onChange={(e) => handleRadioChange('internalCategory', e.target.value)} /> Salutatorian</label>
                     </div>
                   </div>
                   <div>
                     <h4 className="font-bold text-[12px] text-[#0f2e60] mb-2">Academic</h4>
-                    <div className="flex gap-8">
-                      <label className="flex items-center gap-2 text-xs font-semibold text-[#0f2e60]"><input type="radio" name="internalCategory" value="Full" checked={formData.internalCategory === 'Full'} onChange={(e) => handleRadioChange('internalCategory', e.target.value)} /> Full</label>
-                      <label className="flex items-center gap-2 text-xs font-semibold text-[#0f2e60]"><input type="radio" name="internalCategory" value="Partial" checked={formData.internalCategory === 'Partial'} onChange={(e) => handleRadioChange('internalCategory', e.target.value)} /> Partial</label>
-                      <label className="flex items-center gap-2 text-xs font-semibold text-[#0f2e60]"><input type="radio" name="internalCategory" value="Regional" checked={formData.internalCategory === 'Regional'} onChange={(e) => handleRadioChange('internalCategory', e.target.value)} /> Regional</label>
-                      <label className="flex items-center gap-2 text-xs font-semibold text-[#0f2e60]"><input type="radio" name="internalCategory" value="National" checked={formData.internalCategory === 'National'} onChange={(e) => handleRadioChange('internalCategory', e.target.value)} /> National</label>
+                    <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-3 sm:gap-8">
+                      <label className="flex items-center gap-2 text-xs font-semibold text-[#0f2e60] cursor-pointer"><input type="radio" name="internalCategory" value="Full" checked={formData.internalCategory === 'Full'} onChange={(e) => handleRadioChange('internalCategory', e.target.value)} /> Full</label>
+                      <label className="flex items-center gap-2 text-xs font-semibold text-[#0f2e60] cursor-pointer"><input type="radio" name="internalCategory" value="Partial" checked={formData.internalCategory === 'Partial'} onChange={(e) => handleRadioChange('internalCategory', e.target.value)} /> Partial</label>
+                      <label className="flex items-center gap-2 text-xs font-semibold text-[#0f2e60] cursor-pointer"><input type="radio" name="internalCategory" value="Regional" checked={formData.internalCategory === 'Regional'} onChange={(e) => handleRadioChange('internalCategory', e.target.value)} /> Regional</label>
+                      <label className="flex items-center gap-2 text-xs font-semibold text-[#0f2e60] cursor-pointer"><input type="radio" name="internalCategory" value="National" checked={formData.internalCategory === 'National'} onChange={(e) => handleRadioChange('internalCategory', e.target.value)} /> National</label>
                     </div>
                   </div>
                   <div>
                     <h4 className="font-bold text-[12px] text-[#0f2e60] mb-2">Socio-cultural</h4>
-                    <div className="flex gap-8">
-                      <label className="flex items-center gap-2 text-xs font-semibold text-[#0f2e60]"><input type="radio" name="internalCategory" value="SC-Regional" checked={formData.internalCategory === 'SC-Regional'} onChange={(e) => handleRadioChange('internalCategory', e.target.value)} /> Regional</label>
-                      <label className="flex items-center gap-2 text-xs font-semibold text-[#0f2e60]"><input type="radio" name="internalCategory" value="SC-National" checked={formData.internalCategory === 'SC-National'} onChange={(e) => handleRadioChange('internalCategory', e.target.value)} /> National</label>
+                    <div className="flex flex-wrap gap-4 sm:gap-8">
+                      <label className="flex items-center gap-2 text-xs font-semibold text-[#0f2e60] cursor-pointer"><input type="radio" name="internalCategory" value="SC-Regional" checked={formData.internalCategory === 'SC-Regional'} onChange={(e) => handleRadioChange('internalCategory', e.target.value)} /> Regional</label>
+                      <label className="flex items-center gap-2 text-xs font-semibold text-[#0f2e60] cursor-pointer"><input type="radio" name="internalCategory" value="SC-National" checked={formData.internalCategory === 'SC-National'} onChange={(e) => handleRadioChange('internalCategory', e.target.value)} /> National</label>
                     </div>
                   </div>
                   <div>
                     <h4 className="font-bold text-[12px] text-[#0f2e60] mb-2">Institutional</h4>
-                    <div className="grid grid-cols-2 gap-y-2 gap-x-8">
-                      <label className="flex items-center gap-2 text-xs font-semibold text-[#0f2e60]"><input type="radio" name="internalCategory" value="Dependent of Faculty" checked={formData.internalCategory === 'Dependent of Faculty'} onChange={(e) => handleRadioChange('internalCategory', e.target.value)} /> Dependent of Faculty or Staff</label>
-                      <label className="flex items-center gap-2 text-xs font-semibold text-[#0f2e60]"><input type="radio" name="internalCategory" value="President - SSC" checked={formData.internalCategory === 'President - SSC'} onChange={(e) => handleRadioChange('internalCategory', e.target.value)} /> President – SSC</label>
-                      <label className="flex items-center gap-2 text-xs font-semibold text-[#0f2e60]"><input type="radio" name="internalCategory" value="President - FLP" checked={formData.internalCategory === 'President - FLP'} onChange={(e) => handleRadioChange('internalCategory', e.target.value)} /> President – FLP</label>
-                      <label className="flex items-center gap-2 text-xs font-semibold text-[#0f2e60]"><input type="radio" name="internalCategory" value="Editor-in-Chief" checked={formData.internalCategory === 'Editor-in-Chief'} onChange={(e) => handleRadioChange('internalCategory', e.target.value)} /> Editor-in-Chief (Campus Publication)</label>
-                      <label className="flex items-center gap-2 text-xs font-semibold text-[#0f2e60]"><input type="radio" name="internalCategory" value="CapSU Band / Chorale" checked={formData.internalCategory === 'CapSU Band / Chorale'} onChange={(e) => handleRadioChange('internalCategory', e.target.value)} /> CapSU Band / Chorale</label>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-2 gap-x-8">
+                      <label className="flex items-center gap-2 text-xs font-semibold text-[#0f2e60] cursor-pointer"><input type="radio" name="internalCategory" value="Dependent of Faculty" checked={formData.internalCategory === 'Dependent of Faculty'} onChange={(e) => handleRadioChange('internalCategory', e.target.value)} /> Dependent of Faculty or Staff</label>
+                      <label className="flex items-center gap-2 text-xs font-semibold text-[#0f2e60] cursor-pointer"><input type="radio" name="internalCategory" value="President - SSC" checked={formData.internalCategory === 'President - SSC'} onChange={(e) => handleRadioChange('internalCategory', e.target.value)} /> President – SSC</label>
+                      <label className="flex items-center gap-2 text-xs font-semibold text-[#0f2e60] cursor-pointer"><input type="radio" name="internalCategory" value="President - FLP" checked={formData.internalCategory === 'President - FLP'} onChange={(e) => handleRadioChange('internalCategory', e.target.value)} /> President – FLP</label>
+                      <label className="flex items-center gap-2 text-xs font-semibold text-[#0f2e60] cursor-pointer"><input type="radio" name="internalCategory" value="Editor-in-Chief" checked={formData.internalCategory === 'Editor-in-Chief'} onChange={(e) => handleRadioChange('internalCategory', e.target.value)} /> Editor-in-Chief (Campus Publication)</label>
+                      <label className="flex items-center gap-2 text-xs font-semibold text-[#0f2e60] cursor-pointer"><input type="radio" name="internalCategory" value="CapSU Band / Chorale" checked={formData.internalCategory === 'CapSU Band / Chorale'} onChange={(e) => handleRadioChange('internalCategory', e.target.value)} /> CapSU Band / Chorale</label>
                     </div>
                   </div>
                   <div className="mt-4">
-                    <label className="flex items-center gap-2 text-xs font-semibold text-[#0f2e60]">
+                    <label className="flex items-center gap-2 text-xs font-semibold text-[#0f2e60] cursor-pointer">
                       <input type="radio" name="internalCategory" value="Others" checked={formData.internalCategory === 'Others'} onChange={(e) => handleRadioChange('internalCategory', e.target.value)} /> Others (specify)
                     </label>
                     {formData.internalCategory === 'Others' && (
@@ -1428,63 +1633,165 @@ export function StudentSubmissionForm() {
             </div>
 
             <div className="pt-4 border-t border-gray-200">
-              <label className="flex items-center gap-2 font-bold text-[#1e3a8a] text-[14px] mb-4">
+              <label className="flex items-center gap-2 font-bold text-[#1e3a8a] text-[14px] mb-4 cursor-pointer">
                 <input type="radio" name="scholarshipFundType" value="External" checked={formData.scholarshipFundType === 'External'} onChange={(e) => handleRadioChange('scholarshipFundType', e.target.value)} className="w-4 h-4" /> B. Externally-Funded
               </label>
               
               {formData.scholarshipFundType === 'External' && (
-                <div className="pl-6 space-y-6">
+                <div className="pl-3 sm:pl-6 space-y-6">
                   <div>
                     <h4 className="font-bold text-[12px] text-[#0f2e60] mb-2">CHED</h4>
                     <div className="flex flex-col gap-2">
                       {['ANAC – IP', 'Pag – ulikid', 'Barangay (Legal dependents of Brgy. Officials)', 'ESGP – PA', 'UniFast', 'Tertiary Education Subsidy (TES)'].map(opt => (
-                        <label key={opt} className="flex items-center gap-2 text-xs font-semibold text-[#0f2e60]"><input type="radio" name="chedSubCategory" value={opt} checked={formData.chedSubCategory === opt} onChange={(e) => handleRadioChange('chedSubCategory', e.target.value)} /> {opt}</label>
+                        <label key={opt} className="flex items-center gap-2 text-xs font-semibold text-[#0f2e60] cursor-pointer">
+                          <input 
+                            type="radio" 
+                            name="externalCategory" 
+                            value={opt} 
+                            checked={formData.externalCategory === opt} 
+                            onChange={(e) => handleRadioChange('externalCategory', e.target.value)} 
+                          /> {opt}
+                        </label>
                       ))}
-                      <div className="flex items-center gap-2 text-xs font-semibold text-[#0f2e60] mt-1">
-                        <input type="radio" name="chedSubCategory" value="Congressional District" checked={formData.chedSubCategory === 'Congressional District'} onChange={(e) => handleRadioChange('chedSubCategory', e.target.value)} /> Congressional District (specify)
-                        {formData.chedSubCategory === 'Congressional District' && <input type="text" name="chedCongressionalDistrict" value={formData.chedCongressionalDistrict} onChange={handleChange} className="border-b border-[#1e3a8a] outline-none ml-2 flex-1 max-w-[300px]" />}
+                      <div className="flex flex-wrap items-center gap-2 text-xs font-semibold text-[#0f2e60] mt-1">
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input 
+                            type="radio" 
+                            name="externalCategory" 
+                            value="Congressional District" 
+                            checked={formData.externalCategory === 'Congressional District'} 
+                            onChange={(e) => handleRadioChange('externalCategory', e.target.value)} 
+                          /> Congressional District (specify)
+                        </label>
+                        {formData.externalCategory === 'Congressional District' && (
+                          <input 
+                            type="text" 
+                            name="chedCongressionalDistrict" 
+                            value={formData.chedCongressionalDistrict} 
+                            onChange={handleChange} 
+                            placeholder="e.g. 1st District of Capiz"
+                            className="border-b border-[#1e3a8a] outline-none ml-2 flex-1 max-w-[300px] text-xs" 
+                          />
+                        )}
                       </div>
-                      <div className="flex items-center gap-2 text-xs font-semibold text-[#0f2e60] mt-1">
-                        <input type="radio" name="chedSubCategory" value="One Town One Scholar" checked={formData.chedSubCategory === 'One Town One Scholar'} onChange={(e) => handleRadioChange('chedSubCategory', e.target.value)} /> One Town One Scholar (specify)
-                        {formData.chedSubCategory === 'One Town One Scholar' && <input type="text" name="chedOneTown" value={formData.chedOneTown} onChange={handleChange} className="border-b border-[#1e3a8a] outline-none ml-2 flex-1 max-w-[300px]" />}
+                      <div className="flex flex-wrap items-center gap-2 text-xs font-semibold text-[#0f2e60] mt-1">
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input 
+                            type="radio" 
+                            name="externalCategory" 
+                            value="One Town One Scholar" 
+                            checked={formData.externalCategory === 'One Town One Scholar'} 
+                            onChange={(e) => handleRadioChange('externalCategory', e.target.value)} 
+                          /> One Town One Scholar (specify)
+                        </label>
+                        {formData.externalCategory === 'One Town One Scholar' && (
+                          <input 
+                            type="text" 
+                            name="chedOneTown" 
+                            value={formData.chedOneTown} 
+                            onChange={handleChange} 
+                            placeholder="e.g. Municipality of Pontevedra"
+                            className="border-b border-[#1e3a8a] outline-none ml-2 flex-1 max-w-[300px] text-xs" 
+                          />
+                        )}
                       </div>
-                      <div className="flex items-center gap-2 text-xs font-semibold text-[#0f2e60] mt-1">
-                        <input type="radio" name="chedSubCategory" value="Tulong Dunong" checked={formData.chedSubCategory === 'Tulong Dunong'} onChange={(e) => handleRadioChange('chedSubCategory', e.target.value)} /> Tulong Dunong (specify)
-                        {formData.chedSubCategory === 'Tulong Dunong' && <input type="text" name="chedTulongDunong" value={formData.chedTulongDunong} onChange={handleChange} className="border-b border-[#1e3a8a] outline-none ml-2 flex-1 max-w-[300px]" />}
+                      <div className="flex flex-wrap items-center gap-2 text-xs font-semibold text-[#0f2e60] mt-1">
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input 
+                            type="radio" 
+                            name="externalCategory" 
+                            value="Tulong Dunong" 
+                            checked={formData.externalCategory === 'Tulong Dunong'} 
+                            onChange={(e) => handleRadioChange('externalCategory', e.target.value)} 
+                          /> Tulong Dunong (specify)
+                        </label>
+                        {formData.externalCategory === 'Tulong Dunong' && (
+                          <input 
+                            type="text" 
+                            name="chedTulongDunong" 
+                            value={formData.chedTulongDunong} 
+                            onChange={handleChange} 
+                            placeholder="e.g. CHED-TDP 2026"
+                            className="border-b border-[#1e3a8a] outline-none ml-2 flex-1 max-w-[300px] text-xs" 
+                          />
+                        )}
                       </div>
-                      <div className="flex items-center gap-2 text-xs font-semibold text-[#0f2e60] mt-1">
-                        <input type="radio" name="chedSubCategory" value="Others" checked={formData.chedSubCategory === 'Others'} onChange={(e) => handleRadioChange('chedSubCategory', e.target.value)} /> Others (specify)
-                        {formData.chedSubCategory === 'Others' && <input type="text" name="chedOthers" value={formData.chedOthers} onChange={handleChange} className="border-b border-[#1e3a8a] outline-none ml-2 flex-1 max-w-[300px]" />}
+                      <div className="flex flex-wrap items-center gap-2 text-xs font-semibold text-[#0f2e60] mt-1">
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input 
+                            type="radio" 
+                            name="externalCategory" 
+                            value="Others" 
+                            checked={formData.externalCategory === 'Others'} 
+                            onChange={(e) => handleRadioChange('externalCategory', e.target.value)} 
+                          /> Others (specify)
+                        </label>
+                        {formData.externalCategory === 'Others' && (
+                          <input 
+                            type="text" 
+                            name="chedOthers" 
+                            value={formData.chedOthers} 
+                            onChange={handleChange} 
+                            placeholder="Specify scholarship program"
+                            className="border-b border-[#1e3a8a] outline-none ml-2 flex-1 max-w-[300px] text-xs" 
+                          />
+                        )}
                       </div>
                     </div>
                   </div>
                   <div>
                     <h4 className="font-bold text-[12px] text-[#0f2e60] mb-2">Merit</h4>
                     <div className="grid grid-cols-2 gap-y-2 max-w-[400px]">
-                      <label className="flex items-center gap-2 text-xs font-semibold text-[#0f2e60]"><input type="radio" name="meritSubCategory" value="VIC" checked={formData.meritSubCategory === 'VIC'} onChange={(e) => handleRadioChange('meritSubCategory', e.target.value)} /> VIC</label>
-                      <label className="flex items-center gap-2 text-xs font-semibold text-[#0f2e60]"><input type="radio" name="meritSubCategory" value="Capizeño Circle" checked={formData.meritSubCategory === 'Capizeño Circle'} onChange={(e) => handleRadioChange('meritSubCategory', e.target.value)} /> Capizeño Circle</label>
-                      <label className="flex items-center gap-2 text-xs font-semibold text-[#0f2e60]"><input type="radio" name="meritSubCategory" value="DOST" checked={formData.meritSubCategory === 'DOST'} onChange={(e) => handleRadioChange('meritSubCategory', e.target.value)} /> DOST</label>
-                      <label className="flex items-center gap-2 text-xs font-semibold text-[#0f2e60]"><input type="radio" name="meritSubCategory" value="GRF" checked={formData.meritSubCategory === 'GRF'} onChange={(e) => handleRadioChange('meritSubCategory', e.target.value)} /> GRF</label>
+                      {['VIC', 'Capizeño Circle', 'DOST', 'GRF'].map(meritOpt => (
+                        <label key={meritOpt} className="flex items-center gap-2 text-xs font-semibold text-[#0f2e60] cursor-pointer">
+                          <input 
+                            type="radio" 
+                            name="externalCategory" 
+                            value={meritOpt} 
+                            checked={formData.externalCategory === meritOpt} 
+                            onChange={(e) => handleRadioChange('externalCategory', e.target.value)} 
+                          /> {meritOpt}
+                        </label>
+                      ))}
                     </div>
                   </div>
                   <div>
-                    <label className="flex items-center gap-2 text-[12px] font-bold text-[#0f2e60] mb-2">
-                      <input type="radio" name="externalCategory" value="LGU" checked={formData.externalCategory === 'LGU'} onChange={(e) => handleRadioChange('externalCategory', e.target.value)} /> LGU: Barangay, Municipality, Province (Landline) Contact person or issuing office:
+                    <label className="flex items-center gap-2 text-[12px] font-bold text-[#0f2e60] mb-2 cursor-pointer">
+                      <input 
+                        type="radio" 
+                        name="externalCategory" 
+                        value="LGU" 
+                        checked={formData.externalCategory === 'LGU'} 
+                        onChange={(e) => handleRadioChange('externalCategory', e.target.value)} 
+                      /> LGU: Barangay, Municipality, Province (Landline) Contact person or issuing office:
                     </label>
                     {formData.externalCategory === 'LGU' && (
-                      <input type="text" name="lguContact" value={formData.lguContact} onChange={handleChange} className="border-b border-[#1e3a8a] outline-none text-xs ml-6 w-full max-w-lg" />
+                      <input 
+                        type="text" 
+                        name="lguContact" 
+                        value={formData.lguContact} 
+                        onChange={handleChange} 
+                        placeholder="e.g. Provincial Capitol of Capiz - Gov. Office"
+                        className="border-b border-[#1e3a8a] outline-none text-xs ml-6 w-full max-w-lg" 
+                      />
                     )}
                   </div>
                   <div>
-                    <label className="flex items-center gap-2 text-[12px] font-bold text-[#0f2e60] mb-2">
-                      <input type="radio" name="externalCategory" value="DSWD" checked={formData.externalCategory === 'DSWD'} onChange={(e) => handleRadioChange('externalCategory', e.target.value)} /> DSWD:
+                    <label className="flex items-center gap-2 text-[12px] font-bold text-[#0f2e60] mb-2 cursor-pointer">
+                      <input 
+                        type="radio" 
+                        name="externalCategory" 
+                        value="DSWD" 
+                        checked={formData.externalCategory === 'DSWD'} 
+                        onChange={(e) => handleRadioChange('externalCategory', e.target.value)} 
+                      /> DSWD:
                     </label>
                     {formData.externalCategory === 'DSWD' && (
-                      <div className="pl-6 space-y-3 mt-3 max-w-lg">
-                        <div className="flex items-center gap-3"><span className="text-xs font-semibold text-gray-700 w-24">Municipality:</span> <input type="text" name="dswdMunicipality" value={formData.dswdMunicipality} onChange={handleChange} className="border-b border-gray-400 focus:border-[#1e3a8a] outline-none flex-1 text-sm" /></div>
-                        <div className="flex items-center gap-3"><span className="text-xs font-semibold text-gray-700 w-24">Contact person:</span> <input type="text" name="dswdContact" value={formData.dswdContact} onChange={handleChange} className="border-b border-gray-400 focus:border-[#1e3a8a] outline-none flex-1 text-sm" /></div>
-                        <div className="flex items-center gap-3"><span className="text-xs font-semibold text-gray-700 w-24">Designation:</span> <input type="text" name="dswdDesignation" value={formData.dswdDesignation} onChange={handleChange} className="border-b border-gray-400 focus:border-[#1e3a8a] outline-none flex-1 text-sm" /></div>
-                        <div className="flex items-center gap-3"><span className="text-xs font-semibold text-gray-700 w-24">Others (specify):</span> <input type="text" name="dswdOthers" value={formData.dswdOthers} onChange={handleChange} className="border-b border-gray-400 focus:border-[#1e3a8a] outline-none flex-1 text-sm" /></div>
+                      <div className="pl-3 sm:pl-6 space-y-3 mt-3 max-w-lg">
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3"><span className="text-xs font-semibold text-gray-700 w-24">Municipality:</span> <input type="text" name="dswdMunicipality" value={formData.dswdMunicipality} onChange={handleChange} className="border-b border-gray-400 focus:border-[#1e3a8a] outline-none flex-1 text-sm" /></div>
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3"><span className="text-xs font-semibold text-gray-700 w-24">Contact person:</span> <input type="text" name="dswdContact" value={formData.dswdContact} onChange={handleChange} className="border-b border-gray-400 focus:border-[#1e3a8a] outline-none flex-1 text-sm" /></div>
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3"><span className="text-xs font-semibold text-gray-700 w-24">Designation:</span> <input type="text" name="dswdDesignation" value={formData.dswdDesignation} onChange={handleChange} className="border-b border-gray-400 focus:border-[#1e3a8a] outline-none flex-1 text-sm" /></div>
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3"><span className="text-xs font-semibold text-gray-700 w-24">Others (specify):</span> <input type="text" name="dswdOthers" value={formData.dswdOthers} onChange={handleChange} className="border-b border-gray-400 focus:border-[#1e3a8a] outline-none flex-1 text-sm" /></div>
                       </div>
                     )}
                   </div>
@@ -1493,10 +1800,10 @@ export function StudentSubmissionForm() {
             </div>
             
             <div className="mt-8 pt-8 border-t border-gray-200 text-center" id="signature-box">
-              <p className="text-[13px] text-gray-700 mb-6 italic">I hereby certify that the information I have provided is true and correct to the best of my knowledge.</p>
+              <p className="text-xs sm:text-[13px] text-gray-700 mb-6 italic leading-relaxed">I hereby certify that the information I have provided is true and correct to the best of my knowledge.</p>
               
               <div 
-                className={`mx-auto w-64 h-24 border-2 rounded-xl mb-2 flex items-center justify-center cursor-pointer transition-all bg-white relative overflow-hidden group ${
+                className={`mx-auto w-56 sm:w-64 h-24 border-2 rounded-xl mb-2 flex items-center justify-center cursor-pointer transition-all bg-white relative overflow-hidden group ${
                   errors.signature 
                     ? 'border-red-500 bg-red-50/20 ring-2 ring-red-300' 
                     : formData.signature 
@@ -1516,7 +1823,7 @@ export function StudentSubmissionForm() {
                   </div>
                 )}
               </div>
-              <div className="inline-block border-t-2 border-black w-64 pt-2 text-sm font-bold text-[#0f2e60]">
+              <div className="inline-block border-t-2 border-black w-56 sm:w-64 pt-2 text-xs sm:text-sm font-bold text-[#0f2e60]">
                 Applicant's Signature <span className="text-red-500">*</span>
               </div>
               {errors.signature && (
@@ -1550,21 +1857,21 @@ export function StudentSubmissionForm() {
                   window.scrollTo({ top: 0, behavior: 'smooth' }); 
                 } 
               }} 
-              className="bg-[#1e3a8a] text-white px-8 py-2.5 rounded-lg font-bold hover:bg-[#152c6b] transition-colors shadow-sm flex items-center gap-2"
+              className="w-full sm:w-auto bg-[#1e3a8a] text-white px-8 py-2.5 rounded-lg font-bold hover:bg-[#152c6b] transition-colors shadow-sm flex items-center justify-center gap-2 cursor-pointer text-sm"
             >
-              Next <ArrowRight className="w-4 h-4" />
+              <span>Next</span> <ArrowRight className="w-4 h-4" />
             </button>
           </div>
         </>
       )}
 
       {step === 2 && (
-        <div className="bg-white p-8 rounded-lg shadow-sm border border-gray-200">
+        <div className="bg-white p-4 sm:p-8 rounded-lg shadow-sm border border-gray-200">
           <SectionHeader title="STUDENT DOCUMENTS" />
           <p className="text-xs text-gray-500 mb-6 text-center">
             Please attach valid copies for all 3 required documents. Files up to 10MB accepted.
           </p>
-          <div className="grid grid-cols-2 gap-6 mb-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-6">
             {renderFileUpload('Registration Form (RF)', 'RF')}
             {renderFileUpload('General Weighted Average (GWA)', 'GWA')}
           </div>
@@ -1572,10 +1879,10 @@ export function StudentSubmissionForm() {
             {renderFileUpload('Student ID', 'ID')}
           </div>
           
-          <div className="flex justify-between mt-12">
+          <div className="flex flex-col-reverse sm:flex-row justify-between gap-3 mt-8 sm:mt-12">
             <button 
               onClick={() => { setStep(1); window.scrollTo({ top: 0, behavior: 'smooth' }); }} 
-              className="border border-gray-300 text-gray-700 px-8 py-2.5 rounded-lg font-bold hover:bg-gray-50 transition-colors flex items-center gap-2"
+              className="w-full sm:w-auto border border-gray-300 text-gray-700 px-6 sm:px-8 py-2.5 rounded-lg font-bold hover:bg-gray-50 transition-colors flex items-center justify-center gap-2 cursor-pointer text-sm"
             >
               <ArrowLeft className="w-4 h-4" /> Back
             </button>
@@ -1586,38 +1893,61 @@ export function StudentSubmissionForm() {
                   window.scrollTo({ top: 0, behavior: 'smooth' }); 
                 } 
               }} 
-              className="bg-[#1e3a8a] text-white px-8 py-2.5 rounded-lg font-bold hover:bg-[#152c6b] transition-colors shadow-sm flex items-center gap-2"
+              className="w-full sm:w-auto bg-[#1e3a8a] text-white px-6 sm:px-8 py-2.5 rounded-lg font-bold hover:bg-[#152c6b] transition-colors shadow-sm flex items-center justify-center gap-2 cursor-pointer text-sm"
             >
-              Next <ArrowRight className="w-4 h-4" />
+              <span>Next</span> <ArrowRight className="w-4 h-4" />
             </button>
           </div>
         </div>
       )}
 
       {step === 3 && (
-        <div className="bg-white p-8 rounded-lg shadow-sm border border-gray-200 text-center py-16">
-          <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-            <CheckCircle2 className="w-10 h-10 text-green-600" />
-          </div>
-          <h2 className="text-2xl font-bold mb-2">{existingId ? 'Ready to Update' : 'Ready to Submit'}</h2>
-          <p className="text-gray-600 mb-8 max-w-sm mx-auto">All required information and documents have been verified. You can now {existingId ? 'update' : 'submit'} your application.</p>
-          
-          <div className="flex justify-center gap-4">
-            <button 
-              onClick={() => { setStep(2); window.scrollTo({ top: 0, behavior: 'smooth' }); }} 
-              className="border border-gray-300 text-gray-700 px-8 py-2.5 rounded-lg font-bold hover:bg-gray-50 transition-colors flex items-center gap-2"
-            >
-              <ArrowLeft className="w-4 h-4" /> Back
-            </button>
-            <button 
-              onClick={handleSubmit} 
-              disabled={isSubmitting} 
-              className="bg-green-600 text-white px-8 py-2.5 rounded-lg font-bold hover:bg-green-700 transition-colors shadow-sm flex items-center gap-2 disabled:opacity-50"
-            >
-              {isSubmitting ? (existingId ? 'Updating...' : 'Submitting...') : <><Check className="w-5 h-5" /> {existingId ? 'Update Application' : 'Submit Application'}</>}
-            </button>
-          </div>
-        </div>
+        <SubmissionReviewSummary
+          formData={formData}
+          files={files}
+          isSubmitting={isSubmitting}
+          isUpdate={!!existingId}
+          onSubmit={handleSubmit}
+          onBack={() => {
+            setStep(2);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }}
+          onEditStep={handleEditStep}
+          onPreviewFile={(file) => setPreviewFile(file)}
+        />
+      )}
+
+      {/* Storyboard-Aligned Post-Submission Confirmation Modal */}
+      {successModalData && (
+        <SubmissionSuccessModal
+          isOpen={submittedSuccess}
+          isUpdate={!!existingId}
+          referenceNo={successModalData.referenceNo}
+          studentName={successModalData.studentName}
+          studentId={successModalData.studentId}
+          scholarshipType={successModalData.scholarshipType}
+          submittedAt={successModalData.submittedAt}
+          filesCount={successModalData.filesCount}
+          course={successModalData.course}
+          yearLevel={successModalData.yearLevel}
+          onClose={() => {
+            setSubmittedSuccess(false);
+            navigate('/student/dashboard');
+          }}
+          onGoToDashboard={() => {
+            setSubmittedSuccess(false);
+            navigate('/student/dashboard');
+          }}
+          onPrintOrDownload={handlePrintOrDownloadSummary}
+        />
+      )}
+
+      {/* In-App Document Preview Modal */}
+      {previewFile && (
+        <DocumentPreviewModal
+          file={previewFile}
+          onClose={() => setPreviewFile(null)}
+        />
       )}
 
     </div>

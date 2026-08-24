@@ -673,7 +673,7 @@ export function StudentRecordModal({
               <div>
                 <div className="italic font-bold mb-3 text-sm">Mother Information</div>
                 <div className="flex items-end text-sm">
-                  <span className="mr-2">Name:</span>
+                  <span className="mr-2">Name (maiden name):</span>
                   <span className="w-64 border-b border-black inline-block text-center">{formData.motherName || ''}</span>
                   <span className="ml-4 mr-2">Occupation:</span>
                   <span className="w-48 border-b border-black inline-block text-center">{formData.motherOccupation || ''}</span>
@@ -707,7 +707,7 @@ export function StudentRecordModal({
               <div className="flex items-end gap-4 font-bold">
                 <span>Scholarship Classification:</span>
                 <div className="flex-1 border-b border-black flex items-center justify-center font-normal">
-                  {formData.scholarshipCategory || ''}
+                  {formData.scholarshipCategory || formData.externalCategory || formData.internalCategory || ''}
                 </div>
               </div>
 
