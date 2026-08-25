@@ -58,7 +58,7 @@ export const signInWithEmail = async (email: string, password: string): Promise<
     const result = await signInWithEmailAndPassword(auth, email.trim(), password);
     return result.user;
   } catch (error: any) {
-    console.error("Error signing in with Email/Password", error);
+    // Let the calling UI handle the auth error gracefully
     throw error;
   }
 };
@@ -79,7 +79,7 @@ export const signUpWithEmail = async (
     }
     return result.user;
   } catch (error: any) {
-    console.error("Error signing up with Email/Password", error);
+    // Let caller handle error
     throw error;
   }
 };

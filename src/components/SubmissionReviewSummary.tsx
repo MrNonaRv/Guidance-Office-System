@@ -86,33 +86,6 @@ export function SubmissionReviewSummary({
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
       
-      {/* Review Instruction Banner */}
-      <div className="bg-[#eff6ff] border-2 border-[#93c5fd] rounded-2xl p-4 sm:p-5 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div className="flex items-start gap-3">
-          <div className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center shrink-0 shadow-sm mt-0.5">
-            <CheckCircle2 className="w-6 h-6" />
-          </div>
-          <div>
-            <h3 className="font-bold text-[#0c2340] text-sm sm:text-base leading-tight">
-              Application Summary & Final Verification
-            </h3>
-            <p className="text-xs text-gray-600 mt-1 leading-relaxed">
-              Please review all your entered information, family background, socio-economic data, and uploaded documents below before confirming submission.
-            </p>
-          </div>
-        </div>
-        
-        <div className="flex items-center gap-2 w-full sm:w-auto shrink-0 justify-end">
-          <button
-            type="button"
-            onClick={onBack}
-            className="px-4 py-2 text-xs font-bold text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer"
-          >
-            ← Modify Uploads
-          </button>
-        </div>
-      </div>
-
       {/* SECTION 1: Personal Information */}
       <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
         <div className="bg-[#e0e7ff] px-4 sm:px-6 py-3 border-b border-[#c7d2fe] flex items-center justify-between">

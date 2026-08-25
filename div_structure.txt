@@ -1,0 +1,790 @@
+235-
+236-  return (
+237:    <div className="min-h-screen flex items-center justify-center bg-[url('/BI.png')] bg-cover bg-center p-4">
+238-      <motion.div 
+239-        initial={{ y: 50, opacity: 0 }}
+--
+242-        className="relative bg-[#a5d8ff] p-8 rounded-[32px] shadow-2xl w-full max-w-[380px] text-center"
+243-      >
+244:        <div className="mx-auto h-16 flex items-center justify-center mb-3">
+245-          <img src="/capsu-logo.png" alt="Logo" className="h-full object-contain" />
+246:        </div>
+247-        <h1 className="text-lg font-bold text-[#0f2e60] mb-3 leading-snug">Web-Based Scholarship Submission<br/>Alert System</h1>
+248-        
+249:        <div className="inline-block bg-[#5daef5] text-white px-5 py-1 rounded-full text-[11px] font-semibold mb-6 shadow-sm tracking-wide">
+250-          Student Portal
+251:        </div>
+252-
+253:        <div className="flex bg-white/40 backdrop-blur-sm rounded-full p-1 mb-5 shadow-sm border border-white/40">
+254-          <button 
+255-            type="button"
+--
+266-            Log In
+267-          </button>
+268:        </div>
+269-        
+270:        {error && <div className="text-red-600 text-xs font-semibold text-center mb-3 bg-red-100/80 p-2 rounded-lg border border-red-200">{error}</div>}
+271-
+272-        <button 
+--
+280-        </button>
+281-
+282:        <div className="flex items-center gap-2 mb-4">
+283:          <div className="h-px bg-[#0f2e60]/10 flex-1"></div>
+284-          <span className="text-[10px] text-[#0f2e60]/40 font-bold uppercase tracking-wider">Or</span>
+285:          <div className="h-px bg-[#0f2e60]/10 flex-1"></div>
+286:        </div>
+287-        
+288-        <form className="space-y-3" onSubmit={handleSubmit}>
+289-          {!isLogin && (
+290:            <div className="flex gap-2">
+291:              <div className="text-left flex-1">
+292-                <label className="block text-[11px] font-medium text-[#0f2e60] mb-1 ml-1">First Name</label>
+293-                <input type="text" value={firstName} onChange={e => setFirstName(e.target.value)} required={!isLogin} className="w-full px-4 py-2 bg-white rounded text-sm focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 outline-none transition-all shadow-sm" />
+294:              </div>
+295:              <div className="text-left flex-1">
+296-                <label className="block text-[11px] font-medium text-[#0f2e60] mb-1 ml-1">Last Name</label>
+297-                <input type="text" value={lastName} onChange={e => setLastName(e.target.value)} required={!isLogin} className="w-full px-4 py-2 bg-white rounded text-sm focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 outline-none transition-all shadow-sm" />
+298:              </div>
+299:            </div>
+300-          )}
+301-
+302:          <div className="text-left">
+303-            <label className="block text-[11px] font-medium text-[#0f2e60] mb-1 ml-1">Email</label>
+304-            <input type="email" value={email} onChange={e => setEmail(e.target.value)} required className="w-full px-4 py-2.5 bg-white rounded text-sm focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 outline-none transition-all shadow-sm" />
+305:          </div>
+306-
+307:          <div className="text-left">
+308-            <label className="block text-[11px] font-medium text-[#0f2e60] mb-1 ml-1">Password</label>
+309:            <div className="relative flex items-center">
+310-              <input 
+311-                type={showPassword ? "text" : "password"} 
+--
+329-                )}
+330-              </button>
+331:            </div>
+332-            {isLogin ? (
+333:              <div className="text-right mt-1">
+334-                <a href="#" className="text-[11px] text-[#0f2e60]/70 hover:text-[#0f2e60] hover:underline px-1">Forgot Password?</a>
+335:              </div>
+336-            ) : (
+337-              <p className="text-[10px] text-[#0f2e60]/50 mt-1 px-1">At least 6 characters</p>
+338-            )}
+339:          </div>
+340-          
+341:          <div className="pt-2">
+342-            <button 
+343-              type="submit" 
+--
+347-              {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : (isLogin ? 'Log In' : 'Create Account')}
+348-            </button>
+349:          </div>
+350-        </form>
+351-      </motion.div>
+352:    </div>
+353-  );
+354-}
+--
+425-
+426-  return (
+427:    <div className="min-h-screen bg-[#f4f7fb] font-sans">
+428-      {/* Top Navbar */}
+429-      <header className="bg-[#2b64b1] text-white py-2.5 sm:py-3 px-3 sm:px-6 md:px-8 shadow-sm flex flex-wrap justify-between items-center sticky top-0 z-50 gap-2 sm:gap-4">
+430:        <div className="flex items-center gap-2.5 sm:gap-4 min-w-0">
+431:          <div className="w-9 h-9 sm:w-11 sm:h-11 bg-white rounded-full flex items-center justify-center overflow-hidden shrink-0 shadow-xs">
+432-            <img src="/capsu-logo.png" alt="CAPSU Logo" className="w-7 h-7 sm:w-9 sm:h-9 object-contain" />
+433:          </div>
+434:          <div className="min-w-0">
+435-            <h1 className="text-xs sm:text-sm md:text-[16px] font-bold tracking-tight leading-tight truncate sm:whitespace-normal">
+436-              Web-Based Scholarship Submission Alert System
+437-            </h1>
+438-            <p className="text-[10px] sm:text-xs font-semibold text-blue-100 leading-tight">Student Portal</p>
+439:          </div>
+440:        </div>
+441-        
+442:        <div className="flex items-center gap-2 sm:gap-3 shrink-0 ml-auto">
+443:          <div className="flex items-center gap-1.5 text-[11px] sm:text-xs font-semibold text-white bg-white/20 hover:bg-white/30 transition-colors px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-full shadow-sm max-w-[170px] sm:max-w-[240px] truncate">
+444-            <User className="w-3.5 h-3.5 shrink-0 text-white" />
+445-            <span className="truncate">{user?.email || auth.currentUser?.email || 'student@gmail.com'}</span>
+446:          </div>
+447-          <button 
+448-            onClick={async () => {
+--
+456-            Log out
+457-          </button>
+458:        </div>
+459-      </header>
+460-
+--
+462-        <Outlet />
+463-      </main>
+464:    </div>
+465-  );
+466-}
+--
+591-
+592-  return (
+593:    <div className="space-y-6 sm:space-y-8 max-w-[900px] mx-auto mt-4 sm:mt-6 pb-32 relative px-4 sm:px-6 md:px-0">
+594-      {/* Hello Banner */}
+595:      <div className="bg-gradient-to-r from-[#3b82f6] to-[#1e5088] rounded-2xl md:rounded-[10px] p-5 sm:p-8 md:px-12 md:py-10 text-white shadow-md">
+596-        <h2 className="text-xl sm:text-2xl md:text-[32px] font-bold tracking-tight">
+597-          Hello, {user ? `${user.firstName} ${user.lastName}` : 'Anna Santos'}!
+598-        </h2>
+599:      </div>
+600-
+601:      <div className="space-y-4 sm:space-y-6">
+602-        {/* Card 1: Scholarship Requirements */}
+603:        <div className="bg-white rounded-2xl md:rounded-full p-5 sm:p-6 md:px-12 shadow-[0_4px_20px_rgb(0,0,0,0.06)] flex flex-col sm:flex-row justify-between items-start sm:items-center border border-gray-200 gap-4 min-h-[100px]">
+604:          <div className="flex-1 min-w-0">
+605-            <h3 className="text-lg sm:text-xl md:text-[22px] font-bold text-[#0c2340] leading-snug">
+606-              Scholarship Requirements
+--
+609-              Fill up a scholarship form and upload the required documents.
+610-            </p>
+611:          </div>
+612-          <button 
+613-            onClick={() => navigate('/student/submission')}
+--
+616-            {existingSubmission ? 'Edit' : 'Enter'}
+617-          </button>
+618:        </div>
+619-
+620-        {/* Card 2 with Dropdown: 1st Semester */}
+621:        <div className="bg-white rounded-2xl md:rounded-[28px] shadow-[0_4px_20px_rgb(0,0,0,0.06)] border border-gray-200 overflow-hidden transition-all">
+622:          <div className="p-5 sm:p-6 md:px-12 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 min-h-[100px]">
+623:            <div className="flex-1 min-w-0">
+624-              <h3 className={cn("text-lg sm:text-xl md:text-[22px] font-bold leading-snug", availableSemesters.includes('1st') ? "text-[#0c2340]" : "text-[#6b7280]")}>
+625-                1st Semester <span className={cn("underline underline-offset-[6px] decoration-2", availableSemesters.includes('1st') ? "text-[#0c2340]" : "text-[#9ca3af]")}>(2026-2027)</span>
+--
+628-                Upload the required documents <span className="italic font-medium font-serif text-gray-500">(for current students)</span>
+629-              </p>
+630:            </div>
+631-            <button 
+632-              onClick={() => toggleDropdown('1st')}
+--
+648-              )}
+649-            </button>
+650:          </div>
+651-          
+652-          {openDropdown === '1st' && (
+653:            <div className="border-t border-gray-100 bg-[#f8fafc] p-4 sm:p-6 md:p-8 animate-in fade-in slide-in-from-top-2 duration-200">
+654:              <div className="max-w-2xl mx-auto space-y-4">
+655:                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3 bg-white rounded-xl border border-gray-200">
+656:                  <div>
+657-                    <h4 className="font-bold text-[#0c2340] text-sm sm:text-base leading-tight">RF</h4>
+658-                    <p className="text-gray-500 text-xs sm:text-sm">Registration Form</p>
+659:                  </div>
+660-                  {renderFileButton('1st_rf')}
+661:                </div>
+662-                
+663:                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3 bg-white rounded-xl border border-gray-200">
+664:                  <div>
+665-                    <h4 className="font-bold text-[#0c2340] text-sm sm:text-base leading-tight">GWA</h4>
+666-                    <p className="text-gray-500 text-xs sm:text-sm">General Weighted Average</p>
+667:                  </div>
+668-                  {renderFileButton('1st_gwa')}
+669:                </div>
+670-                
+671-                <button 
+--
+676-                  {isSubmitting ? <RefreshCw className="w-4 h-4 animate-spin" /> : 'Submit Documents'}
+677-                </button>
+678:              </div>
+679:            </div>
+680-          )}
+681:        </div>
+682-
+683-        {/* Card 3 with Dropdown: 2nd Semester */}
+684:        <div className="bg-white rounded-2xl md:rounded-[28px] shadow-[0_4px_20px_rgb(0,0,0,0.06)] border border-gray-200 overflow-hidden transition-all">
+685:          <div className="p-5 sm:p-6 md:px-12 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 min-h-[100px]">
+686:            <div className="flex-1 min-w-0">
+687-              <h3 className={cn("text-lg sm:text-xl md:text-[22px] font-bold leading-snug", availableSemesters.includes('2nd') ? "text-[#0c2340]" : "text-[#6b7280]")}>
+688-                2nd Semester <span className={cn("underline underline-offset-[6px] decoration-2", availableSemesters.includes('2nd') ? "text-[#0c2340]" : "text-[#9ca3af]")}>(2026-2027)</span>
+--
+691-                Upload the required documents <span className="italic font-medium font-serif text-gray-500">(for current students)</span>
+692-              </p>
+693:            </div>
+694-            <button 
+695-              onClick={() => toggleDropdown('2nd')}
+--
+711-              )}
+712-            </button>
+713:          </div>
+714-          
+715-          {openDropdown === '2nd' && (
+716:            <div className="border-t border-gray-100 bg-[#f8fafc] p-4 sm:p-6 md:p-8 animate-in fade-in slide-in-from-top-2 duration-200">
+717:              <div className="max-w-2xl mx-auto space-y-4">
+718:                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3 bg-white rounded-xl border border-gray-200">
+719:                  <div>
+720-                    <h4 className="font-bold text-[#0c2340] text-sm sm:text-base leading-tight">RF</h4>
+721-                    <p className="text-gray-500 text-xs sm:text-sm">Registration Form</p>
+722:                  </div>
+723-                  {renderFileButton('2nd_rf')}
+724:                </div>
+725-                
+726:                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3 bg-white rounded-xl border border-gray-200">
+727:                  <div>
+728-                    <h4 className="font-bold text-[#0c2340] text-sm sm:text-base leading-tight">GWA</h4>
+729-                    <p className="text-gray-500 text-xs sm:text-sm">General Weighted Average</p>
+730:                  </div>
+731-                  {renderFileButton('2nd_gwa')}
+732:                </div>
+733-                
+734-                <button 
+--
+739-                  {isSubmitting ? <RefreshCw className="w-4 h-4 animate-spin" /> : 'Submit Documents'}
+740-                </button>
+741:              </div>
+742:            </div>
+743-          )}
+744:        </div>
+745:      </div>
+746-      
+747-      {/* Toast Notification */}
+748-      {showToast && (
+749:        <div className="fixed bottom-10 left-1/2 -translate-x-1/2 sm:left-10 sm:translate-x-0 bg-[#bbf7d0] border border-[#86efac] px-6 py-3.5 rounded-full shadow-lg flex items-center gap-3 z-50 animate-in slide-in-from-bottom-5 fade-in duration-300">
+750:          <div className="w-6 h-6 bg-[#16a34a] rounded-full flex items-center justify-center shrink-0">
+751-            <Check className="w-4 h-4 text-white" strokeWidth={4} />
+752:          </div>
+753-          <span className="text-[#166534] font-bold text-[14px]">Successfully submitted!</span>
+754:        </div>
+755-      )}
+756:    </div>
+757-  );
+758-}
+--
+771-
+772-const InputGroup = ({ label, name, value, onChange, required, error, id, placeholder, type = "text" }: InputGroupProps) => (
+773:  <div className="flex flex-col" id={id || `field-${name}`}>
+774-    <label className="text-[11px] font-bold text-[#0f2e60] mb-1 flex items-center gap-1">
+775-      {label}
+--
+787-    />
+788-    {error && <span className="text-[10px] text-red-600 font-semibold mt-0.5">{error}</span>}
+789:  </div>
+790-);
+791-
+--
+802-
+803-const SelectGroup = ({ label, name, value, onChange, options, required, error, id }: SelectGroupProps) => (
+804:  <div className="flex flex-col relative" id={id || `field-${name}`}>
+805-    <label className="text-[11px] font-bold text-[#0f2e60] mb-1 flex items-center gap-1">
+806-      {label}
+--
+820-    <ChevronDown className="w-4 h-4 text-[#1e3a8a] absolute right-2 bottom-2 pointer-events-none" />
+821-    {error && <span className="text-[10px] text-red-600 font-semibold mt-0.5">{error}</span>}
+822:  </div>
+823-);
+824-
+825-const SectionHeader = ({ title }: { title: string }) => (
+826:  <div className="bg-[#1846b0] text-white text-center py-2.5 rounded-lg font-bold tracking-wider mb-6 text-sm mt-8">{title}</div>
+827-);
+828-
+--
+1427-
+1428-    return (
+1429:      <div className={`border-2 ${
+1430-        existingFile 
+1431-          ? 'border-green-400 bg-green-50/20' 
+--
+1436-        <input type="file" id={id} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-0" onChange={(e) => handleCategoryFileUpload(id, e)} />
+1437-        {existingFile ? (
+1438:          <div className="flex flex-col items-center gap-2 relative z-10">
+1439:            <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+1440-              <CheckCircle2 className="w-6 h-6 text-[#16a34a]" />
+1441:            </div>
+1442-            <p className="text-[#0c2340] font-bold text-sm">{existingFile.name}</p>
+1443-            <p className="text-gray-500 text-xs">{existingFile.size}</p>
+1444:            <div className="flex items-center gap-3 mt-1">
+1445-              <button
+1446-                type="button"
+--
+1454-              </button>
+1455-              <span className="text-[11px] text-blue-600 font-semibold hover:underline">Replace file</span>
+1456:            </div>
+1457:          </div>
+1458-        ) : (
+1459:          <div className="flex flex-col items-center gap-2">
+1460:            <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center">
+1461-              <Upload className={`w-6 h-6 ${isMissing ? 'text-red-500' : 'text-gray-400'}`} />
+1462:            </div>
+1463-            <p className="text-[#0c2340] font-bold text-sm flex items-center gap-1">
+1464-              {label} <span className="text-red-500">*</span>
+--
+1467-              {isMissing ? 'Document Required — Click to upload' : 'Click or drag file to upload (PDF, PNG, JPG)'}
+1468-            </p>
+1469:          </div>
+1470-        )}
+1471:      </div>
+1472-    );
+1473-  };
+1474-
+1475-  return (
+1476:    <div className="max-w-4xl mx-auto py-8 px-4">
+1477-      {/* Progress Stepper */}
+1478:      <div className="bg-white rounded-2xl md:rounded-[2rem] shadow-sm py-4 sm:py-8 px-4 sm:px-12 mb-6 sm:mb-8 flex items-center justify-center gap-1 sm:gap-2 overflow-x-auto">
+1479:        <div className="flex flex-col items-center shrink-0">
+1480:          <div className={`w-10 h-10 sm:w-16 sm:h-16 rounded-xl sm:rounded-[18px] flex items-center justify-center shadow-md mb-2 sm:mb-3 z-10 relative ${step >= 1 ? 'bg-[#1864db] shadow-blue-500/20' : 'bg-gray-200'}`}>
+1481-            <FileEdit className={`w-5 h-5 sm:w-7 sm:h-7 ${step >= 1 ? 'text-white' : 'text-gray-500'}`} />
+1482:          </div>
+1483-          <span className={`text-[9px] sm:text-[11px] font-bold uppercase text-center ${step >= 1 ? 'text-[#1e3a8a]' : 'text-gray-400'}`}>Student Info</span>
+1484:        </div>
+1485:        <div className={`w-6 sm:w-16 md:w-24 h-[2px] -mt-5 sm:-mt-8 shrink-0 ${step >= 2 ? 'bg-[#1864db]' : 'bg-gray-300'}`}></div>
+1486:        <div className="flex flex-col items-center shrink-0">
+1487:          <div className={`w-10 h-10 sm:w-16 sm:h-16 rounded-xl sm:rounded-[18px] flex items-center justify-center shadow-md mb-2 sm:mb-3 z-10 relative ${step >= 2 ? 'bg-[#1864db] shadow-blue-500/20' : 'bg-gray-200'}`}>
+1488-            <FileText className={`w-5 h-5 sm:w-7 sm:h-7 ${step >= 2 ? 'text-white' : 'text-gray-500'}`} />
+1489:          </div>
+1490-          <span className={`text-[9px] sm:text-[11px] font-bold uppercase text-center ${step >= 2 ? 'text-[#1e3a8a]' : 'text-gray-400'}`}>Upload Files</span>
+1491:        </div>
+1492:        <div className={`w-6 sm:w-16 md:w-24 h-[2px] -mt-5 sm:-mt-8 shrink-0 ${step >= 3 ? 'bg-[#1864db]' : 'bg-gray-300'}`}></div>
+1493:        <div className="flex flex-col items-center shrink-0">
+1494:          <div className={`w-10 h-10 sm:w-16 sm:h-16 rounded-xl sm:rounded-[18px] flex items-center justify-center shadow-md mb-2 sm:mb-3 z-10 relative ${step >= 3 ? 'bg-[#1864db] shadow-blue-500/20' : 'bg-gray-200'}`}>
+1495-            <ClipboardCheck className={`w-5 h-5 sm:w-7 sm:h-7 ${step >= 3 ? 'text-white' : 'text-gray-500'}`} />
+1496:          </div>
+1497-          <span className={`text-[9px] sm:text-[11px] font-bold uppercase text-center ${step >= 3 ? 'text-[#1e3a8a]' : 'text-gray-400'}`}>Review</span>
+1498:        </div>
+1499:      </div>
+1500-
+1501-      {submittedSuccess && (
+1502:        <div className="bg-green-50 border-2 border-green-500 rounded-2xl p-4 sm:p-6 mb-6 sm:mb-8 text-center shadow-lg animate-in zoom-in-95 duration-300">
+1503:          <div className="w-12 h-12 sm:w-14 sm:h-14 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-3">
+1504-            <CheckCircle2 className="w-7 h-7 sm:w-8 sm:h-8 text-green-600" />
+1505:          </div>
+1506-          <h3 className="text-lg sm:text-xl font-bold text-green-900 mb-1">
+1507-            Application {existingId ? 'Updated' : 'Submitted'} Successfully!
+1508-          </h3>
+1509-          <p className="text-xs sm:text-sm text-green-700">Redirecting to your student dashboard...</p>
+1510:        </div>
+1511-      )}
+1512-
+1513-      {/* Validation Warning Alert */}
+1514-      {validationWarning && (
+1515:        <div className="bg-red-50 border-2 border-red-400 rounded-xl p-3.5 sm:p-4 mb-6 shadow-md animate-in slide-in-from-top-2 fade-in duration-200">
+1516:          <div className="flex items-start gap-2.5 sm:gap-3">
+1517-            <AlertCircle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
+1518:            <div className="flex-1 min-w-0">
+1519-              <h4 className="font-bold text-xs sm:text-sm text-red-900">{validationWarning.title}</h4>
+1520-              <ul className="list-disc list-inside text-[11px] sm:text-xs text-red-700 font-medium mt-1.5 space-y-0.5">
+--
+1523-                ))}
+1524-              </ul>
+1525:            </div>
+1526-            <button 
+1527-              onClick={() => setValidationWarning(null)} 
+--
+1530-              <X className="w-4 h-4" />
+1531-            </button>
+1532:          </div>
+1533:        </div>
+1534-      )}
+1535-
+1536:      <div className="bg-white rounded-xl shadow-sm overflow-hidden mb-4 border-t-[5px] border-[#eab308]">
+1537:        <div className="p-4 sm:p-6 text-center">
+1538-          <h2 className="text-xl sm:text-2xl md:text-3xl font-bold font-serif text-gray-900 mb-2 sm:mb-3">Scholarship Record Form</h2>
+1539-          <p className="text-xs sm:text-[13px] font-serif text-gray-700 max-w-2xl mx-auto leading-relaxed">
+1540-            Data and Personal Information will be kept with utmost confidentiality and will be protected through RA 10173 also known as Data Privacy Act of 2012
+1541-          </p>
+1542:        </div>
+1543:      </div>
+1544:      <div className="bg-[#fef9c3] border border-[#facc15] rounded-lg p-3 mb-6">
+1545-        <p className="text-[#a16207] text-xs sm:text-[13px] text-center leading-relaxed">
+1546-          Please fill out all required fields (<span className="text-red-600 font-bold">*</span>) accurately and completely. This form will be reviewed by the Guidance Office prior to processing.
+1547-        </p>
+1548:      </div>
+1549-
+1550-      {step === 1 && (
+1551:        <>
+1552-          <SectionHeader title="STUDENT DEMOGRAPHICS" />
+1553-
+1554-          {/* Personal Information */}
+1555:          <div className="border border-[#93c5fd] rounded-lg mb-6 bg-white overflow-hidden shadow-sm">
+1556:            <div className="bg-[#e0e7ff] px-4 py-2 flex items-center gap-2 border-b border-[#93c5fd]">
+1557-              <User className="w-4 h-4 text-[#1e3a8a] font-bold" />
+1558-              <h3 className="font-bold text-[#1e3a8a] text-[13px]">Personal Information</h3>
+1559:            </div>
+1560:            <div className="p-3 sm:p-4 flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6">
+1561:              <div className="w-[120px] flex-shrink-0 flex flex-col items-center">
+1562-                <label className="w-[110px] h-[110px] border-2 border-dashed border-[#1e3a8a] mb-2 flex flex-col items-center justify-center overflow-hidden bg-white cursor-pointer hover:bg-blue-50/50 transition-colors group relative rounded">
+1563-                  {formData.photo2x2 ? (
+1564-                    <img src={formData.photo2x2} alt="2x2" className="w-full h-full object-cover" />
+1565-                  ) : (
+1566:                    <div className="flex flex-col items-center justify-center p-2 text-center">
+1567-                      <User className="w-8 h-8 text-gray-300 group-hover:text-[#1e3a8a] transition-colors" />
+1568-                      <span className="text-[9px] text-gray-500 group-hover:text-[#1e3a8a] mt-1 font-semibold">Upload Photo</span>
+1569:                    </div>
+1570-                  )}
+1571-                  <input type="file" accept="image/*" className="hidden" onChange={handlePhotoUpload} />
+--
+1575-                  <input type="file" accept="image/*" className="hidden" onChange={handlePhotoUpload} />
+1576-                </label>
+1577:              </div>
+1578:              <div className="flex-1 w-full space-y-4">
+1579:                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+1580-                  <InputGroup 
+1581-                    label="Family Name" 
+--
+1600-                    error={errors.firstName} 
+1601-                  />
+1602:                </div>
+1603:                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-[1.5fr_1fr_1.5fr] gap-3 sm:gap-4">
+1604:                  <div className="flex flex-col relative" id="field-birthdate">
+1605-                    <label className="text-[11px] font-bold text-[#0f2e60] mb-1 flex items-center gap-1">
+1606-                      Birthdate <span className="text-red-500 font-bold">*</span>
+1607-                    </label>
+1608:                    <div className="relative">
+1609-                      <input 
+1610-                        type="date" 
+--
+1617-                      />
+1618-                      <Calendar className="w-4 h-4 text-[#1e3a8a] absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+1619:                    </div>
+1620-                    {errors.birthdate && <span className="text-[10px] text-red-600 font-semibold mt-0.5">{errors.birthdate}</span>}
+1621:                  </div>
+1622-                  <InputGroup label="Age" name="age" value={formData.age} onChange={handleChange} />
+1623:                  <div className="flex flex-col" id="field-sex">
+1624-                    <label className="text-[11px] font-bold text-[#0f2e60] mb-2 flex items-center gap-1">
+1625-                      Sex <span className="text-red-500 font-bold">*</span>
+1626-                    </label>
+1627:                    <div className={`flex items-center gap-4 p-1 rounded ${errors.sex ? 'bg-red-50 border border-red-300' : ''}`}>
+1628-                      <label className="flex items-center gap-1.5 text-xs font-semibold text-[#0f2e60] cursor-pointer">
+1629-                        <input type="radio" name="sex" value="Male" checked={formData.sex === 'Male'} onChange={() => handleRadioChange('sex', 'Male')} className="w-3.5 h-3.5" /> Male
+--
+1632-                        <input type="radio" name="sex" value="Female" checked={formData.sex === 'Female'} onChange={() => handleRadioChange('sex', 'Female')} className="w-3.5 h-3.5" /> Female
+1633-                      </label>
+1634:                    </div>
+1635-                    {errors.sex && <span className="text-[10px] text-red-600 font-semibold mt-0.5">{errors.sex}</span>}
+1636:                  </div>
+1637:                </div>
+1638:                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-[1fr_1fr_1fr_1.5fr] gap-3 sm:gap-4">
+1639-                  <SelectGroup 
+1640-                    label="Year Level" 
+--
+1656-                  />
+1657-                  <SelectGroup label="Section" name="section" value={formData.section} onChange={handleChange} options={['A', 'B', 'C']} />
+1658:                  <div className="flex flex-col">
+1659-                    <label className="text-[11px] font-bold text-[#0f2e60] mb-2">Civil Status</label>
+1660:                    <div className="flex items-center gap-4">
+1661-                      <label className="flex items-center gap-1.5 text-xs font-semibold text-[#0f2e60] cursor-pointer">
+1662-                        <input type="radio" name="civilStatus" value="Single" checked={formData.civilStatus === 'Single'} onChange={() => handleRadioChange('civilStatus', 'Single')} className="w-3.5 h-3.5" /> Single
+--
+1665-                        <input type="radio" name="civilStatus" value="Married" checked={formData.civilStatus === 'Married'} onChange={() => handleRadioChange('civilStatus', 'Married')} className="w-3.5 h-3.5" /> Married
+1666-                      </label>
+1667:                    </div>
+1668:                  </div>
+1669:                </div>
+1670:                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+1671-                  <InputGroup 
+1672-                    label="Contact No." 
+--
+1685-                    error={errors.email} 
+1686-                  />
+1687:                </div>
+1688-                <InputGroup 
+1689-                  label="Permanent Address" 
+--
+1694-                  error={errors.permanentAddress} 
+1695-                />
+1696:              </div>
+1697:            </div>
+1698:          </div>
+1699-
+1700-          {/* Family Background */}
+1701:          <div className="border border-[#93c5fd] rounded-lg mb-6 bg-white overflow-hidden shadow-sm">
+1702:            <div className="bg-[#e0e7ff] px-4 py-2 flex items-center gap-2 border-b border-[#93c5fd]">
+1703-              <User className="w-4 h-4 text-[#1e3a8a] font-bold" />
+1704-              <h3 className="font-bold text-[#1e3a8a] text-[13px]">Family Background</h3>
+1705:            </div>
+1706:            <div className="p-3 sm:p-4 space-y-6">
+1707:              <div>
+1708:                <div className="inline-block bg-[#e0e7ff] border border-[#1e3a8a] text-[#1e3a8a] text-[11px] font-bold px-4 py-0.5 rounded-sm mb-3">Father Information</div>
+1709:                <div className="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-[2fr_1.5fr_1.5fr] gap-3 sm:gap-4">
+1710-                  <InputGroup label="Name" name="fatherName" value={formData.fatherName} onChange={handleChange} />
+1711-                  <InputGroup label="Occupation" name="fatherOccupation" value={formData.fatherOccupation} onChange={handleChange} />
+1712-                  <InputGroup label="Contact No." name="fatherContact" value={formData.fatherContact} onChange={handleChange} />
+1713:                </div>
+1714:              </div>
+1715:              <div>
+1716:                <div className="inline-block bg-[#e0e7ff] border border-[#1e3a8a] text-[#1e3a8a] text-[11px] font-bold px-4 py-0.5 rounded-sm mb-3">Mother Information</div>
+1717:                <div className="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-[2fr_1.5fr_1.5fr] gap-3 sm:gap-4">
+1718-                  <InputGroup label="Name (maiden name)" name="motherName" value={formData.motherName} onChange={handleChange} placeholder="e.g. Maria Santos Dela Cruz" />
+1719-                  <InputGroup label="Occupation" name="motherOccupation" value={formData.motherOccupation} onChange={handleChange} />
+1720-                  <InputGroup label="Contact No." name="motherContact" value={formData.motherContact} onChange={handleChange} />
+1721:                </div>
+1722:              </div>
+1723:              <div>
+1724:                <div className="inline-block bg-[#e0e7ff] border border-[#1e3a8a] text-[#1e3a8a] text-[11px] font-bold px-4 py-0.5 rounded-sm mb-3">Guardian Information</div>
+1725:                <div className="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-[2fr_1.5fr_1.5fr] gap-3 sm:gap-4">
+1726-                  <InputGroup label="Name" name="guardianName" value={formData.guardianName} onChange={handleChange} />
+1727-                  <InputGroup label="Occupation" name="guardianOccupation" value={formData.guardianOccupation} onChange={handleChange} />
+1728-                  <InputGroup label="Contact No." name="guardianContact" value={formData.guardianContact} onChange={handleChange} />
+1729:                </div>
+1730:              </div>
+1731-              
+1732-              {/* Parent Edu Attainment & Monthly Income */}
+1733:              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mt-6">
+1734:                <div>
+1735-                  <SelectGroup 
+1736-                    label="Highest Educational Attainment of Parent/Guardian"
+--
+1740-                    options={['Elementary Level', 'Elementary Graduate', 'High school Graduate', 'College Graduate', 'High School Level', 'College Level', 'post Graduate level/degree']}
+1741-                  />
+1742:                </div>
+1743:                <div>
+1744-                  <SelectGroup 
+1745-                    label="Family Monthly Income"
+--
+1749-                    options={['below ₱ 10,000', '₱ 10,001 - ₱ 20,000', '₱ 20,001 - ₱ 30,000', 'Above ₱ 30,000']}
+1750-                  />
+1751:                  <div className="mt-4">
+1752-                    <label className="block text-[12px] font-bold text-[#0f2e60] mb-2">Are you the first in family to attend college?</label>
+1753:                    <div className="flex gap-4">
+1754-                      <label className="flex items-center gap-2 text-xs font-semibold text-[#0f2e60] cursor-pointer"><input type="radio" name="firstInFamily" value="Yes" checked={formData.firstInFamily === 'Yes'} onChange={() => handleRadioChange('firstInFamily', 'Yes')} className="w-3.5 h-3.5" /> Yes</label>
+1755-                      <label className="flex items-center gap-2 text-xs font-semibold text-[#0f2e60] cursor-pointer"><input type="radio" name="firstInFamily" value="No" checked={formData.firstInFamily === 'No'} onChange={() => handleRadioChange('firstInFamily', 'No')} className="w-3.5 h-3.5" /> No</label>
+1756:                    </div>
+1757:                  </div>
+1758:                </div>
+1759:              </div>
+1760:            </div>
+1761:          </div>
+1762-
+1763:          <div className="border border-[#93c5fd] rounded-lg mb-6 bg-white overflow-hidden shadow-sm">
+1764:            <div className="bg-[#e0e7ff] px-4 py-2 flex items-center gap-2 border-b border-[#93c5fd]">
+1765-              <User className="w-4 h-4 text-[#1e3a8a] font-bold" />
+1766-              <h3 className="font-bold text-[#1e3a8a] text-[13px]">Living Condition</h3>
+1767:            </div>
+1768:            <div className="p-3 sm:p-4">
+1769:              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+1770:              <div>
+1771-                <SelectGroup 
+1772-                  label="With whom do you currently live?"
+--
+1779-                  <input type="text" name="livingWithOthers" value={formData.livingWithOthers} onChange={handleChange} placeholder="Please specify" className="border-b border-[#1e3a8a] outline-none text-xs ml-6 mt-1 w-full max-w-[200px]" />
+1780-                )}
+1781:              </div>
+1782:              <div>
+1783-                <SelectGroup 
+1784-                  label="Type of Housing"
+--
+1791-                  <input type="text" name="housingTypeOthers" value={formData.housingTypeOthers} onChange={handleChange} placeholder="Please specify" className="border-b border-[#1e3a8a] outline-none text-xs ml-6 mt-1 w-full max-w-[200px]" />
+1792-                )}
+1793:              </div>
+1794:            </div>
+1795:          </div>
+1796-
+1797:          <div className="border border-[#93c5fd] rounded-lg mb-6 bg-white overflow-hidden shadow-sm">
+1798:            <div className="bg-[#e0e7ff] px-4 py-2 flex items-center gap-2 border-b border-[#93c5fd]">
+1799-              <User className="w-4 h-4 text-[#1e3a8a] font-bold" />
+1800-              <h3 className="font-bold text-[#1e3a8a] text-[13px]">Access to Resources</h3>
+1801:            </div>
+1802:            <div className="p-3 sm:p-4">
+1803:              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+1804:              <div>
+1805-                <label className="block text-[12px] font-bold text-[#0f2e60] mb-3">Do you have access of the following at home?</label>
+1806:                <div className="space-y-2">
+1807-                  {['Personal Computer/Laptop', 'Internet Connection', 'Study space', 'Textbooks and learning materials'].map(opt => (
+1808-                    <label key={opt} className="flex items-center gap-2 text-xs font-semibold text-[#0f2e60] cursor-pointer">
+--
+1810-                    </label>
+1811-                  ))}
+1812:                </div>
+1813:              </div>
+1814:              <div>
+1815-                <label className="block text-[12px] font-bold text-[#0f2e60] mb-3">Do you work while studying?</label>
+1816:                <div className="flex flex-wrap gap-3 sm:gap-4">
+1817-                  <label className="flex items-center gap-2 text-xs font-semibold text-[#0f2e60] cursor-pointer"><input type="radio" name="workingStudent" value="Yes, full-time" checked={formData.workingStudent === 'Yes, full-time'} onChange={() => handleRadioChange('workingStudent', 'Yes, full-time')} className="w-3.5 h-3.5" /> Yes, full-time</label>
+1818-                  <label className="flex items-center gap-2 text-xs font-semibold text-[#0f2e60] cursor-pointer"><input type="radio" name="workingStudent" value="Yes, part-time" checked={formData.workingStudent === 'Yes, part-time'} onChange={() => handleRadioChange('workingStudent', 'Yes, part-time')} className="w-3.5 h-3.5" /> Yes, part-time</label>
+1819-                  <label className="flex items-center gap-2 text-xs font-semibold text-[#0f2e60] cursor-pointer"><input type="radio" name="workingStudent" value="No" checked={formData.workingStudent === 'No'} onChange={() => handleRadioChange('workingStudent', 'No')} className="w-3.5 h-3.5" /> No</label>
+1820:                </div>
+1821:              </div>
+1822:            </div>
+1823:          </div>
+1824-          
+1825:          <div className="border border-[#93c5fd] rounded-lg mb-6 bg-white overflow-hidden shadow-sm">
+1826:            <div className="bg-[#e0e7ff] px-4 py-2 flex items-center gap-2 border-b border-[#93c5fd]">
+1827-              <User className="w-4 h-4 text-[#1e3a8a] font-bold" />
+1828-              <h3 className="font-bold text-[#1e3a8a] text-[13px]">Study Classification</h3>
+1829:            </div>
+1830:            <div className="p-3 sm:p-4">
+1831-              <label className="block text-[12px] font-bold text-[#0f2e60] mb-3">Which of the following classification best describe your current status? (Multiple responses)</label>
+1832:            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2">
+1833-              {[
+1834-                'Indigenous Peoples (IPs)', 'Solo Parent', 'Child of a solo parent', 'Persons with disabilities (PWDs)', 'Child of Person with Disabilities (PWD)',
+--
+1844-                </label>
+1845-              ))}
+1846:              <div className="col-span-1 sm:col-span-2 mt-2">
+1847-                <label className="flex items-center gap-2 text-xs font-semibold text-[#0f2e60] cursor-pointer">
+1848-                  <input type="checkbox" checked={formData.studentClassification.includes('Others')} onChange={() => handleCheckboxChange('studentClassification', 'Others')} className="w-3.5 h-3.5 rounded-sm text-blue-600 focus:ring-blue-500 shrink-0" /> others (Please specify)
+--
+1851-                  <input type="text" name="studentClassificationOthers" value={formData.studentClassificationOthers} onChange={handleChange} className="border-b border-[#1e3a8a] outline-none text-xs ml-6 mt-1 w-full max-w-lg" />
+1852-                )}
+1853:              </div>
+1854:            </div>
+1855-            
+1856:            <div className="mt-8 space-y-6">
+1857:              <div>
+1858-                <label className="block text-[12px] font-bold text-[#0f2e60] mb-2">If you are working student, please indicate your type of work or source of income</label>
+1859-                <input type="text" name="workTypeIncome" value={formData.workTypeIncome} onChange={handleChange} className="border-b border-gray-400 focus:border-[#1e3a8a] outline-none w-full pb-1 text-sm text-gray-700" />
+1860:              </div>
+1861:              <div>
+1862-                <label className="block text-[12px] font-bold text-[#0f2e60] mb-2">If you are a student with special needs/Person with disability (PWD), please specify your condition or disability</label>
+1863-                <input type="text" name="specialNeedsCondition" value={formData.specialNeedsCondition} onChange={handleChange} className="border-b border-gray-400 focus:border-[#1e3a8a] outline-none w-full pb-1 text-sm text-gray-700" />
+1864:              </div>
+1865:              <div>
+1866-                <label className="block text-[12px] font-bold text-[#0f2e60] mb-2">If you are a PDL (Drop out, or learner with interrupted schooling), please state the reason why your schooling was previously interrupted.</label>
+1867-                <input type="text" name="pdlReason" value={formData.pdlReason} onChange={handleChange} className="border-b border-gray-400 focus:border-[#1e3a8a] outline-none w-full pb-1 text-sm text-gray-700" />
+1868:              </div>
+1869:            </div>
+1870:          </div>
+1871-
+1872-          <SectionHeader title="SCHOLARSHIP CATEGORY" />
+1873-          
+1874-          {/* A. Internally-Funded */}
+1875:          <div className="border border-[#93c5fd] rounded-lg mb-6 bg-white overflow-hidden shadow-sm">
+1876:            <div className="bg-[#e0e7ff] px-4 py-2 flex items-center gap-2 border-b border-[#93c5fd]">
+1877-              <h3 className="font-bold text-[#1e3a8a] text-[13px]">A. Internally-Funded</h3>
+1878:            </div>
+1879:            <div className="p-4 sm:p-6">
+1880:              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+1881-                <SelectGroup label="Entrance" name="internalEntrance" value={formData.internalEntrance || ''} onChange={handleChange} options={['Valedictorian', 'Salutatorian']} />
+1882-                <SelectGroup label="Socio-cultural" name="internalSocioCultural" value={formData.internalSocioCultural || ''} onChange={handleChange} options={['Regional', 'National']} />
+1883-                <SelectGroup label="Academic" name="internalAcademic" value={formData.internalAcademic || ''} onChange={handleChange} options={['Full', 'Partial', 'Regional', 'National']} />
+1884-                <SelectGroup label="Institutional" name="internalInstitutional" value={formData.internalInstitutional || ''} onChange={handleChange} options={['Dependent of Faculty', 'President - SSC', 'President - FLP', 'Editor-in-Chief', 'CapSU Band / Chorale', 'Others']} />
+1885:              </div>
+1886:            </div>
+1887:          </div>
+1888-
+1889-          {/* B. Externally-Funded */}
+1890:          <div className="border border-[#93c5fd] rounded-lg mb-6 bg-white overflow-hidden shadow-sm">
+1891:            <div className="bg-[#e0e7ff] px-4 py-2 flex items-center gap-2 border-b border-[#93c5fd]">
+1892-              <h3 className="font-bold text-[#1e3a8a] text-[13px]">B. Externally-Funded</h3>
+1893:            </div>
+1894:            <div className="p-4 sm:p-6 space-y-8">
+1895-              
+1896:              <div>
+1897:                <div className="mb-4 max-w-sm">
+1898-                  <SelectGroup label="CHED" name="ched" value={formData.ched || ''} onChange={handleChange} options={['ANAC - IP', 'Pag - ulikid', 'Barangay (Legal dependents of Brgy. Officials)', 'ESGP - PA', 'UniFast', 'Tertiary Education Subsidy (TES)']} />
+1899:                </div>
+1900:                <div className="pl-4 sm:pl-8 space-y-3">
+1901:                  <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
+1902-                    <span className="text-xs font-semibold text-[#0f2e60] w-48 shrink-0">Tulong Dunong (specify):</span>
+1903-                    <input type="text" name="chedTulongDunong" value={formData.chedTulongDunong || ''} onChange={handleChange} className="border border-gray-300 rounded px-3 py-1.5 focus:border-[#1e3a8a] focus:ring-1 focus:ring-[#1e3a8a] outline-none flex-1 max-w-lg text-sm" />
+1904:                  </div>
+1905:                  <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
+1906-                    <span className="text-xs font-semibold text-[#0f2e60] w-48 shrink-0">Congressional District (specify):</span>
+1907-                    <input type="text" name="chedCongressionalDistrict" value={formData.chedCongressionalDistrict || ''} onChange={handleChange} className="border border-gray-300 rounded px-3 py-1.5 focus:border-[#1e3a8a] focus:ring-1 focus:ring-[#1e3a8a] outline-none flex-1 max-w-lg text-sm" />
+1908:                  </div>
+1909:                  <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
+1910-                    <span className="text-xs font-semibold text-[#0f2e60] w-48 shrink-0">One Town One Scholar (specify):</span>
+1911-                    <input type="text" name="chedOneTown" value={formData.chedOneTown || ''} onChange={handleChange} className="border border-gray-300 rounded px-3 py-1.5 focus:border-[#1e3a8a] focus:ring-1 focus:ring-[#1e3a8a] outline-none flex-1 max-w-lg text-sm" />
+1912:                  </div>
+1913:                  <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
+1914-                    <span className="text-xs font-semibold text-[#0f2e60] w-48 shrink-0">Others (specify):</span>
+1915-                    <input type="text" name="chedOthers" value={formData.chedOthers || ''} onChange={handleChange} className="border border-gray-300 rounded px-3 py-1.5 focus:border-[#1e3a8a] focus:ring-1 focus:ring-[#1e3a8a] outline-none flex-1 max-w-lg text-sm" />
+1916:                  </div>
+1917:                </div>
+1918:              </div>
+1919-
+1920:              <div>
+1921:                <div className="mb-4 max-w-sm">
+1922-                  <SelectGroup label="Merit" name="merit" value={formData.merit || ''} onChange={handleChange} options={['VIC', 'Capizeño Circle', 'DOST', 'GRF']} />
+1923:                </div>
+1924:                <div className="pl-4 sm:pl-8 space-y-3">
+1925-                  <label className="block text-xs font-semibold text-[#0f2e60] mb-1">LGU: Barangay, Municipality, Province (Landline) Contact person or issuing office:</label>
+1926-                  <input type="text" name="lguContact" value={formData.lguContact || ''} onChange={handleChange} className="border border-gray-300 rounded px-3 py-1.5 focus:border-[#1e3a8a] focus:ring-1 focus:ring-[#1e3a8a] outline-none w-full max-w-2xl text-sm" />
+1927:                </div>
+1928:              </div>
+1929-
+1930:              <div>
+1931-                <h4 className="font-bold text-[12px] text-[#0f2e60] mb-3">DSWD</h4>
+1932:                <div className="pl-4 sm:pl-8 space-y-3 max-w-2xl">
+1933:                  <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
+1934-                    <span className="text-xs font-semibold text-[#0f2e60] w-24 shrink-0">Municipality:</span> 
+1935-                    <input type="text" name="dswdMunicipality" value={formData.dswdMunicipality || ''} onChange={handleChange} className="border border-gray-300 rounded px-3 py-1.5 focus:border-[#1e3a8a] focus:ring-1 focus:ring-[#1e3a8a] outline-none flex-1 text-sm" />
+1936:                  </div>
+1937:                  <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
+1938-                    <span className="text-xs font-semibold text-[#0f2e60] w-24 shrink-0">Contact person:</span> 
+1939-                    <input type="text" name="dswdContact" value={formData.dswdContact || ''} onChange={handleChange} className="border border-gray-300 rounded px-3 py-1.5 focus:border-[#1e3a8a] focus:ring-1 focus:ring-[#1e3a8a] outline-none flex-1 text-sm" />
+1940:                  </div>
+1941:                  <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
+1942-                    <span className="text-xs font-semibold text-[#0f2e60] w-24 shrink-0">Designation:</span> 
+1943-                    <input type="text" name="dswdDesignation" value={formData.dswdDesignation || ''} onChange={handleChange} className="border border-gray-300 rounded px-3 py-1.5 focus:border-[#1e3a8a] focus:ring-1 focus:ring-[#1e3a8a] outline-none flex-1 text-sm" />
+1944:                  </div>
+1945:                  <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
+1946-                    <span className="text-xs font-semibold text-[#0f2e60] w-24 shrink-0">Others (specify):</span> 
+1947-                    <input type="text" name="dswdOthers" value={formData.dswdOthers || ''} onChange={handleChange} className="border border-gray-300 rounded px-3 py-1.5 focus:border-[#1e3a8a] focus:ring-1 focus:ring-[#1e3a8a] outline-none flex-1 text-sm" />
+1948:                  </div>
+1949:                </div>
+1950:              </div>
+1951:            </div>
+1952:          </div>
+1953-          
+1954:          <div className="border border-[#93c5fd] rounded-lg bg-white shadow-sm p-6 mb-6">
+1955:            <div className="text-center" id="signature-box">
+1956-              <p className="text-xs sm:text-[13px] text-gray-700 mb-6 font-medium">I hereby certify that the information I have provided is true and correct to the best of my knowledge.</p>
+1957-              
+1958:              <div 
+1959-                className={`mx-auto w-56 sm:w-64 h-24 border-2 rounded-xl mb-2 flex items-center justify-center cursor-pointer transition-all bg-white relative overflow-hidden group ${
+1960-                  errors.signature 
+--
+1969-                  <img src={formData.signature} alt="Signature" className="w-full h-full object-contain p-2" />
+1970-                ) : (
+1971:                  <div className="flex flex-col items-center gap-1">
+1972-                    <Edit3 className={`w-5 h-5 ${errors.signature ? 'text-red-500' : 'text-gray-400 group-hover:text-[#1e3a8a]'}`} />
+1973-                    <span className={`text-xs font-semibold ${errors.signature ? 'text-red-600' : 'text-gray-400 group-hover:text-[#1e3a8a]'}`}>
+1974-                      Click to sign (Required)
+1975-                    </span>
+1976:                  </div>
+1977-                )}
+1978:              </div>
+1979:              <div className="inline-block mt-2 font-semibold text-[#0f2e60] text-sm">
+1980-                Enter your signature here
+1981:              </div>
+1982-              {errors.signature && (
+1983-                <p className="text-red-600 text-xs font-semibold mt-1">
+--
+2000-                />
+2001-              )}
+2002:            </div>
+2003:          </div>
+2004-          
+2005:          <div className="flex justify-end mt-4">
+2006-            <button 
+2007-              onClick={() => { 
+--
+2015-              <span>Next</span> <ArrowRight className="w-4 h-4" />
+2016-            </button>
+2017:          </div>
+2018:        </>
+2019-      )}
+2020-
+2021-      {step === 2 && (
+2022:        <div className="bg-white p-4 sm:p-8 rounded-lg shadow-sm border border-gray-200">
+2023-          <SectionHeader title="STUDENT DOCUMENTS" />
+2024-          <p className="text-xs text-gray-500 mb-6 text-center">
+2025-            Please attach valid copies for all 3 required documents. Files up to 10MB accepted.
+2026-          </p>
+2027:          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-6">
+2028-            {renderFileUpload('Registration Form (RF)', 'RF')}
+2029-            {renderFileUpload('General Weighted Average (GWA)', 'GWA')}
+2030:          </div>
+2031:          <div className="max-w-md mx-auto">
+2032-            {renderFileUpload('Student ID', 'ID')}
+2033:          </div>
+2034-          
+2035:          <div className="flex flex-col-reverse sm:flex-row justify-between gap-3 mt-8 sm:mt-12">
+2036-            <button 
+2037-              onClick={() => { setStep(1); window.scrollTo({ top: 0, behavior: 'smooth' }); }} 
+--
+2051-              <span>Next</span> <ArrowRight className="w-4 h-4" />
+2052-            </button>
+2053:          </div>
+2054:        </div>
+2055-      )}
+2056-
+--
+2104-      )}
+2105-
+2106:    </div>
+2107-  );
+2108-}

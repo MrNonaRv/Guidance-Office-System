@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Bell, 
   Search, 
@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { useNavigate } from 'react-router-dom';
+import { db } from '../../lib/db';
 
 interface NotificationItem {
   id: string;
@@ -34,63 +35,76 @@ export function GuidanceNotifications() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedNotification, setSelectedNotification] = useState<NotificationItem | null>(null);
 
-  const [notifications, setNotifications] = useState<NotificationItem[]>([
-    {
-      id: 'notif-1',
-      type: 'submission',
-      title: 'New Scholarship Submission Uploaded',
-      description: 'Anna Marie A. Santos uploaded Certificate of Grades (COG) and Certificate of Registration (COR) for Pag-Ulikid Provincial Scholarship.',
-      studentName: 'Anna Marie A. Santos',
-      studentId: '2024-CAPSU-0182',
-      scholarship: 'Pag-Ulikid',
-      timestamp: '10 minutes ago',
-      read: false,
-      priority: 'high'
-    },
-    {
-      id: 'notif-2',
-      type: 'deadline',
-      title: 'CHED Tulong Dunong Renewal Deadline Approaching',
-      description: 'The submission window for 2nd semester renewal closes in 3 days. 18 scholars have pending document uploads.',
-      scholarship: 'Tulong Dunong',
-      timestamp: '2 hours ago',
-      read: false,
-      priority: 'high'
-    },
-    {
-      id: 'notif-3',
-      type: 'submission',
-      title: 'Updated Registration Form Submitted',
-      description: 'Damian James O. Emilio re-uploaded NCIP Indigenous Peoples Certificate for ANAC-IP grant validation.',
-      studentName: 'Damian James O. Emilio',
-      studentId: '2022-CAPSU-0041',
-      scholarship: 'ANAC-IP',
-      timestamp: '5 hours ago',
-      read: true,
-      priority: 'normal'
-    },
-    {
-      id: 'notif-4',
-      type: 'inquiry',
-      title: 'Student Inquiry on Leave of Absence (LOA)',
-      description: 'Paul John N. Dela Cruz requested guidance advisory regarding LOA status for President—FLP Scholarship.',
-      studentName: 'Paul John N. Dela Cruz',
-      studentId: '2022-CAPSU-0089',
-      scholarship: 'President—FLP',
-      timestamp: 'Yesterday at 3:45 PM',
-      read: true,
-      priority: 'normal'
-    },
-    {
-      id: 'notif-5',
-      type: 'system',
-      title: 'Masterlist Synchronized with OSAS Central',
-      description: 'Academic Year 2025–2026 2nd Semester scholarship records successfully verified and backed up.',
-      timestamp: 'Aug 17, 2026',
-      read: true,
-      priority: 'low'
-    }
-  ]);
+  const [notifications, setNotifications] = useState<NotificationItem[]>(() => {
+    const cached = db.notifications.getCached();
+    if (cached && cached.length > 0) return cached;
+    return [
+      {
+        id: 'notif-1',
+        type: 'submission',
+        title: 'New Scholarship Submission Uploaded',
+        description: 'Anna Marie A. Santos uploaded Certificate of Grades (COG) and Certificate of Registration (COR) for Pag-Ulikid Provincial Scholarship.',
+        studentName: 'Anna Marie A. Santos',
+        studentId: '2024-CAPSU-0182',
+        scholarship: 'Pag-Ulikid',
+        timestamp: '10 minutes ago',
+        read: false,
+        priority: 'high'
+      },
+      {
+        id: 'notif-2',
+        type: 'deadline',
+        title: 'CHED Tulong Dunong Renewal Deadline Approaching',
+        description: 'The submission window for 2nd semester renewal closes in 3 days. 18 scholars have pending document uploads.',
+        scholarship: 'Tulong Dunong',
+        timestamp: '2 hours ago',
+        read: false,
+        priority: 'high'
+      },
+      {
+        id: 'notif-3',
+        type: 'submission',
+        title: 'Updated Registration Form Submitted',
+        description: 'Damian James O. Emilio re-uploaded NCIP Indigenous Peoples Certificate for ANAC-IP grant validation.',
+        studentName: 'Damian James O. Emilio',
+        studentId: '2022-CAPSU-0041',
+        scholarship: 'ANAC-IP',
+        timestamp: '5 hours ago',
+        read: true,
+        priority: 'normal'
+      },
+      {
+        id: 'notif-4',
+        type: 'inquiry',
+        title: 'Student Inquiry on Leave of Absence (LOA)',
+        description: 'Paul John N. Dela Cruz requested guidance advisory regarding LOA status for President—FLP Scholarship.',
+        studentName: 'Paul John N. Dela Cruz',
+        studentId: '2022-CAPSU-0089',
+        scholarship: 'President—FLP',
+        timestamp: 'Yesterday at 3:45 PM',
+        read: true,
+        priority: 'normal'
+      },
+      {
+        id: 'notif-5',
+        type: 'system',
+        title: 'Masterlist Synchronized with OSAS Central',
+        description: 'Academic Year 2025–2026 2nd Semester scholarship records successfully verified and backed up.',
+        timestamp: 'Aug 17, 2026',
+        read: true,
+        priority: 'low'
+      }
+    ];
+  });
+
+  useEffect(() => {
+    const unsub = db.notifications.subscribe(list => {
+      if (list && list.length > 0) {
+        setNotifications(list);
+      }
+    });
+    return () => unsub();
+  }, []);
 
   const filteredNotifications = notifications.filter(n => {
     const matchesSearch = !searchQuery || 

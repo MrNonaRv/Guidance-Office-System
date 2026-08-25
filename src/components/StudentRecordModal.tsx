@@ -94,16 +94,26 @@ export function StudentRecordModal({
       zip.file(`${studentName.replace(/[^a-zA-Z0-9_-]/g, '_')}_Application_Summary.txt`, summaryText);
       
       // Add attachments
-      localSubmission.files.forEach((file: SubmissionFile, index: number) => {
-        if (file.data) {
+      for (let index = 0; index < localSubmission.files.length; index++) {
+        const file = localSubmission.files[index];
+        const fileName = file.name || `document_${index}`;
+        if (!file.data) continue;
+
+        if (file.data.startsWith('data:')) {
           const parts = file.data.split(';base64,');
           if (parts.length === 2) {
-            const base64Data = parts[1];
-            const fileName = file.name || `document_${index}`;
-            zip.file(fileName, base64Data, { base64: true });
+            zip.file(fileName, parts[1], { base64: true });
+          }
+        } else if (file.data.startsWith('http')) {
+          try {
+            const resp = await fetch(file.data);
+            const blob = await resp.blob();
+            zip.file(fileName, blob);
+          } catch (fetchErr) {
+            console.warn(`Could not fetch remote file ${fileName} for zip:`, fetchErr);
           }
         }
-      });
+      }
       
       const content = await zip.generateAsync({ type: 'blob' });
       const studentNameSafe = studentName.replace(/[^a-zA-Z0-9_-]/g, '_');

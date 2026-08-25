@@ -15,13 +15,25 @@ interface DocumentPreviewModalProps {
 export function DocumentPreviewModal({ file, onClose }: DocumentPreviewModalProps) {
   if (!file) return null;
 
-  const isImage = file.type?.startsWith('image/') || file.data.startsWith('data:image/');
-  const isPdf = file.type?.includes('pdf') || file.data.startsWith('data:application/pdf');
+  const fileSource = file.data || '';
+  const isImage = 
+    file.type?.startsWith('image/') || 
+    fileSource.startsWith('data:image/') ||
+    /\.(png|jpe?g|webp|gif|svg)(\?.*)?$/i.test(fileSource) ||
+    /\.(png|jpe?g|webp|gif|svg)$/i.test(file.name);
+
+  const isPdf = 
+    file.type?.includes('pdf') || 
+    fileSource.startsWith('data:application/pdf') ||
+    /\.pdf(\?.*)?$/i.test(fileSource) ||
+    /\.pdf$/i.test(file.name);
 
   const handleDownload = () => {
     const link = document.createElement('a');
-    link.href = file.data;
+    link.href = fileSource;
     link.download = file.name || 'document';
+    link.target = '_blank';
+    link.rel = 'noreferrer';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
