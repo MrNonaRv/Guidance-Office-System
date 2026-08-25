@@ -682,7 +682,7 @@ export function GuidanceSubmissions() {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState(location.state?.filterStatus || 'All status');
   const [filterCourse, setFilterCourse] = useState('All courses');
-  const [filterAcademicYear, setFilterAcademicYear] = useState('All academic years');
+  const [filterDate, setFilterDate] = useState('');
   const [coursesList, setCoursesList] = useState<any[]>(() => db.courses.getCached());
   const [academicYearsList, setAcademicYearsList] = useState<any[]>(() => db.academicYears.getCached());
 
@@ -724,9 +724,8 @@ export function GuidanceSubmissions() {
     const matchesStatus = filterStatus === 'All status' || s.status === filterStatus;
     const subCourse = s.data?.course || s.answers?.course || (s.scholarshipType.includes('BS') || s.scholarshipType.includes('BA') ? s.scholarshipType.split(' ')[0] : '');
     const matchesCourse = filterCourse === 'All courses' || subCourse === filterCourse || s.scholarshipType.includes(filterCourse);
-    const subAY = s.data?.academicYear || s.answers?.academicYear || 'A.Y. 2025-2026 - 1st Semester';
-    const matchesAY = filterAcademicYear === 'All academic years' || subAY === filterAcademicYear || subAY.includes(filterAcademicYear);
-    return matchesSearch && matchesStatus && matchesCourse && matchesAY;
+    const matchesDate = !filterDate || (s.submittedAt && s.submittedAt.startsWith(filterDate));
+    return matchesSearch && matchesStatus && matchesCourse && matchesDate;
   });
   
   return (
@@ -760,11 +759,11 @@ export function GuidanceSubmissions() {
                 <div className="absolute right-0 left-0 sm:left-auto top-full mt-2 sm:w-72 bg-white rounded-2xl shadow-xl border border-gray-100 p-4 z-30 animate-in fade-in zoom-in-95 duration-150">
                   <div className="space-y-3.5">
                     <div>
-                      <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1.5">By Status</label>
+                      <label className="block text-sm font-bold text-gray-900 mb-1.5">By Status</label>
                       <select 
                         value={filterStatus}
                         onChange={(e) => setFilterStatus(e.target.value)}
-                        className="w-full text-sm border border-gray-200 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 outline-none bg-white"
+                        className="w-full text-sm border border-gray-300 text-gray-600 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 outline-none bg-white"
                       >
                         <option>All status</option>
                         <option>Complete</option>
@@ -775,11 +774,11 @@ export function GuidanceSubmissions() {
                       </select>
                     </div>
                     <div>
-                      <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1.5">By Course</label>
+                      <label className="block text-sm font-bold text-gray-900 mb-1.5">By Course</label>
                       <select 
                         value={filterCourse}
                         onChange={(e) => setFilterCourse(e.target.value)}
-                        className="w-full text-sm border border-gray-200 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 outline-none bg-white"
+                        className="w-full text-sm border border-gray-300 text-gray-600 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 outline-none bg-white"
                       >
                         <option>All courses</option>
                         {coursesList.map(c => (
@@ -788,26 +787,23 @@ export function GuidanceSubmissions() {
                       </select>
                     </div>
                     <div>
-                      <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1.5">By Academic Year</label>
-                      <select 
-                        value={filterAcademicYear}
-                        onChange={(e) => setFilterAcademicYear(e.target.value)}
-                        className="w-full text-sm border border-gray-200 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 outline-none bg-white"
-                      >
-                        <option>All academic years</option>
-                        {academicYearsList.map(ay => (
-                          <option key={ay.id} value={ay.label}>{ay.label} {ay.isDefault ? '(Current)' : ''}</option>
-                        ))}
-                      </select>
+                      <label className="block text-sm font-bold text-gray-900 mb-1.5">By Date</label>
+                      <input 
+                        type="date"
+                        value={filterDate}
+                        onChange={(e) => setFilterDate(e.target.value)}
+                        className="w-full text-sm border border-gray-300 text-gray-600 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 outline-none bg-white"
+                        placeholder="mm/dd/yy"
+                      />
                     </div>
-                    <div className="flex justify-end gap-2 pt-2 border-t border-gray-100">
+                    <div className="flex justify-between items-center gap-2 pt-3 mt-1">
                       <button 
-                        onClick={() => { setFilterStatus('All status'); setFilterCourse('All courses'); setFilterAcademicYear('All academic years'); setFilterOpen(false); }} 
-                        className="px-3 py-1.5 text-xs text-gray-600 hover:text-gray-900 font-medium transition-all duration-300"
+                        onClick={() => { setFilterStatus('All status'); setFilterCourse('All courses'); setFilterDate(''); setFilterOpen(false); }} 
+                        className="px-6 py-2 text-sm text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 hover:text-gray-900 font-semibold transition-all duration-300 flex-1"
                       >
                         Reset
                       </button>
-                      <button onClick={() => setFilterOpen(false)} className="px-4 py-1.5 text-xs bg-blue-600 text-white rounded-lg font-bold hover:bg-blue-700 transition-all duration-300">Apply</button>
+                      <button onClick={() => setFilterOpen(false)} className="px-6 py-2 text-sm bg-[#0a40a8] text-white rounded-lg font-bold hover:bg-[#083080] transition-all duration-300 flex-1">Apply</button>
                     </div>
                   </div>
                 </div>

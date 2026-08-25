@@ -22,7 +22,7 @@ export function StudentRecordModal({
   academicYearsList = []
 }: StudentRecordModalProps) {
   const [currentStatus, setCurrentStatus] = useState<string>(submission.status || 'Incomplete');
-  const [viewMode, setViewMode] = useState<'overview' | 'requirements' | 'id_signature' | 'semester_record' | 'form'>('requirements');
+  const [viewMode, setViewMode] = useState<'overview' | 'requirements' | 'id_signature' | 'semester_record' | 'form'>('overview');
   const [selectedSemester, setSelectedSemester] = useState<'1st Semester' | '2nd Semester'>('1st Semester');
   const [selectedAcademicYear, setSelectedAcademicYear] = useState<string>('2025-2026');
   const [previewFile, setPreviewFile] = useState<SubmissionFile | null>(null);
@@ -198,26 +198,26 @@ export function StudentRecordModal({
         
         {/* Top Navy Blue Header Banner */}
         <div className="bg-[#003884] text-white px-6 py-4 flex items-center justify-center relative shadow-md shrink-0">
-          {viewMode !== 'overview' && (
+          {viewMode !== 'overview' ? (
             <button
               onClick={() => setViewMode('overview')}
               className="absolute left-4 top-1/2 -translate-y-1/2 flex items-center gap-1 text-white/90 hover:text-white bg-white/10 hover:bg-white/20 px-2.5 py-1 rounded-lg text-xs font-semibold transition-colors cursor-pointer"
             >
               <ArrowLeft className="w-3.5 h-3.5" /> Back
             </button>
+          ) : (
+            <button
+              onClick={onClose}
+              className="absolute left-4 top-1/2 -translate-y-1/2 flex items-center justify-center w-8 h-8 rounded-[6px] border-2 border-white text-white hover:bg-white/10 transition-colors cursor-pointer"
+              title="Close modal"
+            >
+              <X className="w-5 h-5 stroke-[3]" />
+            </button>
           )}
           
           <h2 className="text-xl font-bold text-center tracking-tight text-white">
             Student Records
           </h2>
-
-          <button
-            onClick={onClose}
-            className="absolute right-4 top-1/2 -translate-y-1/2 text-white/80 hover:text-white p-1 rounded-full hover:bg-white/10 transition-colors cursor-pointer"
-            title="Close modal"
-          >
-            <X className="w-5 h-5" />
-          </button>
         </div>
 
         {/* Scrollable Container */}
@@ -231,24 +231,12 @@ export function StudentRecordModal({
               {/* Student Info & Status Header */}
               <div className="flex items-start justify-between gap-4 mb-2 pb-4 border-b border-gray-100">
                 <div className="flex items-center gap-3.5">
-                  {photo2x2 ? (
-                    <img 
-                      src={photo2x2} 
-                      alt="Student 2x2 Photo" 
-                      className="w-14 h-14 rounded-2xl object-cover border-2 border-[#003884] shadow-sm shrink-0" 
-                    />
-                  ) : (
-                    <div className="w-14 h-14 rounded-2xl bg-blue-100 text-[#003884] flex items-center justify-center font-extrabold text-lg border-2 border-blue-200 shrink-0">
-                      {studentName.split(' ').map((n: string) => n[0]).join('').slice(0, 2)}
-                    </div>
-                  )}
-
                   <div>
                     <h3 className="text-lg md:text-[20px] font-extrabold text-gray-900 leading-tight">
                       {studentName}
                     </h3>
-                    <p className="text-sm font-bold text-[#003884] tracking-wide mt-0.5">
-                      {courseCode} &bull; <span className="text-gray-500 font-normal">{studentIdNumber}</span>
+                    <p className="text-sm font-bold text-gray-900 tracking-wide mt-0.5">
+                      {courseCode}
                     </p>
                   </div>
                 </div>
@@ -263,8 +251,6 @@ export function StudentRecordModal({
                     >
                       <option value="Incomplete">Incomplete</option>
                       <option value="Complete">Complete</option>
-                      <option value="Approved">Approved</option>
-                      <option value="Rejected">Rejected</option>
                     </select>
                     <ChevronDown className="w-4 h-4 text-gray-700 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                   </div>
@@ -284,7 +270,6 @@ export function StudentRecordModal({
                     <span className="text-base md:text-[17px] font-bold text-gray-900 block">
                       Scholarship Requirements
                     </span>
-                    <span className="text-xs text-gray-500 font-medium">COG, COR, Indigency & Photos</span>
                   </div>
                 </div>
 
@@ -401,12 +386,6 @@ export function StudentRecordModal({
                   >
                     <Printer className="w-3.5 h-3.5" /> Print
                   </button>
-                  <button
-                    onClick={() => handleStatusSelect('Approved')}
-                    className="flex items-center gap-1.5 px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded-lg text-xs font-bold transition-colors shadow-xs cursor-pointer"
-                  >
-                    <Check className="w-3.5 h-3.5" /> Approve
-                  </button>
                 </div>
               </div>
 
@@ -463,16 +442,6 @@ export function StudentRecordModal({
                     </div>
                   </div>
                 ))}
-              </div>
-
-              {/* Back button */}
-              <div className="pt-2 text-center">
-                <button
-                  onClick={() => setViewMode('overview')}
-                  className="text-xs font-bold text-blue-600 hover:text-blue-800 underline transition-colors cursor-pointer"
-                >
-                  ← Return to Student Records Summary
-                </button>
               </div>
 
             </div>
@@ -543,16 +512,6 @@ export function StudentRecordModal({
                     <span className="text-xs font-semibold text-green-700 bg-green-50 px-2 py-0.5 rounded border border-green-200">Verified</span>
                   </div>
                 </div>
-              </div>
-
-              {/* Back action */}
-              <div className="pt-2 text-center">
-                <button
-                  onClick={() => setViewMode('overview')}
-                  className="text-xs font-bold text-blue-600 hover:text-blue-800 underline transition-colors cursor-pointer"
-                >
-                  ← Return to Student Records Summary
-                </button>
               </div>
 
             </div>

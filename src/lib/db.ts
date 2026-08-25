@@ -32,8 +32,9 @@ export interface FirestoreErrorInfo {
 }
 
 export function handleFirestoreError(error: unknown, operationType: OperationType, path: string | null) {
+  const errorMessage = error instanceof Error ? error.message : String(error);
   const errInfo: FirestoreErrorInfo = {
-    error: error instanceof Error ? error.message : String(error),
+    error: errorMessage,
     authInfo: {
       userId: auth?.currentUser?.uid,
       email: auth?.currentUser?.email,
@@ -48,7 +49,12 @@ export function handleFirestoreError(error: unknown, operationType: OperationTyp
     operationType,
     path
   };
-  console.error('Firestore Error: ', JSON.stringify(errInfo));
+  
+  if (errorMessage.includes('offline')) {
+    console.warn('Firestore Warning (Offline): ', JSON.stringify(errInfo));
+  } else {
+    console.error('Firestore Error: ', JSON.stringify(errInfo));
+  }
   return errInfo;
 }
 
@@ -150,17 +156,17 @@ export interface CommunicationItem {
 }
 
 // Local storage stores for instant retrieval & offline support
-const scholarshipsDb = localforage.createInstance({ name: 'scholarship-app', storeName: 'scholarships' });
-const coursesDb = localforage.createInstance({ name: 'scholarship-app', storeName: 'courses' });
-const academicYearsDb = localforage.createInstance({ name: 'scholarship-app', storeName: 'academicYears' });
-const sectionsDb = localforage.createInstance({ name: 'scholarship-app', storeName: 'sections' });
-const formReqsDb = localforage.createInstance({ name: 'scholarship-app', storeName: 'formRequirements' });
-const systemFilesDb = localforage.createInstance({ name: 'scholarship-app', storeName: 'files' });
-const usersDb = localforage.createInstance({ name: 'scholarship-app', storeName: 'users' });
-const submissionsDb = localforage.createInstance({ name: 'scholarship-app', storeName: 'submissions' });
-const formsDb = localforage.createInstance({ name: 'scholarship-app', storeName: 'forms' });
-const notificationsDb = localforage.createInstance({ name: 'scholarship-app', storeName: 'notifications' });
-const communicationsDb = localforage.createInstance({ name: 'scholarship-app', storeName: 'communications' });
+const scholarshipsDb = localforage.createInstance({ name: 'scholarship-app-scholarships' });
+const coursesDb = localforage.createInstance({ name: 'scholarship-app-courses' });
+const academicYearsDb = localforage.createInstance({ name: 'scholarship-app-academicYears' });
+const sectionsDb = localforage.createInstance({ name: 'scholarship-app-sections' });
+const formReqsDb = localforage.createInstance({ name: 'scholarship-app-formRequirements' });
+const systemFilesDb = localforage.createInstance({ name: 'scholarship-app-files' });
+const usersDb = localforage.createInstance({ name: 'scholarship-app-users' });
+const submissionsDb = localforage.createInstance({ name: 'scholarship-app-submissions' });
+const formsDb = localforage.createInstance({ name: 'scholarship-app-forms' });
+const notificationsDb = localforage.createInstance({ name: 'scholarship-app-notifications' });
+const communicationsDb = localforage.createInstance({ name: 'scholarship-app-communications' });
 
 // Default records
 export const defaultSections: Section[] = [
