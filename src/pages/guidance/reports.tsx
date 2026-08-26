@@ -42,7 +42,7 @@ export function GuidanceReports() {
   // Modal state for student profile
   const [selectedStudent, setSelectedStudent] = useState<StudentBreakdownItem | null>(null);
   const [printSingleStudent, setPrintSingleStudent] = useState<StudentBreakdownItem | null>(null);
-  const [allBreakdownData, setAllBreakdownData] = useState<StudentBreakdownItem[]>(initialBreakdownData);
+  const [allBreakdownData, setAllBreakdownData] = useState<StudentBreakdownItem[]>([]);
 
   useEffect(() => {
     async function loadData() {
@@ -86,14 +86,8 @@ export function GuidanceReports() {
             };
           });
 
-          // Combine with initialBreakdownData
-          const merged = [...dynamicStudents];
-          for (const item of initialBreakdownData) {
-            if (!merged.some(m => m.student.toLowerCase() === item.student.toLowerCase() || m.id === item.id)) {
-              merged.push(item);
-            }
-          }
-          setAllBreakdownData(merged);
+          // Completely replace state with DB items without merging mock data
+          setAllBreakdownData(dynamicStudents);
         }
       } catch (e) {
         console.warn("Failed to load submissions into reports:", e);

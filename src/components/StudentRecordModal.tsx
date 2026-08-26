@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   X, ArrowLeft, ChevronDown, CheckCircle2, AlertCircle, FileText, Download, 
   Printer, Eye, Check, Archive
@@ -31,6 +31,45 @@ export function StudentRecordModal({
   const [secondSemAY, setSecondSemAY] = useState<string>('');
 
   const [localSubmission, setLocalSubmission] = useState<Submission>(submission);
+
+  const [semesterFiles, setSemesterFiles] = useState<SubmissionFile[]>([]);
+  const [isLoadingFiles, setIsLoadingFiles] = useState(false);
+
+  useEffect(() => {
+    if (viewMode === 'semester_record') {
+      const fetchSemesterFiles = async () => {
+        setIsLoadingFiles(true);
+        try {
+          // Find all submissions by this student
+          const studentSubmissions = await db.submissions.listByStudent(submission.studentId);
+          let allFiles: SubmissionFile[] = [];
+          
+          studentSubmissions.forEach(sub => {
+            const ayField = sub.data?.academicYear || sub.answers?.academicYear || '';
+            // If the submission is explicitly for this academic year & semester
+            if (ayField.includes(selectedAcademicYear) && ayField.includes(selectedSemester)) {
+              allFiles = [...allFiles, ...(sub.files || [])];
+            } else {
+              // Also check if any files inside are categorized for this semester
+              const matchingFiles = (sub.files || []).filter((f: SubmissionFile) => 
+                f.name.includes(selectedSemester) || (f.category && f.category.includes(selectedSemester.charAt(0)))
+              );
+              allFiles = [...allFiles, ...matchingFiles];
+            }
+          });
+          
+          // Deduplicate based on file name or id
+          const uniqueFiles = Array.from(new Map(allFiles.map(f => [f.name, f])).values());
+          setSemesterFiles(uniqueFiles);
+        } catch (err) {
+          console.error("Failed to fetch semester files", err);
+        } finally {
+          setIsLoadingFiles(false);
+        }
+      };
+      fetchSemesterFiles();
+    }
+  }, [viewMode, selectedSemester, selectedAcademicYear, submission.studentId]);
 
   const formData = localSubmission.data || {};
   const studentName = localSubmission.studentName || `${formData.firstName || 'Anna Marie'} ${formData.middleName || 'A.'} ${formData.familyName || 'Santos'}`.trim();
@@ -150,34 +189,65 @@ export function StudentRecordModal({
   // Requirements list
   const requirementsList = [
     {
-      id: 'req-rf',
+      id: 'req-rf-1',
       name: 'Registration Form (RF)',
+      group: '1st Semester',
       category: 'RF',
-      fileName: localSubmission.files?.find((f: any) => f.category === 'RF' || f.category === 'Certificate of Registration (COR)')?.name || `${studentName.replace(/\s+/g, '_')}_RF.pdf`,
+      fileName: localSubmission.files?.find((f: any) => f.category === 'RF' || f.category === 'Certificate of Registration (COR)')?.name || `${studentName.replace(/\s+/g, '_')}_1st_Sem_RF.pdf`,
       status: (localSubmission.files?.find((f: any) => f.category === 'RF' || f.category === 'Certificate of Registration (COR)')?.verified || localSubmission.status === 'Complete' || localSubmission.status === 'Approved') ? 'Verified' : 'Pending',
       file: localSubmission.files?.find((f: any) => f.category === 'RF' || f.category === 'Certificate of Registration (COR)') || {
-        name: `${studentName.replace(/\s+/g, '_')}_RF.pdf`,
+        name: `${studentName.replace(/\s+/g, '_')}_1st_Sem_RF.pdf`,
         type: 'application/pdf',
         category: 'RF',
         data: 'data:application/pdf;base64,JVBERi0xLjQKJcOkw7zDtsOfCjIgMCBvYmoKPDwvTGVuZ3RoIDMgMCBSL0ZpbHRlci9GbGF0ZURlY29kZT4+CnN0cmVhbQp4nDPQM1Qo5ypUMFAwALJMLU31jBQsTAz1LBSK0osS84tKUvPSi1QK0lPykxWLkjOA3KLUxDwlAwjN1wAAg5wP3gplbmRzdHJlYW0KZW5kb2JqCgozIDAgb2JqCjY1CmVuZG9iagoKNCAwIG9iago8PC9UeXBlL1BhZ2UvTWVkaWFCb3hbMCAwIDU5NSA4NDJdL1Jlc291cmNlczw8L0ZvbnQ8PC9GMCAxIDAgUj4+Pj4vQ29udGVudHMgMiAwIFIvUGFyZW50IDUgMCBSPj4KZW5kb2JqCgo1IDAgb2JqCjw8L1R5cGUvUGFnZXMvQ291bnQgMS9LaWRzWzQgMCBSXT4+CmVuZG9iagoKMSAwIG9iago8PC9UeXBlL0ZvbnQvU3VidHlwZS9UeXBlMS9CYXNlRm9udC9IZWx2ZXRpY2EvRW5jb2RpbmcvV2luQW5zaUVuY29kaW5nPj4KZW5kb2JqCgo2IDAgb2JqCjw8L1R5cGUvQ2F0YWxvZy9QYWdlcyA1IDAgUj4+CmVuZG9iagoKNyAwIG9iago8PC9DcmVhdG9yKExvY2FsIE1vY2sgRmlsZSkvUHJvZHVjZXIoTG9jYWwgTW9jayBGaWxlKS9DcmVhdGlvbkRhdGUoRDoyMDI2MDMwOTAwMDAwMFopPj4KZW5kb2JqCgp4cmVmCjAgOAowMDAwMDAwMDAwIDY1NTM1IGYgCjAwMDAwMDAyNjAgMDAwMDAgbiAKMDAwMDAwMDAxNSAwMDAwMCBuIAowMDAwMDAwMTMzIDAwMDAwIG4gCjAwMDAwMDAxNTEgMDAwMDAgbiAKMDAwMDAwMDIwNSAwMDAwMCBuIAowMDAwMDAwMzQ4IDAwMDAwIG4gCjAwMDAwMDAzOTcgMDAwMDAgbiAKdHJhaWxlcgo8PC9TaXplIDgvUm9vdCA2IDAgUi9JbmZvIDcgMCBSPj4Kc3RhcnR4cmVmCjUwMAolJUVPRgo='
       }
     },
     {
-      id: 'req-gwa',
+      id: 'req-gwa-1',
       name: 'General Weighted Average (GWA)',
+      group: '1st Semester',
       category: 'GWA',
-      fileName: localSubmission.files?.find((f: any) => f.category === 'GWA' || f.category === 'Certificate of Grades (COG)')?.name || `${studentName.replace(/\s+/g, '_')}_GWA.pdf`,
+      fileName: localSubmission.files?.find((f: any) => f.category === 'GWA' || f.category === 'Certificate of Grades (COG)')?.name || `${studentName.replace(/\s+/g, '_')}_1st_Sem_GWA.pdf`,
       status: (localSubmission.files?.find((f: any) => f.category === 'GWA' || f.category === 'Certificate of Grades (COG)')?.verified || localSubmission.status === 'Complete' || localSubmission.status === 'Approved') ? 'Verified' : 'Pending',
       file: localSubmission.files?.find((f: any) => f.category === 'GWA' || f.category === 'Certificate of Grades (COG)') || {
-        name: `${studentName.replace(/\s+/g, '_')}_GWA.pdf`,
+        name: `${studentName.replace(/\s+/g, '_')}_1st_Sem_GWA.pdf`,
         type: 'application/pdf',
         category: 'GWA',
         data: 'data:application/pdf;base64,JVBERi0xLjQKJcOkw7zDtsOfCjIgMCBvYmoKPDwvTGVuZ3RoIDMgMCBSL0ZpbHRlci9GbGF0ZURlY29kZT4+CnN0cmVhbQp4nDPQM1Qo5ypUMFAwALJMLU31jBQsTAz1LBSK0osS84tKUvPSi1QK0lPykxWLkjOA3KLUxDwlAwjN1wAAg5wP3gplbmRzdHJlYW0KZW5kb2JqCgozIDAgb2JqCjY1CmVuZG9iagoKNCAwIG9iago8PC9UeXBlL1BhZ2UvTWVkaWFCb3hbMCAwIDU5NSA4NDJdL1Jlc291cmNlczw8L0ZvbnQ8PC9GMCAxIDAgUj4+Pj4vQ29udGVudHMgMiAwIFIvUGFyZW50IDUgMCBSPj4KZW5kb2JqCgo1IDAgb2JqCjw8L1R5cGUvUGFnZXMvQ291bnQgMS9LaWRzWzQgMCBSXT4+CmVuZG9iagoKMSAwIG9iago8PC9UeXBlL0ZvbnQvU3VidHlwZS9UeXBlMS9CYXNlRm9udC9IZWx2ZXRpY2EvRW5jb2RpbmcvV2luQW5zaUVuY29kaW5nPj4KZW5kb2JqCgo2IDAgb2JqCjw8L1R5cGUvQ2F0YWxvZy9QYWdlcyA1IDAgUj4+CmVuZG9iagoKNyAwIG9iago8PC9DcmVhdG9yKExvY2FsIE1vY2sgRmlsZSkvUHJvZHVjZXIoTG9jYWwgTW9jayBGaWxlKS9DcmVhdGlvbkRhdGUoRDoyMDI2MDMwOTAwMDAwMFopPj4KZW5kb2JqCgp4cmVmCjAgOAowMDAwMDAwMDAwIDY1NTM1IGYgCjAwMDAwMDAyNjAgMDAwMDAgbiAKMDAwMDAwMDAxNSAwMDAwMCBuIAowMDAwMDAwMTMzIDAwMDAwIG4gCjAwMDAwMDAxNTEgMDAwMDAgbiAKMDAwMDAwMDIwNSAwMDAwMCBuIAowMDAwMDAwMzQ4IDAwMDAwIG4gCjAwMDAwMDAzOTcgMDAwMDAgbiAKdHJhaWxlcgo8PC9TaXplIDgvUm9vdCA2IDAgUi9JbmZvIDcgMCBSPj4Kc3RhcnR4cmVmCjUwMAolJUVPRgo='
       }
     },
     {
+      id: 'req-rf-2',
+      name: 'Registration Form (RF)',
+      group: '2nd Semester',
+      category: 'RF_2',
+      fileName: localSubmission.files?.find((f: any) => f.category === 'RF_2' || (f.category === 'Certificate of Registration (COR)' && f.name.includes('2nd')))?.name || `${studentName.replace(/\s+/g, '_')}_2nd_Sem_RF.pdf`,
+      status: (localSubmission.files?.find((f: any) => f.category === 'RF_2' || (f.category === 'Certificate of Registration (COR)' && f.name.includes('2nd')))?.verified || localSubmission.status === 'Complete' || localSubmission.status === 'Approved') ? 'Verified' : 'Pending',
+      file: localSubmission.files?.find((f: any) => f.category === 'RF_2' || (f.category === 'Certificate of Registration (COR)' && f.name.includes('2nd'))) || {
+        name: `${studentName.replace(/\s+/g, '_')}_2nd_Sem_RF.pdf`,
+        type: 'application/pdf',
+        category: 'RF_2',
+        data: 'data:application/pdf;base64,JVBERi0xLjQKJcOkw7zDtsOfCjIgMCBvYmoKPDwvTGVuZ3RoIDMgMCBSL0ZpbHRlci9GbGF0ZURlY29kZT4+CnN0cmVhbQp4nDPQM1Qo5ypUMFAwALJMLU31jBQsTAz1LBSK0osS84tKUvPSi1QK0lPykxWLkjOA3KLUxDwlAwjN1wAAg5wP3gplbmRzdHJlYW0KZW5kb2JqCgozIDAgb2JqCjY1CmVuZG9iagoKNCAwIG9iago8PC9UeXBlL1BhZ2UvTWVkaWFCb3hbMCAwIDU5NSA4NDJdL1Jlc291cmNlczw8L0ZvbnQ8PC9GMCAxIDAgUj4+Pj4vQ29udGVudHMgMiAwIFIvUGFyZW50IDUgMCBSPj4KZW5kb2JqCgo1IDAgb2JqCjw8L1R5cGUvUGFnZXMvQ291bnQgMS9LaWRzWzQgMCBSXT4+CmVuZG9iagoKMSAwIG9iago8PC9UeXBlL0ZvbnQvU3VidHlwZS9UeXBlMS9CYXNlRm9udC9IZWx2ZXRpY2EvRW5jb2RpbmcvV2luQW5zaUVuY29kaW5nPj4KZW5kb2JqCgo2IDAgb2JqCjw8L1R5cGUvQ2F0YWxvZy9QYWdlcyA1IDAgUj4+CmVuZG9iagoKNyAwIG9iago8PC9DcmVhdG9yKExvY2FsIE1vY2sgRmlsZSkvUHJvZHVjZXIoTG9jYWwgTW9jayBGaWxlKS9DcmVhdGlvbkRhdGUoRDoyMDI2MDMwOTAwMDAwMFopPj4KZW5kb2JqCgp4cmVmCjAgOAowMDAwMDAwMDAwIDY1NTM1IGYgCjAwMDAwMDAyNjAgMDAwMDAgbiAKMDAwMDAwMDAxNSAwMDAwMCBuIAowMDAwMDAwMTMzIDAwMDAwIG4gCjAwMDAwMDAxNTEgMDAwMDAgbiAKMDAwMDAwMDIwNSAwMDAwMCBuIAowMDAwMDAwMzQ4IDAwMDAwIG4gCjAwMDAwMDAzOTcgMDAwMDAgbiAKdHJhaWxlcgo8PC9TaXplIDgvUm9vdCA2IDAgUi9JbmZvIDcgMCBSPj4Kc3RhcnR4cmVmCjUwMAolJUVPRgo='
+      }
+    },
+    {
+      id: 'req-gwa-2',
+      name: 'General Weighted Average (GWA)',
+      group: '2nd Semester',
+      category: 'GWA_2',
+      fileName: localSubmission.files?.find((f: any) => f.category === 'GWA_2' || (f.category === 'Certificate of Grades (COG)' && f.name.includes('2nd')))?.name || `${studentName.replace(/\s+/g, '_')}_2nd_Sem_GWA.pdf`,
+      status: (localSubmission.files?.find((f: any) => f.category === 'GWA_2' || (f.category === 'Certificate of Grades (COG)' && f.name.includes('2nd')))?.verified || localSubmission.status === 'Complete' || localSubmission.status === 'Approved') ? 'Verified' : 'Pending',
+      file: localSubmission.files?.find((f: any) => f.category === 'GWA_2' || (f.category === 'Certificate of Grades (COG)' && f.name.includes('2nd'))) || {
+        name: `${studentName.replace(/\s+/g, '_')}_2nd_Sem_GWA.pdf`,
+        type: 'application/pdf',
+        category: 'GWA_2',
+        data: 'data:application/pdf;base64,JVBERi0xLjQKJcOkw7zDtsOfCjIgMCBvYmoKPDwvTGVuZ3RoIDMgMCBSL0ZpbHRlci9GbGF0ZURlY29kZT4+CnN0cmVhbQp4nDPQM1Qo5ypUMFAwALJMLU31jBQsTAz1LBSK0osS84tKUvPSi1QK0lPykxWLkjOA3KLUxDwlAwjN1wAAg5wP3gplbmRzdHJlYW0KZW5kb2JqCgozIDAgb2JqCjY1CmVuZG9iagoKNCAwIG9iago8PC9UeXBlL1BhZ2UvTWVkaWFCb3hbMCAwIDU5NSA4NDJdL1Jlc291cmNlczw8L0ZvbnQ8PC9GMCAxIDAgUj4+Pj4vQ29udGVudHMgMiAwIFIvUGFyZW50IDUgMCBSPj4KZW5kb2JqCgo1IDAgb2JqCjw8L1R5cGUvUGFnZXMvQ291bnQgMS9LaWRzWzQgMCBSXT4+CmVuZG9iagoKMSAwIG9iago8PC9UeXBlL0ZvbnQvU3VidHlwZS9UeXBlMS9CYXNlRm9udC9IZWx2ZXRpY2EvRW5jb2RpbmcvV2luQW5zaUVuY29kaW5nPj4KZW5kb2JqCgo2IDAgb2JqCjw8L1R5cGUvQ2F0YWxvZy9QYWdlcyA1IDAgUj4+CmVuZG9iagoKNyAwIG9iago8PC9DcmVhdG9yKExvY2FsIE1vY2sgRmlsZSkvUHJvZHVjZXIoTG9jYWwgTW9jayBGaWxlKS9DcmVhdGlvbkRhdGUoRDoyMDI2MDMwOTAwMDAwMFopPj4KZW5kb2JqCgp4cmVmCjAgOAowMDAwMDAwMDAwIDY1NTM1IGYgCjAwMDAwMDAyNjAgMDAwMDAgbiAKMDAwMDAwMDAxNSAwMDAwMCBuIAowMDAwMDAwMTMzIDAwMDAwIG4gCjAwMDAwMDAxNTEgMDAwMDAgbiAKMDAwMDAwMDIwNSAwMDAwMCBuIAowMDAwMDAwMzQ4IDAwMDAwIG4gCjAwMDAwMDAzOTcgMDAwMDAgbiAKdHJhaWxlcgo8PC9TaXplIDgvUm9vdCA2IDAgUi9JbmZvIDcgMCBSPj4Kc3RhcnR4cmVmCjUwMAolJUVPRgo='
+      }
+    },
+    {
       id: 'req-id',
       name: 'Student ID',
+      group: 'Other Documents',
       category: 'ID',
       fileName: localSubmission.files?.find((f: any) => f.category === 'ID' || f.category === 'Student ID' || f.category === 'Valid Student ID' || f.category === '2x2 Recent Formal ID Photo')?.name || `${studentName.replace(/\s+/g, '_')}_ID.png`,
       status: (localSubmission.files?.find((f: any) => f.category === 'ID' || f.category === 'Student ID' || f.category === 'Valid Student ID' || f.category === '2x2 Recent Formal ID Photo')?.verified || localSubmission.status === 'Complete' || localSubmission.status === 'Approved') ? 'Verified' : 'Pending',
@@ -390,58 +460,70 @@ export function StudentRecordModal({
               </div>
 
               {/* Checklist of required documents */}
-              <div className="space-y-3">
-                <h5 className="text-xs font-bold uppercase tracking-wider text-gray-600 px-1">
-                  Document Checklist & Verification
-                </h5>
+              <div className="space-y-6">
+                
+                {['1st Semester', '2nd Semester', 'Other Documents'].map(groupName => {
+                  const groupReqs = requirementsList.filter(req => req.group === groupName);
+                  if (groupReqs.length === 0) return null;
+                  
+                  return (
+                    <div key={groupName} className="space-y-3">
+                      <h5 className="text-xs font-bold uppercase tracking-wider text-gray-600 px-1 border-b border-gray-200 pb-2">
+                        {groupName} {groupName.includes('Semester') ? `(${selectedAcademicYear || '2026-2027'})` : ''}
+                      </h5>
+                      
+                      <div className="space-y-3">
+                        {groupReqs.map((req) => (
+                          <div key={req.id} className="bg-white p-4 rounded-xl border border-gray-200 shadow-xs flex items-center justify-between gap-3">
+                            <div className="flex items-center gap-3 min-w-0">
+                              <div className={cn(
+                                "w-8 h-8 rounded-lg flex items-center justify-center shrink-0 font-bold",
+                                req.status === 'Verified' ? "bg-green-100 text-green-700" : "bg-amber-100 text-amber-700"
+                              )}>
+                                {req.status === 'Verified' ? <CheckCircle2 className="w-5 h-5 text-green-600" /> : <AlertCircle className="w-5 h-5 text-amber-600" />}
+                              </div>
+                              <div className="min-w-0">
+                                <p className="text-sm font-bold text-gray-900 truncate">{req.name}</p>
+                                <p className="text-xs text-gray-500 truncate">{req.fileName}</p>
+                              </div>
+                            </div>
 
-                {requirementsList.map((req) => (
-                  <div key={req.id} className="bg-white p-4 rounded-xl border border-gray-200 shadow-xs flex items-center justify-between gap-3">
-                    <div className="flex items-center gap-3 min-w-0">
-                      <div className={cn(
-                        "w-8 h-8 rounded-lg flex items-center justify-center shrink-0 font-bold",
-                        req.status === 'Verified' ? "bg-green-100 text-green-700" : "bg-amber-100 text-amber-700"
-                      )}>
-                        {req.status === 'Verified' ? <CheckCircle2 className="w-5 h-5 text-green-600" /> : <AlertCircle className="w-5 h-5 text-amber-600" />}
-                      </div>
-                      <div className="min-w-0">
-                        <p className="text-sm font-bold text-gray-900 truncate">{req.name}</p>
-                        <p className="text-xs text-gray-500 truncate">{req.fileName}</p>
+                            <div className="flex items-center gap-2 shrink-0">
+                              <span className={cn(
+                                "px-2.5 py-1 rounded-full text-[11px] font-bold uppercase",
+                                req.status === 'Verified' ? "bg-green-100 text-green-700 border border-green-200" : "bg-amber-100 text-amber-800 border border-amber-200"
+                              )}>
+                                {req.status}
+                              </span>
+
+                              {req.file && (
+                                <button
+                                  onClick={() => setPreviewFile(req.file as SubmissionFile)}
+                                  className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors cursor-pointer"
+                                  title="Preview File"
+                                >
+                                  <Eye className="w-4 h-4" />
+                                </button>
+                              )}
+
+                              <button
+                                onClick={() => handleVerifyRequirement(req.file?.category || req.category, req.status === 'Verified' ? 'Pending' : 'Verified')}
+                                className={cn(
+                                  "px-2.5 py-1 text-xs font-semibold rounded-lg transition-all cursor-pointer",
+                                  req.status === 'Verified' 
+                                    ? "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                                    : "bg-blue-600 text-white hover:bg-blue-700 shadow-xs"
+                                )}
+                              >
+                                {req.status === 'Verified' ? 'Mark Pending' : 'Verify'}
+                              </button>
+                            </div>
+                          </div>
+                        ))}
                       </div>
                     </div>
-
-                    <div className="flex items-center gap-2 shrink-0">
-                      <span className={cn(
-                        "px-2.5 py-1 rounded-full text-[11px] font-bold uppercase",
-                        req.status === 'Verified' ? "bg-green-100 text-green-700 border border-green-200" : "bg-amber-100 text-amber-800 border border-amber-200"
-                      )}>
-                        {req.status}
-                      </span>
-
-                      {req.file && (
-                        <button
-                          onClick={() => setPreviewFile(req.file as SubmissionFile)}
-                          className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors cursor-pointer"
-                          title="Preview File"
-                        >
-                          <Eye className="w-4 h-4" />
-                        </button>
-                      )}
-
-                      <button
-                        onClick={() => handleVerifyRequirement(req.file?.category || req.category, req.status === 'Verified' ? 'Pending' : 'Verified')}
-                        className={cn(
-                          "px-2.5 py-1 text-xs font-semibold rounded-lg transition-all cursor-pointer",
-                          req.status === 'Verified' 
-                            ? "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                            : "bg-blue-600 text-white hover:bg-blue-700 shadow-xs"
-                        )}
-                      >
-                        {req.status === 'Verified' ? 'Mark Pending' : 'Verify'}
-                      </button>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
 
             </div>
@@ -489,29 +571,47 @@ export function StudentRecordModal({
               {/* Uploaded Documents for this Semester */}
               <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-xs space-y-3">
                 <h5 className="text-xs font-bold uppercase tracking-wider text-gray-700">Semester Uploads</h5>
-                <div className="space-y-2">
-                  <div className="p-3 bg-gray-50 rounded-lg flex items-center justify-between border border-gray-100">
-                    <div className="flex items-center gap-2.5">
-                      <FileText className="w-4 h-4 text-blue-600" />
-                      <div>
-                        <p className="text-xs font-bold text-gray-800">Certificate of Grades ({selectedSemester})</p>
-                        <p className="text-[11px] text-gray-500">Official Registrar Copy &bull; 1.2 MB</p>
-                      </div>
-                    </div>
-                    <span className="text-xs font-semibold text-green-700 bg-green-50 px-2 py-0.5 rounded border border-green-200">Verified</span>
+                
+                {isLoadingFiles ? (
+                  <div className="py-6 text-center text-gray-500 text-sm font-medium animate-pulse">
+                    Loading files...
                   </div>
-
-                  <div className="p-3 bg-gray-50 rounded-lg flex items-center justify-between border border-gray-100">
-                    <div className="flex items-center gap-2.5">
-                      <FileText className="w-4 h-4 text-blue-600" />
-                      <div>
-                        <p className="text-xs font-bold text-gray-800">Certificate of Registration ({selectedSemester})</p>
-                        <p className="text-[11px] text-gray-500">Assessment Form &bull; 850 KB</p>
+                ) : semesterFiles.length > 0 ? (
+                  <div className="space-y-2">
+                    {semesterFiles.map((file, idx) => (
+                      <div key={file.id || idx} className="p-3 bg-gray-50 rounded-lg flex items-center justify-between border border-gray-100">
+                        <div className="flex items-center gap-2.5">
+                          <FileText className="w-4 h-4 text-blue-600" />
+                          <div>
+                            <p className="text-xs font-bold text-gray-800">{file.category || file.name || `Document ${idx+1}`}</p>
+                            <p className="text-[11px] text-gray-500">{file.name} &bull; {file.size || 'Unknown Size'}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className={cn(
+                            "text-[10px] font-bold uppercase px-2 py-0.5 rounded border",
+                            file.status === 'Verified' ? "text-green-700 bg-green-50 border-green-200" :
+                            file.status === 'Rejected' ? "text-red-700 bg-red-50 border-red-200" :
+                            "text-amber-700 bg-amber-50 border-amber-200"
+                          )}>
+                            {file.status || 'Pending'}
+                          </span>
+                          <button
+                            onClick={() => setPreviewFile(file)}
+                            className="p-1.5 text-blue-600 hover:bg-blue-100 rounded-md transition-colors cursor-pointer"
+                            title="Preview File"
+                          >
+                            <Eye className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
                       </div>
-                    </div>
-                    <span className="text-xs font-semibold text-green-700 bg-green-50 px-2 py-0.5 rounded border border-green-200">Verified</span>
+                    ))}
                   </div>
-                </div>
+                ) : (
+                  <div className="py-6 text-center text-gray-500 text-sm font-medium">
+                    No files found for this academic term.
+                  </div>
+                )}
               </div>
 
             </div>

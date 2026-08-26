@@ -77,134 +77,31 @@ export function GuidanceCommunications() {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   // Full dataset matching the 14 reference recipients from the design
-  const studentList: StudentRecipient[] = useMemo(() => [
-    { 
-      id: '1', 
-      studentId: '2024-CAPSU-0182',
-      name: 'Anna Marie A. Santos', 
-      email: 'student@gmail.com', 
-      category: 'Externally-Funded', 
-      subType: 'CHED', 
-      allocation: 'Pag-Ulikid' 
-    },
-    { 
-      id: '2', 
-      studentId: '2024-CAPSU-0195',
-      name: 'Patricia Jane K. Manalo', 
-      email: 'student@gmail.com', 
-      category: 'Externally-Funded', 
-      subType: 'CHED', 
-      allocation: 'Tulong Dunong' 
-    },
-    { 
-      id: '3', 
-      studentId: '2022-CAPSU-0041',
-      name: 'Damian James O. Emilio', 
-      email: 'student@gmail.com', 
-      category: 'Externally-Funded', 
-      subType: 'CHED', 
-      allocation: 'ANAC-IP' 
-    },
-    { 
-      id: '4', 
-      studentId: '2022-CAPSU-0089',
-      name: 'Paul John N. Dela Cruz', 
-      email: 'student@gmail.com', 
-      category: 'Internally-Funded', 
-      subType: 'Institutional', 
-      allocation: 'President—FLP' 
-    },
-    { 
-      id: '5', 
-      studentId: '2023-CAPSU-0112',
-      name: 'Charlotte Alexis N. Tuvera', 
-      email: 'student@gmail.com', 
-      category: 'Internally-Funded', 
-      subType: 'Institutional', 
-      allocation: 'Dependent of Faculty or Staff' 
-    },
-    { 
-      id: '6', 
-      studentId: '2023-CAPSU-0144',
-      name: 'Michael O. Burata', 
-      email: 'student@gmail.com', 
-      category: 'Internally-Funded', 
-      subType: 'Socio-cultural', 
-      allocation: 'Regional' 
-    },
-    { 
-      id: '7', 
-      studentId: '2023-CAPSU-0201',
-      name: 'Chery Joy M. Marcelino', 
-      email: 'student@gmail.com', 
-      category: 'Internally-Funded', 
-      subType: 'Academic', 
-      allocation: 'Partial' 
-    },
-    { 
-      id: '8', 
-      studentId: '2023-CAPSU-0219',
-      name: 'Jessica Mae E. Dela Cruz', 
-      email: 'student@gmail.com', 
-      category: 'Externally-Funded', 
-      subType: 'CHED', 
-      allocation: 'UniFast' 
-    },
-    { 
-      id: '9', 
-      studentId: '2025-CAPSU-0012',
-      name: 'Mark Josh P. Lorenzo', 
-      email: 'student@gmail.com', 
-      category: 'Externally-Funded', 
-      subType: 'CHED', 
-      allocation: 'TES' 
-    },
-    { 
-      id: '10', 
-      studentId: '2025-CAPSU-0045',
-      name: 'William George I. Diaz', 
-      email: 'student@gmail.com', 
-      category: 'Externally-Funded', 
-      subType: 'Merit', 
-      allocation: 'DOST' 
-    },
-    { 
-      id: '11', 
-      studentId: '2024-CAPSU-0078',
-      name: 'Febe Ronile Alejandro', 
-      email: 'student@gmail.com', 
-      category: 'Externally-Funded', 
-      subType: 'Merit', 
-      allocation: 'LGU' 
-    },
-    { 
-      id: '12', 
-      studentId: '2023-CAPSU-0099',
-      name: 'Ellah A. Andalecio', 
-      email: 'student@gmail.com', 
-      category: 'Externally-Funded', 
-      subType: 'CHED', 
-      allocation: 'Tulong Dunong' 
-    },
-    { 
-      id: '13', 
-      studentId: '2022-CAPSU-0156',
-      name: 'Michelle Diane C. Flores', 
-      email: 'student@gmail.com', 
-      category: 'Externally-Funded', 
-      subType: 'CHED', 
-      allocation: 'Barangay (Legal dependents of Brgy. Officials)' 
-    },
-    { 
-      id: '14', 
-      studentId: '2025-CAPSU-0067',
-      name: 'Christian Jason J. Valdez', 
-      email: 'student@gmail.com', 
-      category: 'Internally-Funded', 
-      subType: 'CHED', 
-      allocation: 'ESGP – PA' 
-    },
-  ], []);
+  const [studentList, setStudentList] = useState<StudentRecipient[]>([]);
+
+  React.useEffect(() => {
+    const unsub = db.submissions.subscribe(subs => {
+      if (subs) {
+        const uniqueStudents = Array.from(new Map(subs.map(s => {
+          const name = s.studentName || `${s.data?.firstName || ''} ${s.data?.familyName || ''}`.trim() || 'Scholar';
+          return [
+            s.studentId || s.id, 
+            {
+              id: s.studentId || s.id,
+              studentId: s.studentId || `CAPSU-${s.id.substring(0, 4)}`,
+              name,
+              email: s.data?.email || 'student@gmail.com',
+              category: (s.data?.fundingType || 'Internally-Funded') as 'Internally-Funded' | 'Externally-Funded',
+              subType: s.data?.scholarshipType || s.scholarshipType || 'Academic',
+              allocation: s.data?.scholarshipProgram || s.scholarshipType || 'Scholarship'
+            }
+          ];
+        })).values());
+        setStudentList(uniqueStudents);
+      }
+    });
+    return () => unsub();
+  }, []);
 
   // Email Templates
   const defaultTemplates: EmailTemplate[] = useMemo(() => [
@@ -309,7 +206,7 @@ Capiz State University`
   const [templates, setTemplates] = useState<EmailTemplate[]>(defaultTemplates);
 
   // Selection state
-  const [selectedStudentIds, setSelectedStudentIds] = useState<string[]>(['1']); // Default: Anna Marie A. Santos
+  const [selectedStudentIds, setSelectedStudentIds] = useState<string[]>([]);
   const [isSelectMode, setIsSelectMode] = useState<boolean>(false);
 
   // Filters state
@@ -361,28 +258,7 @@ Capiz State University`
   const [showGrammarCheckModal, setShowGrammarCheckModal] = useState<boolean>(false);
 
   // Sent History Log
-  const [sentHistory, setSentHistory] = useState<SentEmailRecord[]>([
-    {
-      id: 'sent-1',
-      recipients: ['student@gmail.com'],
-      recipientNames: ['Paul John N. Dela Cruz'],
-      subject: 'Urgent: Incomplete Scholarship Submission',
-      body: 'Documentary verification advisory for President—FLP grant.',
-      sentAt: 'Aug 18, 2026 • 10:15 AM',
-      status: 'Delivered',
-      attachmentsCount: 1
-    },
-    {
-      id: 'sent-2',
-      recipients: ['student@gmail.com'],
-      recipientNames: ['Michael O. Burata', 'Chery Joy M. Marcelino'],
-      subject: 'Notice of Verified Scholarship Documents',
-      body: 'Official endorsement notice for Regional grant release.',
-      sentAt: 'Aug 17, 2026 • 2:40 PM',
-      status: 'Delivered',
-      attachmentsCount: 2
-    }
-  ]);
+  const [sentHistory, setSentHistory] = useState<SentEmailRecord[]>([]);
 
   // Google Drive Institutional Files Repository
   const driveDocuments = [
@@ -521,15 +397,7 @@ Capiz State University`
             status: 'Delivered',
             attachmentsCount: c.attachments?.length || 0
           }));
-          setSentHistory(prev => {
-            const combined = [...mapped];
-            for (const item of prev) {
-              if (!combined.some(c => c.id === item.id)) {
-                combined.push(item);
-              }
-            }
-            return combined;
-          });
+          setSentHistory(mapped);
         }
       } catch (err) {
         console.warn("Failed to load communications history from db:", err);

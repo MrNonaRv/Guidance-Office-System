@@ -454,61 +454,44 @@ export function GuidanceLayout() {
 export function GuidanceDashboard() {
   const navigate = useNavigate();
   const [submissions, setSubmissions] = useState<any[]>(() => db.submissions.getCached());
+  const [notifications, setNotifications] = useState<any[]>(() => db.notifications.getCached());
 
   useEffect(() => {
-    const unsub = db.submissions.subscribe(subs => {
+    const unsubSubs = db.submissions.subscribe(subs => {
       if (subs && subs.length > 0) {
         setSubmissions(subs);
       }
     });
-    return () => unsub();
+    const unsubNotifs = db.notifications.subscribe(notifs => {
+      if (notifs) {
+        setNotifications(notifs);
+      }
+    });
+    return () => {
+      unsubSubs();
+      unsubNotifs();
+    };
   }, []);
 
-  const totalCount = 213 + Math.max(0, submissions.filter(s => !s.id.startsWith('sub-seed-')).length);
-  const completeCount = 150 + submissions.filter(s => !s.id.startsWith('sub-seed-') && s.status === 'Complete').length;
-  const incompleteCount = 63 + submissions.filter(s => !s.id.startsWith('sub-seed-') && s.status !== 'Complete').length;
+  const totalCount = submissions.length;
+  const completeCount = submissions.filter(s => s.status === 'Complete').length;
+  const incompleteCount = submissions.filter(s => s.status !== 'Complete').length;
 
-  const customSubmissions = submissions
-    .filter(s => !s.id.startsWith('sub-seed-'))
+  const displaySubmissions = submissions
     .map(s => ({
       studentName: s.studentName || `${s.data?.firstName || ''} ${s.data?.familyName || ''}`.trim() || 'New Applicant',
       course: s.data?.course || s.answers?.course || 'BSCS',
-      date: s.submittedAt ? new Date(s.submittedAt).toLocaleDateString('en-US', { month: 'long', day: '2-digit', year: 'numeric' }) : 'March 11, 2026',
+      date: s.submittedAt ? new Date(s.submittedAt).toLocaleDateString('en-US', { month: 'long', day: '2-digit', year: 'numeric' }) : 'Unknown Date',
       status: s.status || 'Incomplete'
-    }));
+    }))
+    .slice(0, 10);
 
-  const seedSubmissions = [
-    { studentName: 'Anna Marie A. Santos', course: 'BAEL', date: 'March 11, 2026', status: 'Incomplete' },
-    { studentName: 'Patricia Jane K. Manalo', course: 'BAEL', date: 'March 11, 2026', status: 'Incomplete' },
-    { studentName: 'Damian James O. Emilio', course: 'BSFT', date: 'March 11, 2026', status: 'Incomplete' },
-    { studentName: 'Paul John N. Dela Cruz', course: 'BSOA', date: 'March 11, 2026', status: 'Incomplete' },
-    { studentName: 'Charlotte Alexis N. Tuvera', course: 'BSCS', date: 'March 10, 2026', status: 'Incomplete' },
-    { studentName: 'Michael O. Burata', course: 'BSCS', date: 'March 10, 2026', status: 'Complete' },
-    { studentName: 'Chery Joy M. Marcelino', course: 'BSCS', date: 'March 10, 2026', status: 'Complete' },
-    { studentName: 'Jessica Mae E. Dela Cruz', course: 'BSCS', date: 'March 09, 2026', status: 'Complete' },
-    { studentName: 'Mark Josh P. Lorenzo', course: 'BSOA', date: 'March 09, 2026', status: 'Complete' },
-    { studentName: 'William George I. Diaz', course: 'BSFT', date: 'March 08, 2026', status: 'Complete' },
-  ];
-
-  const displaySubmissions = [...customSubmissions, ...seedSubmissions].slice(0, 10);
-
-  const customNotifications = customSubmissions.slice(0, 3).map(s => ({
-    studentName: s.studentName,
-    action: 'submitted scholarship requirements',
-    time: 'Just now'
+  const displayNotifications = notifications.slice(0, 6).map(n => ({
+    studentName: n.studentName || n.title,
+    action: n.description || 'System update',
+    time: n.timestamp || 'Just now',
+    type: n.type
   }));
-
-  // Exact 6 notifications matching the reference image
-  const seedNotifications = [
-    { studentName: 'Anna Marie A. Santos', action: 'submitted scholarship requirements', time: 'Today, 1:03 PM' },
-    { studentName: 'Patricia Jane K. Manalo', action: 'submitted scholarship requirements', time: 'Today, 10:17 AM' },
-    { studentName: 'Damian James O. Emilio', action: 'submitted scholarship requirements', time: 'Today, 8:44 AM' },
-    { studentName: 'Paul John N. Dela Cruz', action: 'submitted scholarship requirements f...', time: 'Today, 8:10 AM' },
-    { studentName: 'Charlotte Alexis N. Tuvera', action: 'submitted scholarship requirements', time: 'Yesterday, 2:30 PM' },
-    { studentName: 'Michael O. Burata', action: 'submitted scholarship requirements for.....', time: 'Yesterday, 9:01 PM' },
-  ];
-
-  const displayNotifications = [...customNotifications, ...seedNotifications].slice(0, 6);
 
 
   return (
@@ -977,13 +960,7 @@ export function GuidanceSettings() {
   });
 
   // Sections state
-  const [sections, setSections] = useState<any[]>([
-    { id: '1', name: 'BSCS 4A', course: 'BSCS', yearLevel: '4th Year', status: 'Active' },
-    { id: '2', name: 'BSCS 4B', course: 'BSCS', yearLevel: '4th Year', status: 'Active' },
-    { id: '3', name: 'BAEL 3A', course: 'BAEL', yearLevel: '3rd Year', status: 'Active' },
-    { id: '4', name: 'BSFT 2A', course: 'BSFT', yearLevel: '2nd Year', status: 'Active' },
-    { id: '5', name: 'BSOA 1A', course: 'BSOA', yearLevel: '1st Year', status: 'Active' },
-  ]);
+  const [sections, setSections] = useState<any[]>(() => db.sections.getCached());
   const [showSectionModal, setShowSectionModal] = useState(false);
   const [editingSection, setEditingSection] = useState<any>(null);
   const [sectionForm, setSectionForm] = useState({
@@ -991,12 +968,7 @@ export function GuidanceSettings() {
   });
 
   // Form Fields & Requirements state
-  const [formFields, setFormFields] = useState<any[]>([
-    { id: '1', title: 'Certificate of Grades (COG)', description: 'Signed official registrar grade copy with GWA', mandatory: 'Required', status: 'Active' },
-    { id: '2', title: 'Certificate of Registration (COR)', description: 'Current semester enrollment document & assessment form', mandatory: 'Required', status: 'Active' },
-    { id: '3', title: 'Proof of Income / Certificate of Indigency', description: 'Parental ITR or Barangay Certificate of Low Income', mandatory: 'Required', status: 'Active' },
-    { id: '4', title: 'Certificate of Good Moral Character', description: 'Issued by Student Affairs Services / Guidance Office', mandatory: 'Optional', status: 'Active' },
-  ]);
+  const [formFields, setFormFields] = useState<any[]>(() => db.formRequirements.getCached());
   const [showFormModal, setShowFormModal] = useState(false);
   const [editingFormField, setEditingFormField] = useState<any>(null);
   const [formFieldForm, setFormFieldForm] = useState({
@@ -1004,11 +976,7 @@ export function GuidanceSettings() {
   });
 
   // Files state
-  const [files, setFiles] = useState<any[]>([
-    { id: '1', name: 'CHED_TDP_Application_Form_2026.pdf', category: 'Scholarship Application', size: '1.4 MB', uploadDate: 'March 01, 2026' },
-    { id: '2', name: 'CAPSU_Scholarship_Guidelines_v2.pdf', category: 'Guidelines & Policies', size: '2.8 MB', uploadDate: 'February 15, 2026' },
-    { id: '3', name: 'Certificate_of_Indigency_Template.docx', category: 'Document Template', size: '450 KB', uploadDate: 'January 20, 2026' },
-  ]);
+  const [files, setFiles] = useState<any[]>(() => db.files.getCached());
   const [showFileModal, setShowFileModal] = useState(false);
   const [fileForm, setFileForm] = useState({
     name: '', category: 'Scholarship Application', size: '1.2 MB'
@@ -1057,15 +1025,17 @@ export function GuidanceSettings() {
   }, []);
 
   // Academic Year Handlers
-  const handleSaveAcademicYear = () => {
+  const handleSaveAcademicYear = async () => {
     if (!academicYearForm.year.trim()) {
       alert("Please specify the academic year (e.g. 2026-2027).");
       return;
     }
     if (editingAcademicYear) {
+      await db.academicYears.update(editingAcademicYear.id, academicYearForm);
       setAcademicYears(academicYears.map(ay => ay.id === editingAcademicYear.id ? { ...ay, ...academicYearForm } : ay));
     } else {
-      setAcademicYears([{ id: Date.now().toString(), ...academicYearForm }, ...academicYears]);
+      const newAY = await db.academicYears.create(academicYearForm);
+      setAcademicYears([newAY, ...academicYears]);
     }
     setShowAcademicYearModal(false);
   };
@@ -1081,8 +1051,9 @@ export function GuidanceSettings() {
     setShowAcademicYearModal(true);
   };
 
-  const handleDeleteAcademicYear = (id: string) => {
+  const handleDeleteAcademicYear = async (id: string) => {
     if (confirm("Are you sure you want to delete this academic year?")) {
+      await db.academicYears.delete(id);
       setAcademicYears(academicYears.filter(ay => ay.id !== id));
     }
   };
@@ -1125,15 +1096,17 @@ export function GuidanceSettings() {
   };
 
   // Section Handlers
-  const handleSaveSection = () => {
+  const handleSaveSection = async () => {
     if (!sectionForm.name.trim()) {
       alert("Please specify the section name (e.g. BSCS 4A).");
       return;
     }
     if (editingSection) {
+      await db.sections.update(editingSection.id, sectionForm);
       setSections(sections.map(s => s.id === editingSection.id ? { ...s, ...sectionForm } : s));
     } else {
-      setSections([...sections, { id: Date.now().toString(), ...sectionForm }]);
+      const newSection = await db.sections.create(sectionForm);
+      setSections([...sections, newSection]);
     }
     setShowSectionModal(false);
   };
@@ -1149,22 +1122,25 @@ export function GuidanceSettings() {
     setShowSectionModal(true);
   };
 
-  const handleDeleteSection = (id: string) => {
+  const handleDeleteSection = async (id: string) => {
     if (confirm("Are you sure you want to delete this section?")) {
+      await db.sections.delete(id);
       setSections(sections.filter(s => s.id !== id));
     }
   };
 
   // Form Field Handlers
-  const handleSaveFormField = () => {
+  const handleSaveFormField = async () => {
     if (!formFieldForm.title.trim()) {
       alert("Please enter a document/field name.");
       return;
     }
     if (editingFormField) {
+      await db.formRequirements.update(editingFormField.id, formFieldForm);
       setFormFields(formFields.map(f => f.id === editingFormField.id ? { ...f, ...formFieldForm } : f));
     } else {
-      setFormFields([...formFields, { id: Date.now().toString(), ...formFieldForm }]);
+      const newReq = await db.formRequirements.create(formFieldForm);
+      setFormFields([...formFields, newReq]);
     }
     setShowFormModal(false);
   };
@@ -1180,30 +1156,32 @@ export function GuidanceSettings() {
     setShowFormModal(true);
   };
 
-  const handleDeleteFormField = (id: string) => {
+  const handleDeleteFormField = async (id: string) => {
     if (confirm("Are you sure you want to delete this requirement field?")) {
+      await db.formRequirements.delete(id);
       setFormFields(formFields.filter(f => f.id !== id));
     }
   };
 
   // File Handlers
-  const handleSaveFile = () => {
+  const handleSaveFile = async () => {
     if (!fileForm.name.trim()) {
       alert("Please enter a file name.");
       return;
     }
-    setFiles([{
-      id: Date.now().toString(),
+    const newFile = await db.files.create({
       name: fileForm.name,
       category: fileForm.category,
       size: fileForm.size,
       uploadDate: new Date().toLocaleDateString('en-US', { month: 'long', day: '2-digit', year: 'numeric' })
-    }, ...files]);
+    });
+    setFiles([newFile, ...files]);
     setShowFileModal(false);
   };
 
-  const handleDeleteFile = (id: string) => {
+  const handleDeleteFile = async (id: string) => {
     if (confirm("Are you sure you want to delete this file?")) {
+      await db.files.delete(id);
       setFiles(files.filter(f => f.id !== id));
     }
   };
