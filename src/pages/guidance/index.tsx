@@ -70,6 +70,42 @@ export function GuidanceLogin() {
 
     try {
       const cleanEmail = adminEmailInput.trim();
+
+      // 1. INSTANT LOGIN CHECK FOR DEFAULT ADMIN ACCOUNTS
+      const isDefaultAdmin = 
+        (cleanEmail.toLowerCase() === 'guidancestaff@capsu.edu' || 
+         cleanEmail.toLowerCase() === 'aguilos.relie@capsu.edu' || 
+         cleanEmail.toLowerCase() === 'admin@capsu.edu') &&
+        (adminPasswordInput === 'admin123' || adminPasswordInput === 'password123' || adminPasswordInput === 'guidance123');
+
+      if (isDefaultAdmin) {
+        localStorage.setItem('adminAuth', 'true');
+        localStorage.setItem('adminEmail', cleanEmail);
+        
+        // Sync to Firebase in background without blocking login
+        signInWithEmail(cleanEmail, adminPasswordInput).catch(() => {
+          signUpWithEmail(cleanEmail, adminPasswordInput, 'Guidance Staff').catch(() => {});
+        });
+        
+        navigate('/admin/dashboard');
+        return;
+      }
+
+      // 2. INSTANT LOGIN CHECK FOR LOCAL DATABASE ACCOUNTS
+      const localAdmin = await db.users.findByEmail(cleanEmail);
+      if (localAdmin && localAdmin.role === 'admin' && (!localAdmin.password || localAdmin.password === adminPasswordInput)) {
+        localStorage.setItem('adminAuth', 'true');
+        localStorage.setItem('adminEmail', cleanEmail);
+        
+        // Sync to Firebase in background without blocking login
+        signInWithEmail(cleanEmail, adminPasswordInput).catch(() => {
+          signUpWithEmail(cleanEmail, adminPasswordInput, `${localAdmin.firstName} ${localAdmin.lastName}`).catch(() => {});
+        });
+        
+        navigate('/admin/dashboard');
+        return;
+      }
+
       let fbUser = null;
       try {
         fbUser = await signInWithEmail(cleanEmail, adminPasswordInput);
@@ -84,31 +120,11 @@ export function GuidanceLogin() {
           errMsg.includes('auth/invalid-credential');
 
         if (isInvalid) {
-          const isDefaultAdmin = 
-            (cleanEmail.toLowerCase() === 'guidancestaff@capsu.edu' || 
-             cleanEmail.toLowerCase() === 'aguilos.relie@capsu.edu' || 
-             cleanEmail.toLowerCase() === 'admin@capsu.edu') &&
-            (adminPasswordInput === 'admin123' || adminPasswordInput === 'password123' || adminPasswordInput === 'guidance123');
-
-          if (isDefaultAdmin) {
-            try {
-              fbUser = await signUpWithEmail(cleanEmail, adminPasswordInput, 'Guidance Staff');
-            } catch (createErr) {
-              // Firebase email auth might already have user or provider disabled, proceed with local admin
-            }
-          } else {
-            const localAdmin = await db.users.findByEmail(cleanEmail);
-            if (localAdmin && localAdmin.role === 'admin' && (!localAdmin.password || localAdmin.password === adminPasswordInput)) {
-              const uid = localAdmin.id;
-              localStorage.setItem('adminAuth', 'true');
-              localStorage.setItem('adminEmail', cleanEmail);
-              navigate('/admin/dashboard');
-              return;
-            } else {
-              setError('Invalid guidance credentials. Default login: guidancestaff@capsu.edu / admin123');
-              return;
-            }
-          }
+          setError('Invalid guidance credentials. Default login: guidancestaff@capsu.edu / admin123');
+          return;
+        } else {
+          setError('An error occurred during sign in. Please try again.');
+          return;
         }
       }
 
@@ -257,7 +273,7 @@ export function GuidanceLayout() {
       {/* Top Banner Navbar (Fixed) */}
       <header className="w-full bg-[#1257c7] text-white px-3 sm:px-6 py-3 flex items-center justify-between shadow-md z-30 shrink-0">
         <div className="flex items-center gap-2.5 sm:gap-3.5 min-w-0">
-          <img src="/capsu-logo.png" alt="CapSU Logo" className="w-10 h-10 sm:w-12 sm:h-12 object-contain shrink-0" />
+          <img src="/capsu-logo.png" alt="CAPSU Logo" className="w-10 h-10 sm:w-12 sm:h-12 object-contain shrink-0" />
           <div className="min-w-0">
             <h1 className="text-sm sm:text-base md:text-xl font-serif font-bold text-white tracking-wide leading-tight truncate">
               Web-Based Scholarship Submission Alert System
@@ -990,7 +1006,7 @@ export function GuidanceSettings() {
   // Files state
   const [files, setFiles] = useState<any[]>([
     { id: '1', name: 'CHED_TDP_Application_Form_2026.pdf', category: 'Scholarship Application', size: '1.4 MB', uploadDate: 'March 01, 2026' },
-    { id: '2', name: 'CapSU_Scholarship_Guidelines_v2.pdf', category: 'Guidelines & Policies', size: '2.8 MB', uploadDate: 'February 15, 2026' },
+    { id: '2', name: 'CAPSU_Scholarship_Guidelines_v2.pdf', category: 'Guidelines & Policies', size: '2.8 MB', uploadDate: 'February 15, 2026' },
     { id: '3', name: 'Certificate_of_Indigency_Template.docx', category: 'Document Template', size: '450 KB', uploadDate: 'January 20, 2026' },
   ]);
   const [showFileModal, setShowFileModal] = useState(false);

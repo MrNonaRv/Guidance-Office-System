@@ -343,7 +343,7 @@ Capiz State University`
   // Modals state
   const [showDriveModal, setShowDriveModal] = useState<boolean>(false);
   const [showLinkModal, setShowLinkModal] = useState<boolean>(false);
-  const [linkForm, setLinkForm] = useState({ text: 'CapSU Scholarship Guidelines', url: 'https://capsu.edu.ph/scholarship-guidelines' });
+  const [linkForm, setLinkForm] = useState({ text: 'CAPSU Scholarship Guidelines', url: 'https://capsu.edu.ph/scholarship-guidelines' });
   const [showConfidentialModal, setShowConfidentialModal] = useState<boolean>(false);
   const [isConfidentialActive, setIsConfidentialActive] = useState<boolean>(false);
   const [confidentialSettings, setConfidentialSettings] = useState({
@@ -1592,7 +1592,7 @@ Capiz State University`
                   <HardDrive className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-gray-900 text-base">Select from CapSU University Drive</h3>
+                  <h3 className="font-bold text-gray-900 text-base">Select from CAPSU University Drive</h3>
                   <p className="text-xs text-gray-500">Official guidance memorandums and scholarship policy files</p>
                 </div>
               </div>
@@ -1660,7 +1660,7 @@ Capiz State University`
                   type="text" 
                   value={linkForm.text} 
                   onChange={e => setLinkForm({ ...linkForm, text: e.target.value })}
-                  placeholder="e.g. CapSU Scholarship Portal"
+                  placeholder="e.g. CAPSU Scholarship Portal"
                   className="w-full text-xs border border-gray-300 rounded-xl px-3.5 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                 />
               </div>
@@ -1680,7 +1680,7 @@ Capiz State University`
                 <p className="text-[11px] font-bold text-gray-500">Quick Shortcuts:</p>
                 <div className="flex flex-wrap gap-1.5">
                   {[
-                    { label: 'CapSU Portal', url: 'https://capsu.edu.ph/student-portal' },
+                    { label: 'CAPSU Portal', url: 'https://capsu.edu.ph/student-portal' },
                     { label: 'CHED TDP', url: 'https://ched.gov.ph/tulong-dunong' },
                     { label: 'DOST Scholar', url: 'https://sei.dost.gov.ph' }
                   ].map(sc => (
@@ -1842,7 +1842,7 @@ Capiz State University`
               >
                 <p className="text-xs font-bold text-gray-900">Scholarship Verification Committee</p>
                 <p className="text-[11px] text-gray-600 mt-0.5">Official Academic Review Board</p>
-                <p className="text-[10px] text-blue-700 font-semibold mt-1">CapSU Tapaz & Mambusao</p>
+                <p className="text-[10px] text-blue-700 font-semibold mt-1">CAPSU Tapaz & Mambusao</p>
               </button>
             </div>
 
@@ -2055,7 +2055,7 @@ Capiz State University`
                 <Check className="w-4 h-4 text-green-600 shrink-0 mt-0.5" />
                 <div>
                   <p className="font-bold">Institutional Tone Verified</p>
-                  <p className="text-[11px] text-green-700">Language strictly follows formal CapSU university advisory standards.</p>
+                  <p className="text-[11px] text-green-700">Language strictly follows formal CAPSU university advisory standards.</p>
                 </div>
               </div>
 

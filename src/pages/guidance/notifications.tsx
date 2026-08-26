@@ -351,16 +351,16 @@ export function GuidanceNotifications() {
                 <table className="w-full text-xs text-left border-collapse">
                   <tbody className="divide-y divide-gray-200">
                     <tr>
-                      <td className="py-2.5 px-4 font-bold text-gray-800 w-[40%] border-r border-gray-200">Family Name</td>
+                      <td className="py-2.5 px-4 font-bold text-gray-800 w-[40%] border-r border-gray-200">Last Name</td>
                       <td className="py-2.5 px-4 text-gray-700">{selectedNotification.studentName ? selectedNotification.studentName.split(' ').pop() : 'Santos'}</td>
-                    </tr>
-                    <tr>
-                      <td className="py-2.5 px-4 font-bold text-gray-800 border-r border-gray-200">Middle Name</td>
-                      <td className="py-2.5 px-4 text-gray-700">Abelardo</td>
                     </tr>
                     <tr>
                       <td className="py-2.5 px-4 font-bold text-gray-800 border-r border-gray-200">First Name</td>
                       <td className="py-2.5 px-4 text-gray-700">{selectedNotification.studentName ? selectedNotification.studentName.split(' ').slice(0, -1).join(' ') : 'Anna Marie'}</td>
+                    </tr>
+                    <tr>
+                      <td className="py-2.5 px-4 font-bold text-gray-800 border-r border-gray-200">Middle Name</td>
+                      <td className="py-2.5 px-4 text-gray-700">Abelardo</td>
                     </tr>
                     <tr>
                       <td className="py-2.5 px-4 font-bold text-gray-800 border-r border-gray-200">Birthdate</td>

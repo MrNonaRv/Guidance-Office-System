@@ -576,7 +576,7 @@ export function StudentRecordModal({
                   </div>
                   <div className="flex text-[10px] italic mt-1">
                     <span className="mr-2 opacity-0">Name:</span>
-                    <span className="flex-1 text-center">Family Name</span>
+                    <span className="flex-1 text-center">Last Name</span>
                     <span className="flex-1 text-center ml-2">First Name</span>
                     <span className="flex-1 text-center ml-2">Middle Name</span>
                   </div>
@@ -609,7 +609,7 @@ export function StudentRecordModal({
 
                 <div className="flex items-end text-sm">
                   <span className="mr-2">Permanent Address:</span>
-                  <span className="flex-1 border-b border-black inline-block text-center">{formData.permanentAddress || ''}</span>
+                  <span className="flex-1 border-b border-black inline-block text-center">{formData.street ? `${formData.street}, ${formData.barangay}, ${formData.municipality}, ${formData.province} ${formData.postalCode}` : (formData.permanentAddress || '')}</span>
                 </div>
               </div>
               

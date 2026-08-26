@@ -64,6 +64,7 @@ export interface User {
   id: string;
   email: string;
   firstName: string;
+  middleName?: string;
   lastName: string;
   password?: string;
   role: 'student' | 'admin';
@@ -155,18 +156,27 @@ export interface CommunicationItem {
   attachments?: { name: string; size?: string; type?: string; data?: string }[];
 }
 
+// Helper to prevent "Database is closing/hidden" errors during HMR
+const getDb = (name: string) => {
+  const global = globalThis as any;
+  if (!global[name]) {
+    global[name] = localforage.createInstance({ name });
+  }
+  return global[name];
+};
+
 // Local storage stores for instant retrieval & offline support
-const scholarshipsDb = localforage.createInstance({ name: 'scholarship-app-scholarships' });
-const coursesDb = localforage.createInstance({ name: 'scholarship-app-courses' });
-const academicYearsDb = localforage.createInstance({ name: 'scholarship-app-academicYears' });
-const sectionsDb = localforage.createInstance({ name: 'scholarship-app-sections' });
-const formReqsDb = localforage.createInstance({ name: 'scholarship-app-formRequirements' });
-const systemFilesDb = localforage.createInstance({ name: 'scholarship-app-files' });
-const usersDb = localforage.createInstance({ name: 'scholarship-app-users' });
-const submissionsDb = localforage.createInstance({ name: 'scholarship-app-submissions' });
-const formsDb = localforage.createInstance({ name: 'scholarship-app-forms' });
-const notificationsDb = localforage.createInstance({ name: 'scholarship-app-notifications' });
-const communicationsDb = localforage.createInstance({ name: 'scholarship-app-communications' });
+const scholarshipsDb = getDb('scholarship-app-scholarships');
+const coursesDb = getDb('scholarship-app-courses');
+const academicYearsDb = getDb('scholarship-app-academicYears');
+const sectionsDb = getDb('scholarship-app-sections');
+const formReqsDb = getDb('scholarship-app-formRequirements');
+const systemFilesDb = getDb('scholarship-app-files');
+const usersDb = getDb('scholarship-app-users');
+const submissionsDb = getDb('scholarship-app-submissions');
+const formsDb = getDb('scholarship-app-forms');
+const notificationsDb = getDb('scholarship-app-notifications');
+const communicationsDb = getDb('scholarship-app-communications');
 
 // Default records
 export const defaultSections: Section[] = [
@@ -187,7 +197,7 @@ export const defaultFormRequirements: FormRequirement[] = [
 
 export const defaultSystemFiles: SystemFile[] = [
   { id: 'file-1', name: 'CHED_TDP_Application_Form_2026.pdf', category: 'Scholarship Application', size: '1.4 MB', uploadDate: 'March 01, 2026' },
-  { id: 'file-2', name: 'CapSU_Scholarship_Guidelines_v2.pdf', category: 'Guidelines & Policies', size: '2.8 MB', uploadDate: 'February 15, 2026' },
+  { id: 'file-2', name: 'CAPSU_Scholarship_Guidelines_v2.pdf', category: 'Guidelines & Policies', size: '2.8 MB', uploadDate: 'February 15, 2026' },
   { id: 'file-3', name: 'Certificate_of_Indigency_Template.docx', category: 'Document Template', size: '450 KB', uploadDate: 'January 20, 2026' },
 ];
 

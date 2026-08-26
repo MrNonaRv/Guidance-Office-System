@@ -164,7 +164,7 @@ export function SubmissionReviewSummary({
                 <span className="text-gray-500 text-[10px] font-bold uppercase block">Permanent Address</span>
                 <span className="font-semibold text-gray-800 text-xs flex items-center gap-1 mt-0.5">
                   <MapPin className="w-3 h-3 text-blue-700 shrink-0" />
-                  {formData.permanentAddress || 'Not specified'}
+                  {formData.street ? `${formData.street}, ${formData.barangay}, ${formData.municipality}, ${formData.province} ${formData.postalCode}` : (formData.permanentAddress || 'Not specified')}
                 </span>
               </div>
             </div>

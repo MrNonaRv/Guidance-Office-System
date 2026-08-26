@@ -10,6 +10,7 @@ import { SignaturePad } from '../../components/SignaturePad';
 import { SubmissionReviewSummary } from '../../components/SubmissionReviewSummary';
 import { SubmissionSuccessModal } from '../../components/SubmissionSuccessModal';
 import { DocumentPreviewModal } from '../../components/DocumentPreviewModal';
+import { capizMunicipalities } from '../../lib/capiz';
 
 import { signInWithGoogle, signInWithEmail, signUpWithEmail, logOut, auth } from '../../lib/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
@@ -29,10 +30,13 @@ export function StudentLogin() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [firstName, setFirstName] = useState('');
+  const [middleName, setMiddleName] = useState('');
   const [lastName, setLastName] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const handleGoogleLogin = async () => {
     setError('');
@@ -89,6 +93,49 @@ export function StudentLogin() {
     try {
       const cleanEmail = email.trim();
       if (isLogin) {
+        // 1. INSTANT LOGIN CHECK FOR DEMO ACCOUNTS
+        const isDemoStudent = 
+          (cleanEmail.toLowerCase() === 'student@capsu.edu' || 
+           cleanEmail.toLowerCase() === 'anna.santos@capsu.edu' || 
+           cleanEmail.toLowerCase() === 'santos.anna@capsu.edu') &&
+          (password === 'student123' || password === 'admin123' || password === 'password123' || password === '123456');
+
+        if (isDemoStudent) {
+          const demoStudent = {
+            id: 'student-seed-anna',
+            email: cleanEmail,
+            firstName: 'Anna Marie',
+            lastName: 'Santos',
+            role: 'student' as const
+          };
+          await db.users.set(demoStudent.id, demoStudent);
+          localStorage.setItem('studentAuth', 'true');
+          localStorage.setItem('studentUser', JSON.stringify(demoStudent));
+          
+          // Sync to Firebase in background without blocking login
+          signInWithEmail(cleanEmail, password).catch(() => {
+            signUpWithEmail(cleanEmail, password, 'Anna Marie Santos').catch(() => {});
+          });
+          
+          navigate('/student/dashboard');
+          return;
+        }
+
+        // 2. INSTANT LOGIN CHECK FOR LOCAL DATABASE ACCOUNTS
+        const localUser = await db.users.findByEmail(cleanEmail);
+        if (localUser && (!localUser.password || localUser.password === password)) {
+          localStorage.setItem('studentAuth', 'true');
+          localStorage.setItem('studentUser', JSON.stringify(localUser));
+          
+          // Sync to Firebase in background without blocking login
+          signInWithEmail(cleanEmail, password).catch(() => {
+            signUpWithEmail(cleanEmail, password, `${localUser.firstName} ${localUser.lastName}`).catch(() => {});
+          });
+          
+          navigate('/student/dashboard');
+          return;
+        }
+
         let fbUser = null;
         try {
           fbUser = await signInWithEmail(cleanEmail, password);
@@ -103,41 +150,6 @@ export function StudentLogin() {
             errMsg.includes('auth/invalid-credential');
 
           if (isInvalidCred) {
-            // Check local / offline database first
-            const localUser = await db.users.findByEmail(cleanEmail);
-            if (localUser && (!localUser.password || localUser.password === password)) {
-              try {
-                const fbReg = await signUpWithEmail(cleanEmail, password, `${localUser.firstName} ${localUser.lastName}`);
-                if (fbReg) fbUser = fbReg;
-              } catch (_) {}
-              localStorage.setItem('studentAuth', 'true');
-              localStorage.setItem('studentUser', JSON.stringify(localUser));
-              navigate('/student/dashboard');
-              return;
-            }
-
-            // Demo student account fallback for instant testing
-            const isDemoStudent = 
-              (cleanEmail.toLowerCase() === 'student@capsu.edu' || 
-               cleanEmail.toLowerCase() === 'anna.santos@capsu.edu' || 
-               cleanEmail.toLowerCase() === 'santos.anna@capsu.edu') &&
-              (password === 'student123' || password === 'admin123' || password === 'password123' || password === '123456');
-
-            if (isDemoStudent) {
-              const demoStudent = {
-                id: 'student-seed-anna',
-                email: cleanEmail,
-                firstName: 'Anna Marie',
-                lastName: 'Santos',
-                role: 'student' as const
-              };
-              await db.users.set(demoStudent.id, demoStudent);
-              localStorage.setItem('studentAuth', 'true');
-              localStorage.setItem('studentUser', JSON.stringify(demoStudent));
-              navigate('/student/dashboard');
-              return;
-            }
-
             setError('Account not found or password incorrect. If this is your first time, please click the "Register" tab above to create an account.');
             return;
           } else if (errCode === 'auth/too-many-requests') {
@@ -147,13 +159,6 @@ export function StudentLogin() {
             setError('Please enter a valid email address.');
             return;
           } else {
-            const localUser = await db.users.findByEmail(cleanEmail);
-            if (localUser && (!localUser.password || localUser.password === password)) {
-              localStorage.setItem('studentAuth', 'true');
-              localStorage.setItem('studentUser', JSON.stringify(localUser));
-              navigate('/student/dashboard');
-              return;
-            }
             setError('Unable to log in. Please verify your credentials or click "Register" to create a new account.');
             return;
           }
@@ -182,12 +187,17 @@ export function StudentLogin() {
         }
       } else {
         // Registration Flow
+        if (password !== confirmPassword) {
+          setError('Passwords do not match.');
+          return;
+        }
+
         if (password.length < 6) {
           setError('Password must be at least 6 characters.');
           return;
         }
 
-        const fullName = `${firstName.trim()} ${lastName.trim()}`.trim();
+        const fullName = `${firstName.trim()} ${middleName.trim() ? middleName.trim() + ' ' : ''}${lastName.trim()}`.trim();
         let fbUser = null;
         try {
           fbUser = await signUpWithEmail(cleanEmail, password, fullName);
@@ -217,6 +227,7 @@ export function StudentLogin() {
           email: cleanEmail,
           password,
           firstName: firstName.trim(),
+          middleName: middleName.trim(),
           lastName: lastName.trim(),
           role: 'student' as const
         };
@@ -293,6 +304,10 @@ export function StudentLogin() {
                 <input type="text" value={firstName} onChange={e => setFirstName(e.target.value)} required={!isLogin} className="w-full px-4 py-2 bg-white rounded text-sm focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 outline-none transition-all shadow-sm" />
               </div>
               <div className="text-left flex-1">
+                <label className="block text-[11px] font-medium text-[#0f2e60] mb-1 ml-1">Middle Name</label>
+                <input type="text" value={middleName} onChange={e => setMiddleName(e.target.value)} className="w-full px-4 py-2 bg-white rounded text-sm focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 outline-none transition-all shadow-sm" />
+              </div>
+              <div className="text-left flex-1">
                 <label className="block text-[11px] font-medium text-[#0f2e60] mb-1 ml-1">Last Name</label>
                 <input type="text" value={lastName} onChange={e => setLastName(e.target.value)} required={!isLogin} className="w-full px-4 py-2 bg-white rounded text-sm focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 outline-none transition-all shadow-sm" />
               </div>
@@ -337,6 +352,35 @@ export function StudentLogin() {
               <p className="text-[10px] text-[#0f2e60]/50 mt-1 px-1">At least 6 characters</p>
             )}
           </div>
+          
+          {!isLogin && (
+            <div className="text-left">
+              <label className="block text-[11px] font-medium text-[#0f2e60] mb-1 ml-1">Confirm Password</label>
+              <div className="relative flex items-center">
+                <input 
+                  type={showConfirmPassword ? "text" : "password"} 
+                  value={confirmPassword} 
+                  onChange={e => setConfirmPassword(e.target.value)} 
+                  required={!isLogin}
+                  placeholder="Confirm password"
+                  className="w-full px-4 py-2.5 pr-11 bg-white rounded-lg text-sm text-gray-800 placeholder-gray-400 focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 outline-none transition-all shadow-sm" 
+                />
+                <button 
+                  type="button" 
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)} 
+                  aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+                  title={showConfirmPassword ? "Hide password" : "Show password"}
+                  className="absolute right-2.5 p-1.5 rounded-lg text-gray-400 hover:text-[#0f2e60] hover:bg-gray-100 active:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all flex items-center justify-center cursor-pointer"
+                >
+                  {showConfirmPassword ? (
+                    <EyeOff className="w-4 h-4 text-[#1864db]" />
+                  ) : (
+                    <Eye className="w-4 h-4 text-gray-500 hover:text-gray-700" />
+                  )}
+                </button>
+              </div>
+            </div>
+          )}
           
           <div className="pt-2">
             <button 
@@ -772,9 +816,10 @@ interface InputGroupProps {
   id?: string;
   placeholder?: string;
   type?: string;
+  disabled?: boolean;
 }
 
-const InputGroup = ({ label, name, value, onChange, required, error, id, placeholder, type = "text" }: InputGroupProps) => (
+const InputGroup = ({ label, name, value, onChange, required, error, id, placeholder, type = "text", disabled }: InputGroupProps) => (
   <div className="flex flex-col" id={id || `field-${name}`}>
     <label className="text-[11px] font-bold text-[#0f2e60] mb-1 flex items-center gap-1">
       {label}
@@ -786,7 +831,10 @@ const InputGroup = ({ label, name, value, onChange, required, error, id, placeho
       value={value || ''} 
       placeholder={placeholder}
       onChange={onChange} 
+      disabled={disabled}
       className={`border rounded px-3 py-1.5 text-sm outline-none transition-colors ${
+        disabled ? 'bg-gray-100 text-gray-500 cursor-not-allowed' : ''
+      } ${
         error ? 'border-red-500 bg-red-50/30 focus:ring-1 focus:ring-red-500' : 'border-[#1e3a8a] focus:ring-1 focus:ring-[#1e3a8a]'
       }`} 
     />
@@ -803,9 +851,10 @@ interface SelectGroupProps {
   required?: boolean;
   error?: string;
   id?: string;
+  disabled?: boolean;
 }
 
-const SelectGroup = ({ label, name, value, onChange, options, required, error, id }: SelectGroupProps) => (
+const SelectGroup = ({ label, name, value, onChange, options, required, error, id, disabled }: SelectGroupProps) => (
   <div className="flex flex-col relative" id={id || `field-${name}`}>
     <label className="text-[11px] font-bold text-[#0f2e60] mb-1 flex items-center gap-1">
       {label}
@@ -815,7 +864,10 @@ const SelectGroup = ({ label, name, value, onChange, options, required, error, i
       name={name} 
       value={value || ''} 
       onChange={onChange} 
+      disabled={disabled}
       className={`border rounded px-3 py-1.5 text-sm outline-none appearance-none bg-white transition-colors ${
+        disabled ? 'bg-gray-100 text-gray-500 cursor-not-allowed' : ''
+      } ${
         error ? 'border-red-500 bg-red-50/30 focus:ring-1 focus:ring-red-500' : 'border-[#1e3a8a] focus:ring-1 focus:ring-[#1e3a8a]'
       }`}
     >
@@ -877,6 +929,11 @@ export function StudentSubmissionForm() {
       contactNo: '', 
       email: initialUser.email || '', 
       permanentAddress: '', 
+      street: '',
+      barangay: '',
+      municipality: '',
+      province: 'Capiz',
+      postalCode: '',
       fatherName: '', 
       fatherOccupation: '', 
       fatherContact: '', 
@@ -1025,6 +1082,9 @@ export function StudentSubmissionForm() {
     const { name, value } = e.target;
     setFormData(prev => {
       const updated = { ...prev, [name]: value };
+      if (name === 'municipality') {
+        updated.barangay = '';
+      }
       // Maintain existing special logic for externalCategory if needed
       if (name === 'externalCategory') {
         if (['VIC', 'Capizeño Circle', 'DOST', 'GRF'].includes(value)) {
@@ -1119,8 +1179,8 @@ export function StudentSubmissionForm() {
     const missingLabels: string[] = [];
 
     if (!formData.familyName || !formData.familyName.trim()) {
-      newErrors.familyName = 'Family Name is required';
-      missingLabels.push('Family Name');
+      newErrors.familyName = 'Last Name is required';
+      missingLabels.push('Last Name');
     }
     if (!formData.firstName || !formData.firstName.trim()) {
       newErrors.firstName = 'First Name is required';
@@ -1150,8 +1210,8 @@ export function StudentSubmissionForm() {
       newErrors.email = 'Email is required';
       missingLabels.push('Email / Gmail');
     }
-    if (!formData.permanentAddress || !formData.permanentAddress.trim()) {
-      newErrors.permanentAddress = 'Permanent Address is required';
+    if (!formData.street || !formData.street.trim() || !formData.barangay || !formData.municipality || !formData.postalCode) {
+      newErrors.permanentAddress = 'Complete Permanent Address is required';
       missingLabels.push('Permanent Address');
     }
     if (!formData.signature) {
@@ -1233,7 +1293,7 @@ export function StudentSubmissionForm() {
     summaryText += `Sex & Civil Status     : ${formData.sex || 'N/A'} | ${formData.civilStatus || 'Single'}\n`;
     summaryText += `Contact Number         : ${formData.contactNo || 'N/A'}\n`;
     summaryText += `Email Address          : ${formData.email || 'N/A'}\n`;
-    summaryText += `Permanent Home Address : ${formData.permanentAddress || 'N/A'}\n\n`;
+    summaryText += `Permanent Home Address : ${formData.street || ''}, ${formData.barangay || ''}, ${formData.municipality || ''}, ${formData.province || 'Capiz'} ${formData.postalCode || ''}\n\n`;
 
     summaryText += `II. FAMILY BACKGROUND\n`;
     summaryText += `----------------------------------------------------------------------\n`;
@@ -1630,18 +1690,12 @@ export function StudentSubmissionForm() {
               <div className="flex-1 w-full space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
                   <InputGroup 
-                    label="Family Name" 
+                    label="Last Name" 
                     name="familyName" 
                     value={formData.familyName} 
                     onChange={handleChange} 
                     required 
                     error={errors.familyName} 
-                  />
-                  <InputGroup 
-                    label="Middle Name" 
-                    name="middleName" 
-                    value={formData.middleName} 
-                    onChange={handleChange} 
                   />
                   <InputGroup 
                     label="First Name" 
@@ -1650,6 +1704,12 @@ export function StudentSubmissionForm() {
                     onChange={handleChange} 
                     required 
                     error={errors.firstName} 
+                  />
+                  <InputGroup 
+                    label="Middle Name" 
+                    name="middleName" 
+                    value={formData.middleName} 
+                    onChange={handleChange} 
                   />
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-[1.5fr_1fr_1.5fr] gap-3 sm:gap-4">
@@ -1737,14 +1797,53 @@ export function StudentSubmissionForm() {
                     error={errors.email} 
                   />
                 </div>
-                <InputGroup 
-                  label="Permanent Address" 
-                  name="permanentAddress" 
-                  value={formData.permanentAddress} 
-                  onChange={handleChange} 
-                  required 
-                  error={errors.permanentAddress} 
-                />
+                <div className="grid grid-cols-1 gap-2">
+                  <div className="text-[11px] font-bold text-[#0f2e60] mb-0.5 flex items-center gap-1">Permanent Address <span className="text-red-500 font-bold">*</span></div>
+                  <InputGroup 
+                    label="Street" 
+                    name="street" 
+                    value={formData.street} 
+                    onChange={handleChange} 
+                    required 
+                  />
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <SelectGroup 
+                      label="Municipality" 
+                      name="municipality" 
+                      value={formData.municipality} 
+                      onChange={handleChange} 
+                      options={Object.keys(capizMunicipalities)}
+                      required 
+                    />
+                    <SelectGroup 
+                      label="Barangay" 
+                      name="barangay" 
+                      value={formData.barangay} 
+                      onChange={handleChange} 
+                      options={formData.municipality ? capizMunicipalities[formData.municipality as keyof typeof capizMunicipalities] : []}
+                      required 
+                      disabled={!formData.municipality}
+                    />
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <InputGroup 
+                      label="Province" 
+                      name="province" 
+                      value={formData.province} 
+                      onChange={handleChange} 
+                      required 
+                      disabled
+                    />
+                    <InputGroup 
+                      label="Postal Code" 
+                      name="postalCode" 
+                      value={formData.postalCode} 
+                      onChange={handleChange} 
+                      required 
+                    />
+                  </div>
+                  {errors.permanentAddress && <p className="text-[11px] text-red-500 mt-0.5">{errors.permanentAddress}</p>}
+                </div>
               </div>
             </div>
           </div>
@@ -1966,7 +2065,7 @@ export function StudentSubmissionForm() {
                       <label className="flex items-center gap-2 text-[13px] font-semibold text-[#0f2e60] cursor-pointer"><input type="radio" name="internalCategory" value="President - SSC" checked={formData.internalCategory === 'President - SSC'} onChange={(e) => handleRadioChange('internalCategory', e.target.value)} className="w-4 h-4 border-gray-400 text-blue-600 focus:ring-blue-500" /> President – SSC</label>
                       <label className="flex items-center gap-2 text-[13px] font-semibold text-[#0f2e60] cursor-pointer"><input type="radio" name="internalCategory" value="President - FLP" checked={formData.internalCategory === 'President - FLP'} onChange={(e) => handleRadioChange('internalCategory', e.target.value)} className="w-4 h-4 border-gray-400 text-blue-600 focus:ring-blue-500" /> President – FLP</label>
                       <label className="flex items-center gap-2 text-[13px] font-semibold text-[#0f2e60] cursor-pointer"><input type="radio" name="internalCategory" value="Editor-in-Chief" checked={formData.internalCategory === 'Editor-in-Chief'} onChange={(e) => handleRadioChange('internalCategory', e.target.value)} className="w-4 h-4 border-gray-400 text-blue-600 focus:ring-blue-500" /> Editor-in-Chief (Campus Publication)</label>
-                      <label className="flex items-center gap-2 text-[13px] font-semibold text-[#0f2e60] cursor-pointer"><input type="radio" name="internalCategory" value="CapSU Band / Chorale" checked={formData.internalCategory === 'CapSU Band / Chorale'} onChange={(e) => handleRadioChange('internalCategory', e.target.value)} className="w-4 h-4 border-gray-400 text-blue-600 focus:ring-blue-500" /> CapSU Band / Chorale</label>
+                      <label className="flex items-center gap-2 text-[13px] font-semibold text-[#0f2e60] cursor-pointer"><input type="radio" name="internalCategory" value="CAPSU Band / Chorale" checked={formData.internalCategory === 'CAPSU Band / Chorale'} onChange={(e) => handleRadioChange('internalCategory', e.target.value)} className="w-4 h-4 border-gray-400 text-blue-600 focus:ring-blue-500" /> CAPSU Band / Chorale</label>
                     </div>
                     <div className="mt-4">
                       <label className="flex items-center gap-2 text-[13px] font-semibold text-[#0f2e60] cursor-pointer">
@@ -2100,7 +2199,7 @@ export function StudentSubmissionForm() {
               </div>
               
               <div className="inline-block border-t-[1.5px] border-black w-64 sm:w-[320px] pt-1.5 mt-1.5 text-[15px] font-bold text-[#0f2e60]">
-                Applicant's Signature <span className="text-red-600">*</span>
+                Enter your signature here <span className="text-red-600">*</span>
               </div>
               
               {errors.signature && (

@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { Undo, Redo } from 'lucide-react';
+import { Undo, Redo, Upload } from 'lucide-react';
 
 interface SignaturePadProps {
   onSave: (signatureDataUrl: string) => void;
@@ -156,6 +156,44 @@ export function SignaturePad({ onSave, onCancel }: SignaturePadProps) {
     }
   };
 
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = canvasRef.current;
+        if (canvas) {
+          const ctx = canvas.getContext('2d');
+          if (ctx) {
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Calculate scale to fit image within canvas while maintaining aspect ratio
+            const scale = Math.min(canvas.width / img.width, canvas.height / img.height);
+            const x = (canvas.width / 2) - ((img.width * scale) / 2);
+            const y = (canvas.height / 2) - ((img.height * scale) / 2);
+            
+            ctx.drawImage(img, x, y, img.width * scale, img.height * scale);
+            
+            // Save to history
+            const currentState = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const newHistory = history.slice(0, historyStep + 1);
+            newHistory.push(currentState);
+            setHistory(newHistory);
+            setHistoryStep(newHistory.length - 1);
+          }
+        }
+      };
+      img.src = event.target?.result as string;
+    };
+    reader.readAsDataURL(file);
+    // Reset file input
+    e.target.value = '';
+  };
+
   const handleSave = () => {
     const canvas = canvasRef.current;
     if (canvas) {
@@ -223,6 +261,18 @@ export function SignaturePad({ onSave, onCancel }: SignaturePadProps) {
             >
               <Redo className="w-4 h-4 sm:w-5 sm:h-5" />
             </button>
+            <label 
+              title="Upload Image"
+              className="w-10 sm:w-12 h-9 sm:h-10 flex items-center justify-center bg-[#e0e7ff] text-[#1e3a8a] rounded-lg border border-[#a5b4fc] hover:bg-[#c7d2fe] transition-colors shadow-sm cursor-pointer"
+            >
+              <Upload className="w-4 h-4 sm:w-5 sm:h-5" />
+              <input 
+                type="file" 
+                accept="image/*" 
+                className="hidden" 
+                onChange={handleImageUpload} 
+              />
+            </label>
           </div>
           
           <div className="flex gap-2 sm:gap-3 ml-auto">

@@ -70,7 +70,7 @@ export function GuidanceReports() {
               gender: (formData.sex === 'Male' || formData.gender === 'Male') ? 'Male' : 'Female',
               email: formData.email || `${formData.firstName?.toLowerCase() || 'student'}@capsu.edu.ph`,
               phone: formData.contactNo || '+63 912 345 6789',
-              address: formData.permanentAddress || 'Tapaz, Capiz',
+              address: formData.street ? `${formData.street}, ${formData.barangay}, ${formData.municipality}, ${formData.province} ${formData.postalCode}` : (formData.permanentAddress || 'Tapaz, Capiz'),
               gwa: formData.gwa || '1.50',
               units: Number(formData.units) || 21,
               status: s.status === 'Approved' || s.status === 'Complete' ? 'Complete' : 'Incomplete',
@@ -214,7 +214,7 @@ export function GuidanceReports() {
           <div className="space-y-6 max-w-3xl mx-auto border-2 border-black p-8 rounded-lg">
             {/* Institutional Header */}
             <div className="flex items-center gap-4 border-b-2 border-black pb-4 text-center">
-              <img src="/capsu-logo.png" alt="CapSU Logo" className="w-16 h-16 object-contain" />
+              <img src="/capsu-logo.png" alt="CAPSU Logo" className="w-16 h-16 object-contain" />
               <div className="flex-1 text-center">
                 <h1 className="text-xl font-bold font-serif uppercase tracking-wide">Capiz State University</h1>
                 <p className="text-xs font-semibold">Guidance & Counseling Office / Student Affairs & Services</p>
@@ -273,10 +273,10 @@ export function GuidanceReports() {
         ) : (
           /* Full Institutional Reports & Scholarship Breakdown Print Layout */
           <div className="space-y-6">
-            {/* CapSU Official Letterhead */}
+            {/* CAPSU Official Letterhead */}
             <div className="flex items-center justify-between border-b-2 border-black pb-4">
               <div className="flex items-center gap-4">
-                <img src="/capsu-logo.png" alt="CapSU Logo" className="w-16 h-16 object-contain" />
+                <img src="/capsu-logo.png" alt="CAPSU Logo" className="w-16 h-16 object-contain" />
                 <div>
                   <h1 className="text-xl font-serif font-bold uppercase tracking-wide">Capiz State University</h1>
                   <p className="text-xs font-semibold">Guidance & Counseling Office | Tapaz Campus</p>

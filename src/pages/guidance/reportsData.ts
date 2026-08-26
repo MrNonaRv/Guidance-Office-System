@@ -32,7 +32,7 @@ export const scholarshipDataMapping: Record<string, Record<string, string[]>> = 
       'President - SSC',
       'President - FLP',
       'Editor-in-Chief (Campus Publication)',
-      'CapSU Band / Chorale'
+      'CAPSU Band / Chorale'
     ]
   },
   'Externally-Funded': {
@@ -174,7 +174,7 @@ export const initialBreakdownData: StudentBreakdownItem[] = [
     gender: 'Female',
     email: 'charlotte.tuvera@capsu.edu.ph',
     phone: '+63 945 123 8899',
-    address: 'CapSU Staff Housing, Tapaz Campus',
+    address: 'CAPSU Staff Housing, Tapaz Campus',
     gwa: '1.55',
     units: 23,
     status: 'Complete',
@@ -186,7 +186,7 @@ export const initialBreakdownData: StudentBreakdownItem[] = [
       { name: 'Good Moral Character', status: 'Verified' },
       { name: '2x2 ID Photo', status: 'Verified' },
     ],
-    remarks: 'Verified dependent of full-time CapSU faculty.'
+    remarks: 'Verified dependent of full-time CAPSU faculty.'
   },
   { 
     id: '6', 
