@@ -257,7 +257,7 @@ function notifyScholarshipListeners() {
     if (subKeys.length > 0) {
       const loadedSubs: Submission[] = [];
       for (const k of subKeys) {
-        const item = await submissionsDb.getItem<Submission>(k);
+        const item = await submissionsDb.getItem(k);
         if (item) loadedSubs.push(item);
       }
       if (loadedSubs.length > 0) {
@@ -273,7 +273,7 @@ function notifyScholarshipListeners() {
     if (notifKeys.length > 0) {
       const loadedNotifs: NotificationItem[] = [];
       for (const k of notifKeys) {
-        const item = await notificationsDb.getItem<NotificationItem>(k);
+        const item = await notificationsDb.getItem(k);
         if (item) loadedNotifs.push(item);
       }
       if (loadedNotifs.length > 0) {
@@ -376,7 +376,7 @@ export const db = {
     async get(id: string): Promise<Scholarship | null> {
       const mem = memoryScholarships.find(s => s.id === id);
       if (mem) return mem;
-      const local = await scholarshipsDb.getItem<Scholarship>(id);
+      const local = await scholarshipsDb.getItem(id) as Scholarship | null;
       if (local) return local;
       if (firestoreDb) {
         try {
@@ -429,7 +429,7 @@ export const db = {
       if (keys.length > 0) {
         const items: Scholarship[] = [];
         for (const key of keys) {
-          const item = await scholarshipsDb.getItem<Scholarship>(key);
+          const item = await scholarshipsDb.getItem(key);
           if (item) items.push(item);
         }
         memoryScholarships = items;
@@ -461,7 +461,7 @@ export const db = {
     async get(id: string): Promise<Submission | null> {
       const mem = memorySubmissions.find(s => s.id === id);
       if (mem) return mem;
-      const local = await submissionsDb.getItem<Submission>(id);
+      const local = await submissionsDb.getItem(id);
       if (local) return local;
       if (firestoreDb) {
         try {
@@ -529,7 +529,7 @@ export const db = {
       if (keys.length > 0) {
         const subs: Submission[] = [];
         for (const key of keys) {
-          const sub = await submissionsDb.getItem<Submission>(key);
+          const sub = await submissionsDb.getItem(key);
           if (sub) subs.push(sub);
         }
         memorySubmissions = subs.sort((a, b) => new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime());
@@ -957,7 +957,7 @@ export const db = {
       if (keys.length > 0) {
         const items: CommunicationItem[] = [];
         for (const key of keys) {
-          const item = await communicationsDb.getItem<CommunicationItem>(key);
+          const item = await communicationsDb.getItem(key);
           if (item) items.push(item);
         }
         memoryCommunications = items.sort((a, b) => new Date(b.sentAt).getTime() - new Date(a.sentAt).getTime());
@@ -977,7 +977,7 @@ export const db = {
 
   users: {
     async get(id: string): Promise<User | null> {
-      const local = await usersDb.getItem<User>(id);
+      const local = await usersDb.getItem(id);
       if (local) return local;
       if (firestoreDb) {
         try {
@@ -1017,7 +1017,7 @@ export const db = {
     async findByEmail(email: string): Promise<User | null> {
       const keys = await usersDb.keys();
       for (const key of keys) {
-        const user = await usersDb.getItem<User>(key);
+        const user = await usersDb.getItem(key);
         if (user && user.email?.toLowerCase() === email.toLowerCase()) return user;
       }
       if (firestoreDb) {
@@ -1040,7 +1040,7 @@ export const db = {
 
   forms: {
     async get(id: string): Promise<ScholarshipForm | null> {
-      const local = await formsDb.getItem<ScholarshipForm>(id);
+      const local = await formsDb.getItem(id);
       if (local) return local;
       if (firestoreDb) {
         try {
@@ -1083,7 +1083,7 @@ export const db = {
       const keys = await formsDb.keys();
       const forms: ScholarshipForm[] = [];
       for (const key of keys) {
-        const form = await formsDb.getItem<ScholarshipForm>(key);
+        const form = await formsDb.getItem(key);
         if (form) forms.push(form);
       }
       if (forms.length > 0) {
