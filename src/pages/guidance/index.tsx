@@ -27,8 +27,17 @@ export function GuidanceLogin() {
   const handleGoogleLogin = async () => {
     setError('');
     setLoading(true);
+
+    // Safety net: If the Vercel domain isn't authorized, signInWithPopup hangs forever.
+    // This timeout will alert the user and stop the infinite loading spinner.
+    const timeoutId = setTimeout(() => {
+      setLoading(false);
+      setError('Google Sign-In is taking too long or was blocked. If you are on Vercel, please ensure this exact URL is added to your Firebase Authorized Domains.');
+    }, 10000);
+
     try {
       const fbUser = await signInWithGoogle();
+      clearTimeout(timeoutId);
       
       let user = await db.users.get(fbUser.uid);
       if (!user) {
@@ -48,6 +57,7 @@ export function GuidanceLogin() {
       localStorage.setItem('adminEmail', fbUser.email || '');
       navigate('/admin/dashboard');
     } catch (err: any) {
+      clearTimeout(timeoutId);
       if (err?.code === 'auth/popup-closed-by-user' || err?.code === 'auth/cancelled-popup-request') {
         setError('Sign-in cancelled. Please try again.');
       } else if (err?.code === 'auth/popup-blocked') {

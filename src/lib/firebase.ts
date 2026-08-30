@@ -3,6 +3,8 @@ import {
   getAuth, 
   GoogleAuthProvider, 
   signInWithPopup, 
+  signInWithRedirect,
+  getRedirectResult,
   signOut,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
@@ -49,6 +51,15 @@ export const signInWithGoogle = async (): Promise<FirebaseUser> => {
       throw error;
     }
     console.error("Error signing in with Google", error);
+    throw error;
+  }
+};
+
+export const signInWithGoogleRedirect = async (): Promise<void> => {
+  try {
+    await signInWithRedirect(auth, googleProvider);
+  } catch (error) {
+    console.error("Error with Google Redirect Sign-In", error);
     throw error;
   }
 };
