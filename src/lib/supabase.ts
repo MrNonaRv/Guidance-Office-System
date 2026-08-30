@@ -80,6 +80,25 @@ export async function testSupabaseConnection(): Promise<{
     }
 
     const hasBucket = buckets?.some(b => b.name === BUCKET_NAME);
+    
+    if (!hasBucket) {
+      // Attempt to auto-create the bucket
+      const { error: createErr } = await supabase.storage.createBucket(BUCKET_NAME, {
+        public: true,
+        fileSizeLimit: 10485760, // 10MB
+      });
+      
+      if (!createErr) {
+        return {
+          configured: true,
+          url: supabaseUrl,
+          success: true,
+          bucketExists: true,
+          message: `Connected successfully to Supabase! Bucket '${BUCKET_NAME}' was automatically created.`
+        };
+      }
+    }
+
     return {
       configured: true,
       url: supabaseUrl,
@@ -87,7 +106,7 @@ export async function testSupabaseConnection(): Promise<{
       bucketExists: hasBucket,
       message: hasBucket 
         ? `Connected successfully to Supabase! Bucket '${BUCKET_NAME}' found.`
-        : `Connected to Supabase, but bucket '${BUCKET_NAME}' was not found. Please create a public bucket named '${BUCKET_NAME}' in Storage.`
+        : `Connected to Supabase, but bucket '${BUCKET_NAME}' was not found. Auto-creation failed. Please create a public bucket named '${BUCKET_NAME}' manually in your Supabase Dashboard Storage section.`
     };
   } catch (err: any) {
     return {

@@ -267,265 +267,75 @@ export function StudentRecordModal({
       <div className={cn("relative w-full max-w-lg bg-white rounded-2xl shadow-2xl overflow-hidden border border-gray-100 animate-in zoom-in-95 duration-200 print:hidden max-h-[92vh] flex flex-col", viewMode === 'form' && "hidden")}>
         
         {/* Top Navy Blue Header Banner */}
-        <div className="bg-[#003884] text-white px-6 py-4 flex items-center justify-center relative shadow-md shrink-0">
-          {viewMode !== 'overview' ? (
-            <button
-              onClick={() => setViewMode('overview')}
-              className="absolute left-4 top-1/2 -translate-y-1/2 flex items-center gap-1 text-white/90 hover:text-white bg-white/10 hover:bg-white/20 px-2.5 py-1 rounded-lg text-xs font-semibold transition-colors cursor-pointer"
-            >
-              <ArrowLeft className="w-3.5 h-3.5" /> Back
-            </button>
-          ) : (
-            <button
-              onClick={onClose}
-              className="absolute left-4 top-1/2 -translate-y-1/2 flex items-center justify-center w-8 h-8 rounded-[6px] border-2 border-white text-white hover:bg-white/10 transition-colors cursor-pointer"
-              title="Close modal"
-            >
-              <X className="w-5 h-5 stroke-[3]" />
-            </button>
-          )}
+        <div className="bg-[#003884] text-white px-4 py-3 flex items-center justify-between relative shadow-md shrink-0">
+          <button
+            onClick={viewMode === 'overview' ? onClose : () => setViewMode('overview')}
+            className="flex items-center justify-center bg-white/10 hover:bg-white/20 border border-transparent px-4 py-1.5 rounded-lg text-sm font-bold transition-colors cursor-pointer"
+          >
+            Back
+          </button>
           
-          <h2 className="text-xl font-bold text-center tracking-tight text-white">
+          <h2 className="text-lg font-bold text-center tracking-wide text-white absolute left-1/2 -translate-x-1/2">
             Student Records
           </h2>
+
+          <button
+            onClick={onClose}
+            className="flex items-center justify-center w-8 h-8 rounded-md border-2 border-white text-white hover:bg-white/10 transition-colors cursor-pointer"
+            title="Close modal"
+          >
+            <X className="w-5 h-5 stroke-[3]" />
+          </button>
         </div>
 
         {/* Scrollable Container */}
         <div className="overflow-y-auto flex-1">
           {/* ------------------------------------------------------------- */}
-          {/* VIEW 1: OVERVIEW */}
+          {/* VIEW 1: OVERVIEW (Matches screenshot) */}
           {/* ------------------------------------------------------------- */}
           {viewMode === 'overview' && (
-            <div className="p-6 md:p-7 space-y-4 bg-white">
-              
-              {/* Student Info & Status Header */}
-              <div className="flex items-start justify-between gap-4 mb-2 pb-4 border-b border-gray-100">
-                <div className="flex items-center gap-3.5">
-                  <div>
-                    <h3 className="text-lg md:text-[20px] font-extrabold text-gray-900 leading-tight">
-                      {studentName}
-                    </h3>
-                    <p className="text-sm font-bold text-gray-900 tracking-wide mt-0.5">
-                      {courseCode}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="text-right shrink-0">
-                  <span className="block text-xs font-bold text-[#003884] mb-1">Status</span>
-                  <div className="relative inline-block">
-                    <select
-                      value={currentStatus === 'Pending' ? 'Incomplete' : currentStatus}
-                      onChange={(e) => handleStatusSelect(e.target.value)}
-                      className="appearance-none bg-[#dce7f9] hover:bg-[#d0e0f8] text-gray-900 font-semibold text-sm pl-3.5 pr-8 py-1.5 rounded-xl border border-[#b4cef8] focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer shadow-xs transition-colors"
-                    >
-                      <option value="Incomplete">Incomplete</option>
-                      <option value="Complete">Complete</option>
-                    </select>
-                    <ChevronDown className="w-4 h-4 text-gray-700 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-                  </div>
-                </div>
+            <div className="p-6 bg-white min-h-full">
+              <div className="mb-6">
+                <div className="text-[#2563eb] font-bold text-[15px] mb-1">Scholarship Program</div>
+                <h3 className="text-xl font-bold text-gray-900 leading-tight">
+                  {formData.externalCategory ? `Externally-Funded: ${formData.externalCategory}` : formData.internalCategory ? `Internally-Funded: ${formData.internalCategory}` : scholarshipType}
+                </h3>
+                <p className="text-[13px] font-semibold text-gray-400 mt-1">
+                  Submitted on {new Date(localSubmission.submittedAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                </p>
               </div>
 
-              {/* Folder 1: Scholarship Requirements */}
-              <div className="bg-[#edf4fe] border border-[#d2e2fc] rounded-2xl p-4 md:p-4.5 flex items-center justify-between shadow-xs hover:border-blue-300 transition-all">
-                <div className="flex items-center gap-3.5">
-                  <div className="w-9 h-9 flex items-center justify-center shrink-0">
-                    <svg className="w-8 h-8 drop-shadow-xs" viewBox="0 0 24 24" fill="none">
-                      <path d="M2.5 7C2.5 5.61929 3.61929 4.5 5 4.5H9.5C10.163 4.5 10.7989 4.76339 11.2678 5.23223L12.5355 6.5H19C20.3807 6.5 21.5 7.61929 21.5 9V17.5C21.5 18.8807 20.3807 20 19 20H5C3.61929 20 2.5 18.8807 2.5 17.5V7Z" fill="#F59E0B" stroke="#D97706" strokeWidth="1.2"/>
-                      <path d="M2.5 9.5C2.5 8.11929 3.61929 7 5 7H19C20.3807 7 21.5 8.11929 21.5 9.5V17.5C21.5 18.8807 20.3807 20 19 20H5C3.61929 20 2.5 18.8807 2.5 17.5V9.5Z" fill="#FBBF24" stroke="#D97706" strokeWidth="1"/>
-                    </svg>
-                  </div>
-                  <div>
-                    <span className="text-base md:text-[17px] font-bold text-gray-900 block">
-                      Scholarship Requirements
-                    </span>
-                  </div>
-                </div>
+              <button
+                onClick={() => setViewMode('form')}
+                className="w-full bg-[#e0e7ff] hover:bg-[#dbeafe] text-[#2563eb] font-bold py-3.5 rounded-xl flex items-center justify-center gap-2.5 transition-colors cursor-pointer mb-8"
+              >
+                <Eye className="w-[22px] h-[22px] stroke-[2.5]" />
+                <span className="text-[15px]">View Filled Form</span>
+              </button>
 
-                <button
-                  onClick={() => setViewMode('requirements')}
-                  className="bg-[#0052cc] hover:bg-[#0041a8] text-white text-sm md:text-base font-bold px-8 py-2 md:py-2.5 rounded-full shadow-xs transition-transform active:scale-95 cursor-pointer whitespace-nowrap"
-                >
-                  View
-                </button>
-              </div>
-
-              {/* Folder 3: 1st Semester */}
-              <div className="bg-[#edf4fe] border border-[#d2e2fc] rounded-2xl p-4 md:p-4.5 flex items-center justify-between shadow-xs hover:border-blue-300 transition-all">
-                <div className="flex items-center gap-3.5">
-                  <div className="w-9 h-9 flex items-center justify-center shrink-0">
-                    <svg className="w-8 h-8 drop-shadow-xs" viewBox="0 0 24 24" fill="none">
-                      <path d="M1.5 5.5C1.5 4.39543 2.39543 3.5 3.5 3.5H7.5C8.03043 3.5 8.53914 3.71071 8.91421 4.08579L9.91421 5.08579H16.5C17.6046 5.08579 18.5 5.98122 18.5 7.08579V14.5C18.5 15.6046 17.6046 16.5 16.5 16.5H3.5C2.39543 16.5 1.5 15.6046 1.5 14.5V5.5Z" fill="#D97706" stroke="#B45309" strokeWidth="1"/>
-                      <path d="M4.5 7.5C4.5 6.39543 5.39543 5.5 6.5 5.5H10.5C11.0304 5.5 11.5391 5.71071 11.9142 6.08579L13.1 7.27C13.475 7.645 13.984 7.856 14.514 7.856H20.5C21.6046 7.856 22.5 8.751 22.5 9.856V18.5C22.5 19.6046 21.6046 20.5 20.5 20.5H6.5C5.39543 20.5 4.5 19.6046 4.5 18.5V7.5Z" fill="#F59E0B" stroke="#D97706" strokeWidth="1.2"/>
-                      <path d="M4.5 10C4.5 8.89543 5.39543 8 6.5 8H20.5C21.6046 8 22.5 8.89543 22.5 10V18.5C22.5 19.6046 21.6046 20.5 20.5 20.5H6.5C5.39543 20.5 4.5 19.6046 4.5 18.5V10Z" fill="#FCD34D" stroke="#D97706" strokeWidth="1"/>
-                    </svg>
-                  </div>
-                  <span className="text-base md:text-[17px] font-bold text-gray-900">
-                    1st Semester
-                  </span>
-                </div>
-
-                <div className="relative shrink-0">
-                  <select
-                    value={firstSemAY}
-                    onChange={(e) => {
-                      setFirstSemAY(e.target.value);
-                      handleOpenSemester('1st Semester', e.target.value);
-                    }}
-                    className="appearance-none bg-[#dce7f9] hover:bg-[#d0e0f8] text-gray-900 font-semibold text-sm pl-3.5 pr-8 py-2 rounded-xl border border-[#b4cef8] focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer shadow-xs transition-colors"
-                  >
-                    <option value="">Academic Year</option>
-                    {academicYearsOptions.map(ay => (
-                      <option key={ay} value={ay}>{ay}</option>
-                    ))}
-                  </select>
-                  <ChevronDown className="w-4 h-4 text-gray-700 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-                </div>
-              </div>
-
-              {/* Folder 4: 2nd Semester */}
-              <div className="bg-[#edf4fe] border border-[#d2e2fc] rounded-2xl p-4 md:p-4.5 flex items-center justify-between shadow-xs hover:border-blue-300 transition-all">
-                <div className="flex items-center gap-3.5">
-                  <div className="w-9 h-9 flex items-center justify-center shrink-0">
-                    <svg className="w-8 h-8 drop-shadow-xs" viewBox="0 0 24 24" fill="none">
-                      <path d="M1.5 5.5C1.5 4.39543 2.39543 3.5 3.5 3.5H7.5C8.03043 3.5 8.53914 3.71071 8.91421 4.08579L9.91421 5.08579H16.5C17.6046 5.08579 18.5 5.98122 18.5 7.08579V14.5C18.5 15.6046 17.6046 16.5 16.5 16.5H3.5C2.39543 16.5 1.5 15.6046 1.5 14.5V5.5Z" fill="#D97706" stroke="#B45309" strokeWidth="1"/>
-                      <path d="M4.5 7.5C4.5 6.39543 5.39543 5.5 6.5 5.5H10.5C11.0304 5.5 11.5391 5.71071 11.9142 6.08579L13.1 7.27C13.475 7.645 13.984 7.856 14.514 7.856H20.5C21.6046 7.856 22.5 8.751 22.5 9.856V18.5C22.5 19.6046 21.6046 20.5 20.5 20.5H6.5C5.39543 20.5 4.5 19.6046 4.5 18.5V7.5Z" fill="#F59E0B" stroke="#D97706" strokeWidth="1.2"/>
-                      <path d="M4.5 10C4.5 8.89543 5.39543 8 6.5 8H20.5C21.6046 8 22.5 8.89543 22.5 10V18.5C22.5 19.6046 21.6046 20.5 20.5 20.5H6.5C5.39543 20.5 4.5 19.6046 4.5 18.5V10Z" fill="#FCD34D" stroke="#D97706" strokeWidth="1"/>
-                    </svg>
-                  </div>
-                  <span className="text-base md:text-[17px] font-bold text-gray-900">
-                    2nd Semester
-                  </span>
-                </div>
-
-                <div className="relative shrink-0">
-                  <select
-                    value={secondSemAY}
-                    onChange={(e) => {
-                      setSecondSemAY(e.target.value);
-                      handleOpenSemester('2nd Semester', e.target.value);
-                    }}
-                    className="appearance-none bg-[#dce7f9] hover:bg-[#d0e0f8] text-gray-900 font-semibold text-sm pl-3.5 pr-8 py-2 rounded-xl border border-[#b4cef8] focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer shadow-xs transition-colors"
-                  >
-                    <option value="">Academic Year</option>
-                    {academicYearsOptions.map(ay => (
-                      <option key={ay} value={ay}>{ay}</option>
-                    ))}
-                  </select>
-                  <ChevronDown className="w-4 h-4 text-gray-700 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-                </div>
-              </div>
-
-            </div>
-          )}
-
-          {/* ------------------------------------------------------------- */}
-          {/* VIEW 2: SCHOLARSHIP REQUIREMENTS DETAIL & VERIFICATION */}
-          {/* ------------------------------------------------------------- */}
-          {viewMode === 'requirements' && (
-            <div className="p-6 space-y-5 bg-gray-50/60">
-              
-              {/* Context bar */}
-              <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-xs flex flex-wrap justify-between items-center gap-3">
-                <div>
-                  <span className="text-xs font-bold uppercase tracking-wider text-blue-700">Scholarship Program</span>
-                  <h4 className="text-base font-bold text-gray-900">{scholarshipType}</h4>
-                  <p className="text-xs text-gray-500 mt-0.5">Submitted on {new Date(localSubmission.submittedAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</p>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => setViewMode('form')}
-                    className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-lg text-xs font-semibold transition-colors cursor-pointer"
-                  >
-                    <Eye className="w-3.5 h-3.5" /> View Filled Form
-                  </button>
-                  <button
-                    onClick={handleDownloadAll}
-                    disabled={isDownloading}
-                    className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-xs font-semibold transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                    title="Download all attached documents as a ZIP file"
-                  >
-                    <Archive className="w-3.5 h-3.5" /> {isDownloading ? 'Zipping...' : 'Download All'}
-                  </button>
-                  <button
-                    onClick={() => window.print()}
-                    className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-xs font-semibold transition-colors cursor-pointer"
-                    title="Print official form"
-                  >
-                    <Printer className="w-3.5 h-3.5" /> Print
-                  </button>
-                </div>
-              </div>
-
-              {/* Checklist of required documents */}
-              <div className="space-y-6">
-                
-                {['1st Semester', '2nd Semester', 'Other Documents'].map(groupName => {
-                  const groupReqs = requirementsList.filter(req => req.group === groupName);
-                  if (groupReqs.length === 0) return null;
-                  
-                  return (
-                    <div key={groupName} className="space-y-3">
-                      <h5 className="text-xs font-bold uppercase tracking-wider text-gray-600 px-1 border-b border-gray-200 pb-2">
-                        {groupName} {groupName.includes('Semester') ? `(${selectedAcademicYear || '2026-2027'})` : ''}
-                      </h5>
-                      
-                      <div className="space-y-3">
-                        {groupReqs.map((req) => (
-                          <div key={req.id} className="bg-white p-4 rounded-xl border border-gray-200 shadow-xs flex items-center justify-between gap-3">
-                            <div className="flex items-center gap-3 min-w-0">
-                              <div className={cn(
-                                "w-8 h-8 rounded-lg flex items-center justify-center shrink-0 font-bold",
-                                req.status === 'Verified' ? "bg-green-100 text-green-700" : "bg-amber-100 text-amber-700"
-                              )}>
-                                {req.status === 'Verified' ? <CheckCircle2 className="w-5 h-5 text-green-600" /> : <AlertCircle className="w-5 h-5 text-amber-600" />}
-                              </div>
-                              <div className="min-w-0">
-                                <p className="text-sm font-bold text-gray-900 truncate">{req.name}</p>
-                                <p className="text-xs text-gray-500 truncate">{req.fileName}</p>
-                              </div>
-                            </div>
-
-                            <div className="flex items-center gap-2 shrink-0">
-                              <span className={cn(
-                                "px-2.5 py-1 rounded-full text-[11px] font-bold uppercase",
-                                req.status === 'Verified' ? "bg-green-100 text-green-700 border border-green-200" : "bg-amber-100 text-amber-800 border border-amber-200"
-                              )}>
-                                {req.status}
-                              </span>
-
-                              {req.file && (
-                                <button
-                                  onClick={() => setPreviewFile(req.file as SubmissionFile)}
-                                  className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors cursor-pointer"
-                                  title="Preview File"
-                                >
-                                  <Eye className="w-4 h-4" />
-                                </button>
-                              )}
-
-                              <button
-                                onClick={() => handleVerifyRequirement(req.file?.category || req.category, req.status === 'Verified' ? 'Pending' : 'Verified')}
-                                className={cn(
-                                  "px-2.5 py-1 text-xs font-semibold rounded-lg transition-all cursor-pointer",
-                                  req.status === 'Verified' 
-                                    ? "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                                    : "bg-blue-600 text-white hover:bg-blue-700 shadow-xs"
-                                )}
-                              >
-                                {req.status === 'Verified' ? 'Mark Pending' : 'Verify'}
-                              </button>
-                            </div>
-                          </div>
-                        ))}
+              <div>
+                <h4 className="text-gray-500 font-extrabold tracking-wider text-[13px] mb-4">DOCUMENTS</h4>
+                <div className="space-y-3">
+                  {requirementsList.filter(req => req.file).map((req) => (
+                    <div key={req.id} className="bg-[#f8fafc] border border-[#cbd5e1] p-4 rounded-xl flex items-center justify-between">
+                      <div className="flex items-center gap-3.5">
+                        <FileText className="w-6 h-6 text-[#64748b] stroke-[1.5]" />
+                        <div>
+                          <p className="font-bold text-[#1e293b] text-[15px] leading-tight">{req.name}</p>
+                          <p className="text-[13px] font-medium text-gray-400 mt-0.5">{req.fileName}</p>
+                        </div>
                       </div>
+                      <button
+                        onClick={() => setPreviewFile(req.file as SubmissionFile)}
+                        className="text-[#2563eb] hover:bg-blue-50 p-2 rounded-full transition-colors cursor-pointer"
+                        title="Preview File"
+                      >
+                        <Eye className="w-[22px] h-[22px] stroke-[2.5]" />
+                      </button>
                     </div>
-                  );
-                })}
+                  ))}
+                </div>
               </div>
-
             </div>
           )}
 
@@ -770,39 +580,219 @@ export function StudentRecordModal({
               </div>
             </div>
 
-            <div className="font-bold mt-10 mb-4">C. Scholarship Details</div>
+        </div>
+
+        {/* PAGE 2 */}
+        <div className="print-page w-[793px] h-[1122px] mx-auto pt-16 break-after-page font-serif text-black pl-8 pr-4">
+          <div className="font-bold mb-4">Highest Educational Attainment of your Parent/Guardian?</div>
+          <div className="space-y-2 pl-12 mb-8 text-[15px]">
+            <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{formData.parentEduAttainment === 'Elementary Level' && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>Elementary Level</span></div>
+            <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{formData.parentEduAttainment === 'Elementary Graduate' && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>Elementary Graduate</span></div>
+            <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{formData.parentEduAttainment === 'High School Level' && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>High School Level</span></div>
+            <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{formData.parentEduAttainment === 'High school Graduate' && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>High school Graduate</span></div>
+            <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{formData.parentEduAttainment === 'College Level' && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>College Level</span></div>
+            <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{formData.parentEduAttainment === 'College Graduate' && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>College Graduate</span></div>
+            <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{formData.parentEduAttainment === 'post Graduate level/degree' && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>post Graduate level/degree</span></div>
+          </div>
+
+          <div className="font-bold mb-4">What is your family's approximate monthly income?</div>
+          <div className="space-y-2 pl-12 mb-12 text-[15px]">
+            <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{formData.monthlyIncome === 'below ₱ 10,000' && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>below ₱ 10,000</span></div>
+            <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{formData.monthlyIncome === '₱ 10,001 - ₱ 20,000' && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>₱ 10,001 - ₱ 20,000</span></div>
+            <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{formData.monthlyIncome === '₱ 20,001 - ₱ 30,000' && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>₱ 20,001 - ₱ 30,000</span></div>
+            <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{formData.monthlyIncome === 'Above ₱ 30,000' && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>Above ₱ 30,000</span></div>
+          </div>
+
+          <div className="flex items-center gap-12 font-bold mb-12">
+            <div>Are you the first in the family to attend College?</div>
+            <div className="flex gap-8 font-normal text-[15px]">
+              <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{formData.firstInFamily === 'Yes' && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>Yes</span></div>
+              <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{formData.firstInFamily === 'No' && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>No</span></div>
+            </div>
+          </div>
+
+          <div className="font-bold mb-8">C. Living Condition</div>
+          
+          <div className="font-bold mb-4">With whom do you currently live?</div>
+          <div className="space-y-2 pl-12 mb-12 text-[15px]">
+            <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{formData.livingWith === 'Parents/Guardians' && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>Parents/Guardians</span></div>
+            <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{formData.livingWith === 'Relatives' && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>Relatives</span></div>
+            <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{formData.livingWith === 'Alone' && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>Alone</span></div>
+            <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{formData.livingWith === 'Boarding house' && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>Boarding house</span></div>
+            <div className="flex items-end gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{formData.livingWith === 'others' && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>others (please specify)</span><span className="w-48 border-b border-black inline-block text-center">{formData.livingWith === 'others' ? formData.livingWithOthers : ''}</span></div>
+          </div>
+
+          <div className="font-bold mb-4">Type of Housing</div>
+          <div className="space-y-2 pl-12 text-[15px]">
+            <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{formData.housingType === 'Own house' && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>Own house</span></div>
+            <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{formData.housingType === 'Rented house or apartment' && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>Rented house or apartment</span></div>
+            <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{formData.housingType === 'Boarding house' && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>Boarding house</span></div>
+            <div className="flex items-end gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{formData.housingType === 'others' && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>others (please specify)</span><span className="w-48 border-b border-black inline-block text-center">{formData.housingType === 'others' ? formData.housingTypeOthers : ''}</span></div>
+          </div>
+        </div>
+
+        {/* PAGE 3 */}
+        <div className="print-page w-[793px] h-[1122px] mx-auto pt-16 break-after-page font-serif text-black pl-8 pr-4">
+          <div className="font-bold mb-8">D. Access to Resources</div>
+          
+          <div className="font-bold mb-4">Do you have access of the following at home?</div>
+          <div className="space-y-2 pl-12 mb-12 text-[15px]">
+            <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{(formData.accessToResources || []).includes('Personal Computer/Laptop') && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>Personal Computer/Laptop</span></div>
+            <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{(formData.accessToResources || []).includes('Internet Connection') && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>Internet Connection</span></div>
+            <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{(formData.accessToResources || []).includes('Study space') && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>Study space</span></div>
+            <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{(formData.accessToResources || []).includes('Textbooks and learning materials') && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>Textbooks and learning materials</span></div>
+          </div>
+
+          <div className="flex items-center gap-8 font-bold mb-16">
+            <div>Do you work while studying?</div>
+            <div className="flex gap-6 font-normal text-[15px]">
+              <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{formData.workingStudent === 'Yes, full-time' && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>Yes, full-time</span></div>
+              <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{formData.workingStudent === 'Yes, part-time' && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>Yes, part-time</span></div>
+              <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{formData.workingStudent === 'No' && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>No</span></div>
+            </div>
+          </div>
+
+          <div className="font-bold mb-8">E. Student Classification</div>
+          
+          <div className="font-bold mb-4">Which of the following classification best describe your current status? (Multiple responses)</div>
+          <div className="space-y-1.5 pl-4 text-[13px] leading-tight">
+            {[
+              'Indigenous Peoples (IPs)', 'Solo Parent', 'Child of a solo parent', 'Persons with disabilities (PWDs)', 'Child of Person with Disabilities (PWD)',
+              'Drop out or learner who returned to school', 'Child of drop out or learner who returned to school', 'Rebel returnees', 'Child of a rebel returnees',
+              'Dependent or child of OFW', 'Member of 4Ps', 'Member of Calamity or Disaster Affected Family', 'Orphan/Child in need of special protection',
+              'Working Student', 'From geographically isolated &amp; disadvantaged area (GIDA)', 'Muslim Student', 'Low income family/ Economically disadvantaged student',
+              'Senior Citizen student'
+            ].map(item => (
+              <div key={item} className="flex items-center gap-2"><div className="w-4 h-4 border border-black flex items-center justify-center shrink-0">{(formData.studentClassification || []).includes(item) && <Check className="w-3 h-3" strokeWidth={3} />}</div><span>{item}</span></div>
+            ))}
             
-            <div className="space-y-6">
-              <div className="flex items-end gap-4 font-bold">
-                <span>Scholarship Classification:</span>
-                <div className="flex-1 border-b border-black flex items-center justify-center font-normal">
-                  {formData.scholarshipCategory || formData.externalCategory || formData.internalCategory || ''}
-                </div>
-              </div>
+            <div className="flex gap-2 items-start mt-1.5"><div className="w-4 h-4 border border-black flex items-center justify-center shrink-0 mt-0.5">{(formData.studentClassification || []).includes('First Generation student (Parents did not complete a college degree, first in the immediate family to seek college admission)') && <Check className="w-3 h-3" strokeWidth={3} />}</div><span className="leading-tight">First Generation student (Parents did not complete a college degree, first in the immediate family to seek<br/>college admission)</span></div>
+            <div className="flex items-center gap-2 mt-1.5"><div className="w-4 h-4 border border-black flex items-center justify-center shrink-0">{(formData.studentClassification || []).includes('LGBTQ+ Community') && <Check className="w-3 h-3" strokeWidth={3} />}</div><span>LGBTQ+ Community</span></div>
+            <div className="flex items-center gap-2 mt-1.5"><div className="w-4 h-4 border border-black flex items-center justify-center shrink-0">{(formData.studentClassification || []).includes('Regular student (I do not belong to any of this group classification)') && <Check className="w-3 h-3" strokeWidth={3} />}</div><span>Regular student (I do not belong to any of this group classification)</span></div>
+            
+            <div className="flex items-end gap-2 mt-6">
+              <div className="w-4 h-4 border border-black flex items-center justify-center shrink-0 mb-1">{(formData.studentClassification || []).includes('others') && <Check className="w-3 h-3" strokeWidth={3} />}</div>
+              <span className="mb-1">others (Please specify)</span>
+              <span className="flex-1 border-b border-black inline-block text-center pb-1">{(formData.studentClassification || []).includes('others') ? formData.studentClassificationOthers : ''}</span>
+            </div>
+          </div>
+        </div>
 
-              <div className="space-y-4 pl-12">
-                <div className="flex items-end gap-2">
-                  <span>Municipality:</span>
-                  <span className="flex-1 border-b border-black inline-block">{formData.scholarshipCategory === 'DSWD' ? formData.dswdMunicipality : ''}</span>
-                </div>
-                <div className="flex items-end gap-2">
-                  <span>Contact person:</span>
-                  <span className="flex-1 border-b border-black inline-block">{formData.scholarshipCategory === 'DSWD' ? formData.dswdContactPerson : ''}</span>
-                </div>
-                <div className="flex items-end gap-2">
-                  <span>Designation:</span>
-                  <span className="flex-1 border-b border-black inline-block">{formData.scholarshipCategory === 'DSWD' ? formData.dswdDesignation : ''}</span>
-                </div>
-                <div className="flex items-end gap-2">
-                  <span>Others (specify):</span>
-                  <span className="flex-1 border-b border-black inline-block">{formData.scholarshipCategory === 'DSWD' ? formData.dswdOthers : ''}</span>
-                </div>
+        {/* PAGE 4 */}
+        <div className="print-page w-[793px] h-[1122px] mx-auto pt-16 break-after-page font-serif text-black pl-8 pr-4">
+          <div className="font-bold mb-2">If you are working student, please indicate your type of work or source of income</div>
+          <div className="w-full border-b border-black mb-12 h-6 text-center">{formData.workTypeIncome || ''}</div>
+          
+          <div className="font-bold mb-2">If you are a student with special needs/Person with disability (PWD), please specify your condition or disability</div>
+          <div className="w-full border-b border-black mb-12 h-6 text-center">{formData.specialNeedsCondition || ''}</div>
+
+          <div className="font-bold mb-2">If you are a PDL (Drop out, or learner with interrupted schooling), please state the reason why your schooling was previously interrupted.</div>
+          <div className="w-full border-b border-black mb-16 h-6 text-center">{formData.pdlReason || ''}</div>
+
+          <div className="text-center font-bold text-lg mb-10 tracking-wider">SCHOLARSHIP CATEGORY</div>
+
+          <div className="font-bold mb-8">A. Internally-Funded</div>
+          
+          <div className="font-bold mb-4 pl-4">Entrance</div>
+          <div className="flex gap-16 pl-12 mb-8 text-[15px]">
+            <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{formData.internalCategory === 'Valedictorian' && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>Valedictorian</span></div>
+            <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{formData.internalCategory === 'Salutatorian' && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>Salutatorian</span></div>
+          </div>
+
+          <div className="font-bold mb-4 pl-4">Academic</div>
+          <div className="flex gap-12 pl-12 mb-8 text-[15px]">
+            <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{formData.internalCategory === 'Full' && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>Full</span></div>
+            <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{formData.internalCategory === 'Partial' && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>Partial</span></div>
+            <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{formData.internalCategory === 'Regional (Academic)' && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>Regional</span></div>
+            <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{formData.internalCategory === 'National (Academic)' && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>National</span></div>
+          </div>
+
+          <div className="font-bold mb-4 pl-4">Socio-cultural</div>
+          <div className="flex gap-12 pl-12 mb-8 text-[15px]">
+            <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{formData.internalCategory === 'Regional (Socio-cultural)' && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>Regional</span></div>
+            <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{formData.internalCategory === 'National (Socio-cultural)' && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>National</span></div>
+          </div>
+
+          <div className="font-bold mb-4 pl-4">Institutional</div>
+          <div className="grid grid-cols-2 gap-y-3 gap-x-4 pl-12 mb-12 text-[15px]">
+            <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{formData.internalCategory === 'Dependent of Faculty or Staff' && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>Dependent of Faculty or Staff</span></div>
+            <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{formData.internalCategory === 'President – SSC' && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>President – SSC</span></div>
+            <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{formData.internalCategory === 'President – FLP' && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>President – FLP</span></div>
+            <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{formData.internalCategory === 'Editor-in-Chief (Campus Publication)' && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>Editor-in-Chief (Campus Publication)</span></div>
+            <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{formData.internalCategory === 'CapSU Band / Chorale' && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>CapSU Band / Chorale</span></div>
+          </div>
+          
+          <div className="flex items-end gap-2 pl-12 text-[15px]">
+            <div className="w-5 h-5 border border-black flex items-center justify-center mb-1 shrink-0">{formData.internalCategory === 'Others' && <Check className="w-4 h-4" strokeWidth={3} />}</div>
+            <span className="mb-1 shrink-0">Others (specify)</span>
+            <span className="flex-1 border-b border-black inline-block text-center pb-1">{formData.internalCategory === 'Others' ? formData.internalCategoryOthers : ''}</span>
+          </div>
+        </div>
+
+        {/* PAGE 5 */}
+        <div className="print-page w-[793px] h-[1122px] mx-auto pt-16 break-after-page font-serif text-black pl-8 pr-4">
+          <div className="font-bold mb-8">B. Externally-Funded</div>
+          
+          <div className="font-bold mb-4">CHED</div>
+          <div className="space-y-2 pl-4 mb-8 text-[15px]">
+            <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{formData.externalCategory === 'ANAC – IP' && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>ANAC – IP</span></div>
+            <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{formData.externalCategory === 'Pag – ulikid' && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>Pag – ulikid</span></div>
+            <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{formData.externalCategory === 'Barangay' && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>Barangay (Legal dependents of Brgy. Officials)</span></div>
+            <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{formData.externalCategory === 'ESGP – PA' && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>ESGP – PA</span></div>
+            <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{formData.externalCategory === 'UniFast' && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>UniFast</span></div>
+            <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{formData.externalCategory === 'Tertiary Education Subsidy (TES)' && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>Tertiary Education Subsidy (TES)</span></div>
+            <div className="flex items-end gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center mb-1 shrink-0">{formData.externalCategory === 'Congressional District' && <Check className="w-4 h-4" strokeWidth={3} />}</div><span className="mb-1">Congressional District (specify)</span><span className="flex-1 border-b border-black inline-block text-center pb-1">{formData.externalCategory === 'Congressional District' ? formData.chedCongressionalDistrict : ''}</span></div>
+            <div className="flex items-end gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center mb-1 shrink-0">{formData.externalCategory === 'One Town One Scholar' && <Check className="w-4 h-4" strokeWidth={3} />}</div><span className="mb-1">One Town One Scholar (specify)</span><span className="flex-1 border-b border-black inline-block text-center pb-1">{formData.externalCategory === 'One Town One Scholar' ? formData.chedOneTown : ''}</span></div>
+            <div className="flex items-end gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center mb-1 shrink-0">{formData.externalCategory === 'Tulong Dunong' && <Check className="w-4 h-4" strokeWidth={3} />}</div><span className="mb-1">Tulong Dunong (specify)</span><span className="flex-1 border-b border-black inline-block text-center pb-1">{formData.externalCategory === 'Tulong Dunong' ? formData.chedTulongDunong : ''}</span></div>
+            <div className="flex items-end gap-2 mt-4"><div className="w-5 h-5 border border-black flex items-center justify-center mb-1 shrink-0">{formData.externalCategory === 'CHED Others' && <Check className="w-4 h-4" strokeWidth={3} />}</div><span className="mb-1">Others (specify)</span><span className="flex-1 border-b border-black inline-block text-center pb-1">{formData.externalCategory === 'CHED Others' ? formData.chedOthers : ''}</span></div>
+          </div>
+
+          <div className="font-bold mb-4">Merit</div>
+          <div className="grid grid-cols-2 gap-y-2 gap-x-4 pl-12 mb-10 text-[15px]">
+            <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{formData.externalCategory === 'VIC' && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>VIC</span></div>
+            <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{formData.externalCategory === 'Capizeño Circle' && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>Capizeño Circle</span></div>
+            <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{formData.externalCategory === 'DOST' && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>DOST</span></div>
+            <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{formData.externalCategory === 'GRF' && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>GRF</span></div>
+          </div>
+
+          <div className="flex gap-2 mb-10 text-[15px]">
+            <div className="w-5 h-5 border border-black flex items-center justify-center shrink-0 mt-1">{formData.externalCategory === 'LGU' && <Check className="w-4 h-4" strokeWidth={3} />}</div>
+            <div className="flex-1">
+              <span className="leading-tight">LGU: Barangay, Municipality, Province (Landline) Contact person or issuing office:</span>
+              <div className="w-[80%] border-b border-black h-8 mt-2 text-center">{formData.externalCategory === 'LGU' ? formData.lguContact : ''}</div>
+            </div>
+          </div>
+
+          <div className="flex items-start gap-2 text-[15px]">
+            <div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{formData.externalCategory === 'DSWD' && <Check className="w-4 h-4" strokeWidth={3} />}</div>
+            <div className="flex-1">
+              <span className="font-bold">DSWD:</span>
+              <div className="flex items-end gap-2 mt-6">
+                <span>Municipality:</span><span className="flex-1 border-b border-black inline-block text-center">{formData.externalCategory === 'DSWD' ? formData.dswdMunicipality : ''}</span>
+              </div>
+              <div className="flex items-end gap-2 mt-6">
+                <span>Contact person:</span><span className="flex-1 border-b border-black inline-block text-center">{formData.externalCategory === 'DSWD' ? formData.dswdContact : ''}</span>
+              </div>
+              <div className="flex items-end gap-2 mt-6">
+                <span>Designation:</span><span className="flex-1 border-b border-black inline-block text-center">{formData.externalCategory === 'DSWD' ? formData.dswdDesignation : ''}</span>
+              </div>
+              <div className="flex items-end gap-2 mt-6">
+                <span>Others (specify)</span><span className="flex-1 border-b border-black inline-block text-center">{formData.externalCategory === 'DSWD' ? formData.dswdOthers : ''}</span>
               </div>
             </div>
+          </div>
 
-            <div className="mt-16 text-center text-sm">
-              I hereby certify that the information I have provided is true and correct to the best of my knowledge.
+          <div className="mt-20 text-center text-[15px]">
+            I hereby certify that the information I have provided is true and correct to the best of my knowledge.
+            
+            <div className="mt-12 flex justify-center">
+              <div className="w-64 border-b border-black relative h-12 flex items-center justify-center">
+                {formData.signature && (
+                  <img src={formData.signature} alt="Signature" className="absolute bottom-1 max-h-20 object-contain" />
+                )}
+              </div>
             </div>
+            <div className="mt-2 text-center">Signature</div>
           </div>
         </div>
 {/* PAGE 2: STUDENT DOCUMENTS */}
@@ -844,6 +834,7 @@ export function StudentRecordModal({
           </div>
         </div>
 
+      </div>
       </div>
 
       {previewFile && (

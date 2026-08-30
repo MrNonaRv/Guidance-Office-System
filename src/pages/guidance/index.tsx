@@ -894,7 +894,7 @@ export function GuidanceSubmissions() {
 }
 
 export function GuidanceSettings() {
-  const [activeTab, setActiveTab] = useState<'academic-year' | 'courses' | 'sections' | 'form' | 'files'>('academic-year');
+  const [activeTab, setActiveTab] = useState<'academic-year' | 'courses' | 'sections' | 'scholarships'>('academic-year');
   
   // Academic Years state (Matching the reference screenshot)
 
@@ -984,40 +984,6 @@ export function GuidanceSettings() {
   const [formFieldForm, setFormFieldForm] = useState({
     title: '', description: '', mandatory: 'Required', status: 'Active' as 'Active' | 'Inactive'
   });
-
-  // Files state
-  const [files, setFiles] = useState<any[]>(() => db.files.getCached());
-  const [showFileModal, setShowFileModal] = useState(false);
-  const [fileForm, setFileForm] = useState({
-    name: '', category: 'Scholarship Application', size: '1.2 MB'
-  });
-
-  // Supabase Diagnostics State
-  const [testingSupabase, setTestingSupabase] = useState(false);
-  const [supabaseTestResult, setSupabaseTestResult] = useState<{
-    configured: boolean;
-    url: string;
-    success: boolean;
-    message: string;
-    bucketExists?: boolean;
-  } | null>(null);
-
-  const runStorageTest = async () => {
-    setTestingSupabase(true);
-    try {
-      const res = await testSupabaseConnection();
-      setSupabaseTestResult(res);
-    } catch (e: any) {
-      setSupabaseTestResult({
-        configured: true,
-        url: '',
-        success: false,
-        message: e?.message || 'Unexpected test error'
-      });
-    } finally {
-      setTestingSupabase(false);
-    }
-  };
 
   useEffect(() => {
     let isMounted = true;
@@ -1174,27 +1140,6 @@ export function GuidanceSettings() {
   };
 
   // File Handlers
-  const handleSaveFile = async () => {
-    if (!fileForm.name.trim()) {
-      alert("Please enter a file name.");
-      return;
-    }
-    const newFile = await db.files.create({
-      name: fileForm.name,
-      category: fileForm.category,
-      size: fileForm.size,
-      uploadDate: new Date().toLocaleDateString('en-US', { month: 'long', day: '2-digit', year: 'numeric' })
-    });
-    setFiles([newFile, ...files]);
-    setShowFileModal(false);
-  };
-
-  const handleDeleteFile = async (id: string) => {
-    if (confirm("Are you sure you want to delete this file?")) {
-      await db.files.delete(id);
-      setFiles(files.filter(f => f.id !== id));
-    }
-  };
 
   // Global "+ Add" opener
   const handleOpenAddModal = () => {
@@ -1218,9 +1163,6 @@ export function GuidanceSettings() {
       setEditingFormField(null);
       setFormFieldForm({ title: '', description: '', mandatory: 'Required', status: 'Active' });
       setShowFormModal(true);
-    } else if (activeTab === 'files') {
-      setFileForm({ name: '', category: 'Scholarship Application', size: '1.5 MB' });
-      setShowFileModal(true);
     }
   };
 
@@ -1248,22 +1190,6 @@ export function GuidanceSettings() {
       </button>
 
       <button
-        onClick={() => setActiveTab('scholarships')}
-        className={cn(
-          "flex items-center gap-2 pb-3 text-xs sm:text-sm font-bold transition-all relative cursor-pointer whitespace-nowrap shrink-0",
-          activeTab === 'scholarships'
-            ? "text-[#1864db]"
-            : "text-[#0c2340] hover:text-[#1864db]"
-        )}
-      >
-        <Award className={cn("w-4 h-4", activeTab === 'scholarships' ? "text-[#1864db]" : "text-[#0c2340]")} />
-        <span>Scholarships</span>
-        {activeTab === 'scholarships' && (
-            <div className="absolute bottom-0 left-0 right-0 h-[2.5px] bg-[#1864db] rounded-t-full" />
-          )}
-        </button>
-
-        <button
           onClick={() => setActiveTab('courses')}
           className={cn(
             "flex items-center gap-2 pb-3 text-xs sm:text-sm font-bold transition-all relative cursor-pointer whitespace-nowrap shrink-0",
@@ -1295,34 +1221,18 @@ export function GuidanceSettings() {
           )}
         </button>
 
-        <button
-          onClick={() => setActiveTab('form')}
-          className={cn(
-            "flex items-center gap-2 pb-3 text-xs sm:text-sm font-bold transition-all relative cursor-pointer whitespace-nowrap shrink-0",
-            activeTab === 'form'
-              ? "text-[#1864db]"
-              : "text-[#0c2340] hover:text-[#1864db]"
-          )}
-        >
-          <FileText className={cn("w-4 h-4", activeTab === 'form' ? "text-[#1864db]" : "text-[#0c2340]")} />
-          <span>Form</span>
-          {activeTab === 'form' && (
-            <div className="absolute bottom-0 left-0 right-0 h-[2.5px] bg-[#1864db] rounded-t-full" />
-          )}
-        </button>
-
-        <button
-          onClick={() => setActiveTab('files')}
-          className={cn(
-            "flex items-center gap-2 pb-3 text-xs sm:text-sm font-bold transition-all relative cursor-pointer whitespace-nowrap shrink-0",
-            activeTab === 'files'
-              ? "text-[#1864db]"
-              : "text-[#0c2340] hover:text-[#1864db]"
-          )}
-        >
-          <ImageIcon className={cn("w-4 h-4", activeTab === 'files' ? "text-[#1864db]" : "text-[#0c2340]")} />
-          <span>Files</span>
-          {activeTab === 'files' && (
+      <button
+        onClick={() => setActiveTab('scholarships')}
+        className={cn(
+          "flex items-center gap-2 pb-3 text-xs sm:text-sm font-bold transition-all relative cursor-pointer whitespace-nowrap shrink-0",
+          activeTab === 'scholarships'
+            ? "text-[#1864db]"
+            : "text-[#0c2340] hover:text-[#1864db]"
+        )}
+      >
+        <Award className={cn("w-4 h-4", activeTab === 'scholarships' ? "text-[#1864db]" : "text-[#0c2340]")} />
+        <span>Scholarships</span>
+        {activeTab === 'scholarships' && (
             <div className="absolute bottom-0 left-0 right-0 h-[2.5px] bg-[#1864db] rounded-t-full" />
           )}
         </button>
@@ -1337,8 +1247,6 @@ export function GuidanceSettings() {
             {activeTab === 'scholarships' && 'Scholarships & Requirements'}
             {activeTab === 'courses' && 'Courses'}
             {activeTab === 'sections' && 'Sections'}
-            {activeTab === 'form' && 'Form Requirements'}
-            {activeTab === 'files' && 'Files'}
           </h2>
           <button
             onClick={handleOpenAddModal}
@@ -1559,166 +1467,6 @@ export function GuidanceSettings() {
                 ))}
               </tbody>
             </table>
-          </div>
-        )}
-
-        {/* TAB 4: FORM REQUIREMENTS */}
-        {activeTab === 'form' && (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="bg-[#edf3fa] text-[#486581] text-[11px] font-bold uppercase tracking-wider">
-                  <th className="py-3 px-8 font-bold text-left">REQUIREMENT DOCUMENT</th>
-                  <th className="py-3 px-6 font-bold text-left">DESCRIPTION</th>
-                  <th className="py-3 px-6 font-bold text-center">MANDATORY</th>
-                  <th className="py-3 px-6 font-bold text-center">STATUS</th>
-                  <th className="py-3 px-8 font-bold text-right"></th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100 text-sm">
-                {formFields.map((f, idx) => (
-                  <tr key={f.id || idx} className="hover:bg-blue-50/20 transition-colors">
-                    <td className="py-4 px-8 font-bold text-gray-900 flex items-center gap-2">
-                      <FileText className="w-4 h-4 text-blue-600" />
-                      <span>{f.title}</span>
-                    </td>
-                    <td className="py-4 px-6 text-gray-600 text-xs">{f.description}</td>
-                    <td className="py-4 px-6 text-center">
-                      <span className={cn(
-                        "inline-block px-3 py-1 rounded-full text-xs font-semibold text-center",
-                        f.mandatory === 'Required' ? "bg-amber-100 text-amber-800" : "bg-gray-100 text-gray-700"
-                      )}>
-                        {f.mandatory}
-                      </span>
-                    </td>
-                    <td className="py-4 px-6 text-center">
-                      <span className={cn(
-                        "inline-block w-24 py-1 rounded-full text-xs font-semibold text-center",
-                        f.status === 'Active' ? "bg-[#bbf7d0] text-[#15803d]" : "bg-[#fecaca] text-[#dc2626]"
-                      )}>
-                        {f.status}
-                      </span>
-                    </td>
-                    <td className="py-4 px-8 text-right space-x-3">
-                      <button
-                        onClick={() => handleEditFormField(f)}
-                        className="text-gray-400 hover:text-gray-700 transition-colors p-1"
-                        title="Edit"
-                      >
-                        <Pen className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => handleDeleteFormField(f.id)}
-                        className="text-gray-400 hover:text-red-600 transition-colors p-1"
-                        title="Delete"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-
-        {/* TAB 5: FILES */}
-        {activeTab === 'files' && (
-          <div className="p-6 space-y-6">
-            {/* Supabase Storage Integration Card */}
-            <div className="bg-gradient-to-br from-blue-50/60 via-indigo-50/40 to-slate-50 border border-blue-100 rounded-xl p-5 shadow-sm">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div className="flex items-start gap-3.5">
-                  <div className="w-10 h-10 rounded-xl bg-[#0c2340] text-white flex items-center justify-center shrink-0 shadow-sm">
-                    <Cloud className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <h3 className="font-bold text-[#0c2340] text-base">Supabase Cloud Storage</h3>
-                      <span className={cn(
-                        "text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider",
-                        isSupabaseConfigured() ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-800"
-                      )}>
-                        {isSupabaseConfigured() ? "Configured" : "Not Linked"}
-                      </span>
-                    </div>
-                    <p className="text-xs text-gray-600 mt-1 max-w-xl">
-                      Used for high-capacity storage of student 2x2 formal ID photos, Certificate of Grades (COG), and Certificate of Registration (COR) requirement PDFs.
-                    </p>
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={runStorageTest}
-                  disabled={testingSupabase}
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-white hover:bg-gray-50 text-[#0c2340] border border-gray-200 rounded-lg text-xs font-bold shadow-sm transition-all hover:border-gray-300 shrink-0 cursor-pointer disabled:opacity-50"
-                >
-                  <RefreshCw className={cn("w-3.5 h-3.5", testingSupabase && "animate-spin text-blue-600")} />
-                  <span>{testingSupabase ? "Testing Connection..." : "Test Supabase Storage"}</span>
-                </button>
-              </div>
-
-              {/* Diagnostic Test Output */}
-              {supabaseTestResult && (
-                <div className={cn(
-                  "mt-4 p-3.5 rounded-lg text-xs border flex items-start gap-2.5 transition-all",
-                  supabaseTestResult.success && supabaseTestResult.bucketExists
-                    ? "bg-emerald-50 border-emerald-200 text-emerald-800"
-                    : supabaseTestResult.success && !supabaseTestResult.bucketExists
-                    ? "bg-amber-50 border-amber-200 text-amber-800"
-                    : "bg-red-50 border-red-200 text-red-800"
-                )}>
-                  {supabaseTestResult.success && supabaseTestResult.bucketExists ? (
-                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-                  ) : (
-                    <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-                  )}
-                  <div className="space-y-1">
-                    <p className="font-semibold">{supabaseTestResult.message}</p>
-                    <p className="text-[11px] opacity-80">
-                      Connected URL: <span className="font-mono">{supabaseTestResult.url}</span> | Bucket: <span className="font-mono">{BUCKET_NAME}</span>
-                    </p>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Document Templates & Public Guidance Files Table */}
-            <div className="border border-gray-100 rounded-xl overflow-hidden shadow-xs">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="bg-[#edf3fa] text-[#486581] text-[11px] font-bold uppercase tracking-wider">
-                    <th className="py-3 px-6 font-bold text-left">DOCUMENT NAME</th>
-                    <th className="py-3 px-6 font-bold text-left">CATEGORY</th>
-                    <th className="py-3 px-6 font-bold text-center">FILE SIZE</th>
-                    <th className="py-3 px-6 font-bold text-center">UPLOADED DATE</th>
-                    <th className="py-3 px-6 font-bold text-right"></th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100 text-sm">
-                  {files.map((file, idx) => (
-                    <tr key={file.id || idx} className="hover:bg-blue-50/20 transition-colors">
-                      <td className="py-4 px-6 font-bold text-gray-900 flex items-center gap-2">
-                        <Paperclip className="w-4 h-4 text-blue-600" />
-                        <span>{file.name}</span>
-                      </td>
-                      <td className="py-4 px-6 text-gray-700 text-xs font-semibold">{file.category}</td>
-                      <td className="py-4 px-6 text-center text-xs text-gray-500">{file.size}</td>
-                      <td className="py-4 px-6 text-center text-xs text-gray-600">{file.uploadDate}</td>
-                      <td className="py-4 px-6 text-right space-x-3">
-                        <button
-                          onClick={() => handleDeleteFile(file.id)}
-                          className="text-gray-400 hover:text-red-600 transition-colors p-1"
-                          title="Delete"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
           </div>
         )}
       </div>
@@ -2033,46 +1781,6 @@ export function GuidanceSettings() {
             <div className="px-6 py-4 border-t border-gray-100 bg-gray-50 flex justify-end gap-3">
               <button onClick={() => setShowFormModal(false)} className="px-4 py-2 font-bold text-sm text-gray-600 hover:bg-gray-200 rounded-lg">Cancel</button>
               <button onClick={handleSaveFormField} className="px-6 py-2 bg-[#072b6b] hover:bg-[#051c47] text-white rounded-full font-bold text-sm">Save Requirement</button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Modal for Files */}
-      {showFileModal && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden">
-            <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
-              <h3 className="font-bold text-lg text-gray-900">Add Downloadable File</h3>
-              <button onClick={() => setShowFileModal(false)} className="text-gray-400 hover:text-gray-600 text-xl font-bold">×</button>
-            </div>
-            <div className="p-6 space-y-4">
-              <div>
-                <label className="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1">File Name</label>
-                <input 
-                  type="text" 
-                  value={fileForm.name} 
-                  onChange={e => setFileForm({...fileForm, name: e.target.value})} 
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#1864db] text-sm" 
-                  placeholder="e.g. TDP_Scholarship_Form.pdf" 
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1">Category</label>
-                <select 
-                  value={fileForm.category} 
-                  onChange={e => setFileForm({...fileForm, category: e.target.value})} 
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none text-sm"
-                >
-                  <option value="Scholarship Application">Scholarship Application</option>
-                  <option value="Guidelines & Policies">Guidelines & Policies</option>
-                  <option value="Document Template">Document Template</option>
-                </select>
-              </div>
-            </div>
-            <div className="px-6 py-4 border-t border-gray-100 bg-gray-50 flex justify-end gap-3">
-              <button onClick={() => setShowFileModal(false)} className="px-4 py-2 font-bold text-sm text-gray-600 hover:bg-gray-200 rounded-lg">Cancel</button>
-              <button onClick={handleSaveFile} className="px-6 py-2 bg-[#072b6b] hover:bg-[#051c47] text-white rounded-full font-bold text-sm">Add File</button>
             </div>
           </div>
         </div>

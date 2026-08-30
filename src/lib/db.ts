@@ -196,9 +196,9 @@ export const defaultFormRequirements: FormRequirement[] = [
 ];
 
 export const defaultSystemFiles: SystemFile[] = [
-  { id: 'file-1', name: 'CHED_TDP_Application_Form_2026.pdf', category: 'Scholarship Application', size: '1.4 MB', uploadDate: 'March 01, 2026' },
-  { id: 'file-2', name: 'CAPSU_Scholarship_Guidelines_v2.pdf', category: 'Guidelines & Policies', size: '2.8 MB', uploadDate: 'February 15, 2026' },
-  { id: 'file-3', name: 'Certificate_of_Indigency_Template.docx', category: 'Document Template', size: '450 KB', uploadDate: 'January 20, 2026' },
+  { id: 'file-1', name: 'CHED_TDP_Application_Form_2026.jpg', category: 'Scholarship Application', size: '1.4 MB', uploadDate: 'March 01, 2026' },
+  { id: 'file-2', name: 'CAPSU_Scholarship_Guidelines_v2.jpg', category: 'Guidelines & Policies', size: '2.8 MB', uploadDate: 'February 15, 2026' },
+  { id: 'file-3', name: 'Certificate_of_Indigency_Template.png', category: 'Document Template', size: '450 KB', uploadDate: 'January 20, 2026' },
 ];
 
 // Helper to sanitize undefined values for Firestore
