@@ -31,7 +31,7 @@ import {
   Mail
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { db } from '../../lib/db';
 import { getCachedGmailToken, requestGmailToken, sendGmailMessage } from '../../lib/gmailService';
 import { firestoreDb } from '../../lib/firebase';
@@ -76,6 +76,7 @@ interface SentEmailRecord {
 
 export function GuidanceCommunications() {
   const navigate = useNavigate();
+  const location = useLocation();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -268,8 +269,8 @@ Capiz State University`
   const [templates, setTemplates] = useState<EmailTemplate[]>(defaultTemplates);
 
   // Selection state
-  const [selectedStudentIds, setSelectedStudentIds] = useState<string[]>([]);
-  const [isSelectMode, setIsSelectMode] = useState<boolean>(false);
+  const [selectedStudentIds, setSelectedStudentIds] = useState<string[]>(location.state?.prefillStudentId ? [location.state.prefillStudentId] : []);
+  const [isSelectMode, setIsSelectMode] = useState<boolean>(location.state?.prefillStudentId ? true : false);
 
   // Filters state
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -278,10 +279,24 @@ Capiz State University`
   const [selectedAllocation, setSelectedAllocation] = useState<string>('Scholarship Allocation');
 
   // Email form state
-  const [currentTemplateId, setCurrentTemplateId] = useState<string>('blank');
+  const [currentTemplateId, setCurrentTemplateId] = useState<string>(location.state?.prefillTemplate || 'blank');
   const [isTemplateMenuOpen, setIsTemplateMenuOpen] = useState<boolean>(false);
   const [subject, setSubject] = useState<string>('');
   const [emailBody, setEmailBody] = useState<string>('');
+  const hasPrefilled = useRef(false);
+
+  React.useEffect(() => {
+    if (location.state?.prefillTemplate && studentList.length > 0 && !hasPrefilled.current) {
+      const template = templates.find(t => t.id === location.state.prefillTemplate);
+      if (template) {
+        setSubject(template.subject);
+        const firstSelected = studentList.find(s => s.id === location.state.prefillStudentId);
+        setEmailBody(template.body(firstSelected ? firstSelected.name : 'Student', firstSelected ? firstSelected.allocation : ''));
+        hasPrefilled.current = true;
+      }
+    }
+  }, [location.state?.prefillTemplate, location.state?.prefillStudentId, studentList, templates]);
+
   const [showCcBcc, setShowCcBcc] = useState<{ cc: boolean; bcc: boolean }>({ cc: false, bcc: false });
   const [ccValue, setCcValue] = useState<string>('');
   const [bccValue, setBccValue] = useState<string>('');

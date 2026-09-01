@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { 
   X, ArrowLeft, ChevronDown, CheckCircle2, AlertCircle, FileText, Download, 
-  Printer, Eye, Check, Archive
+  Printer, Eye, Check, Archive, Mail
 } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { db, Submission, SubmissionFile } from '../lib/db';
@@ -22,6 +23,7 @@ export function StudentRecordModal({
   onStatusChange,
   academicYearsList = []
 }: StudentRecordModalProps) {
+  const navigate = useNavigate();
   const [currentStatus, setCurrentStatus] = useState<string>(submission.status || 'Incomplete');
   const [viewMode, setViewMode] = useState<'overview' | 'requirements' | 'id_signature' | 'semester_record' | 'form'>('overview');
   const [selectedSemester, setSelectedSemester] = useState<'1st Semester' | '2nd Semester'>('1st Semester');
@@ -350,13 +352,27 @@ export function StudentRecordModal({
                 </p>
               </div>
 
-              <button
-                onClick={() => setViewMode('form')}
-                className="w-full bg-[#e0e7ff] hover:bg-[#dbeafe] text-[#2563eb] font-bold py-3.5 rounded-xl flex items-center justify-center gap-2.5 transition-colors cursor-pointer mb-8"
-              >
-                <Eye className="w-[22px] h-[22px] stroke-[2.5]" />
-                <span className="text-[15px]">View Filled Form</span>
-              </button>
+              <div className="grid grid-cols-2 gap-3 mb-8">
+                <button
+                  onClick={() => setViewMode('form')}
+                  className="w-full bg-[#e0e7ff] hover:bg-[#dbeafe] text-[#2563eb] font-bold py-3.5 rounded-xl flex items-center justify-center gap-2.5 transition-colors cursor-pointer"
+                >
+                  <Eye className="w-[20px] h-[20px] stroke-[2.5]" />
+                  <span className="text-[14px]">View Filled Form</span>
+                </button>
+                <button
+                  onClick={() => navigate('/admin/communications', { 
+                    state: { 
+                      prefillStudentId: localSubmission.studentId || formData.studentId,
+                      prefillTemplate: currentStatus === 'Approved' || currentStatus === 'Complete' ? 'verified' : currentStatus === 'Incomplete' ? 'missing-docs' : 'blank'
+                    }
+                  })}
+                  className="w-full bg-[#fce7f3] hover:bg-[#fbcfe8] text-[#be185d] font-bold py-3.5 rounded-xl flex items-center justify-center gap-2.5 transition-colors cursor-pointer"
+                >
+                  <Mail className="w-[20px] h-[20px] stroke-[2.5]" />
+                  <span className="text-[14px]">Email Student</span>
+                </button>
+              </div>
 
               <div>
                 <h4 className="text-gray-500 font-extrabold tracking-wider text-[13px] mb-4 uppercase">Scholarship Requirements</h4>
