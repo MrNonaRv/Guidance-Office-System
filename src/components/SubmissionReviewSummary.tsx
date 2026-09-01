@@ -21,6 +21,7 @@ import {
   Sparkles,
   Info
 } from 'lucide-react';
+import { formatScholarshipAllocations } from '../lib/scholarshipCategories';
 
 interface SubmissionReviewSummaryProps {
   formData: any;
@@ -49,35 +50,7 @@ export function SubmissionReviewSummary({
 
   const fullName = `${formData.familyName ? formData.familyName + ',' : ''} ${formData.firstName || ''} ${formData.middleName || ''}`.trim() || 'Not specified';
   
-  // Format Scholarship program label
-  const getScholarshipProgramLabel = () => {
-    if (formData.scholarshipFundType === 'Internal') {
-      return `Internally-Funded — ${formData.internalCategory || 'Institutional'}${formData.internalCategoryOthers ? ` (${formData.internalCategoryOthers})` : ''}`;
-    }
-    if (formData.scholarshipFundType === 'External') {
-      const selected = formData.externalCategory || formData.chedSubCategory || formData.meritSubCategory || 'Government / External';
-      let extDetails = selected;
-      if (selected === 'Congressional District' && formData.chedCongressionalDistrict) {
-        extDetails += ` - District: ${formData.chedCongressionalDistrict}`;
-      } else if (selected === 'One Town One Scholar' && formData.chedOneTown) {
-        extDetails += ` - ${formData.chedOneTown}`;
-      } else if (selected === 'Tulong Dunong' && formData.chedTulongDunong) {
-        extDetails += ` - ${formData.chedTulongDunong}`;
-      } else if (selected === 'Others' && formData.chedOthers) {
-        extDetails += ` - ${formData.chedOthers}`;
-      } else if (selected === 'LGU' && formData.lguContact) {
-        extDetails += ` (Contact: ${formData.lguContact})`;
-      } else if (selected === 'DSWD') {
-        const dswdParts = [
-          formData.dswdMunicipality ? `Municipality: ${formData.dswdMunicipality}` : '',
-          formData.dswdContact ? `Contact: ${formData.dswdContact}` : ''
-        ].filter(Boolean);
-        if (dswdParts.length > 0) extDetails += ` (${dswdParts.join(', ')})`;
-      }
-      return `Externally-Funded — ${extDetails}`;
-    }
-    return formData.externalCategory || formData.internalCategory || formData.chedSubCategory || formData.meritSubCategory || 'General Scholarship';
-  };
+  const formattedScholarship = formatScholarshipAllocations(formData);
 
   const rfFile = files.find(f => f.category === 'RF');
   const gwaFile = files.find(f => f.category === 'GWA');
@@ -373,7 +346,7 @@ export function SubmissionReviewSummary({
         <div className="bg-[#e0e7ff] px-4 sm:px-6 py-3 border-b border-[#c7d2fe] flex items-center justify-between">
           <div className="flex items-center gap-2 text-[#1e3a8a] font-bold text-sm sm:text-base">
             <Award className="w-4 h-4 sm:w-5 sm:h-5 text-[#1e3a8a]" />
-            <span>E. Scholarship Program Applied</span>
+            <span>E. Scholarship Program & Allocations Applied</span>
           </div>
           <button
             type="button"
@@ -384,17 +357,36 @@ export function SubmissionReviewSummary({
           </button>
         </div>
 
-        <div className="p-4 sm:p-6 text-xs">
-          <div className="p-4 rounded-xl bg-blue-50/60 border border-blue-200 flex items-start gap-3">
-            <Award className="w-6 h-6 text-blue-700 shrink-0 mt-0.5" />
-            <div>
-              <div className="text-[11px] font-bold text-blue-800 uppercase">Selected Scholarship:</div>
-              <div className="text-sm sm:text-base font-bold text-[#0c2340] mt-0.5">
-                {getScholarshipProgramLabel()}
+        <div className="p-4 sm:p-6 text-xs space-y-3">
+          <div className="p-4 rounded-xl bg-blue-50/60 border border-blue-200">
+            <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+              <div className="flex items-center gap-2">
+                <span className="text-[11px] font-bold text-blue-900 uppercase">Funding Category:</span>
+                <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-100 text-blue-900 border border-blue-200">
+                  {formattedScholarship.fundType}
+                  {formattedScholarship.category ? ` • ${formattedScholarship.category}` : ''}
+                </span>
               </div>
-              <p className="text-gray-600 mt-1 text-xs">
-                Fund Classification: <strong>{formData.scholarshipFundType || 'External'}</strong>
-              </p>
+              <span className="text-xs font-bold text-blue-700 bg-white px-2.5 py-0.5 rounded-md border border-blue-200">
+                {formattedScholarship.items.length} of 2 Scholarships Selected
+              </span>
+            </div>
+
+            <div className="space-y-2 mt-3">
+              {formattedScholarship.items.map((item, idx) => (
+                <div key={idx} className="flex items-center gap-2.5 bg-white p-2.5 rounded-lg border border-blue-100 shadow-2xs">
+                  <span className="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-[11px] shrink-0">
+                    {idx + 1}
+                  </span>
+                  <div className="flex-1">
+                    <span className="font-bold text-[#0c2340] text-xs sm:text-sm">{item}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-3 pt-2.5 border-t border-blue-200/70 text-[11px] text-gray-500">
+              Full Program Classification: <strong className="text-gray-800">{formattedScholarship.fullLabel}</strong>
             </div>
           </div>
         </div>
@@ -422,11 +414,11 @@ export function SubmissionReviewSummary({
           <div className="p-4 rounded-xl border-2 border-green-200 bg-green-50/20 flex flex-col justify-between">
             <div>
               <div className="flex items-center justify-between mb-2">
-                <span className="text-[11px] font-bold text-green-800 uppercase tracking-wide">Registration Form</span>
+                <span className="text-[11px] font-bold text-green-800 uppercase tracking-wide">Registration Form (RF)</span>
                 <CheckCircle2 className="w-4 h-4 text-green-600" />
               </div>
-              <p className="font-bold text-xs text-[#0c2340] truncate" title={rfFile?.name || 'RF Document'}>
-                {rfFile?.name || 'Registration Form.pdf'}
+              <p className="font-bold text-xs text-[#0c2340] truncate" title={rfFile?.name || 'Registration Form (RF)'}>
+                {rfFile?.name || 'Registration Form (RF).pdf'}
               </p>
               <p className="text-[11px] text-gray-500 mt-0.5">{rfFile?.size || 'Attached'}</p>
             </div>
@@ -445,11 +437,11 @@ export function SubmissionReviewSummary({
           <div className="p-4 rounded-xl border-2 border-green-200 bg-green-50/20 flex flex-col justify-between">
             <div>
               <div className="flex items-center justify-between mb-2">
-                <span className="text-[11px] font-bold text-green-800 uppercase tracking-wide">GWA Certificate</span>
+                <span className="text-[11px] font-bold text-green-800 uppercase tracking-wide">General Weighted Average (GWA)</span>
                 <CheckCircle2 className="w-4 h-4 text-green-600" />
               </div>
-              <p className="font-bold text-xs text-[#0c2340] truncate" title={gwaFile?.name || 'GWA Document'}>
-                {gwaFile?.name || 'GWA Slip.pdf'}
+              <p className="font-bold text-xs text-[#0c2340] truncate" title={gwaFile?.name || 'General Weighted Average (GWA)'}>
+                {gwaFile?.name || 'GWA Slip / COG.pdf'}
               </p>
               <p className="text-[11px] text-gray-500 mt-0.5">{gwaFile?.size || 'Attached'}</p>
             </div>

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 import { cn } from '../../lib/utils';
 import { FileEdit, FileText, ClipboardCheck, Calendar, User, Upload, CheckCircle2, ChevronDown, ChevronUp, View, Eye, EyeOff, RefreshCw, Check,
-  Image as ImageIcon, AlertCircle, Edit3, X, ArrowRight, ArrowLeft, Printer, Loader2 } from 'lucide-react';
+  Image as ImageIcon, AlertCircle, Edit3, X, ArrowRight, ArrowLeft, Printer, Loader2, Award } from 'lucide-react';
 import { db } from '../../lib/db';
 import { dummyBase64Pdf, dummyBase64Photo2x2, dummyBase64StudentId, dummyBase64Signature } from '../../lib/defaultData';
 import { motion } from 'motion/react';
@@ -12,9 +12,10 @@ import { SubmissionSuccessModal } from '../../components/SubmissionSuccessModal'
 import { DocumentPreviewModal } from '../../components/DocumentPreviewModal';
 import { capizMunicipalities } from '../../lib/capiz';
 
-import { signInWithGoogle, signInWithEmail, signUpWithEmail, logOut, auth } from '../../lib/firebase';
+import { signInWithGoogle, signInWithEmail, signUpWithEmail, logOut, auth, resetPassword } from '../../lib/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import { uploadFileToSupabase, uploadBase64ToSupabase, isSupabaseConfigured } from '../../lib/supabase';
+import { SCHOLARSHIP_STRUCTURE, formatScholarshipAllocations, findScholarshipInfo } from '../../lib/scholarshipCategories';
 
 export function StudentLogin() {
   const navigate = useNavigate();
@@ -37,6 +38,26 @@ export function StudentLogin() {
   const [showPassword, setShowPassword] = useState(false);
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+
+  const handleForgotPassword = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (!email) {
+      setError('Please enter your email address first to reset your password.');
+      return;
+    }
+    setLoading(true);
+    setError('');
+    try {
+      await resetPassword(email);
+      alert('Password reset email sent! Check your inbox.');
+    } catch (err: any) {
+      console.error(err);
+      setError(err.message || 'Failed to send password reset email.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleGoogleLogin = async () => {
     setError('');
@@ -356,7 +377,7 @@ export function StudentLogin() {
             </div>
             {isLogin ? (
               <div className="text-right mt-1">
-                <a href="#" className="text-[11px] text-[#0f2e60]/70 hover:text-[#0f2e60] hover:underline px-1">Forgot Password?</a>
+                <a href="#" onClick={handleForgotPassword} className="text-[11px] text-[#0f2e60]/70 hover:text-[#0f2e60] hover:underline px-1">Forgot Password?</a>
               </div>
             ) : (
               <p className="text-[10px] text-[#0f2e60]/50 mt-1 px-1">At least 6 characters</p>
@@ -713,16 +734,22 @@ export function StudentDashboard() {
               <div className="max-w-2xl mx-auto space-y-4">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3 bg-white rounded-xl border border-gray-200">
                   <div>
-                    <h4 className="font-bold text-[#0c2340] text-sm sm:text-base leading-tight">RF</h4>
-                    <p className="text-gray-500 text-xs sm:text-sm">Registration Form</p>
+                    <div className="flex items-center gap-2">
+                      <span className="px-2 py-0.5 bg-blue-100 text-[#1e3a8a] text-[11px] font-bold rounded">RF</span>
+                      <h4 className="font-bold text-[#0c2340] text-sm sm:text-base leading-tight">Registration Form (RF)</h4>
+                    </div>
+                    <p className="text-gray-500 text-xs sm:text-sm mt-0.5">Certificate of Registration / Enrollment for 1st Semester</p>
                   </div>
                   {renderFileButton('1st_rf')}
                 </div>
                 
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3 bg-white rounded-xl border border-gray-200">
                   <div>
-                    <h4 className="font-bold text-[#0c2340] text-sm sm:text-base leading-tight">GWA</h4>
-                    <p className="text-gray-500 text-xs sm:text-sm">General Weighted Average</p>
+                    <div className="flex items-center gap-2">
+                      <span className="px-2 py-0.5 bg-blue-100 text-[#1e3a8a] text-[11px] font-bold rounded">GWA</span>
+                      <h4 className="font-bold text-[#0c2340] text-sm sm:text-base leading-tight">General Weighted Average (GWA)</h4>
+                    </div>
+                    <p className="text-gray-500 text-xs sm:text-sm mt-0.5">Official Certificate of Grades / Grade Slip for 1st Semester</p>
                   </div>
                   {renderFileButton('1st_gwa')}
                 </div>
@@ -776,16 +803,22 @@ export function StudentDashboard() {
               <div className="max-w-2xl mx-auto space-y-4">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3 bg-white rounded-xl border border-gray-200">
                   <div>
-                    <h4 className="font-bold text-[#0c2340] text-sm sm:text-base leading-tight">RF</h4>
-                    <p className="text-gray-500 text-xs sm:text-sm">Registration Form</p>
+                    <div className="flex items-center gap-2">
+                      <span className="px-2 py-0.5 bg-blue-100 text-[#1e3a8a] text-[11px] font-bold rounded">RF</span>
+                      <h4 className="font-bold text-[#0c2340] text-sm sm:text-base leading-tight">Registration Form (RF)</h4>
+                    </div>
+                    <p className="text-gray-500 text-xs sm:text-sm mt-0.5">Certificate of Registration / Enrollment for 2nd Semester</p>
                   </div>
                   {renderFileButton('2nd_rf')}
                 </div>
                 
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3 bg-white rounded-xl border border-gray-200">
                   <div>
-                    <h4 className="font-bold text-[#0c2340] text-sm sm:text-base leading-tight">GWA</h4>
-                    <p className="text-gray-500 text-xs sm:text-sm">General Weighted Average</p>
+                    <div className="flex items-center gap-2">
+                      <span className="px-2 py-0.5 bg-blue-100 text-[#1e3a8a] text-[11px] font-bold rounded">GWA</span>
+                      <h4 className="font-bold text-[#0c2340] text-sm sm:text-base leading-tight">General Weighted Average (GWA)</h4>
+                    </div>
+                    <p className="text-gray-500 text-xs sm:text-sm mt-0.5">Official Certificate of Grades / Grade Slip for 2nd Semester</p>
                   </div>
                   {renderFileButton('2nd_gwa')}
                 </div>
@@ -971,6 +1004,8 @@ export function StudentSubmissionForm() {
       specialNeedsCondition: '', 
       pdlReason: '', 
       scholarshipFundType: '', 
+      scholarshipSubCategory: '',
+      selectedScholarships: [] as string[],
       internalCategory: '', 
       internalCategoryOthers: '', 
       externalCategory: '', 
@@ -1016,12 +1051,34 @@ export function StudentSubmissionForm() {
           setFormData(prev => {
             const data = existing.data || {};
             const unifiedExternal = data.externalCategory || data.chedSubCategory || data.meritSubCategory || '';
+            let parsedSelected: string[] = Array.isArray(data.selectedScholarships) ? data.selectedScholarships : [];
+            if (parsedSelected.length === 0) {
+              if (data.internalCategory) {
+                parsedSelected = data.internalCategory.split(',').map((s: string) => s.trim()).filter(Boolean);
+              } else if (unifiedExternal) {
+                parsedSelected = unifiedExternal.split(',').map((s: string) => s.trim()).filter(Boolean);
+              }
+            }
+
+            let subCat = data.scholarshipSubCategory || '';
+            let fundType = data.scholarshipFundType || '';
+            if (parsedSelected.length > 0 && (!subCat || !fundType)) {
+              const info = findScholarshipInfo(parsedSelected[0]);
+              if (info.found) {
+                subCat = subCat || info.subCategory || '';
+                fundType = fundType || info.fundType || '';
+              }
+            }
+
             return {
               ...prev,
               firstName: data.firstName || user.firstName || prev.firstName,
               familyName: data.familyName || user.lastName || prev.familyName,
               email: data.email || user.email || prev.email,
               ...data,
+              selectedScholarships: parsedSelected,
+              scholarshipSubCategory: subCat,
+              scholarshipFundType: fundType || (data.internalCategory ? 'Internal' : unifiedExternal ? 'External' : prev.scholarshipFundType),
               externalCategory: unifiedExternal
             };
           });
@@ -1146,6 +1203,106 @@ export function StudentSubmissionForm() {
     }
   };
 
+  const handleFundTypeChange = (fundType: 'Internal' | 'External') => {
+    setFormData(prev => {
+      if (prev.scholarshipFundType === fundType) return prev;
+      return {
+        ...prev,
+        scholarshipFundType: fundType,
+        scholarshipSubCategory: fundType === 'Internal' ? (prev.scholarshipSubCategory && ['Entrance', 'Academic', 'Socio-cultural', 'Institutional'].includes(prev.scholarshipSubCategory) ? prev.scholarshipSubCategory : 'Academic') : (prev.scholarshipSubCategory && ['CHED', 'Merit', 'LGU', 'DSWD'].includes(prev.scholarshipSubCategory) ? prev.scholarshipSubCategory : 'CHED'),
+        selectedScholarships: [],
+        internalCategory: '',
+        externalCategory: '',
+        meritSubCategory: '',
+        chedSubCategory: ''
+      };
+    });
+    if (errors.scholarship) {
+      setErrors(prev => {
+        const next = { ...prev };
+        delete next.scholarship;
+        return next;
+      });
+    }
+  };
+
+  const handleScholarshipToggle = (subCat: string, optionId: string, fundType: 'Internal' | 'External') => {
+    setFormData(prev => {
+      const prevSelected = Array.isArray(prev.selectedScholarships) ? prev.selectedScholarships : [];
+      const isSameCategory = prev.scholarshipSubCategory === subCat && prev.scholarshipFundType === fundType;
+
+      let newSelected: string[] = [];
+
+      if (!isSameCategory) {
+        // Different category selected: switch category and initialize with the clicked scholarship
+        newSelected = [optionId];
+      } else {
+        // Same category
+        if (prevSelected.includes(optionId)) {
+          // Deselect
+          newSelected = prevSelected.filter(id => id !== optionId);
+        } else {
+          // Check limit: max 2
+          if (prevSelected.length >= 2) {
+            setValidationWarning({
+              title: 'Maximum 2 Scholarships Allowed',
+              details: [
+                `You have already selected 2 scholarships under ${subCat}.`,
+                'To choose a different scholarship, please uncheck one of your selected options first.'
+              ]
+            });
+            return prev;
+          }
+          newSelected = [...prevSelected, optionId];
+        }
+      }
+
+      const activeFundType = newSelected.length > 0 ? fundType : prev.scholarshipFundType || fundType;
+      const activeSubCat = newSelected.length > 0 ? subCat : (isSameCategory ? prev.scholarshipSubCategory : '');
+      const unifiedString = newSelected.join(', ');
+
+      return {
+        ...prev,
+        scholarshipFundType: activeFundType,
+        scholarshipSubCategory: activeSubCat,
+        selectedScholarships: newSelected,
+        internalCategory: activeFundType === 'Internal' ? unifiedString : '',
+        externalCategory: activeFundType === 'External' ? unifiedString : '',
+        meritSubCat: activeFundType === 'External' && activeSubCat === 'Merit' ? unifiedString : '',
+        chedSubCategory: activeFundType === 'External' && activeSubCat === 'CHED' ? unifiedString : ''
+      };
+    });
+
+    if (errors.scholarship) {
+      setErrors(prev => {
+        const next = { ...prev };
+        delete next.scholarship;
+        return next;
+      });
+    }
+  };
+
+  const handleClearScholarships = () => {
+    setFormData(prev => ({
+      ...prev,
+      selectedScholarships: [],
+      internalCategory: '',
+      externalCategory: '',
+      internalCategoryOthers: '',
+      chedSubCategory: '',
+      chedCongressionalDistrict: '',
+      chedOneTown: '',
+      chedTulongDunong: '',
+      chedOthers: '',
+      meritSubCategory: '',
+      lguContact: '',
+      dswdMunicipality: '',
+      dswdContact: '',
+      dswdDesignation: '',
+      dswdOthers: ''
+    }));
+  };
+
   const handleCheckboxChange = (field: string, value: string) => {
     setFormData((prev: any) => {
       const current = prev[field] as string[];
@@ -1229,6 +1386,15 @@ export function StudentSubmissionForm() {
       missingLabels.push("Applicant's Signature (Click signature box at the bottom to sign)");
     }
 
+    const selectedScholarshipsCount = (formData.selectedScholarships && formData.selectedScholarships.length) || (formData.internalCategory || formData.externalCategory ? 1 : 0);
+    if (selectedScholarshipsCount === 0) {
+      newErrors.scholarship = 'Please select at least one scholarship program';
+      missingLabels.push('Scholarship Program Category (Select 1 or up to 2 distinct scholarships under the same category)');
+    } else if (selectedScholarshipsCount > 2) {
+      newErrors.scholarship = 'You may select a maximum of 2 scholarships';
+      missingLabels.push('Scholarship Program Category (Maximum 2 scholarships allowed under the same category)');
+    }
+
     setErrors(newErrors);
 
     if (missingLabels.length > 0) {
@@ -1239,7 +1405,7 @@ export function StudentSubmissionForm() {
 
       // Scroll smoothly to the first missing element
       const firstErrorKey = Object.keys(newErrors)[0];
-      const targetId = firstErrorKey === 'signature' ? 'signature-box' : `field-${firstErrorKey}`;
+      const targetId = firstErrorKey === 'signature' ? 'signature-box' : firstErrorKey === 'scholarship' ? 'scholarship-category-section' : `field-${firstErrorKey}`;
       const elem = document.getElementById(targetId);
       if (elem) {
         elem.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -1361,22 +1527,8 @@ export function StudentSubmissionForm() {
       const effectiveStudentId = user?.email || user?.id || auth.currentUser?.email || auth.currentUser?.uid || formData.email || `STU-${Date.now()}`;
       const effectiveStudentName = `${formData.firstName} ${formData.familyName}`.trim() || `${user?.firstName || ''} ${user?.lastName || ''}`.trim() || auth.currentUser?.displayName || 'Anonymous Student';
 
-      let scholarshipProgram = 'General Scholarship';
-      if (formData.scholarshipFundType === 'Internal') {
-        scholarshipProgram = `Internally-Funded (${formData.internalCategory || 'Institutional'}${formData.internalCategoryOthers ? ` - ${formData.internalCategoryOthers}` : ''})`;
-      } else if (formData.scholarshipFundType === 'External') {
-        const ext = formData.externalCategory || formData.chedSubCategory || formData.meritSubCategory || 'External Scholarship';
-        let detail = ext;
-        if (ext === 'Congressional District' && formData.chedCongressionalDistrict) detail += ` - ${formData.chedCongressionalDistrict}`;
-        else if (ext === 'One Town One Scholar' && formData.chedOneTown) detail += ` - ${formData.chedOneTown}`;
-        else if (ext === 'Tulong Dunong' && formData.chedTulongDunong) detail += ` - ${formData.chedTulongDunong}`;
-        else if (ext === 'Others' && formData.chedOthers) detail += ` - ${formData.chedOthers}`;
-        else if (ext === 'LGU' && formData.lguContact) detail += ` (${formData.lguContact})`;
-        else if (ext === 'DSWD' && formData.dswdMunicipality) detail += ` (${formData.dswdMunicipality})`;
-        scholarshipProgram = `Externally-Funded (${detail})`;
-      } else {
-        scholarshipProgram = formData.externalCategory || formData.internalCategory || 'General Scholarship';
-      }
+      const formattedScholarship = formatScholarshipAllocations(formData);
+      const scholarshipProgram = formattedScholarship.fullLabel;
 
       const submission = {
         id: existingId || `SUB-${Date.now()}`,
@@ -1388,6 +1540,10 @@ export function StudentSubmissionForm() {
         submittedAt: new Date().toISOString(),
         data: {
           ...formData,
+          scholarshipProgram,
+          selectedScholarships: formattedScholarship.items,
+          scholarshipSubCategory: formattedScholarship.category,
+          scholarshipFundType: formData.scholarshipFundType || (formattedScholarship.fundType.includes('Internal') ? 'Internal' : 'External'),
           email: formData.email || user?.email || auth.currentUser?.email || '',
           firstName: formData.firstName || user?.firstName || '',
           familyName: formData.familyName || user?.lastName || ''
@@ -1511,7 +1667,7 @@ export function StudentSubmissionForm() {
     return (
       <div className={`border-2 ${
         existingFile 
-          ? 'border-green-400 bg-green-50/20' 
+          ? 'border-green-400 bg-green-50/30' 
           : isMissing 
           ? 'border-red-400 bg-red-50/30' 
           : 'border-dashed border-gray-300 bg-white hover:bg-gray-50'
@@ -1522,7 +1678,11 @@ export function StudentSubmissionForm() {
             <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
               <CheckCircle2 className="w-6 h-6 text-[#16a34a]" />
             </div>
-            <p className="text-[#0c2340] font-bold text-sm">{existingFile.name}</p>
+            {/* Explicit Clear Text Label for Field */}
+            <div className="inline-flex items-center gap-1.5 px-3.5 py-1 bg-green-100 border border-green-300 text-green-900 rounded-full text-xs font-bold uppercase tracking-wider">
+              {label}
+            </div>
+            <p className="text-[#0c2340] font-bold text-sm truncate max-w-full px-2" title={existingFile.name}>{existingFile.name}</p>
             <p className="text-gray-500 text-xs">{existingFile.size}</p>
             <div className="flex items-center gap-3 mt-1">
               <button
@@ -1531,9 +1691,9 @@ export function StudentSubmissionForm() {
                   e.stopPropagation();
                   setPreviewFile(existingFile);
                 }}
-                className="text-[11px] bg-white border border-green-300 hover:bg-green-100 text-green-800 font-bold px-2.5 py-0.5 rounded flex items-center gap-1 transition-colors cursor-pointer"
+                className="text-[11px] bg-white border border-green-300 hover:bg-green-100 text-green-800 font-bold px-3 py-1 rounded-md flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs"
               >
-                <Eye className="w-3 h-3" /> Preview
+                <Eye className="w-3.5 h-3.5" /> Preview Document
               </button>
               <span className="text-[11px] text-blue-600 font-semibold hover:underline">Replace file</span>
             </div>
@@ -1543,9 +1703,9 @@ export function StudentSubmissionForm() {
             <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center">
               <Upload className={`w-6 h-6 ${isMissing ? 'text-red-500' : 'text-gray-400'}`} />
             </div>
-            <p className="text-[#0c2340] font-bold text-sm flex items-center gap-1">
-              {label} <span className="text-red-500">*</span>
-            </p>
+            <div className="inline-flex items-center gap-1.5 px-3.5 py-1 bg-blue-50 border border-blue-200 text-[#0f2e60] rounded-full text-xs font-bold uppercase tracking-wider">
+              {label} <span className="text-red-500 font-extrabold">*</span>
+            </div>
             <p className={`${isMissing ? 'text-red-600 font-bold' : 'text-[#d97706] font-semibold'} text-xs mt-1`}>
               {isMissing ? 'Document Required — Click to upload' : 'Click or drag file to upload (PNG, JPG)'}
             </p>
@@ -2036,150 +2196,343 @@ export function StudentSubmissionForm() {
           <SectionHeader title="SCHOLARSHIP CATEGORY" />
           
           {/* SCHOLARSHIP CATEGORY BODY */}
-          <div className="bg-[#f8faff] sm:bg-[#fcfdff] p-4 sm:p-6 rounded-lg border border-[#93c5fd] shadow-sm mb-6">
+          <div id="scholarship-category-section" className="bg-[#f8faff] sm:bg-[#fcfdff] p-4 sm:p-6 rounded-xl border border-[#93c5fd] shadow-sm mb-6 scroll-mt-20">
             
-            <div className="mb-6">
-              <label className="flex items-center gap-3 font-bold text-[#1e3a8a] text-[15px] cursor-pointer">
-                <input type="radio" name="scholarshipFundType" value="Internal" checked={formData.scholarshipFundType === 'Internal'} onChange={(e) => handleRadioChange('scholarshipFundType', e.target.value)} className="w-5 h-5 text-blue-600 border-gray-400 focus:ring-blue-500" /> A. Internally-Funded
-              </label>
-              
-              {formData.scholarshipFundType === 'Internal' && (
-                <div className="pl-9 pt-5 space-y-6">
-                  <div>
-                    <h4 className="font-bold text-[13px] text-[#0f2e60] mb-3">Entrance</h4>
-                    <div className="flex flex-wrap gap-8 sm:gap-16">
-                      <label className="flex items-center gap-2 text-[13px] font-semibold text-[#0f2e60] cursor-pointer"><input type="radio" name="internalCategory" value="Valedictorian" checked={formData.internalCategory === 'Valedictorian'} onChange={(e) => handleRadioChange('internalCategory', e.target.value)} className="w-4 h-4 border-gray-400 text-blue-600 focus:ring-blue-500" /> Valedictorian</label>
-                      <label className="flex items-center gap-2 text-[13px] font-semibold text-[#0f2e60] cursor-pointer"><input type="radio" name="internalCategory" value="Salutatorian" checked={formData.internalCategory === 'Salutatorian'} onChange={(e) => handleRadioChange('internalCategory', e.target.value)} className="w-4 h-4 border-gray-400 text-blue-600 focus:ring-blue-500" /> Salutatorian</label>
-                    </div>
-                  </div>
-                  <div>
-                    <h4 className="font-bold text-[13px] text-[#0f2e60] mb-3">Academic</h4>
-                    <div className="flex flex-wrap gap-8 sm:gap-10">
-                      <label className="flex items-center gap-2 text-[13px] font-semibold text-[#0f2e60] cursor-pointer"><input type="radio" name="internalCategory" value="Full" checked={formData.internalCategory === 'Full'} onChange={(e) => handleRadioChange('internalCategory', e.target.value)} className="w-4 h-4 border-gray-400 text-blue-600 focus:ring-blue-500" /> Full</label>
-                      <label className="flex items-center gap-2 text-[13px] font-semibold text-[#0f2e60] cursor-pointer"><input type="radio" name="internalCategory" value="Partial" checked={formData.internalCategory === 'Partial'} onChange={(e) => handleRadioChange('internalCategory', e.target.value)} className="w-4 h-4 border-gray-400 text-blue-600 focus:ring-blue-500" /> Partial</label>
-                      <label className="flex items-center gap-2 text-[13px] font-semibold text-[#0f2e60] cursor-pointer"><input type="radio" name="internalCategory" value="Regional" checked={formData.internalCategory === 'Regional'} onChange={(e) => handleRadioChange('internalCategory', e.target.value)} className="w-4 h-4 border-gray-400 text-blue-600 focus:ring-blue-500" /> Regional</label>
-                      <label className="flex items-center gap-2 text-[13px] font-semibold text-[#0f2e60] cursor-pointer"><input type="radio" name="internalCategory" value="National" checked={formData.internalCategory === 'National'} onChange={(e) => handleRadioChange('internalCategory', e.target.value)} className="w-4 h-4 border-gray-400 text-blue-600 focus:ring-blue-500" /> National</label>
-                    </div>
-                  </div>
-                  <div>
-                    <h4 className="font-bold text-[13px] text-[#0f2e60] mb-3">Socio-cultural</h4>
-                    <div className="flex flex-wrap gap-8 sm:gap-10">
-                      <label className="flex items-center gap-2 text-[13px] font-semibold text-[#0f2e60] cursor-pointer"><input type="radio" name="internalCategory" value="SC-Regional" checked={formData.internalCategory === 'SC-Regional'} onChange={(e) => handleRadioChange('internalCategory', e.target.value)} className="w-4 h-4 border-gray-400 text-blue-600 focus:ring-blue-500" /> Regional</label>
-                      <label className="flex items-center gap-2 text-[13px] font-semibold text-[#0f2e60] cursor-pointer"><input type="radio" name="internalCategory" value="SC-National" checked={formData.internalCategory === 'SC-National'} onChange={(e) => handleRadioChange('internalCategory', e.target.value)} className="w-4 h-4 border-gray-400 text-blue-600 focus:ring-blue-500" /> National</label>
-                    </div>
-                  </div>
-                  <div>
-                    <h4 className="font-bold text-[13px] text-[#0f2e60] mb-3">Institutional</h4>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-8">
-                      <label className="flex items-center gap-2 text-[13px] font-semibold text-[#0f2e60] cursor-pointer"><input type="radio" name="internalCategory" value="Dependent of Faculty" checked={formData.internalCategory === 'Dependent of Faculty'} onChange={(e) => handleRadioChange('internalCategory', e.target.value)} className="w-4 h-4 border-gray-400 text-blue-600 focus:ring-blue-500" /> Dependent of Faculty or Staff</label>
-                      <label className="flex items-center gap-2 text-[13px] font-semibold text-[#0f2e60] cursor-pointer"><input type="radio" name="internalCategory" value="President - SSC" checked={formData.internalCategory === 'President - SSC'} onChange={(e) => handleRadioChange('internalCategory', e.target.value)} className="w-4 h-4 border-gray-400 text-blue-600 focus:ring-blue-500" /> President – SSC</label>
-                      <label className="flex items-center gap-2 text-[13px] font-semibold text-[#0f2e60] cursor-pointer"><input type="radio" name="internalCategory" value="President - FLP" checked={formData.internalCategory === 'President - FLP'} onChange={(e) => handleRadioChange('internalCategory', e.target.value)} className="w-4 h-4 border-gray-400 text-blue-600 focus:ring-blue-500" /> President – FLP</label>
-                      <label className="flex items-center gap-2 text-[13px] font-semibold text-[#0f2e60] cursor-pointer"><input type="radio" name="internalCategory" value="Editor-in-Chief" checked={formData.internalCategory === 'Editor-in-Chief'} onChange={(e) => handleRadioChange('internalCategory', e.target.value)} className="w-4 h-4 border-gray-400 text-blue-600 focus:ring-blue-500" /> Editor-in-Chief (Campus Publication)</label>
-                      <label className="flex items-center gap-2 text-[13px] font-semibold text-[#0f2e60] cursor-pointer"><input type="radio" name="internalCategory" value="CAPSU Band / Chorale" checked={formData.internalCategory === 'CAPSU Band / Chorale'} onChange={(e) => handleRadioChange('internalCategory', e.target.value)} className="w-4 h-4 border-gray-400 text-blue-600 focus:ring-blue-500" /> CAPSU Band / Chorale</label>
-                    </div>
-                    <div className="mt-4">
-                      <label className="flex items-center gap-2 text-[13px] font-semibold text-[#0f2e60] cursor-pointer">
-                        <input type="radio" name="internalCategory" value="Others" checked={formData.internalCategory === 'Others'} onChange={(e) => handleRadioChange('internalCategory', e.target.value)} className="w-4 h-4 border-gray-400 text-blue-600 focus:ring-blue-500" /> Others (specify)
-                      </label>
-                      {formData.internalCategory === 'Others' && (
-                        <input type="text" name="internalCategoryOthers" value={formData.internalCategoryOthers || ''} onChange={handleChange} className="border-b border-gray-400 focus:border-[#1e3a8a] outline-none text-[13px] ml-6 mt-1 w-full max-w-lg bg-transparent" />
-                      )}
-                    </div>
-                  </div>
+            {/* Multiple Scholarship Rule Callout */}
+            <div className="bg-blue-50/90 border border-blue-200 rounded-xl p-4 mb-6">
+              <div className="flex items-start gap-3">
+                <div className="p-1.5 bg-blue-100 text-[#1e3a8a] rounded-lg shrink-0 mt-0.5">
+                  <Award className="w-5 h-5" />
                 </div>
-              )}
-            </div>
-
-            <hr className="border-gray-200 mb-6" />
-
-            <div className="mb-6">
-              <label className="flex items-center gap-3 font-bold text-[#1e3a8a] text-[15px] cursor-pointer">
-                <input type="radio" name="scholarshipFundType" value="External" checked={formData.scholarshipFundType === 'External'} onChange={(e) => handleRadioChange('scholarshipFundType', e.target.value)} className="w-5 h-5 text-blue-600 border-gray-400 focus:ring-blue-500" /> B. Externally-Funded
-              </label>
-              
-              {formData.scholarshipFundType === 'External' && (
-                <div className="pl-9 pt-5 space-y-6">
-                  <div>
-                    <h4 className="font-bold text-[13px] text-[#0f2e60] mb-3">CHED</h4>
-                    <div className="flex flex-col gap-3">
-                      {['ANAC - IP', 'Pag - ulikid', 'Barangay (Legal dependents of Brgy. Officials)', 'ESGP - PA', 'UniFast', 'Tertiary Education Subsidy (TES)'].map(opt => (
-                        <label key={opt} className="flex items-center gap-2 text-[13px] font-semibold text-[#0f2e60] cursor-pointer">
-                          <input type="radio" name="externalCategory" value={opt} checked={formData.externalCategory === opt} onChange={(e) => handleRadioChange('externalCategory', e.target.value)} className="w-4 h-4 border-gray-400 text-blue-600 focus:ring-blue-500" /> {opt}
-                        </label>
-                      ))}
-                      <div className="flex flex-wrap items-center gap-2 text-[13px] font-semibold text-[#0f2e60]">
-                        <label className="flex items-center gap-2 cursor-pointer">
-                          <input type="radio" name="externalCategory" value="Congressional District" checked={formData.externalCategory === 'Congressional District'} onChange={(e) => handleRadioChange('externalCategory', e.target.value)} className="w-4 h-4 border-gray-400 text-blue-600 focus:ring-blue-500" /> Congressional District (specify)
-                        </label>
-                        {formData.externalCategory === 'Congressional District' && (
-                          <input type="text" name="chedCongressionalDistrict" value={formData.chedCongressionalDistrict || ''} onChange={handleChange} className="border-b border-gray-400 focus:border-[#1e3a8a] outline-none ml-2 flex-1 max-w-[300px] text-[13px] bg-transparent" />
-                        )}
-                      </div>
-                      <div className="flex flex-wrap items-center gap-2 text-[13px] font-semibold text-[#0f2e60]">
-                        <label className="flex items-center gap-2 cursor-pointer">
-                          <input type="radio" name="externalCategory" value="One Town One Scholar" checked={formData.externalCategory === 'One Town One Scholar'} onChange={(e) => handleRadioChange('externalCategory', e.target.value)} className="w-4 h-4 border-gray-400 text-blue-600 focus:ring-blue-500" /> One Town One Scholar (specify)
-                        </label>
-                        {formData.externalCategory === 'One Town One Scholar' && (
-                          <input type="text" name="chedOneTown" value={formData.chedOneTown || ''} onChange={handleChange} className="border-b border-gray-400 focus:border-[#1e3a8a] outline-none ml-2 flex-1 max-w-[300px] text-[13px] bg-transparent" />
-                        )}
-                      </div>
-                      <div className="flex flex-wrap items-center gap-2 text-[13px] font-semibold text-[#0f2e60]">
-                        <label className="flex items-center gap-2 cursor-pointer">
-                          <input type="radio" name="externalCategory" value="Tulong Dunong" checked={formData.externalCategory === 'Tulong Dunong'} onChange={(e) => handleRadioChange('externalCategory', e.target.value)} className="w-4 h-4 border-gray-400 text-blue-600 focus:ring-blue-500" /> Tulong Dunong (specify)
-                        </label>
-                        {formData.externalCategory === 'Tulong Dunong' && (
-                          <input type="text" name="chedTulongDunong" value={formData.chedTulongDunong || ''} onChange={handleChange} className="border-b border-gray-400 focus:border-[#1e3a8a] outline-none ml-2 flex-1 max-w-[300px] text-[13px] bg-transparent" />
-                        )}
-                      </div>
-                      <div className="flex flex-wrap items-center gap-2 text-[13px] font-semibold text-[#0f2e60]">
-                        <label className="flex items-center gap-2 cursor-pointer">
-                          <input type="radio" name="externalCategory" value="Others" checked={formData.externalCategory === 'Others'} onChange={(e) => handleRadioChange('externalCategory', e.target.value)} className="w-4 h-4 border-gray-400 text-blue-600 focus:ring-blue-500" /> Others (specify)
-                        </label>
-                        {formData.externalCategory === 'Others' && (
-                          <input type="text" name="chedOthers" value={formData.chedOthers || ''} onChange={handleChange} className="border-b border-gray-400 focus:border-[#1e3a8a] outline-none ml-2 flex-1 max-w-[300px] text-[13px] bg-transparent" />
-                        )}
-                      </div>
-                    </div>
+                <div className="flex-1">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <h4 className="text-sm font-bold text-[#1e3a8a]">Scholarship Selection & Allocation Rule</h4>
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-100 text-[#1e3a8a]">
+                      Max 2 Scholarships Allowed
+                    </span>
                   </div>
-                  
-                  <div className="pt-2">
-                    <h4 className="font-bold text-[13px] text-[#0f2e60] mb-3">Merit</h4>
-                    <div className="grid grid-cols-2 gap-y-3 max-w-[400px]">
-                      {['VIC', 'Capizeño Circle', 'DOST', 'GRF'].map(meritOpt => (
-                        <label key={meritOpt} className="flex items-center gap-2 text-[13px] font-semibold text-[#0f2e60] cursor-pointer">
-                          <input type="radio" name="externalCategory" value={meritOpt} checked={formData.externalCategory === meritOpt} onChange={(e) => handleRadioChange('externalCategory', e.target.value)} className="w-4 h-4 border-gray-400 text-blue-600 focus:ring-blue-500" /> {meritOpt}
-                        </label>
+                  <p className="text-xs text-gray-700 mt-1 leading-relaxed">
+                    Students are eligible to apply for <strong>up to two (2) distinct scholarships</strong>, provided that all chosen scholarships belong to the <strong>same funding category</strong> (for example: up to two under CHED or up to two under Socio-cultural).
+                  </p>
+                </div>
+              </div>
+
+              {/* Current Selection Status Bar */}
+              <div className="mt-3 pt-3 border-t border-blue-200/80 flex flex-wrap items-center justify-between gap-2 text-xs">
+                <div className="flex items-center gap-2">
+                  <span className="font-semibold text-gray-600">Current Selection:</span>
+                  {(formData.selectedScholarships || []).length === 0 ? (
+                    <span className="text-amber-700 bg-amber-50 px-2.5 py-1 rounded-md border border-amber-200 font-medium">
+                      0 of 2 selected — Please choose a category below
+                    </span>
+                  ) : (
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      <span className={`px-2.5 py-1 rounded-md font-bold text-xs ${
+                        (formData.selectedScholarships || []).length === 2
+                          ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                          : 'bg-blue-100 text-blue-800 border border-blue-300'
+                      }`}>
+                        {(formData.selectedScholarships || []).length} of 2 Selected ({formData.scholarshipSubCategory || formData.scholarshipFundType})
+                      </span>
+                      {(formData.selectedScholarships || []).map((sId: string, idx: number) => (
+                        <span key={sId} className="inline-flex items-center gap-1 bg-white border border-blue-300 text-blue-950 px-2 py-0.5 rounded-md font-medium text-[11px] shadow-xs">
+                          <span className="font-bold text-blue-600">#{idx + 1}</span> {sId}
+                          <button
+                            type="button"
+                            onClick={() => handleScholarshipToggle(formData.scholarshipSubCategory || '', sId, (formData.scholarshipFundType as 'Internal' | 'External') || 'External')}
+                            className="text-gray-400 hover:text-red-600 transition-colors ml-0.5 cursor-pointer"
+                            title="Remove scholarship"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        </span>
                       ))}
                     </div>
-                  </div>
-                  
-                  <div className="pt-2">
-                    <label className="flex flex-col sm:flex-row sm:items-center gap-2 text-[13px] font-bold text-[#0f2e60] cursor-pointer">
-                      <div className="flex items-center gap-2">
-                        <input type="radio" name="externalCategory" value="LGU" checked={formData.externalCategory === 'LGU'} onChange={(e) => handleRadioChange('externalCategory', e.target.value)} className="w-4 h-4 border-gray-400 text-blue-600 focus:ring-blue-500" /> LGU: Barangay, Municipality, Province (Landline) Contact person or issuing office:
-                      </div>
-                      {formData.externalCategory === 'LGU' && (
-                        <input type="text" name="lguContact" value={formData.lguContact || ''} onChange={handleChange} className="border-b border-gray-400 focus:border-[#1e3a8a] outline-none text-[13px] w-full max-w-sm mt-1 sm:mt-0 bg-transparent" />
-                      )}
-                    </label>
-                  </div>
-                  
-                  <div className="pt-2">
-                    <label className="flex items-center gap-2 text-[13px] font-bold text-[#0f2e60] mb-2 cursor-pointer">
-                      <input type="radio" name="externalCategory" value="DSWD" checked={formData.externalCategory === 'DSWD'} onChange={(e) => handleRadioChange('externalCategory', e.target.value)} className="w-4 h-4 border-gray-400 text-blue-600 focus:ring-blue-500" /> DSWD:
-                    </label>
-                    {formData.externalCategory === 'DSWD' && (
-                      <div className="pl-6 space-y-3 mt-3 max-w-lg">
-                        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3"><span className="text-[13px] font-semibold text-[#0f2e60] w-24">Municipality:</span> <input type="text" name="dswdMunicipality" value={formData.dswdMunicipality || ''} onChange={handleChange} className="border-b border-gray-400 focus:border-[#1e3a8a] outline-none flex-1 text-[13px] bg-transparent" /></div>
-                        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3"><span className="text-[13px] font-semibold text-[#0f2e60] w-24">Contact person:</span> <input type="text" name="dswdContact" value={formData.dswdContact || ''} onChange={handleChange} className="border-b border-gray-400 focus:border-[#1e3a8a] outline-none flex-1 text-[13px] bg-transparent" /></div>
-                        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3"><span className="text-[13px] font-semibold text-[#0f2e60] w-24">Designation:</span> <input type="text" name="dswdDesignation" value={formData.dswdDesignation || ''} onChange={handleChange} className="border-b border-gray-400 focus:border-[#1e3a8a] outline-none flex-1 text-[13px] bg-transparent" /></div>
-                        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3"><span className="text-[13px] font-semibold text-[#0f2e60] w-24">Others (specify):</span> <input type="text" name="dswdOthers" value={formData.dswdOthers || ''} onChange={handleChange} className="border-b border-gray-400 focus:border-[#1e3a8a] outline-none flex-1 text-[13px] bg-transparent" /></div>
-                      </div>
-                    )}
-                  </div>
+                  )}
                 </div>
-              )}
+
+                {(formData.selectedScholarships || []).length > 0 && (
+                  <button
+                    type="button"
+                    onClick={handleClearScholarships}
+                    className="text-xs font-semibold text-red-600 hover:text-red-700 hover:underline flex items-center gap-1 cursor-pointer"
+                  >
+                    <X className="w-3.5 h-3.5" /> Clear All Selections
+                  </button>
+                )}
+              </div>
             </div>
+
+            {errors.scholarship && (
+              <div className="p-3 mb-5 bg-red-50 border border-red-200 rounded-lg text-red-700 text-xs flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 shrink-0" />
+                <span>{errors.scholarship}</span>
+              </div>
+            )}
+
+            {/* FUNDING SOURCE TABS / RADIOS */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
+              <button
+                type="button"
+                onClick={() => handleFundTypeChange('Internal')}
+                className={`p-3.5 rounded-xl border text-left transition-all cursor-pointer flex items-center justify-between ${
+                  formData.scholarshipFundType === 'Internal'
+                    ? 'border-blue-600 bg-blue-50/80 ring-2 ring-blue-500/20 shadow-xs'
+                    : 'border-gray-200 bg-white hover:border-gray-300'
+                }`}
+              >
+                <div>
+                  <div className="font-bold text-sm text-[#1e3a8a] flex items-center gap-2">
+                    <span className={`w-4 h-4 rounded-full border flex items-center justify-center ${formData.scholarshipFundType === 'Internal' ? 'border-blue-600 bg-blue-600' : 'border-gray-400'}`}>
+                      {formData.scholarshipFundType === 'Internal' && <span className="w-1.5 h-1.5 bg-white rounded-full" />}
+                    </span>
+                    A. Internally-Funded
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1 pl-6">University academic, leadership, and socio-cultural grants</p>
+                </div>
+                {formData.scholarshipFundType === 'Internal' && (formData.selectedScholarships || []).length > 0 && (
+                  <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-blue-600 text-white">
+                    {(formData.selectedScholarships || []).length} / 2
+                  </span>
+                )}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleFundTypeChange('External')}
+                className={`p-3.5 rounded-xl border text-left transition-all cursor-pointer flex items-center justify-between ${
+                  formData.scholarshipFundType === 'External'
+                    ? 'border-blue-600 bg-blue-50/80 ring-2 ring-blue-500/20 shadow-xs'
+                    : 'border-gray-200 bg-white hover:border-gray-300'
+                }`}
+              >
+                <div>
+                  <div className="font-bold text-sm text-[#1e3a8a] flex items-center gap-2">
+                    <span className={`w-4 h-4 rounded-full border flex items-center justify-center ${formData.scholarshipFundType === 'External' ? 'border-blue-600 bg-blue-600' : 'border-gray-400'}`}>
+                      {formData.scholarshipFundType === 'External' && <span className="w-1.5 h-1.5 bg-white rounded-full" />}
+                    </span>
+                    B. Externally-Funded
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1 pl-6">CHED, UniFAST, DOST, Merit, LGU, and DSWD grants</p>
+                </div>
+                {formData.scholarshipFundType === 'External' && (formData.selectedScholarships || []).length > 0 && (
+                  <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-blue-600 text-white">
+                    {(formData.selectedScholarships || []).length} / 2
+                  </span>
+                )}
+              </button>
+            </div>
+
+            {/* SELECTION GROUPS */}
+            {formData.scholarshipFundType && (
+              <div className="space-y-6">
+                {(formData.scholarshipFundType === 'Internal' ? SCHOLARSHIP_STRUCTURE.Internal : SCHOLARSHIP_STRUCTURE.External).map(group => {
+                  const isCurrentCategoryGroup = formData.scholarshipSubCategory === group.subCategory;
+                  const groupSelections = isCurrentCategoryGroup ? (formData.selectedScholarships || []) : [];
+                  const isGroupFull = groupSelections.length >= 2;
+
+                  return (
+                    <div
+                      key={group.subCategory}
+                      className={`p-4 sm:p-5 rounded-xl border transition-all ${
+                        isCurrentCategoryGroup && groupSelections.length > 0
+                          ? 'border-blue-300 bg-blue-50/40 shadow-xs'
+                          : 'border-gray-200 bg-white'
+                      }`}
+                    >
+                      <div className="flex flex-wrap items-center justify-between gap-2 mb-3 pb-2 border-b border-gray-100">
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <h4 className="font-bold text-sm text-[#0f2e60]">{group.title}</h4>
+                            {isCurrentCategoryGroup && groupSelections.length > 0 && (
+                              <span className={`px-2 py-0.5 rounded-full text-[11px] font-bold ${
+                                isGroupFull ? 'bg-emerald-100 text-emerald-800' : 'bg-blue-100 text-blue-800'
+                              }`}>
+                                {groupSelections.length} of 2 Selected {isGroupFull ? '(Max)' : ''}
+                              </span>
+                            )}
+                          </div>
+                          {group.description && (
+                            <p className="text-xs text-gray-500 mt-0.5">{group.description}</p>
+                          )}
+                        </div>
+
+                        {isCurrentCategoryGroup && groupSelections.length > 0 && (
+                          <span className="text-[11px] text-gray-500 italic">
+                            {2 - groupSelections.length === 1 ? '1 more scholarship may be added in this category' : 'Maximum 2 scholarships selected'}
+                          </span>
+                        )}
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        {group.options.map(opt => {
+                          const isSelected = isCurrentCategoryGroup && groupSelections.includes(opt.id);
+                          const allocationIndex = isSelected ? groupSelections.indexOf(opt.id) + 1 : null;
+                          const fundType = formData.scholarshipFundType as 'Internal' | 'External';
+
+                          return (
+                            <div
+                              key={opt.id}
+                              className={`p-3 rounded-lg border transition-all ${
+                                isSelected
+                                  ? 'border-blue-600 bg-blue-50/90 shadow-xs'
+                                  : isCurrentCategoryGroup && isGroupFull
+                                  ? 'border-gray-200 bg-gray-50/60 opacity-60'
+                                  : 'border-gray-200 bg-white hover:border-blue-200 hover:bg-gray-50/50'
+                              }`}
+                            >
+                              <label className="flex items-start gap-2.5 cursor-pointer">
+                                <div className="pt-0.5">
+                                  <input
+                                    type="checkbox"
+                                    name={`scholarship-${opt.id}`}
+                                    checked={isSelected}
+                                    onChange={() => handleScholarshipToggle(group.subCategory, opt.id, fundType)}
+                                    className="w-4 h-4 text-blue-600 rounded-sm border-gray-400 focus:ring-blue-500 cursor-pointer"
+                                  />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center justify-between gap-1">
+                                    <span className={`text-[13px] font-semibold ${isSelected ? 'text-[#1e3a8a] font-bold' : 'text-[#0f2e60]'}`}>
+                                      {opt.label}
+                                    </span>
+                                    {isSelected && allocationIndex && (
+                                      <span className="px-1.5 py-0.5 bg-blue-600 text-white rounded text-[10px] font-bold shrink-0">
+                                        #{allocationIndex}
+                                      </span>
+                                    )}
+                                  </div>
+
+                                  {/* Inline details for specified fields */}
+                                  {isSelected && opt.hasSpecifyField === 'internalCategoryOthers' && (
+                                    <div className="mt-2">
+                                      <label className="block text-[11px] font-semibold text-gray-600 mb-1">Please specify:</label>
+                                      <input
+                                        type="text"
+                                        name="internalCategoryOthers"
+                                        value={formData.internalCategoryOthers || ''}
+                                        onChange={handleChange}
+                                        placeholder="e.g., Campus Grant Name"
+                                        className="w-full text-xs p-1.5 bg-white border border-gray-300 rounded-md focus:border-blue-600 outline-none"
+                                      />
+                                    </div>
+                                  )}
+
+                                  {isSelected && opt.hasSpecifyField === 'chedCongressionalDistrict' && (
+                                    <div className="mt-2">
+                                      <label className="block text-[11px] font-semibold text-gray-600 mb-1">Specify District:</label>
+                                      <input
+                                        type="text"
+                                        name="chedCongressionalDistrict"
+                                        value={formData.chedCongressionalDistrict || ''}
+                                        onChange={handleChange}
+                                        placeholder="e.g., 1st District / 2nd District"
+                                        className="w-full text-xs p-1.5 bg-white border border-gray-300 rounded-md focus:border-blue-600 outline-none"
+                                      />
+                                    </div>
+                                  )}
+
+                                  {isSelected && opt.hasSpecifyField === 'chedOneTown' && (
+                                    <div className="mt-2">
+                                      <label className="block text-[11px] font-semibold text-gray-600 mb-1">Specify Town/Municipality:</label>
+                                      <input
+                                        type="text"
+                                        name="chedOneTown"
+                                        value={formData.chedOneTown || ''}
+                                        onChange={handleChange}
+                                        placeholder="e.g., Roxas City"
+                                        className="w-full text-xs p-1.5 bg-white border border-gray-300 rounded-md focus:border-blue-600 outline-none"
+                                      />
+                                    </div>
+                                  )}
+
+                                  {isSelected && opt.hasSpecifyField === 'chedTulongDunong' && (
+                                    <div className="mt-2">
+                                      <label className="block text-[11px] font-semibold text-gray-600 mb-1">Specify Details:</label>
+                                      <input
+                                        type="text"
+                                        name="chedTulongDunong"
+                                        value={formData.chedTulongDunong || ''}
+                                        onChange={handleChange}
+                                        placeholder="e.g., TDP-TES Batch"
+                                        className="w-full text-xs p-1.5 bg-white border border-gray-300 rounded-md focus:border-blue-600 outline-none"
+                                      />
+                                    </div>
+                                  )}
+
+                                  {isSelected && opt.hasSpecifyField === 'chedOthers' && (
+                                    <div className="mt-2">
+                                      <label className="block text-[11px] font-semibold text-gray-600 mb-1">Specify CHED Program:</label>
+                                      <input
+                                        type="text"
+                                        name="chedOthers"
+                                        value={formData.chedOthers || ''}
+                                        onChange={handleChange}
+                                        placeholder="Program name"
+                                        className="w-full text-xs p-1.5 bg-white border border-gray-300 rounded-md focus:border-blue-600 outline-none"
+                                      />
+                                    </div>
+                                  )}
+
+                                  {isSelected && opt.hasSpecifyField === 'lguContact' && (
+                                    <div className="mt-2">
+                                      <label className="block text-[11px] font-semibold text-gray-600 mb-1">Contact Person / Issuing Office:</label>
+                                      <input
+                                        type="text"
+                                        name="lguContact"
+                                        value={formData.lguContact || ''}
+                                        onChange={handleChange}
+                                        placeholder="e.g., Mayor's Office / Landline No."
+                                        className="w-full text-xs p-1.5 bg-white border border-gray-300 rounded-md focus:border-blue-600 outline-none"
+                                      />
+                                    </div>
+                                  )}
+
+                                  {isSelected && opt.hasSpecifyField === 'dswdFields' && (
+                                    <div className="mt-2 space-y-2 pt-1">
+                                      <div>
+                                        <label className="block text-[10px] font-semibold text-gray-600">Municipality:</label>
+                                        <input
+                                          type="text"
+                                          name="dswdMunicipality"
+                                          value={formData.dswdMunicipality || ''}
+                                          onChange={handleChange}
+                                          placeholder="Municipality"
+                                          className="w-full text-xs p-1.5 bg-white border border-gray-300 rounded-md focus:border-blue-600 outline-none"
+                                        />
+                                      </div>
+                                      <div>
+                                        <label className="block text-[10px] font-semibold text-gray-600">Contact Person:</label>
+                                        <input
+                                          type="text"
+                                          name="dswdContact"
+                                          value={formData.dswdContact || ''}
+                                          onChange={handleChange}
+                                          placeholder="Contact person"
+                                          className="w-full text-xs p-1.5 bg-white border border-gray-300 rounded-md focus:border-blue-600 outline-none"
+                                        />
+                                      </div>
+                                    </div>
+                                  )}
+                                </div>
+                              </label>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {!formData.scholarshipFundType && (
+              <div className="text-center py-8 text-gray-500 bg-white rounded-xl border border-dashed border-gray-300">
+                <Award className="w-8 h-8 text-gray-400 mx-auto mb-2 opacity-60" />
+                <p className="text-sm font-semibold">Please select a funding category above to view available scholarships</p>
+                <p className="text-xs text-gray-400 mt-1">Choose between Internally-Funded or Externally-Funded</p>
+              </div>
+            )}
 
             <hr className="border-gray-200 mb-8 mt-12" />
 

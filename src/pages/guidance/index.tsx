@@ -8,7 +8,7 @@ import { motion } from 'motion/react';
 import { StudentRecordModal } from '../../components/StudentRecordModal';
 import { testSupabaseConnection, isSupabaseConfigured, BUCKET_NAME } from '../../lib/supabase';
 
-import { signInWithGoogle, signInWithEmail, signUpWithEmail } from '../../lib/firebase';
+import { signInWithGoogle, signInWithEmail, signUpWithEmail, resetPassword } from '../../lib/firebase';
 
 export function GuidanceLogin() {
   const navigate = useNavigate();
@@ -68,6 +68,26 @@ export function GuidanceLogin() {
         console.error("Admin login error", err);
         setError('Failed to sign in. If previewing, try opening in a new tab.');
       }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
+  const handleForgotPassword = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (!adminEmailInput) {
+      setError('Please enter your email address first to reset your password.');
+      return;
+    }
+    setLoading(true);
+    setError('');
+    try {
+      await resetPassword(adminEmailInput);
+      alert('Password reset email sent! Check your inbox.');
+    } catch (err: any) {
+      console.error(err);
+      setError(err.message || 'Failed to send password reset email.');
     } finally {
       setLoading(false);
     }
@@ -219,7 +239,7 @@ export function GuidanceLogin() {
               </button>
             </div>
             <div className="text-right mt-1">
-              <a href="#" className="text-[11px] text-gray-500 hover:text-[#0f2e60] hover:underline px-1">Forgot Password?</a>
+              <a href="#" onClick={handleForgotPassword} className="text-[11px] text-gray-500 hover:text-[#0f2e60] hover:underline px-1">Forgot Password?</a>
             </div>
           </div>
           
@@ -777,9 +797,6 @@ export function GuidanceSubmissions() {
                         <option>All status</option>
                         <option>Complete</option>
                         <option>Incomplete</option>
-                        <option>Pending</option>
-                        <option>Approved</option>
-                        <option>Rejected</option>
                       </select>
                     </div>
                     <div>
@@ -856,18 +873,14 @@ export function GuidanceSubmissions() {
                   <td className="py-4 px-6">
                     <span className={cn(
                       "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider",
-                      s.status === 'Complete' || s.status === 'Approved'
+                      s.status === 'Complete'
                         ? "bg-green-100 text-green-700" 
-                        : s.status === 'Incomplete' || s.status === 'Pending'
-                        ? "bg-[#fff3cd] text-[#856404]"
-                        : "bg-red-100 text-red-700"
+                        : "bg-[#fff3cd] text-[#856404]"
                     )}>
                       <span className={cn("w-1.5 h-1.5 rounded-full", 
-                        s.status === 'Complete' || s.status === 'Approved' ? "bg-green-500" 
-                        : s.status === 'Incomplete' || s.status === 'Pending' ? "bg-yellow-500" 
-                        : "bg-red-500"
+                        s.status === 'Complete' ? "bg-green-500" : "bg-yellow-500"
                       )}></span>
-                      {s.status === 'Pending' ? 'Incomplete' : s.status}
+                      {s.status === 'Complete' ? 'Complete' : 'Incomplete'}
                     </span>
                   </td>
                   <td className="py-4 px-6 text-sm">

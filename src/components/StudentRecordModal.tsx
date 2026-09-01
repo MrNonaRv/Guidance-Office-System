@@ -5,6 +5,7 @@ import {
 } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { db, Submission, SubmissionFile } from '../lib/db';
+import { formatScholarshipAllocations } from '../lib/scholarshipCategories';
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 
@@ -75,7 +76,20 @@ export function StudentRecordModal({
   const studentName = localSubmission.studentName || `${formData.firstName || 'Anna Marie'} ${formData.middleName || 'A.'} ${formData.familyName || 'Santos'}`.trim();
   const studentIdNumber = localSubmission.studentId || formData.studentId || '2024-CAPSU-0182';
   const courseCode = formData.course || localSubmission.answers?.course || (localSubmission.scholarshipType?.includes('BS') || localSubmission.scholarshipType?.includes('BA') ? localSubmission.scholarshipType.split(' ')[0] : 'BAEL');
-  const scholarshipType = localSubmission.scholarshipType || formData.scholarshipCategory || 'Externally-Funded (Pag-ulikid)';
+  
+  const formattedScholarship = formatScholarshipAllocations(formData);
+  const scholarshipType = formattedScholarship.fullLabel || localSubmission.scholarshipType || formData.scholarshipCategory || 'Externally-Funded (Pag-ulikid)';
+  
+  // Helper to check if a scholarship option is selected (supports both array and legacy string)
+  const isSelectedScholarship = (target: string) => {
+    if (Array.isArray(formData.selectedScholarships) && formData.selectedScholarships.length > 0) {
+      return formData.selectedScholarships.includes(target);
+    }
+    return formData.externalCategory === target || 
+           formData.internalCategory === target || 
+           formData.chedSubCategory === target ||
+           formData.meritSubCategory === target;
+  };
   
   // Available Academic Years for dropdowns
   const academicYearsOptions = academicYearsList && academicYearsList.length > 0
@@ -185,6 +199,28 @@ export function StudentRecordModal({
   };
 
   const photo2x2 = localSubmission.photo2x2 || formData.photo2x2 || localSubmission.files?.find((f: any) => f.category?.includes('2x2') || f.category?.includes('Photo'))?.data;
+
+  // Helper to format clear explicit labels for student document fields
+  const formatDocumentLabel = (category?: string, name?: string) => {
+    const cat = (category || '').toUpperCase();
+    const n = (name || '').toUpperCase();
+    if (cat === 'RF' || cat.includes('REGISTRATION') || n.includes('REGISTRATION') || n.includes('_RF')) {
+      return 'Registration Form (RF)';
+    }
+    if (cat === 'RF_2' || (cat.includes('RF') && n.includes('2ND'))) {
+      return 'Registration Form (RF) — 2nd Sem';
+    }
+    if (cat === 'GWA' || cat.includes('COG') || cat.includes('GRADE') || n.includes('GWA') || n.includes('GRADE') || n.includes('COG')) {
+      return 'General Weighted Average (GWA)';
+    }
+    if (cat === 'GWA_2' || (cat.includes('GWA') && n.includes('2ND'))) {
+      return 'General Weighted Average (GWA) — 2nd Sem';
+    }
+    if (cat === 'ID' || cat.includes('STUDENT ID') || n.includes('STUDENT_ID') || n.includes('_ID')) {
+      return 'Student ID';
+    }
+    return category || name || 'Student Document';
+  };
 
   // Requirements list
   const requirementsList = [
@@ -296,11 +332,20 @@ export function StudentRecordModal({
           {viewMode === 'overview' && (
             <div className="p-6 bg-white min-h-full">
               <div className="mb-6">
-                <div className="text-[#2563eb] font-bold text-[15px] mb-1">Scholarship Program</div>
+                <div className="text-[#2563eb] font-bold text-[15px] mb-1">Scholarship Program & Allocations</div>
                 <h3 className="text-xl font-bold text-gray-900 leading-tight">
-                  {formData.externalCategory ? `Externally-Funded: ${formData.externalCategory}` : formData.internalCategory ? `Internally-Funded: ${formData.internalCategory}` : scholarshipType}
+                  {formattedScholarship.fullLabel || scholarshipType}
                 </h3>
-                <p className="text-[13px] font-semibold text-gray-400 mt-1">
+                {formattedScholarship.items && formattedScholarship.items.length > 1 && (
+                  <div className="flex flex-wrap gap-1.5 mt-2">
+                    {formattedScholarship.items.map((item, idx) => (
+                      <span key={idx} className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-800 border border-blue-200">
+                        {idx + 1}. {item}
+                      </span>
+                    ))}
+                  </div>
+                )}
+                <p className="text-[13px] font-semibold text-gray-400 mt-2">
                   Submitted on {new Date(localSubmission.submittedAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
                 </p>
               </div>
@@ -454,7 +499,7 @@ export function StudentRecordModal({
                         <div className="flex items-center gap-2.5">
                           <FileText className="w-4 h-4 text-blue-600" />
                           <div>
-                            <p className="text-xs font-bold text-gray-800">{file.category || file.name || `Document ${idx+1}`}</p>
+                            <p className="text-xs font-bold text-gray-800">{formatDocumentLabel(file.category, file.name)}</p>
                             <p className="text-[11px] text-gray-500">{file.name} &bull; {file.size || 'Unknown Size'}</p>
                           </div>
                         </div>
@@ -462,10 +507,9 @@ export function StudentRecordModal({
                           <span className={cn(
                             "text-[10px] font-bold uppercase px-2 py-0.5 rounded border",
                             file.status === 'Verified' ? "text-green-700 bg-green-50 border-green-200" :
-                            file.status === 'Rejected' ? "text-red-700 bg-red-50 border-red-200" :
-                            "text-amber-700 bg-amber-50 border-amber-200"
+                            "text-blue-700 bg-blue-50 border-blue-200"
                           )}>
-                            {file.status || 'Pending'}
+                            {file.status === 'Verified' ? 'Verified' : 'Submitted'}
                           </span>
                           <button
                             onClick={() => setPreviewFile(file)}
@@ -756,37 +800,37 @@ export function StudentRecordModal({
           
           <div className="font-bold mb-4 pl-4">Entrance</div>
           <div className="flex gap-16 pl-12 mb-8 text-[15px]">
-            <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{formData.internalCategory === 'Valedictorian' && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>Valedictorian</span></div>
-            <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{formData.internalCategory === 'Salutatorian' && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>Salutatorian</span></div>
+            <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{isSelectedScholarship('Valedictorian') && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>Valedictorian</span></div>
+            <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{isSelectedScholarship('Salutatorian') && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>Salutatorian</span></div>
           </div>
 
           <div className="font-bold mb-4 pl-4">Academic</div>
           <div className="flex gap-12 pl-12 mb-8 text-[15px]">
-            <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{formData.internalCategory === 'Full' && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>Full</span></div>
-            <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{formData.internalCategory === 'Partial' && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>Partial</span></div>
-            <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{formData.internalCategory === 'Regional (Academic)' && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>Regional</span></div>
-            <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{formData.internalCategory === 'National (Academic)' && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>National</span></div>
+            <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{isSelectedScholarship('Full') && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>Full</span></div>
+            <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{isSelectedScholarship('Partial') && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>Partial</span></div>
+            <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{isSelectedScholarship('Regional (Academic)') && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>Regional</span></div>
+            <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{isSelectedScholarship('National (Academic)') && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>National</span></div>
           </div>
 
           <div className="font-bold mb-4 pl-4">Socio-cultural</div>
           <div className="flex gap-12 pl-12 mb-8 text-[15px]">
-            <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{formData.internalCategory === 'Regional (Socio-cultural)' && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>Regional</span></div>
-            <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{formData.internalCategory === 'National (Socio-cultural)' && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>National</span></div>
+            <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{isSelectedScholarship('Regional (Socio-cultural)') && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>Regional</span></div>
+            <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{isSelectedScholarship('National (Socio-cultural)') && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>National</span></div>
           </div>
 
           <div className="font-bold mb-4 pl-4">Institutional</div>
           <div className="grid grid-cols-2 gap-y-3 gap-x-4 pl-12 mb-12 text-[15px]">
-            <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{formData.internalCategory === 'Dependent of Faculty or Staff' && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>Dependent of Faculty or Staff</span></div>
-            <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{formData.internalCategory === 'President – SSC' && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>President – SSC</span></div>
-            <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{formData.internalCategory === 'President – FLP' && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>President – FLP</span></div>
-            <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{formData.internalCategory === 'Editor-in-Chief (Campus Publication)' && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>Editor-in-Chief (Campus Publication)</span></div>
-            <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{formData.internalCategory === 'CapSU Band / Chorale' && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>CapSU Band / Chorale</span></div>
+            <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{isSelectedScholarship('Dependent of Faculty or Staff') && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>Dependent of Faculty or Staff</span></div>
+            <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{isSelectedScholarship('President – SSC') && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>President – SSC</span></div>
+            <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{isSelectedScholarship('President – FLP') && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>President – FLP</span></div>
+            <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{isSelectedScholarship('Editor-in-Chief (Campus Publication)') && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>Editor-in-Chief (Campus Publication)</span></div>
+            <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{isSelectedScholarship('CapSU Band / Chorale') && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>CapSU Band / Chorale</span></div>
           </div>
           
           <div className="flex items-end gap-2 pl-12 text-[15px]">
-            <div className="w-5 h-5 border border-black flex items-center justify-center mb-1 shrink-0">{formData.internalCategory === 'Others' && <Check className="w-4 h-4" strokeWidth={3} />}</div>
+            <div className="w-5 h-5 border border-black flex items-center justify-center mb-1 shrink-0">{isSelectedScholarship('Others') && <Check className="w-4 h-4" strokeWidth={3} />}</div>
             <span className="mb-1 shrink-0">Others (specify)</span>
-            <span className="flex-1 border-b border-black inline-block text-center pb-1">{formData.internalCategory === 'Others' ? formData.internalCategoryOthers : ''}</span>
+            <span className="flex-1 border-b border-black inline-block text-center pb-1">{isSelectedScholarship('Others') ? formData.internalCategoryOthers : ''}</span>
           </div>
         </div>
 
@@ -796,49 +840,49 @@ export function StudentRecordModal({
           
           <div className="font-bold mb-4">CHED</div>
           <div className="space-y-2 pl-4 mb-8 text-[15px]">
-            <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{formData.externalCategory === 'ANAC – IP' && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>ANAC – IP</span></div>
-            <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{formData.externalCategory === 'Pag – ulikid' && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>Pag – ulikid</span></div>
-            <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{formData.externalCategory === 'Barangay' && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>Barangay (Legal dependents of Brgy. Officials)</span></div>
-            <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{formData.externalCategory === 'ESGP – PA' && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>ESGP – PA</span></div>
-            <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{formData.externalCategory === 'UniFast' && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>UniFast</span></div>
-            <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{formData.externalCategory === 'Tertiary Education Subsidy (TES)' && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>Tertiary Education Subsidy (TES)</span></div>
-            <div className="flex items-end gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center mb-1 shrink-0">{formData.externalCategory === 'Congressional District' && <Check className="w-4 h-4" strokeWidth={3} />}</div><span className="mb-1">Congressional District (specify)</span><span className="flex-1 border-b border-black inline-block text-center pb-1">{formData.externalCategory === 'Congressional District' ? formData.chedCongressionalDistrict : ''}</span></div>
-            <div className="flex items-end gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center mb-1 shrink-0">{formData.externalCategory === 'One Town One Scholar' && <Check className="w-4 h-4" strokeWidth={3} />}</div><span className="mb-1">One Town One Scholar (specify)</span><span className="flex-1 border-b border-black inline-block text-center pb-1">{formData.externalCategory === 'One Town One Scholar' ? formData.chedOneTown : ''}</span></div>
-            <div className="flex items-end gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center mb-1 shrink-0">{formData.externalCategory === 'Tulong Dunong' && <Check className="w-4 h-4" strokeWidth={3} />}</div><span className="mb-1">Tulong Dunong (specify)</span><span className="flex-1 border-b border-black inline-block text-center pb-1">{formData.externalCategory === 'Tulong Dunong' ? formData.chedTulongDunong : ''}</span></div>
-            <div className="flex items-end gap-2 mt-4"><div className="w-5 h-5 border border-black flex items-center justify-center mb-1 shrink-0">{formData.externalCategory === 'CHED Others' && <Check className="w-4 h-4" strokeWidth={3} />}</div><span className="mb-1">Others (specify)</span><span className="flex-1 border-b border-black inline-block text-center pb-1">{formData.externalCategory === 'CHED Others' ? formData.chedOthers : ''}</span></div>
+            <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{isSelectedScholarship('ANAC – IP') && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>ANAC – IP</span></div>
+            <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{isSelectedScholarship('Pag – ulikid') && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>Pag – ulikid</span></div>
+            <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{isSelectedScholarship('Barangay') && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>Barangay (Legal dependents of Brgy. Officials)</span></div>
+            <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{isSelectedScholarship('ESGP – PA') && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>ESGP – PA</span></div>
+            <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{isSelectedScholarship('UniFast') && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>UniFast</span></div>
+            <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{isSelectedScholarship('Tertiary Education Subsidy (TES)') && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>Tertiary Education Subsidy (TES)</span></div>
+            <div className="flex items-end gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center mb-1 shrink-0">{isSelectedScholarship('Congressional District') && <Check className="w-4 h-4" strokeWidth={3} />}</div><span className="mb-1">Congressional District (specify)</span><span className="flex-1 border-b border-black inline-block text-center pb-1">{isSelectedScholarship('Congressional District') ? formData.chedCongressionalDistrict : ''}</span></div>
+            <div className="flex items-end gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center mb-1 shrink-0">{isSelectedScholarship('One Town One Scholar') && <Check className="w-4 h-4" strokeWidth={3} />}</div><span className="mb-1">One Town One Scholar (specify)</span><span className="flex-1 border-b border-black inline-block text-center pb-1">{isSelectedScholarship('One Town One Scholar') ? formData.chedOneTown : ''}</span></div>
+            <div className="flex items-end gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center mb-1 shrink-0">{isSelectedScholarship('Tulong Dunong') && <Check className="w-4 h-4" strokeWidth={3} />}</div><span className="mb-1">Tulong Dunong (specify)</span><span className="flex-1 border-b border-black inline-block text-center pb-1">{isSelectedScholarship('Tulong Dunong') ? formData.chedTulongDunong : ''}</span></div>
+            <div className="flex items-end gap-2 mt-4"><div className="w-5 h-5 border border-black flex items-center justify-center mb-1 shrink-0">{isSelectedScholarship('CHED Others') && <Check className="w-4 h-4" strokeWidth={3} />}</div><span className="mb-1">Others (specify)</span><span className="flex-1 border-b border-black inline-block text-center pb-1">{isSelectedScholarship('CHED Others') ? formData.chedOthers : ''}</span></div>
           </div>
 
           <div className="font-bold mb-4">Merit</div>
           <div className="grid grid-cols-2 gap-y-2 gap-x-4 pl-12 mb-10 text-[15px]">
-            <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{formData.externalCategory === 'VIC' && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>VIC</span></div>
-            <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{formData.externalCategory === 'Capizeño Circle' && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>Capizeño Circle</span></div>
-            <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{formData.externalCategory === 'DOST' && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>DOST</span></div>
-            <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{formData.externalCategory === 'GRF' && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>GRF</span></div>
+            <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{isSelectedScholarship('VIC') && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>VIC</span></div>
+            <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{isSelectedScholarship('Capizeño Circle') && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>Capizeño Circle</span></div>
+            <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{isSelectedScholarship('DOST') && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>DOST</span></div>
+            <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{isSelectedScholarship('GRF') && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>GRF</span></div>
           </div>
 
           <div className="flex gap-2 mb-10 text-[15px]">
-            <div className="w-5 h-5 border border-black flex items-center justify-center shrink-0 mt-1">{formData.externalCategory === 'LGU' && <Check className="w-4 h-4" strokeWidth={3} />}</div>
+            <div className="w-5 h-5 border border-black flex items-center justify-center shrink-0 mt-1">{isSelectedScholarship('LGU') && <Check className="w-4 h-4" strokeWidth={3} />}</div>
             <div className="flex-1">
               <span className="leading-tight">LGU: Barangay, Municipality, Province (Landline) Contact person or issuing office:</span>
-              <div className="w-[80%] border-b border-black h-8 mt-2 text-center">{formData.externalCategory === 'LGU' ? formData.lguContact : ''}</div>
+              <div className="w-[80%] border-b border-black h-8 mt-2 text-center">{isSelectedScholarship('LGU') ? formData.lguContact : ''}</div>
             </div>
           </div>
 
           <div className="flex items-start gap-2 text-[15px]">
-            <div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{formData.externalCategory === 'DSWD' && <Check className="w-4 h-4" strokeWidth={3} />}</div>
+            <div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{isSelectedScholarship('DSWD') && <Check className="w-4 h-4" strokeWidth={3} />}</div>
             <div className="flex-1">
               <span className="font-bold">DSWD:</span>
               <div className="flex items-end gap-2 mt-6">
-                <span>Municipality:</span><span className="flex-1 border-b border-black inline-block text-center">{formData.externalCategory === 'DSWD' ? formData.dswdMunicipality : ''}</span>
+                <span>Municipality:</span><span className="flex-1 border-b border-black inline-block text-center">{isSelectedScholarship('DSWD') ? formData.dswdMunicipality : ''}</span>
               </div>
               <div className="flex items-end gap-2 mt-6">
-                <span>Contact person:</span><span className="flex-1 border-b border-black inline-block text-center">{formData.externalCategory === 'DSWD' ? formData.dswdContact : ''}</span>
+                <span>Contact person:</span><span className="flex-1 border-b border-black inline-block text-center">{isSelectedScholarship('DSWD') ? formData.dswdContact : ''}</span>
               </div>
               <div className="flex items-end gap-2 mt-6">
-                <span>Designation:</span><span className="flex-1 border-b border-black inline-block text-center">{formData.externalCategory === 'DSWD' ? formData.dswdDesignation : ''}</span>
+                <span>Designation:</span><span className="flex-1 border-b border-black inline-block text-center">{isSelectedScholarship('DSWD') ? formData.dswdDesignation : ''}</span>
               </div>
               <div className="flex items-end gap-2 mt-6">
-                <span>Others (specify)</span><span className="flex-1 border-b border-black inline-block text-center">{formData.externalCategory === 'DSWD' ? formData.dswdOthers : ''}</span>
+                <span>Others (specify)</span><span className="flex-1 border-b border-black inline-block text-center">{isSelectedScholarship('DSWD') ? formData.dswdOthers : ''}</span>
               </div>
             </div>
           </div>

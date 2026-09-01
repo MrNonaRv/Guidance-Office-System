@@ -80,7 +80,7 @@ export function GuidanceReports() {
                 { name: 'Certificate of Registration (COR)', status: 'Verified' },
                 { name: '2x2 ID Photo', status: 'Verified' },
               ],
-              remarks: `Application submitted via Student Portal. Current status: ${s.status || 'Pending'}.`,
+              remarks: `Application submitted via Student Portal. Current status: ${s.status === 'Complete' ? 'Complete' : 'Incomplete'}.`,
               files: s.files || [],
               data: formData
             };
@@ -304,7 +304,7 @@ export function GuidanceReports() {
                     <h3 className="font-bold text-sm border-b pb-1">Submission Status Summary</h3>
                     <p>Total Registered Students / Cohort: <strong>{totalCount}</strong></p>
                     <p>Complete Submissions: <strong>{completeCount} ({completePercent.toFixed(1)}%)</strong></p>
-                    <p>Incomplete / Pending Submissions: <strong>{incompleteCount} ({incompletePercent.toFixed(1)}%)</strong></p>
+                    <p>Incomplete Submissions: <strong>{incompleteCount} ({incompletePercent.toFixed(1)}%)</strong></p>
                   </div>
                   <div className="border border-black p-4 rounded text-xs space-y-2">
                     <h3 className="font-bold text-sm border-b pb-1">Gender Demographic Summary</h3>

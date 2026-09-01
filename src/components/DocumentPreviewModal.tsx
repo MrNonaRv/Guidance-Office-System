@@ -39,6 +39,27 @@ export function DocumentPreviewModal({ file, onClose }: DocumentPreviewModalProp
     document.body.removeChild(link);
   };
 
+  const getFormattedCategory = (cat?: string, name?: string) => {
+    const categoryUpper = (cat || '').toUpperCase();
+    const nameUpper = (name || '').toUpperCase();
+    if (categoryUpper === 'RF' || categoryUpper.includes('REGISTRATION') || nameUpper.includes('REGISTRATION') || nameUpper.includes('_RF')) {
+      return 'Registration Form (RF)';
+    }
+    if (categoryUpper === 'RF_2' || (categoryUpper.includes('RF') && nameUpper.includes('2ND'))) {
+      return 'Registration Form (RF) — 2nd Semester';
+    }
+    if (categoryUpper === 'GWA' || categoryUpper.includes('COG') || categoryUpper.includes('GRADE') || nameUpper.includes('GWA') || nameUpper.includes('GRADE') || nameUpper.includes('COG')) {
+      return 'General Weighted Average (GWA)';
+    }
+    if (categoryUpper === 'GWA_2' || (categoryUpper.includes('GWA') && nameUpper.includes('2ND'))) {
+      return 'General Weighted Average (GWA) — 2nd Semester';
+    }
+    if (categoryUpper === 'ID' || categoryUpper.includes('STUDENT ID') || nameUpper.includes('STUDENT_ID') || nameUpper.includes('_ID')) {
+      return 'Student ID';
+    }
+    return cat || 'Official Student Document';
+  };
+
   return (
     <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-center justify-center p-2 sm:p-4 animate-in fade-in duration-200">
       <div className="bg-white rounded-2xl sm:rounded-3xl shadow-2xl w-full max-w-3xl max-h-[92vh] flex flex-col overflow-hidden border border-gray-200">
@@ -53,8 +74,11 @@ export function DocumentPreviewModal({ file, onClose }: DocumentPreviewModalProp
               <h3 className="text-sm sm:text-base font-bold truncate leading-tight">
                 {file.name}
               </h3>
-              <p className="text-[11px] text-blue-200 font-medium">
-                {file.category || 'Uploaded Document'} {file.size ? `• ${file.size}` : ''}
+              <p className="text-[11px] text-blue-200 font-medium flex items-center gap-1.5 mt-0.5">
+                <span className="bg-white/15 px-2 py-0.5 rounded text-[10px] font-bold text-white uppercase tracking-wider">
+                  {getFormattedCategory(file.category, file.name)}
+                </span>
+                {file.size ? `• ${file.size}` : ''}
               </p>
             </div>
           </div>
