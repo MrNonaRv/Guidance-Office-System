@@ -19,6 +19,11 @@ const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
 googleProvider.addScope('https://www.googleapis.com/auth/gmail.send');
+googleProvider.setCustomParameters({
+  prompt: 'consent',
+  access_type: 'offline',
+  include_granted_scopes: 'true'
+});
 
 export let cachedGoogleAccessToken: string | null = null;
 
