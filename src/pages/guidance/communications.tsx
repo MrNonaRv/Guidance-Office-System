@@ -27,11 +27,13 @@ import {
   Calendar,
   FileText,
   History,
-  Save
+  Save,
+  Mail
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { useNavigate } from 'react-router-dom';
 import { db } from '../../lib/db';
+import { getCachedGmailToken, requestGmailToken, sendGmailMessage } from '../../lib/gmailService';
 
 interface StudentRecipient {
   id: string;
@@ -78,6 +80,18 @@ export function GuidanceCommunications() {
 
   // Full dataset matching the 14 reference recipients from the design
   const [studentList, setStudentList] = useState<StudentRecipient[]>([]);
+  const [isGmailConnected, setIsGmailConnected] = useState<boolean>(!!getCachedGmailToken());
+
+  const handleConnectGmail = () => {
+    requestGmailToken((token) => {
+      if (token) {
+        setIsGmailConnected(true);
+        showToast('Gmail Connected', 'Successfully connected Gmail account! Official notices will now be sent directly via Gmail API.', 'success');
+      } else {
+        showToast('Connection Warning', 'Could not authenticate with Gmail.', 'warning');
+      }
+    });
+  };
 
   React.useEffect(() => {
     const unsub = db.submissions.subscribe(subs => {
@@ -451,6 +465,24 @@ Capiz State University`
         attachments: attachedFiles.map(a => ({ name: a.name, size: a.size, type: a.type, data: a.url }))
       });
 
+      // Dispatch via Gmail API if connected and not scheduled
+      const token = getCachedGmailToken();
+      if (token && !scheduled) {
+        for (const recipientEmail of recipientEmails) {
+          try {
+            await sendGmailMessage(
+              token, 
+              recipientEmail, 
+              subject, 
+              emailBody, 
+              attachedFiles.map(a => ({ name: a.name, type: a.type || 'application/octet-stream', data: a.url || '' }))
+            );
+          } catch (gmailErr) {
+            console.error(`Failed to send Gmail to ${recipientEmail}:`, gmailErr);
+          }
+        }
+      }
+
       // Also create notification
       await db.notifications.create({
         type: 'inquiry',
@@ -649,10 +681,44 @@ Capiz State University`
         </div>
       )}
 
-      {/* Page Title */}
-      <h1 className="text-2xl sm:text-3xl md:text-4xl font-serif font-bold text-[#0c2340] tracking-tight">
-        Communications
-      </h1>
+      {/* Page Title & Gmail Integration Banner */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <h1 className="text-2xl sm:text-3xl md:text-4xl font-serif font-bold text-[#0c2340] tracking-tight">
+          Communications
+        </h1>
+        
+        <div className="flex items-center gap-3 bg-white px-4 py-2.5 rounded-2xl border border-blue-200 shadow-2xs">
+          <div className="w-8 h-8 rounded-xl bg-red-50 text-red-600 flex items-center justify-center font-bold shrink-0 border border-red-100">
+            <Mail className="w-4 h-4" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-bold text-gray-900">Gmail API</span>
+              <span className={cn(
+                "px-2 py-0.5 rounded-full text-[10px] font-bold border",
+                isGmailConnected ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-amber-50 text-amber-700 border-amber-200"
+              )}>
+                {isGmailConnected ? 'Connected (Live)' : 'Disconnected'}
+              </span>
+            </div>
+            <p className="text-[11px] text-gray-500">
+              {isGmailConnected ? 'Directly sending official notices to students\' Gmail accounts.' : 'Connect to send live emails via Google Workspace.'}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={handleConnectGmail}
+            className={cn(
+              "ml-3 px-3 py-1.5 rounded-xl text-xs font-bold transition-colors cursor-pointer shadow-2xs",
+              isGmailConnected 
+                ? "bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-300" 
+                : "bg-red-600 text-white hover:bg-red-700"
+            )}
+          >
+            {isGmailConnected ? 'Switch Account' : 'Connect Gmail'}
+          </button>
+        </div>
+      </div>
 
       {/* Main 2-Column Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">

@@ -1,12 +1,11 @@
 {
-  "projectId": "mathquest-new",
-  "appId": "1:752407989664:web:7c7e66d18362f8fc9268c5",
-  "apiKey": "AIzaSyDIxNzVfx_gaAVKKQ3En8BvH0mnzg66nUU",
-  "authDomain": "mathquest-new.firebaseapp.com",
-  "firestoreDatabaseId": "ai-studio-webbasedscholars-1e280336-8fb9-41d3-8c2f-71557c6b152a",
-  "storageBucket": "mathquest-new.firebasestorage.app",
-  "messagingSenderId": "752407989664",
-  "measurementId": "G-477FKVYCPK",
-  "oAuthClientId": "",
+  "projectId": "gen-lang-client-0809423390",
+  "appId": "1:612428936203:web:2a62875832f805e2bd430e",
+  "apiKey": "AIzaSyCRKn-NUNz9DN-RnJVNUTkc5UeBL_3qe7g",
+  "authDomain": "gen-lang-client-0809423390.firebaseapp.com",
+  "storageBucket": "gen-lang-client-0809423390.firebasestorage.app",
+  "messagingSenderId": "612428936203",
+  "measurementId": "",
+  "oAuthClientId": "612428936203-l0iesmm5dft9iklllji4al0os7afnp5a.apps.googleusercontent.com",
   "recaptchaSiteKey": ""
 }
