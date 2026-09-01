@@ -34,6 +34,8 @@ import { cn } from '../../lib/utils';
 import { useNavigate } from 'react-router-dom';
 import { db } from '../../lib/db';
 import { getCachedGmailToken, requestGmailToken, sendGmailMessage } from '../../lib/gmailService';
+import { firestoreDb } from '../../lib/firebase';
+import { collection, getDocs } from 'firebase/firestore';
 
 interface StudentRecipient {
   id: string;
@@ -98,26 +100,53 @@ export function GuidanceCommunications() {
   };
 
   React.useEffect(() => {
-    const unsub = db.submissions.subscribe(subs => {
-      if (subs) {
-        const uniqueStudents = Array.from(new Map(subs.map(s => {
-          const name = s.studentName || `${s.data?.firstName || ''} ${s.data?.familyName || ''}`.trim() || 'Scholar';
-          return [
-            s.studentId || s.id, 
-            {
-              id: s.studentId || s.id,
-              studentId: s.studentId || `CAPSU-${s.id.substring(0, 4)}`,
-              name,
-              email: s.data?.email || 'student@gmail.com',
-              category: (s.data?.fundingType || 'Internally-Funded') as 'Internally-Funded' | 'Externally-Funded',
-              subType: s.data?.scholarshipType || s.scholarshipType || 'Academic',
-              allocation: s.data?.scholarshipProgram || s.scholarshipType || 'Scholarship'
+    let unsub = () => {};
+
+    const loadUsersAndSubmissions = async () => {
+      // 1. Fetch real user emails from the users collection
+      const usersMap = new Map<string, string>();
+      if (firestoreDb) {
+        try {
+          const snap = await getDocs(collection(firestoreDb, 'users'));
+          snap.forEach(doc => {
+            const data = doc.data();
+            if (data.email) {
+              usersMap.set(doc.id, data.email);
             }
-          ];
-        })).values());
-        setStudentList(uniqueStudents);
+          });
+        } catch (e) {
+          console.warn('Could not fetch users for email mapping', e);
+        }
       }
-    });
+
+      // 2. Subscribe to submissions and merge the emails
+      unsub = db.submissions.subscribe(subs => {
+        if (subs) {
+          const uniqueStudents = Array.from(new Map(subs.map(s => {
+            const name = s.studentName || `${s.data?.firstName || ''} ${s.data?.familyName || ''}`.trim() || 'Scholar';
+            const authId = (s as any).studentAuthId || s.studentId;
+            const realEmail = usersMap.get(authId) || usersMap.get(s.studentId) || s.data?.email || 'student@gmail.com';
+
+            return [
+              s.studentId || s.id, 
+              {
+                id: s.studentId || s.id,
+                studentId: s.studentId || `CAPSU-${s.id.substring(0, 4)}`,
+                name,
+                email: realEmail,
+                category: (s.data?.fundingType || 'Internally-Funded') as 'Internally-Funded' | 'Externally-Funded',
+                subType: s.data?.scholarshipType || s.scholarshipType || 'Academic',
+                allocation: s.data?.scholarshipProgram || s.scholarshipType || 'Scholarship'
+              }
+            ];
+          })).values());
+          setStudentList(uniqueStudents);
+        }
+      });
+    };
+
+    loadUsersAndSubmissions();
+
     return () => unsub();
   }, []);
 

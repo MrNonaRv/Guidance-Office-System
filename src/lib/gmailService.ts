@@ -1,6 +1,6 @@
 // Gmail Workspace Integration Service using Firebase Auth OAuth Provider & Gmail API
 
-import { auth, cachedGoogleAccessToken } from './firebase';
+import { auth } from './firebase';
 import { signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
 
 const gmailProvider = new GoogleAuthProvider();
@@ -11,10 +11,10 @@ gmailProvider.setCustomParameters({
   include_granted_scopes: 'true'
 });
 
-let cachedAccessToken: string | null = cachedGoogleAccessToken;
+let cachedAccessToken: string | null = null;
 
 export function getCachedGmailToken(): string | null {
-  return cachedAccessToken || cachedGoogleAccessToken;
+  return cachedAccessToken;
 }
 
 export async function requestGmailToken(onTokenReceived: (token: string) => void) {
