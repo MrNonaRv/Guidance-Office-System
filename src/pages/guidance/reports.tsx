@@ -183,7 +183,7 @@ export function GuidanceReports() {
       item.course.toLowerCase().includes(appliedFilters.search.toLowerCase()) ||
       item.allocation.toLowerCase().includes(appliedFilters.search.toLowerCase());
     return matchCategory && matchSubType && matchAllocation && matchSearch;
-  });
+  }).sort((a, b) => a.student.localeCompare(b.student));
 
   const handleExportPDF = () => {
     setPrintSingleStudent(null);
@@ -616,8 +616,8 @@ export function GuidanceReports() {
                       className="w-full bg-white border border-gray-300 rounded-xl px-4 py-2.5 text-sm font-medium text-gray-800 appearance-none focus:outline-none focus:ring-2 focus:ring-[#1864db]/30 cursor-pointer shadow-xs"
                     >
                       <option value="Category">Category</option>
-                      <option value="Internally-Funded">Internally-Funded</option>
                       <option value="Externally-Funded">Externally-Funded</option>
+                      <option value="Internally-Funded">Internally-Funded</option>
                     </select>
                     <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-700">
                       <ChevronDown className="w-4 h-4 stroke-[2.5]" />
@@ -647,18 +647,18 @@ export function GuidanceReports() {
                     >
                       <option value="Sub Type">Sub Type</option>
                       {selectedCategory !== 'Category' && scholarshipDataMapping[selectedCategory] ? (
-                        Object.keys(scholarshipDataMapping[selectedCategory]).map((subType) => (
+                        Object.keys(scholarshipDataMapping[selectedCategory]).sort((a, b) => a.localeCompare(b)).map((subType) => (
                           <option key={subType} value={subType}>{subType}</option>
                         ))
                       ) : (
                         <>
-                          <option value="Entrance">Entrance</option>
                           <option value="Academic">Academic</option>
-                          <option value="Socio-cultural">Socio-cultural</option>
-                          <option value="Institutional">Institutional</option>
                           <option value="CHED">CHED</option>
-                          <option value="Merit">Merit</option>
                           <option value="DSWD">DSWD</option>
+                          <option value="Entrance">Entrance</option>
+                          <option value="Institutional">Institutional</option>
+                          <option value="Merit">Merit</option>
+                          <option value="Socio-cultural">Socio-cultural</option>
                         </>
                       )}
                     </select>
@@ -684,28 +684,28 @@ export function GuidanceReports() {
                     >
                       <option value="Scholarship Allocation">Scholarship Allocation</option>
                       {selectedCategory !== 'Category' && selectedSubType !== 'Sub Type' && scholarshipDataMapping[selectedCategory]?.[selectedSubType] ? (
-                        scholarshipDataMapping[selectedCategory][selectedSubType].map((allocation) => (
+                        [...scholarshipDataMapping[selectedCategory][selectedSubType]].sort((a, b) => a.localeCompare(b)).map((allocation) => (
                           <option key={allocation} value={allocation}>{allocation}</option>
                         ))
                       ) : (
                         <>
-                          <option value="Valedictorian">Valedictorian</option>
-                          <option value="Salutatorian">Salutatorian</option>
+                          <option value="ANAC-IP">ANAC-IP</option>
+                          <option value="Barangay (Legal dependents of Brgy. Officials)">Barangay (Legal dependents of Brgy. Officials)</option>
+                          <option value="Dependent of Faculty or Staff">Dependent of Faculty or Staff</option>
+                          <option value="DOST">DOST</option>
+                          <option value="ESGP – PA">ESGP – PA</option>
                           <option value="Full">Full</option>
-                          <option value="Partial">Partial</option>
-                          <option value="Regional">Regional</option>
+                          <option value="LGU">LGU</option>
                           <option value="National">National</option>
                           <option value="Pag-Ulikid">Pag-Ulikid</option>
-                          <option value="Tulong Dunong">Tulong Dunong</option>
-                          <option value="ANAC-IP">ANAC-IP</option>
+                          <option value="Partial">Partial</option>
                           <option value="President—FLP">President—FLP</option>
-                          <option value="Dependent of Faculty or Staff">Dependent of Faculty or Staff</option>
-                          <option value="UniFast">UniFast</option>
+                          <option value="Regional">Regional</option>
+                          <option value="Salutatorian">Salutatorian</option>
                           <option value="TES">TES</option>
-                          <option value="DOST">DOST</option>
-                          <option value="LGU">LGU</option>
-                          <option value="Barangay (Legal dependents of Brgy. Officials)">Barangay (Legal dependents of Brgy. Officials)</option>
-                          <option value="ESGP – PA">ESGP – PA</option>
+                          <option value="Tulong Dunong">Tulong Dunong</option>
+                          <option value="UniFast">UniFast</option>
+                          <option value="Valedictorian">Valedictorian</option>
                         </>
                       )}
                     </select>

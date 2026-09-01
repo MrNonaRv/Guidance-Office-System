@@ -17,6 +17,8 @@ export function GuidanceLogin() {
   const [adminPasswordInput, setAdminPasswordInput] = useState('admin123');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [isForgotPassword, setIsForgotPassword] = useState(false);
+  const [resetSuccess, setResetSuccess] = useState(false);
 
   useEffect(() => {
     if (localStorage.getItem('adminAuth') === 'true') {
@@ -74,17 +76,17 @@ export function GuidanceLogin() {
   };
 
 
-  const handleForgotPassword = async (e: React.MouseEvent) => {
+  const handleForgotPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!adminEmailInput) {
-      setError('Please enter your email address first to reset your password.');
+      setError('Please enter your email address to reset your password.');
       return;
     }
     setLoading(true);
     setError('');
     try {
       await resetPassword(adminEmailInput);
-      alert('Password reset email sent! Check your inbox.');
+      setResetSuccess(true);
     } catch (err: any) {
       console.error(err);
       setError(err.message || 'Failed to send password reset email.');
@@ -201,8 +203,43 @@ export function GuidanceLogin() {
           Guidance Portal
         </div>
         
+        {error && <div className="text-red-600 text-xs font-semibold text-center mb-3 bg-red-100/80 p-2 rounded-lg border border-red-200">{error}</div>}
+        {resetSuccess && <div className="text-emerald-700 text-xs font-semibold text-center mb-3 bg-emerald-100/80 p-2 rounded-lg border border-emerald-200">Password reset link sent! Check your email to create a new password.</div>}
+
+        {isForgotPassword ? (
+          <form className="space-y-4" onSubmit={handleForgotPassword}>
+            <p className="text-xs text-[#0f2e60] mb-2 px-2 text-center">
+              Enter your email address and we'll send you a link to reset your password.
+            </p>
+            <div className="text-left">
+              <label className="block text-[11px] font-medium text-[#0f2e60] mb-1 ml-1">Email</label>
+              <input 
+                type="email" 
+                value={adminEmailInput} 
+                onChange={(e) => setAdminEmailInput(e.target.value)} 
+                required
+                className="w-full px-4 py-2.5 bg-white rounded-lg text-sm text-gray-800 focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 outline-none transition-all shadow-sm" 
+              />
+            </div>
+            
+            <button 
+              type="submit" 
+              disabled={loading}
+              className="w-full bg-[#1864db] text-white py-2.5 rounded-full font-bold hover:bg-[#124b9f] transition-colors shadow-md text-[13px] flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
+            >
+              {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Send Reset Link'}
+            </button>
+            
+            <button 
+              type="button" 
+              onClick={() => { setIsForgotPassword(false); setError(''); setResetSuccess(false); }}
+              className="w-full text-[#0f2e60]/70 text-xs font-semibold hover:text-[#0f2e60] transition-colors"
+            >
+              Back to Login
+            </button>
+          </form>
+        ) : (
         <form className="space-y-3" onSubmit={handleAdminSubmit}>
-          {error && <div className="text-red-600 text-xs font-semibold text-center mb-3 bg-red-100/80 p-2 rounded-lg border border-red-200">{error}</div>}
           <div className="text-left">
             <label className="block text-[11px] font-medium text-[#0f2e60] mb-1 ml-1">Gmail</label>
             <input 
@@ -239,7 +276,7 @@ export function GuidanceLogin() {
               </button>
             </div>
             <div className="text-right mt-1">
-              <a href="#" onClick={handleForgotPassword} className="text-[11px] text-gray-500 hover:text-[#0f2e60] hover:underline px-1">Forgot Password?</a>
+              <a href="#" onClick={(e) => { e.preventDefault(); setIsForgotPassword(true); setError(''); setResetSuccess(false); }} className="text-[11px] text-gray-500 hover:text-[#0f2e60] hover:underline px-1">Forgot Password?</a>
             </div>
           </div>
           
@@ -269,6 +306,7 @@ export function GuidanceLogin() {
             Continue with Google
           </button>
         </form>
+        )}
       </motion.div>
     </div>
   );

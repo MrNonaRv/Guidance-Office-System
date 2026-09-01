@@ -127,6 +127,21 @@ export function GuidanceCommunications() {
             const authId = (s as any).studentAuthId || s.studentId;
             const realEmail = usersMap.get(authId) || usersMap.get(s.studentId) || s.data?.email || 'student@gmail.com';
 
+            const scholarshipParts = (s.scholarshipType || '').split('(');
+            const rawCategory = scholarshipParts[0]?.trim() || (s.data?.fundingType === 'Internally-Funded' ? 'Internally-Funded' : 'Externally-Funded');
+            const category = rawCategory.includes('Internal') ? 'Internally-Funded' : 'Externally-Funded';
+            
+            const subTypeRaw = (s.data?.scholarshipCategory || s.data?.scholarshipSubCategory || s.scholarshipType || 'CHED').replace(/[()]/g, '');
+            const subType = subTypeRaw.includes('Institutional') ? 'Institutional' : subTypeRaw.includes('Socio') ? 'Socio-cultural' : subTypeRaw.includes('Academic') ? 'Academic' : subTypeRaw.includes('Entrance') ? 'Entrance' : subTypeRaw.includes('Merit') ? 'Merit' : 'CHED';
+
+            let allocation = s.data?.scholarshipProgram || (s.data?.selectedScholarships?.join(' - ')) || s.scholarshipType || 'Scholarship';
+            if (allocation.includes('(')) {
+              const match = allocation.match(/\(([^)]+)\)/);
+              if (match) {
+                allocation = match[1];
+              }
+            }
+
             return [
               s.studentId || s.id, 
               {
@@ -134,9 +149,9 @@ export function GuidanceCommunications() {
                 studentId: s.studentId || `CAPSU-${s.id.substring(0, 4)}`,
                 name,
                 email: realEmail,
-                category: (s.data?.fundingType || 'Internally-Funded') as 'Internally-Funded' | 'Externally-Funded',
-                subType: s.data?.scholarshipType || s.scholarshipType || 'Academic',
-                allocation: s.data?.scholarshipProgram || s.scholarshipType || 'Scholarship'
+                category,
+                subType,
+                allocation
               }
             ];
           })).values());
