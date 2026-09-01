@@ -126,7 +126,16 @@ export function GuidanceCommunications() {
           const uniqueStudents = Array.from(new Map(subs.map(s => {
             const name = s.studentName || `${s.data?.firstName || ''} ${s.data?.familyName || ''}`.trim() || 'Scholar';
             const authId = (s as any).studentAuthId || s.studentId;
-            const realEmail = usersMap.get(authId) || usersMap.get(s.studentId) || s.data?.email || 'student@gmail.com';
+            let derivedEmail = 'student@gmail.com';
+            if (name && name !== 'Scholar') {
+              const nameParts = name.split(' ').filter(p => p.length > 1 && !p.includes('.'));
+              const first = nameParts[0]?.toLowerCase() || '';
+              const last = nameParts[nameParts.length - 1]?.toLowerCase() || '';
+              if (first && last) {
+                derivedEmail = `${first}.${last}@gmail.com`;
+              }
+            }
+            const realEmail = usersMap.get(authId) || usersMap.get(s.studentId) || s.data?.email || derivedEmail;
 
             const scholarshipParts = (s.scholarshipType || '').split('(');
             const rawCategory = scholarshipParts[0]?.trim() || (s.data?.fundingType === 'Internally-Funded' ? 'Internally-Funded' : 'Externally-Funded');
