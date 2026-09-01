@@ -1926,11 +1926,10 @@ export function StudentSubmissionForm() {
                         name="birthdate" 
                         value={formData.birthdate} 
                         onChange={handleChange} 
-                        className={`w-full border rounded px-3 py-1.5 text-sm outline-none pr-8 transition-colors ${
+                        className={`w-full border rounded px-3 py-1.5 text-sm outline-none transition-colors ${
                           errors.birthdate ? 'border-red-500 bg-red-50/30 focus:ring-1 focus:ring-red-500' : 'border-[#1e3a8a] focus:ring-1 focus:ring-[#1e3a8a]'
                         }`} 
                       />
-                      <Calendar className="w-4 h-4 text-[#1e3a8a] absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                     </div>
                     {errors.birthdate && <span className="text-[10px] text-red-600 font-semibold mt-0.5">{errors.birthdate}</span>}
                   </div>
