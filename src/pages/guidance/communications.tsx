@@ -82,15 +82,19 @@ export function GuidanceCommunications() {
   const [studentList, setStudentList] = useState<StudentRecipient[]>([]);
   const [isGmailConnected, setIsGmailConnected] = useState<boolean>(!!getCachedGmailToken());
 
-  const handleConnectGmail = () => {
-    requestGmailToken((token) => {
-      if (token) {
-        setIsGmailConnected(true);
-        showToast('Gmail Connected', 'Successfully connected Gmail account! Official notices will now be sent directly via Gmail API.', 'success');
-      } else {
-        showToast('Connection Warning', 'Could not authenticate with Gmail.', 'warning');
+  const handleConnectGmail = async () => {
+    try {
+      await requestGmailToken((token) => {
+        if (token) {
+          setIsGmailConnected(true);
+          showToast('Gmail Connected', 'Successfully connected Gmail account! Official notices will now be sent directly via Gmail API.', 'success');
+        }
+      });
+    } catch (err: any) {
+      if (err?.code !== 'auth/popup-closed-by-user' && err?.code !== 'auth/cancelled-popup-request') {
+        showToast('Connection Error', 'Could not authenticate with Gmail account.', 'warning');
       }
-    });
+    }
   };
 
   React.useEffect(() => {

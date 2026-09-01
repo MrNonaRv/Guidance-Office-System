@@ -20,6 +20,10 @@ export async function requestGmailToken(onTokenReceived: (token: string) => void
       throw new Error('No OAuth access token returned from Google sign-in.');
     }
   } catch (err: any) {
+    if (err?.code === 'auth/popup-closed-by-user' || err?.code === 'auth/cancelled-popup-request') {
+      console.log('User closed or cancelled Google sign-in popup.');
+      return;
+    }
     console.error('Error obtaining Gmail token via Firebase Auth:', err);
     throw err;
   }
