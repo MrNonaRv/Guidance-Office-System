@@ -4,7 +4,7 @@ import { ArrowRight, GraduationCap, ShieldCheck } from 'lucide-react';
 
 export function Home() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 bg-[url('/BI.png')] bg-cover bg-center py-6">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 bg-[url('/BACKGROUND.png')] bg-cover bg-center py-6">
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm"></div>
       
       <div className="relative z-10 w-full max-w-4xl p-4 sm:p-8">

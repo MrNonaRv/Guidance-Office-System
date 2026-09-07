@@ -684,7 +684,7 @@ export function StudentRecordModal({
               <div>
                 <div className="italic font-bold mb-3 text-sm">Mother Information</div>
                 <div className="flex items-end text-sm">
-                  <span className="mr-2">Name (maiden name):</span>
+                  <span className="mr-2">Name (Maiden Name):</span>
                   <span className="w-64 border-b border-black inline-block text-center">{formData.motherName || ''}</span>
                   <span className="ml-4 mr-2">Occupation:</span>
                   <span className="w-48 border-b border-black inline-block text-center">{formData.motherOccupation || ''}</span>

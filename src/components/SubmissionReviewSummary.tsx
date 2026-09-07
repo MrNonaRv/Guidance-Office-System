@@ -183,7 +183,7 @@ export function SubmissionReviewSummary({
           <div className="p-3.5 rounded-xl border border-blue-100 bg-blue-50/30 space-y-1.5">
             <div className="text-[11px] font-bold text-[#1e3a8a] uppercase tracking-wider">Mother Information</div>
             <div>
-              <span className="text-gray-500 text-[10px] block">Name (maiden name):</span>
+              <span className="text-gray-500 text-[10px] block">Name (Maiden Name):</span>
               <span className="font-bold text-gray-800">{formData.motherName || 'Not specified'}</span>
             </div>
             <div>
