@@ -509,7 +509,7 @@ export function SubmissionReviewSummary({
           disabled={isSubmitting}
           className="w-full sm:w-auto border border-gray-300 text-gray-700 px-6 sm:px-8 py-3 rounded-xl font-bold hover:bg-gray-50 transition-colors flex items-center justify-center gap-2 cursor-pointer text-xs sm:text-sm"
         >
-          <ArrowLeft className="w-4 h-4" /> Back to Uploads
+          <ArrowLeft className="w-4 h-4" /> Back
         </button>
 
         <button
@@ -521,12 +521,12 @@ export function SubmissionReviewSummary({
           {isSubmitting ? (
             <>
               <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-              <span>{isEditingExisting ? 'Updating Application...' : 'Submitting Application...'}</span>
+              <span>Confirming...</span>
             </>
           ) : (
             <>
               <Check className="w-5 h-5" />
-              <span>{isEditingExisting ? 'Confirm & Update Application' : 'Confirm & Submit Application'}</span>
+              <span>Confirm</span>
             </>
           )}
         </button>

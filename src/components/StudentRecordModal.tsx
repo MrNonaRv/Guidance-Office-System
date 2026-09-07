@@ -352,13 +352,28 @@ export function StudentRecordModal({
                 </p>
               </div>
 
-              <div className="grid grid-cols-2 gap-3 mb-8">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-8">
+                <button
+                  onClick={() => handleStatusSelect(currentStatus === 'Complete' ? 'Incomplete' : 'Complete')}
+                  className={cn(
+                    "w-full font-bold py-3.5 rounded-xl flex items-center justify-center gap-2.5 transition-colors cursor-pointer",
+                    currentStatus === 'Complete' 
+                      ? "bg-[#dcfce7] hover:bg-[#bbf7d0] text-[#166534]"
+                      : "bg-[#ffedd5] hover:bg-[#fed7aa] text-[#c2410c]"
+                  )}
+                >
+                  {currentStatus === 'Complete' ? (
+                    <><CheckCircle2 className="w-[18px] h-[18px] stroke-[2.5]" /><span className="text-[13px] xl:text-[14px]">Marked Complete</span></>
+                  ) : (
+                    <><AlertCircle className="w-[18px] h-[18px] stroke-[2.5]" /><span className="text-[13px] xl:text-[14px]">Mark Incomplete</span></>
+                  )}
+                </button>
                 <button
                   onClick={() => setViewMode('form')}
                   className="w-full bg-[#e0e7ff] hover:bg-[#dbeafe] text-[#2563eb] font-bold py-3.5 rounded-xl flex items-center justify-center gap-2.5 transition-colors cursor-pointer"
                 >
-                  <Eye className="w-[20px] h-[20px] stroke-[2.5]" />
-                  <span className="text-[14px]">View Filled Form</span>
+                  <Eye className="w-[18px] h-[18px] stroke-[2.5]" />
+                  <span className="text-[13px] xl:text-[14px]">View Filled Form</span>
                 </button>
                 <button
                   onClick={() => navigate('/admin/communications', { 
@@ -369,8 +384,8 @@ export function StudentRecordModal({
                   })}
                   className="w-full bg-[#fce7f3] hover:bg-[#fbcfe8] text-[#be185d] font-bold py-3.5 rounded-xl flex items-center justify-center gap-2.5 transition-colors cursor-pointer"
                 >
-                  <Mail className="w-[20px] h-[20px] stroke-[2.5]" />
-                  <span className="text-[14px]">Email Student</span>
+                  <Mail className="w-[18px] h-[18px] stroke-[2.5]" />
+                  <span className="text-[13px] xl:text-[14px]">Email Student</span>
                 </button>
               </div>
 
@@ -484,18 +499,14 @@ export function StudentRecordModal({
               {/* Semester Academic Summary */}
               <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-xs space-y-3">
                 <h5 className="text-xs font-bold uppercase tracking-wider text-gray-700">Academic Standing</h5>
-                <div className="grid grid-cols-3 gap-3 text-center">
+                <div className="grid grid-cols-2 gap-3 text-center">
+                  <div className="bg-blue-50/60 p-3 rounded-xl border border-blue-100">
+                    <span className="text-xs text-gray-500 font-medium">RF</span>
+                    <p className="text-lg font-extrabold text-blue-900">Enrolled</p>
+                  </div>
                   <div className="bg-blue-50/60 p-3 rounded-xl border border-blue-100">
                     <span className="text-xs text-gray-500 font-medium">GWA</span>
                     <p className="text-lg font-extrabold text-blue-900">1.45</p>
-                  </div>
-                  <div className="bg-blue-50/60 p-3 rounded-xl border border-blue-100">
-                    <span className="text-xs text-gray-500 font-medium">Units Passed</span>
-                    <p className="text-lg font-extrabold text-blue-900">21</p>
-                  </div>
-                  <div className="bg-blue-50/60 p-3 rounded-xl border border-blue-100">
-                    <span className="text-xs text-gray-500 font-medium">Evaluation</span>
-                    <p className="text-lg font-extrabold text-green-600">Retained</p>
                   </div>
                 </div>
               </div>

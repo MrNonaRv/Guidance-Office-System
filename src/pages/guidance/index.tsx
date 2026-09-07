@@ -9,6 +9,7 @@ import { StudentRecordModal } from '../../components/StudentRecordModal';
 import { testSupabaseConnection, isSupabaseConfigured, BUCKET_NAME } from '../../lib/supabase';
 
 import { signInWithGoogle, signInWithEmail, signUpWithEmail, resetPassword } from '../../lib/firebase';
+import { requestGmailToken } from '../../lib/gmailService';
 
 export function GuidanceLogin() {
   const navigate = useNavigate();
@@ -38,9 +39,14 @@ export function GuidanceLogin() {
     }, 10000);
 
     try {
-      const fbUser = await signInWithGoogle();
+      const fbUser = await requestGmailToken(() => {});
       clearTimeout(timeoutId);
       
+      if (!fbUser) {
+        setLoading(false);
+        return;
+      }
+
       let user = await db.users.get(fbUser.uid);
       if (!user) {
         user = await db.users.findByEmail(fbUser.email || '');
@@ -571,8 +577,7 @@ export function GuidanceDashboard() {
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
         {/* Blue Card */}
         <div 
-          onClick={() => navigate('/admin/submissions', { state: { filterStatus: 'All status' } })}
-          className="bg-gradient-to-b from-[#1c64db] to-[#12429f] text-white p-5 sm:p-6 rounded-2xl shadow-md flex flex-col justify-between h-44 sm:h-52 relative cursor-pointer hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group"
+          className="bg-gradient-to-b from-[#1c64db] to-[#12429f] text-white p-5 sm:p-6 rounded-2xl shadow-md flex flex-col justify-between h-44 sm:h-52 relative group"
         >
           <div className="w-10 h-10 sm:w-12 sm:h-12 bg-white/20 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
             <Users className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
@@ -588,8 +593,7 @@ export function GuidanceDashboard() {
         
         {/* Green Card */}
         <div 
-          onClick={() => navigate('/admin/submissions', { state: { filterStatus: 'Complete' } })}
-          className="bg-gradient-to-b from-[#3fa52a] to-[#287b1a] text-white p-5 sm:p-6 rounded-2xl shadow-md flex flex-col justify-between h-44 sm:h-52 relative cursor-pointer hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group"
+          className="bg-gradient-to-b from-[#3fa52a] to-[#287b1a] text-white p-5 sm:p-6 rounded-2xl shadow-md flex flex-col justify-between h-44 sm:h-52 relative group"
         >
           <div className="w-10 h-10 sm:w-12 sm:h-12 bg-white/20 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
             <Users className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
@@ -605,8 +609,7 @@ export function GuidanceDashboard() {
         
         {/* Yellow/Gold Card */}
         <div 
-          onClick={() => navigate('/admin/submissions', { state: { filterStatus: 'Incomplete' } })}
-          className="bg-gradient-to-b from-[#c88d00] to-[#e69f00] text-white p-5 sm:p-6 rounded-2xl shadow-md flex flex-col justify-between h-44 sm:h-52 relative cursor-pointer hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group sm:col-span-2 md:col-span-1"
+          className="bg-gradient-to-b from-[#c88d00] to-[#e69f00] text-white p-5 sm:p-6 rounded-2xl shadow-md flex flex-col justify-between h-44 sm:h-52 relative group sm:col-span-2 md:col-span-1"
         >
           <div className="w-10 h-10 sm:w-12 sm:h-12 bg-white/20 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
             <Users className="w-5 h-5 sm:w-6 sm:h-6 text-white" />

@@ -36,6 +36,7 @@ import { db } from '../../lib/db';
 import { getCachedGmailToken, requestGmailToken, sendGmailMessage } from '../../lib/gmailService';
 import { firestoreDb } from '../../lib/firebase';
 import { collection, getDocs } from 'firebase/firestore';
+import { scholarshipDataMapping } from './reportsData';
 
 interface StudentRecipient {
   id: string;
@@ -259,8 +260,8 @@ Guidance Office
 Capiz State University`
     },
     {
-      id: 'blank',
-      name: 'Blank Custom Draft',
+      id: 'custom-greeting',
+      name: 'Custom Greeting Draft',
       subject: '',
       body: (studentName) =>
 `Dear ${studentName || 'Student'},
@@ -901,21 +902,19 @@ Capiz State University`
                   className="w-full bg-white border border-gray-300 rounded-lg px-2.5 py-1.5 text-[11px] font-medium text-gray-800 appearance-none focus:outline-none focus:ring-1 focus:ring-[#1864db] cursor-pointer truncate pr-6 shadow-2xs"
                 >
                   <option value="Sub Type">Sub Type</option>
-                  {(selectedCategory === 'Category' || selectedCategory === 'Internally-Funded') && (
+                  {selectedCategory !== 'Category' && scholarshipDataMapping[selectedCategory] ? (
+                    Object.keys(scholarshipDataMapping[selectedCategory]).sort((a, b) => a.localeCompare(b)).map((subType) => (
+                      <option key={subType} value={subType}>{subType}</option>
+                    ))
+                  ) : (
                     <>
-                      <option value="Entrance">Entrance</option>
                       <option value="Academic">Academic</option>
-                      <option value="Socio-cultural">Socio-cultural</option>
-                      <option value="Institutional">Institutional</option>
-                      <option value="Others">Others</option>
-                    </>
-                  )}
-                  {(selectedCategory === 'Category' || selectedCategory === 'Externally-Funded') && (
-                    <>
                       <option value="CHED">CHED</option>
-                      <option value="Merit">Merit</option>
-                      <option value="LGU">LGU</option>
                       <option value="DSWD">DSWD</option>
+                      <option value="Entrance">Entrance</option>
+                      <option value="Institutional">Institutional</option>
+                      <option value="Merit">Merit</option>
+                      <option value="Socio-cultural">Socio-cultural</option>
                     </>
                   )}
                 </select>
@@ -930,19 +929,31 @@ Capiz State University`
                   className="w-full bg-white border border-gray-300 rounded-lg px-2.5 py-1.5 text-[11px] font-medium text-gray-800 appearance-none focus:outline-none focus:ring-1 focus:ring-[#1864db] cursor-pointer truncate pr-6 shadow-2xs"
                 >
                   <option value="Scholarship Allocation">Scholarship Allocation</option>
-                  <option value="Pag-Ulikid">Pag-Ulikid</option>
-                  <option value="Tulong Dunong">Tulong Dunong</option>
-                  <option value="ANAC-IP">ANAC-IP</option>
-                  <option value="President—FLP">President—FLP</option>
-                  <option value="Dependent of Faculty or Staff">Dependent of Faculty or Staff</option>
-                  <option value="Regional">Regional</option>
-                  <option value="Partial">Partial</option>
-                  <option value="UniFast">UniFast</option>
-                  <option value="TES">TES</option>
-                  <option value="DOST">DOST</option>
-                  <option value="LGU">LGU</option>
-                  <option value="Barangay (Legal dependents of Brgy. Officials)">Barangay (Legal dependents...)</option>
-                  <option value="ESGP – PA">ESGP – PA</option>
+                  {selectedCategory !== 'Category' && selectedSubType !== 'Sub Type' && scholarshipDataMapping[selectedCategory]?.[selectedSubType] ? (
+                    [...scholarshipDataMapping[selectedCategory][selectedSubType]].sort((a, b) => a.localeCompare(b)).map((allocation) => (
+                      <option key={allocation} value={allocation}>{allocation}</option>
+                    ))
+                  ) : (
+                    <>
+                      <option value="ANAC-IP">ANAC-IP</option>
+                      <option value="Barangay (Legal dependents of Brgy. Officials)">Barangay (Legal dependents of Brgy. Officials)</option>
+                      <option value="Dependent of Faculty or Staff">Dependent of Faculty or Staff</option>
+                      <option value="DOST">DOST</option>
+                      <option value="ESGP – PA">ESGP – PA</option>
+                      <option value="Full">Full</option>
+                      <option value="LGU">LGU</option>
+                      <option value="National">National</option>
+                      <option value="Pag-Ulikid">Pag-Ulikid</option>
+                      <option value="Partial">Partial</option>
+                      <option value="President—FLP">President—FLP</option>
+                      <option value="Regional">Regional</option>
+                      <option value="Salutatorian">Salutatorian</option>
+                      <option value="TES">TES</option>
+                      <option value="Tulong Dunong">Tulong Dunong</option>
+                      <option value="UniFast">UniFast</option>
+                      <option value="Valedictorian">Valedictorian</option>
+                    </>
+                  )}
                 </select>
                 <ChevronDown className="w-3.5 h-3.5 text-gray-600 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" />
               </div>

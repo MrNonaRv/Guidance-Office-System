@@ -27,19 +27,6 @@ export const firestoreDb = (firebaseConfig as any).firestoreDatabaseId && (fireb
 
 export const db = firestoreDb;
 
-async function testConnection() {
-  try {
-    if (firestoreDb) {
-      await getDocFromServer(doc(firestoreDb, 'test', 'connection'));
-    }
-  } catch (error) {
-    if (error instanceof Error && error.message.includes('the client is offline')) {
-      console.warn("Firebase client is currently operating in offline/cached mode.");
-    }
-  }
-}
-testConnection();
-
 export const signInWithGoogle = async (): Promise<FirebaseUser> => {
   try {
     const result = await signInWithPopup(auth, googleProvider);

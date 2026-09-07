@@ -150,15 +150,6 @@ export function GuidanceReports() {
   const femalePercent = Math.min(100, Math.max(0, (femaleCount / totalCount) * 100));
 
   // Page 2 Filters Handlers
-  const handleApplyFilters = () => {
-    setAppliedFilters({
-      category: selectedCategory,
-      subType: selectedSubType,
-      allocation: selectedAllocation,
-      search: searchQuery
-    });
-  };
-
   const handleResetFilters = () => {
     setSelectedCategory('Category');
     setSelectedSubType('Sub Type');
@@ -291,7 +282,7 @@ export function GuidanceReports() {
               <p className="text-xs text-gray-600">
                 {currentPage === 1 
                   ? `Filtered by: Course (${selectedCourse}) | Year Level (${selectedYearLevel})`
-                  : `Filtered by: Category (${appliedFilters.category}) | Sub Type (${appliedFilters.subType}) | Allocation (${appliedFilters.allocation})`
+                  : `Complete Alphabetical Roster`
                 }
               </p>
             </div>
@@ -431,9 +422,16 @@ export function GuidanceReports() {
       <div className="print:hidden space-y-6">
         {/* Top Header */}
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-serif font-bold text-[#0c2340] tracking-tight">
-            {currentPage === 1 ? 'Reports & Analytics' : 'Scholarship Breakdown'}
-          </h1>
+          <div className="flex items-center gap-4">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-serif font-bold text-[#0c2340] tracking-tight">
+              {currentPage === 1 ? 'Reports & Analytics' : 'Scholarship Breakdown'}
+            </h1>
+            {currentPage === 2 && (
+              <span className="bg-blue-100 text-blue-800 text-sm font-bold px-3 py-1 rounded-full border border-blue-200">
+                {filteredBreakdown.length} students
+              </span>
+            )}
+          </div>
 
           <div className="flex items-center gap-3">
             <button
@@ -590,161 +588,6 @@ export function GuidanceReports() {
         ) : (
           /* PAGE 2: Scholarship Breakdown matching the exact image */
           <div className="space-y-6">
-            {/* Top Filter Card */}
-            <div className="bg-[#edf3fa] border border-[#d6e3f0] rounded-2xl p-5 shadow-xs">
-              <div className="flex flex-wrap items-end gap-4">
-                {/* 1. CATEGORY */}
-                <div className="flex-1 min-w-[200px] space-y-1.5">
-                  <label className="block text-xs font-extrabold text-[#0c2340] uppercase tracking-wider">
-                    CATEGORY
-                  </label>
-                  <div className="relative">
-                    <select
-                      value={selectedCategory}
-                      onChange={(e) => {
-                        const newCat = e.target.value;
-                        setSelectedCategory(newCat);
-                        setSelectedSubType('Sub Type');
-                        setSelectedAllocation('Scholarship Allocation');
-                        setAppliedFilters(prev => ({ 
-                          ...prev, 
-                          category: newCat, 
-                          subType: 'Sub Type', 
-                          allocation: 'Scholarship Allocation' 
-                        }));
-                      }}
-                      className="w-full bg-white border border-gray-300 rounded-xl px-4 py-2.5 text-sm font-medium text-gray-800 appearance-none focus:outline-none focus:ring-2 focus:ring-[#1864db]/30 cursor-pointer shadow-xs"
-                    >
-                      <option value="Category">Category</option>
-                      <option value="Externally-Funded">Externally-Funded</option>
-                      <option value="Internally-Funded">Internally-Funded</option>
-                    </select>
-                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-700">
-                      <ChevronDown className="w-4 h-4 stroke-[2.5]" />
-                    </div>
-                  </div>
-                </div>
-
-                {/* 2. SUB TYPE */}
-                <div className="flex-1 min-w-[200px] space-y-1.5">
-                  <label className="block text-xs font-extrabold text-[#0c2340] uppercase tracking-wider">
-                    SUB TYPE
-                  </label>
-                  <div className="relative">
-                    <select
-                      value={selectedSubType}
-                      onChange={(e) => {
-                        const newSub = e.target.value;
-                        setSelectedSubType(newSub);
-                        setSelectedAllocation('Scholarship Allocation');
-                        setAppliedFilters(prev => ({ 
-                          ...prev, 
-                          subType: newSub, 
-                          allocation: 'Scholarship Allocation' 
-                        }));
-                      }}
-                      className="w-full bg-white border border-gray-300 rounded-xl px-4 py-2.5 text-sm font-medium text-gray-800 appearance-none focus:outline-none focus:ring-2 focus:ring-[#1864db]/30 cursor-pointer shadow-xs"
-                    >
-                      <option value="Sub Type">Sub Type</option>
-                      {selectedCategory !== 'Category' && scholarshipDataMapping[selectedCategory] ? (
-                        Object.keys(scholarshipDataMapping[selectedCategory]).sort((a, b) => a.localeCompare(b)).map((subType) => (
-                          <option key={subType} value={subType}>{subType}</option>
-                        ))
-                      ) : (
-                        <>
-                          <option value="Academic">Academic</option>
-                          <option value="CHED">CHED</option>
-                          <option value="DSWD">DSWD</option>
-                          <option value="Entrance">Entrance</option>
-                          <option value="Institutional">Institutional</option>
-                          <option value="Merit">Merit</option>
-                          <option value="Socio-cultural">Socio-cultural</option>
-                        </>
-                      )}
-                    </select>
-                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-700">
-                      <ChevronDown className="w-4 h-4 stroke-[2.5]" />
-                    </div>
-                  </div>
-                </div>
-
-                {/* 3. SCHOLARSHIP ALLOCATION */}
-                <div className="flex-1 min-w-[240px] space-y-1.5">
-                  <label className="block text-xs font-extrabold text-[#0c2340] uppercase tracking-wider">
-                    SCHOLARSHIP ALLOCATION
-                  </label>
-                  <div className="relative">
-                    <select
-                      value={selectedAllocation}
-                      onChange={(e) => {
-                        setSelectedAllocation(e.target.value);
-                        setAppliedFilters(prev => ({ ...prev, allocation: e.target.value }));
-                      }}
-                      className="w-full bg-white border border-gray-300 rounded-xl px-4 py-2.5 text-sm font-medium text-gray-800 appearance-none focus:outline-none focus:ring-2 focus:ring-[#1864db]/30 cursor-pointer shadow-xs"
-                    >
-                      <option value="Scholarship Allocation">Scholarship Allocation</option>
-                      {selectedCategory !== 'Category' && selectedSubType !== 'Sub Type' && scholarshipDataMapping[selectedCategory]?.[selectedSubType] ? (
-                        [...scholarshipDataMapping[selectedCategory][selectedSubType]].sort((a, b) => a.localeCompare(b)).map((allocation) => (
-                          <option key={allocation} value={allocation}>{allocation}</option>
-                        ))
-                      ) : (
-                        <>
-                          <option value="ANAC-IP">ANAC-IP</option>
-                          <option value="Barangay (Legal dependents of Brgy. Officials)">Barangay (Legal dependents of Brgy. Officials)</option>
-                          <option value="Dependent of Faculty or Staff">Dependent of Faculty or Staff</option>
-                          <option value="DOST">DOST</option>
-                          <option value="ESGP – PA">ESGP – PA</option>
-                          <option value="Full">Full</option>
-                          <option value="LGU">LGU</option>
-                          <option value="National">National</option>
-                          <option value="Pag-Ulikid">Pag-Ulikid</option>
-                          <option value="Partial">Partial</option>
-                          <option value="President—FLP">President—FLP</option>
-                          <option value="Regional">Regional</option>
-                          <option value="Salutatorian">Salutatorian</option>
-                          <option value="TES">TES</option>
-                          <option value="Tulong Dunong">Tulong Dunong</option>
-                          <option value="UniFast">UniFast</option>
-                          <option value="Valedictorian">Valedictorian</option>
-                        </>
-                      )}
-                    </select>
-                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-700">
-                      <ChevronDown className="w-4 h-4 stroke-[2.5]" />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Filter button & count reset link */}
-                <div className="flex items-center gap-4 pb-0.5">
-                  <button
-                    onClick={handleApplyFilters}
-                    className="bg-[#dce9f9] hover:bg-[#cbe0f8] text-[#154687] border border-[#a8c7ed] px-6 py-2 rounded-xl font-bold text-sm shadow-xs transition-all hover:scale-[1.02] cursor-pointer flex items-center gap-2"
-                  >
-                    <Filter className="w-4 h-4 stroke-[2.5]" />
-                    <span>Filter</span>
-                  </button>
-
-                  {/* Dynamic Interactive Student Count Link */}
-                  <button
-                    onClick={handleResetFilters}
-                    title="Click to reset filters and view all students"
-                    className="text-[#1864db] font-bold text-sm underline cursor-pointer hover:text-blue-800 transition-colors"
-                  >
-                    ({filteredBreakdown.length === initialBreakdownData.length ? '213' : filteredBreakdown.length}) students
-                  </button>
-
-                  {(appliedFilters.category !== 'Category' || appliedFilters.subType !== 'Sub Type' || appliedFilters.allocation !== 'Scholarship Allocation') && (
-                    <button
-                      onClick={handleResetFilters}
-                      className="text-xs text-gray-500 hover:text-red-600 font-semibold flex items-center gap-1 transition-colors"
-                    >
-                      <RotateCcw className="w-3.5 h-3.5" /> Clear
-                    </button>
-                  )}
-                </div>
-              </div>
-            </div>
 
             {/* Scholarship Breakdown Table */}
             <div className="bg-white rounded-2xl border border-gray-300 shadow-xs overflow-hidden">
@@ -783,13 +626,7 @@ export function GuidanceReports() {
                         <td colSpan={6} className="py-12 text-center text-gray-500">
                           <AlertCircle className="w-8 h-8 text-gray-400 mx-auto mb-2" />
                           <p className="font-bold text-gray-800">No students found</p>
-                          <p className="text-xs text-gray-500 mt-1">Try resetting the Category, Sub Type, or Allocation filters.</p>
-                          <button
-                            onClick={handleResetFilters}
-                            className="mt-3 px-4 py-1.5 bg-[#1864db] text-white text-xs font-bold rounded-lg hover:bg-blue-700"
-                          >
-                            Reset All Filters
-                          </button>
+                          <p className="text-xs text-gray-500 mt-1">There are currently no students in the roster.</p>
                         </td>
                       </tr>
                     )}
