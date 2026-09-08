@@ -87,7 +87,8 @@ export const SCHOLARSHIP_STRUCTURE: ScholarshipStructure = {
         { id: 'VIC', name: 'VIC', label: 'VIC' },
         { id: 'Capizeño Circle', name: 'Capizeño Circle', label: 'Capizeño Circle' },
         { id: 'DOST', name: 'DOST', label: 'DOST' },
-        { id: 'GRF', name: 'GRF', label: 'GRF' }
+        { id: 'GRF', name: 'GRF', label: 'GRF' },
+        { id: 'CHED and Others', name: 'CHED and Others', label: 'CHED and Others (specify)', hasSpecifyField: 'meritChedAndOthers' }
       ]
     },
     {
@@ -217,13 +218,17 @@ export function formatScholarshipAllocations(data: {
     if (item === 'Others' && data.internalCategoryOthers) {
       return `Others (${data.internalCategoryOthers})`;
     }
+    if (item === 'CHED and Others' && data.meritChedAndOthers) {
+      return `CHED and Others (${data.meritChedAndOthers})`;
+    }
     if (item === 'LGU' && data.lguContact) {
       return `LGU (Contact: ${data.lguContact})`;
     }
     if (item === 'DSWD') {
       const dswdParts = [
         data.dswdMunicipality ? `Mun: ${data.dswdMunicipality}` : '',
-        data.dswdContact ? `Contact: ${data.dswdContact}` : ''
+        data.dswdContact ? `Contact: ${data.dswdContact}` : '',
+        data.dswdDesignation ? `Desig: ${data.dswdDesignation}` : ''
       ].filter(Boolean);
       return dswdParts.length > 0 ? `DSWD (${dswdParts.join(', ')})` : 'DSWD Educational Assistance';
     }

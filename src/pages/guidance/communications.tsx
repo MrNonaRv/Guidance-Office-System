@@ -971,6 +971,8 @@ Capiz State University – Mambusao Satellite College`
                     <>
                       <option value="ANAC-IP">ANAC-IP</option>
                       <option value="Barangay (Legal dependents of Brgy. Officials)">Barangay (Legal dependents of Brgy. Officials)</option>
+                      <option value="Capizeño Circle">Capizeño Circle</option>
+                      <option value="CHED and Others">CHED and Others</option>
                       <option value="Dependent of Faculty or Staff">Dependent of Faculty or Staff</option>
                       <option value="DOST">DOST</option>
                       <option value="ESGP – PA">ESGP – PA</option>

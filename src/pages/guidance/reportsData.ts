@@ -46,7 +46,7 @@ export const scholarshipDataMapping: Record<string, Record<string, string[]>> = 
       'ESGP - PA',
       'Tertiary Education Subsidy (TES)'
     ],
-    'Merit': ['VIC', 'Capizeño Circle', 'DOST', 'GRF', 'LGU: Barangay'],
+    'Merit': ['VIC', 'Capizeño Circle', 'DOST', 'GRF', 'CHED and Others', 'LGU: Barangay'],
     'DSWD': []
   }
 };

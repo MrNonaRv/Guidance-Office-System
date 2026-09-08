@@ -1053,6 +1053,7 @@ export function StudentSubmissionForm() {
       chedTulongDunong: '', 
       chedOthers: '', 
       meritSubCategory: '', 
+      meritChedAndOthers: '',
       lguContact: '', 
       dswdMunicipality: '', 
       dswdContact: '', 
@@ -1255,6 +1256,7 @@ export function StudentSubmissionForm() {
         internalCategory: '',
         externalCategory: '',
         meritSubCategory: '',
+        meritChedAndOthers: '',
         chedSubCategory: ''
       };
     });
@@ -1336,6 +1338,7 @@ export function StudentSubmissionForm() {
       chedTulongDunong: '',
       chedOthers: '',
       meritSubCategory: '',
+      meritChedAndOthers: '',
       lguContact: '',
       dswdMunicipality: '',
       dswdContact: '',
@@ -2465,6 +2468,20 @@ export function StudentSubmissionForm() {
                                     </div>
                                   )}
 
+                                  {isSelected && opt.hasSpecifyField === 'meritChedAndOthers' && (
+                                    <div className="mt-2">
+                                      <label className="block text-[11px] font-semibold text-gray-600 mb-1">Specify Program:</label>
+                                      <input
+                                        type="text"
+                                        name="meritChedAndOthers"
+                                        value={formData.meritChedAndOthers || ''}
+                                        onChange={handleChange}
+                                        placeholder="Program name"
+                                        className="w-full text-xs p-1.5 bg-white border border-gray-300 rounded-md focus:border-blue-600 outline-none"
+                                      />
+                                    </div>
+                                  )}
+
                                   {isSelected && opt.hasSpecifyField === 'lguContact' && (
                                     <div className="mt-2">
                                       <label className="block text-[11px] font-semibold text-gray-600 mb-1">Contact Person / Issuing Office:</label>
@@ -2500,6 +2517,17 @@ export function StudentSubmissionForm() {
                                           value={formData.dswdContact || ''}
                                           onChange={handleChange}
                                           placeholder="Contact person"
+                                          className="w-full text-xs p-1.5 bg-white border border-gray-300 rounded-md focus:border-blue-600 outline-none"
+                                        />
+                                      </div>
+                                      <div>
+                                        <label className="block text-[10px] font-semibold text-gray-600">Designation:</label>
+                                        <input
+                                          type="text"
+                                          name="dswdDesignation"
+                                          value={formData.dswdDesignation || ''}
+                                          onChange={handleChange}
+                                          placeholder="Designation"
                                           className="w-full text-xs p-1.5 bg-white border border-gray-300 rounded-md focus:border-blue-600 outline-none"
                                         />
                                       </div>

@@ -566,26 +566,49 @@ export function StudentRecordModal({
         {/* PAGE 1: SCHOLARSHIP RECORD FORM */}
         <div className="print-page w-[793px] h-[1122px] mx-auto pt-8 break-after-page">
           {/* Header Box */}
-          <div className="border border-black w-full mb-6 text-black">
-            <div className="flex border-b border-black">
-              <div className="w-1/5 p-2 border-r border-black flex flex-col items-center justify-center">
-                <img src="/capsu-logo.png" className="w-12 h-12 object-contain mb-1" alt="Logo" />
+          <div className="border border-black w-full mb-6 text-black font-serif flex items-stretch">
+            {/* Logo Column */}
+            <div className="w-[20%] border-r border-black flex flex-col items-center justify-center p-2">
+              <img src="/capsu-logo.png" className="w-[100px] h-[100px] object-contain" alt="Logo" />
+            </div>
+
+            {/* Middle Column */}
+            <div className="w-[45%] border-r border-black flex flex-col">
+              {/* Top Row */}
+              <div className="border-b border-black flex-1 flex flex-col p-1 pb-2">
+                <span className="text-[14px] pl-1">Document Type:</span>
+                <div className="flex flex-col items-center justify-center flex-1">
+                  <strong className="font-bold text-[18px] uppercase leading-tight">FORM</strong>
+                  <span className="text-[13px] leading-tight">ISO 9001:2015</span>
+                </div>
               </div>
-              <div className="w-3/5 p-2 border-r border-black flex flex-col items-center justify-center text-center">
-                <div className="text-[10px]">Document Type:</div>
-                <strong className="text-xl tracking-widest mt-1 font-serif">FORM</strong>
-                <div className="text-[8px] mt-1 font-serif">ISO 9001:2015</div>
-              </div>
-              <div className="w-1/5 font-serif">
-                <div className="border-b border-black p-1 text-[10px] flex justify-between"><span>Document Code</span><strong>GCO-F05</strong></div>
-                <div className="border-b border-black p-1 text-[10px] flex justify-between"><span>Revision No.</span><strong>00</strong></div>
-                <div className="border-b border-black p-1 text-[10px] flex justify-between"><span>Effective Date</span><strong>June 25, 2018</strong></div>
-                <div className="p-1 text-[10px] flex justify-between"><span>Page</span><strong>1 of 1</strong></div>
+              {/* Bottom Row */}
+              <div className="flex-1 flex flex-col p-1 pb-2">
+                <span className="text-[14px] pl-1">Document Type:</span>
+                <div className="flex flex-col items-center justify-center flex-1">
+                  <strong className="font-bold text-[15px] uppercase">SCHOLARSHIP RECORD FORM</strong>
+                </div>
               </div>
             </div>
-            <div className="flex font-serif">
-              <div className="w-1/4 p-2 border-r border-black text-xs flex items-center">Document Type:</div>
-              <div className="w-3/4 p-2 text-center font-bold text-lg tracking-wider flex items-center justify-center">SCHOLARSHIP RECORD FORM</div>
+
+            {/* Right Column */}
+            <div className="w-[35%] flex flex-col">
+              <div className="flex border-b border-black flex-1 min-h-[32px]">
+                <div className="w-[45%] border-r border-black p-1 pl-2 flex items-center text-[14px]">Document Code</div>
+                <div className="w-[55%] p-1 pl-2 flex items-center font-bold text-[15px]">GCO-F05</div>
+              </div>
+              <div className="flex border-b border-black flex-1 min-h-[32px]">
+                <div className="w-[45%] border-r border-black p-1 pl-2 flex items-center text-[14px]">Revision No.</div>
+                <div className="w-[55%] p-1 pl-2 flex items-center font-bold text-[15px]">00</div>
+              </div>
+              <div className="flex border-b border-black flex-1 min-h-[32px]">
+                <div className="w-[45%] border-r border-black p-1 pl-2 flex items-center text-[14px]">Effective Date</div>
+                <div className="w-[55%] p-1 pl-2 flex items-center font-bold text-[15px]">June 25, 2018</div>
+              </div>
+              <div className="flex flex-1 min-h-[32px]">
+                <div className="w-[45%] border-r border-black p-1 pl-2 flex items-center text-[14px]">Page</div>
+                <div className="w-[55%] p-1 pl-2 flex items-center font-bold text-[15px]">1 of 1</div>
+              </div>
             </div>
           </div>
 
@@ -593,22 +616,22 @@ export function StudentRecordModal({
             (Data and Personal Information will be kept with utmost confidentiality and will be protected<br/>through RA 10173 also known as Data Privacy Act of 2012)
           </div>
 
-          <div className="font-serif text-center font-bold text-lg mb-6 text-black">STUDENT DEMOGRAPHICS</div>
+          <div className="font-serif text-center font-bold text-lg mb-4 text-black">STUDENT DEMOGRAPHICS</div>
 
           <div className="font-serif text-black pl-8 pr-4">
-            <div className="font-bold mb-4">A. Personal Information</div>
+            <div className="font-bold mb-3">A. Personal Information</div>
             
             <div className="flex justify-between">
-              <div className="w-[80%] pr-4 space-y-6">
+              <div className="w-[80%] pr-4 space-y-4">
                 <div>
                   <div className="flex items-end text-sm">
-                    <span className="mr-2">Name:</span>
+                    <span className="mr-2 whitespace-nowrap">Name:</span>
                     <span className="flex-1 border-b border-black inline-block text-center">{formData.familyName || ''}</span>
                     <span className="flex-1 border-b border-black inline-block text-center ml-2">{formData.firstName || ''}</span>
                     <span className="flex-1 border-b border-black inline-block text-center ml-2">{formData.middleName || ''}</span>
                   </div>
-                  <div className="flex text-[10px] italic mt-1">
-                    <span className="mr-2 opacity-0">Name:</span>
+                  <div className="flex text-[11px] italic mt-0.5">
+                    <span className="mr-2 opacity-0 whitespace-nowrap">Name:</span>
                     <span className="flex-1 text-center">Last Name</span>
                     <span className="flex-1 text-center ml-2">First Name</span>
                     <span className="flex-1 text-center ml-2">Middle Name</span>
@@ -616,32 +639,32 @@ export function StudentRecordModal({
                 </div>
 
                 <div className="flex items-end text-sm">
-                  <span className="mr-2">Birthdate:</span>
+                  <span className="mr-2 whitespace-nowrap">Birthdate:</span>
                   <span className="w-32 border-b border-black inline-block text-center">{formData.birthdate || ''}</span>
-                  <span className="ml-4 mr-2">Age:</span>
+                  <span className="ml-4 mr-2 whitespace-nowrap">Age:</span>
                   <span className="w-24 border-b border-black inline-block text-center">{formData.age || ''}</span>
-                  <span className="ml-4 mr-2">Sex:</span>
+                  <span className="ml-4 mr-2 whitespace-nowrap">Sex:</span>
                   <span className="w-24 border-b border-black inline-block text-center">{formData.sex || ''}</span>
                 </div>
 
                 <div className="flex items-end text-sm">
-                  <span className="mr-2">Year Level:</span>
+                  <span className="mr-2 whitespace-nowrap">Year Level:</span>
                   <span className="w-32 border-b border-black inline-block text-center">{formData.yearLevel || ''}</span>
-                  <span className="ml-4 mr-2">Course:</span>
+                  <span className="ml-4 mr-2 whitespace-nowrap">Course:</span>
                   <span className="w-32 border-b border-black inline-block text-center">{formData.course || ''}</span>
-                  <span className="ml-4 mr-2">Section:</span>
+                  <span className="ml-4 mr-2 whitespace-nowrap">Section:</span>
                   <span className="w-24 border-b border-black inline-block text-center">{formData.section || ''}</span>
                 </div>
 
                 <div className="flex items-end text-sm">
-                  <span className="mr-2">Contact No.:</span>
+                  <span className="mr-2 whitespace-nowrap">Contact No.:</span>
                   <span className="w-48 border-b border-black inline-block text-center">{formData.contactNo || ''}</span>
-                  <span className="ml-4 mr-2">Gmail:</span>
+                  <span className="ml-4 mr-2 whitespace-nowrap">Gmail:</span>
                   <span className="flex-1 border-b border-black inline-block text-center">{formData.email || ''}</span>
                 </div>
 
                 <div className="flex items-end text-sm">
-                  <span className="mr-2">Permanent Address:</span>
+                  <span className="mr-2 whitespace-nowrap">Permanent Address:</span>
                   <span className="flex-1 border-b border-black inline-block text-center">{formData.street ? (formData.municipality === 'Others' ? `${formData.street}, ${formData.outsideCapizAddress || ''}, ${formData.province} ${formData.postalCode}` : `${formData.street}, ${formData.barangay}, ${formData.municipality}, ${formData.province} ${formData.postalCode}`) : (formData.permanentAddress || '')}</span>
                 </div>
               </div>
@@ -657,47 +680,47 @@ export function StudentRecordModal({
               </div>
             </div>
 
-            <div className="font-bold mt-10 mb-4">B. Family Background</div>
+            <div className="font-bold mt-8 mb-3">B. Family Background</div>
             
-            <div className="space-y-6">
+            <div className="space-y-4">
               <div>
-                <div className="italic font-bold mb-3 text-sm">Father Information</div>
+                <div className="italic font-bold mb-2 text-sm">Father Information</div>
                 <div className="flex items-end text-sm">
-                  <span className="mr-2">Name:</span>
+                  <span className="mr-2 whitespace-nowrap">Name:</span>
                   <span className="w-64 border-b border-black inline-block text-center">{formData.fatherName || ''}</span>
-                  <span className="ml-4 mr-2">Occupation:</span>
+                  <span className="ml-4 mr-2 whitespace-nowrap">Occupation:</span>
                   <span className="w-48 border-b border-black inline-block text-center">{formData.fatherOccupation || ''}</span>
-                  <span className="ml-4 mr-2">Contact No.:</span>
+                  <span className="ml-4 mr-2 whitespace-nowrap">Contact No.:</span>
                   <span className="flex-1 border-b border-black inline-block text-center">{formData.fatherContact || ''}</span>
                 </div>
               </div>
 
               <div>
-                <div className="italic font-bold mb-3 text-sm">Mother Information</div>
+                <div className="italic font-bold mb-2 text-sm">Mother Information</div>
                 <div className="flex items-end text-sm">
-                  <span className="mr-2">Name (Maiden Name):</span>
+                  <span className="mr-2 whitespace-nowrap">Name (Maiden Name):</span>
                   <span className="w-64 border-b border-black inline-block text-center">{formData.motherName || ''}</span>
-                  <span className="ml-4 mr-2">Occupation:</span>
+                  <span className="ml-4 mr-2 whitespace-nowrap">Occupation:</span>
                   <span className="w-48 border-b border-black inline-block text-center">{formData.motherOccupation || ''}</span>
-                  <span className="ml-4 mr-2">Contact No.:</span>
+                  <span className="ml-4 mr-2 whitespace-nowrap">Contact No.:</span>
                   <span className="flex-1 border-b border-black inline-block text-center">{formData.motherContact || ''}</span>
                 </div>
               </div>
 
               <div>
-                <div className="italic font-bold mb-3 text-sm">Guardian Information</div>
+                <div className="italic font-bold mb-2 text-sm">Guardian Information</div>
                 <div className="flex items-end text-sm">
-                  <span className="mr-2">Name:</span>
+                  <span className="mr-2 whitespace-nowrap">Name:</span>
                   <span className="w-64 border-b border-black inline-block text-center">{formData.guardianName || ''}</span>
-                  <span className="ml-4 mr-2">Occupation:</span>
+                  <span className="ml-4 mr-2 whitespace-nowrap">Occupation:</span>
                   <span className="w-48 border-b border-black inline-block text-center">{formData.guardianOccupation || ''}</span>
-                  <span className="ml-4 mr-2">Contact No.:</span>
+                  <span className="ml-4 mr-2 whitespace-nowrap">Contact No.:</span>
                   <span className="flex-1 border-b border-black inline-block text-center">{formData.guardianContact || ''}</span>
                 </div>
-                <div className="flex items-end text-sm mt-6">
-                  <span className="mr-2">Address:</span>
+                <div className="flex items-end text-sm mt-4">
+                  <span className="mr-2 whitespace-nowrap">Address:</span>
                   <span className="flex-1 border-b border-black inline-block text-center">{formData.guardianAddress || ''}</span>
-                  <span className="ml-4 mr-2">Relationship:</span>
+                  <span className="ml-4 mr-2 whitespace-nowrap">Relationship:</span>
                   <span className="w-48 border-b border-black inline-block text-center">{formData.guardianRelationship || ''}</span>
                 </div>
               </div>
@@ -875,6 +898,7 @@ export function StudentRecordModal({
             <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{isSelectedScholarship('Capizeño Circle') && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>Capizeño Circle</span></div>
             <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{isSelectedScholarship('DOST') && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>DOST</span></div>
             <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{isSelectedScholarship('GRF') && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>GRF</span></div>
+            <div className="flex items-end gap-2 col-span-2 mt-2"><div className="w-5 h-5 border border-black flex items-center justify-center mb-1 shrink-0">{isSelectedScholarship('CHED and Others') && <Check className="w-4 h-4" strokeWidth={3} />}</div><span className="mb-1">CHED and Others (specify)</span><span className="flex-1 border-b border-black inline-block text-center pb-1">{isSelectedScholarship('CHED and Others') ? formData.meritChedAndOthers : ''}</span></div>
           </div>
 
           <div className="flex gap-2 mb-10 text-[15px]">
