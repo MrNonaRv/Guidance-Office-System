@@ -72,7 +72,6 @@ export const SCHOLARSHIP_STRUCTURE: ScholarshipStructure = {
         { id: 'Pag - ulikid', name: 'Pag - ulikid', label: 'Pag - ulikid' },
         { id: 'Barangay (Legal dependents of Brgy. Officials)', name: 'Barangay (Legal dependents of Brgy. Officials)', label: 'Barangay (Legal dependents of Brgy. Officials)' },
         { id: 'ESGP - PA', name: 'ESGP - PA', label: 'ESGP - PA' },
-        { id: 'UniFast', name: 'UniFast', label: 'UniFast' },
         { id: 'Tertiary Education Subsidy (TES)', name: 'Tertiary Education Subsidy (TES)', label: 'Tertiary Education Subsidy (TES)' },
         { id: 'Congressional District', name: 'Congressional District', label: 'Congressional District (specify)', hasSpecifyField: 'chedCongressionalDistrict' },
         { id: 'One Town One Scholar', name: 'One Town One Scholar', label: 'One Town One Scholar (specify)', hasSpecifyField: 'chedOneTown' },

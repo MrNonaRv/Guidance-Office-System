@@ -589,6 +589,75 @@ export function GuidanceReports() {
           /* PAGE 2: Scholarship Breakdown matching the exact image */
           <div className="space-y-6">
 
+            {/* PAGE 2 Filters */}
+            <div className="bg-[#edf3fa] border border-[#d6e3f0] rounded-2xl p-5 shadow-xs">
+              <div className="flex flex-col sm:flex-row gap-4">
+                {/* CATEGORY Dropdown */}
+                <div className="space-y-1.5 flex-1">
+                  <label className="block text-xs font-extrabold text-[#0c2340] uppercase tracking-wider">
+                    CATEGORY
+                  </label>
+                  <div className="relative">
+                    <select
+                      value={selectedCategory}
+                      onChange={(e) => setSelectedCategory(e.target.value)}
+                      className="w-full bg-white border border-gray-300 rounded-xl px-4 py-2.5 text-sm font-medium text-gray-800 appearance-none focus:outline-none focus:ring-2 focus:ring-[#1864db]/30 cursor-pointer shadow-xs"
+                    >
+                      <option value="Category">Category</option>
+                      <option value="Academic">Academic</option>
+                      <option value="Non-Academic">Non-Academic</option>
+                    </select>
+                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-700">
+                      <ChevronDown className="w-4 h-4 stroke-[2.5]" />
+                    </div>
+                  </div>
+                </div>
+
+                {/* SUB TYPE Dropdown */}
+                <div className="space-y-1.5 flex-1">
+                  <label className="block text-xs font-extrabold text-[#0c2340] uppercase tracking-wider">
+                    SUB TYPE
+                  </label>
+                  <div className="relative">
+                    <select
+                      value={selectedSubType}
+                      onChange={(e) => setSelectedSubType(e.target.value)}
+                      className="w-full bg-white border border-gray-300 rounded-xl px-4 py-2.5 text-sm font-medium text-gray-800 appearance-none focus:outline-none focus:ring-2 focus:ring-[#1864db]/30 cursor-pointer shadow-xs"
+                    >
+                      <option value="Sub Type">Sub Type</option>
+                      <option value="Athletic">Athletic</option>
+                      <option value="Cultural">Cultural</option>
+                      <option value="Dean's Lister">Dean's Lister</option>
+                    </select>
+                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-700">
+                      <ChevronDown className="w-4 h-4 stroke-[2.5]" />
+                    </div>
+                  </div>
+                </div>
+
+                {/* SCHOLARSHIP ALLOCATION Dropdown */}
+                <div className="space-y-1.5 flex-1">
+                  <label className="block text-xs font-extrabold text-[#0c2340] uppercase tracking-wider">
+                    SCHOLARSHIP ALLOCATION
+                  </label>
+                  <div className="relative">
+                    <select
+                      value={selectedAllocation}
+                      onChange={(e) => setSelectedAllocation(e.target.value)}
+                      className="w-full bg-white border border-gray-300 rounded-xl px-4 py-2.5 text-sm font-medium text-gray-800 appearance-none focus:outline-none focus:ring-2 focus:ring-[#1864db]/30 cursor-pointer shadow-xs"
+                    >
+                      <option value="Scholarship Allocation">Scholarship Allocation</option>
+                      <option value="Full">Full</option>
+                      <option value="Partial">Partial</option>
+                    </select>
+                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-700">
+                      <ChevronDown className="w-4 h-4 stroke-[2.5]" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             {/* Scholarship Breakdown Table */}
             <div className="bg-white rounded-2xl border border-gray-300 shadow-xs overflow-hidden">
               <div className="overflow-x-auto max-h-[640px] overflow-y-auto">

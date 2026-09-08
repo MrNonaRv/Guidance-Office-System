@@ -179,10 +179,114 @@ export function GuidanceCommunications() {
   // Email Templates
   const defaultTemplates: EmailTemplate[] = useMemo(() => [
     {
+      id: 'custom',
+      name: 'Custom Draft',
+      subject: '',
+      body: (studentName, _allocation) => 
+`Dear ${studentName || 'Student'},
+
+Greetings!
+
+
+
+Sincerely,
+Guidance Office
+Capiz State University`
+    },
+    {
       id: 'blank',
-      name: 'Blank Custom Draft',
+      name: 'Blank Draft',
       subject: '',
       body: (_studentName, _allocation) => ``
+    },
+    {
+      id: 'complete',
+      name: 'Status Update: Complete',
+      subject: 'Scholarship Submission : APPROVED',
+      body: (studentName, _allocation) => 
+`Dear ${studentName || 'Student'},
+
+Greetings!
+
+We are pleased to inform you that your scholarship submission has been officially approved.
+
+After reviewing your submitted requirements, you have successfully qualified for a scholarship.
+
+Please keep your contact information active and regularly check your email for updates.
+
+
+Sincerely,
+Guidance Office
+Capiz State University – Mambusao Satellite College`
+    },
+    {
+      id: 'incomplete',
+      name: 'Status Update: Incomplete',
+      subject: 'Scholarship Submission : NOT APPROVED',
+      body: (studentName, _allocation) =>
+`Dear ${studentName || 'Student'},
+
+Greetings!
+
+We regret to inform you that your scholarship submission was not approved due to issues found in the uploaded files.
+
+The following concerns were identified during the evaluation process:
+
+Incorrect file format submitted
+Blurred or unreadable of [student ID, RF, or GWA]
+Missing required information
+Wrong file uploaded in the designated section
+
+Please review your requirements carefully before submitting a new resubmission.
+For further clarification and assistance, you may visit the Guidance Office.
+
+Thank you for your understanding.
+
+Sincerely,
+Guidance Office
+Capiz State University – Mambusao Satellite College`
+    },
+    {
+      id: 'release-update',
+      name: 'Scholarship Release Update',
+      subject: 'Scholarship Release Date and Required Documents',
+      body: (studentName, _allocation) =>
+`Dear ${studentName || 'Student'},
+
+Greetings!
+
+We are pleased to inform you that the release of your scholarship is scheduled on (mm/dd/yyyy)
+
+
+Before your funds can be disbursed, you are required to submit the following documents for verification:
+
+
+General Weighted Average (GWA)
+
+Registration Form (RF)
+
+
+Sincerely,
+Guidance Office
+Capiz State University – Mambusao Satellite College`
+    },
+    {
+      id: 'allowance-ready',
+      name: 'Scholarship Allowance is Ready for Release',
+      subject: 'Scholarship Allowance is Ready for Release',
+      body: (studentName, _allocation) =>
+`Dear ${studentName || 'Student'},
+
+Greetings!
+
+We are pleased to inform you that your allowance is now ready for release.
+
+Please check your registered bank account or coordinate with the designated disbursement office to claim your funds.
+
+
+Sincerely,
+Guidance Office
+Capiz State University – Mambusao Satellite College`
     },
     {
       id: 'loa',
@@ -203,76 +307,6 @@ Thank you for your attention to this matter.
 Sincerely,
 Guidance Office
 Capiz State University – Mambusao Satellite College`
-    },
-    {
-      id: 'missing-docs',
-      name: 'Missing / Incomplete Requirements',
-      subject: 'Urgent: Incomplete Scholarship Submission',
-      body: (studentName, allocation) =>
-`Dear ${studentName || 'Student'},
-
-Greetings!
-
-This is an official advisory from the Guidance & Counseling Office regarding your ${allocation ? `(${allocation})` : ''} scholarship application.
-
-Upon initial verification, our office noted that one or more required documents (Certificate of Grades / Certificate of Registration / Certificate of Indigency) are still incomplete or pending upload.
-
-Please log in to your Student Portal and complete your document submissions at the earliest convenience to avoid delays in endorsement and processing.
-
-Sincerely,
-Guidance Office
-Capiz State University`
-    },
-    {
-      id: 'verified',
-      name: 'Submission Verified & Approved',
-      subject: 'Notice of Verified Scholarship Documents',
-      body: (studentName, allocation) =>
-`Dear ${studentName || 'Student'},
-
-Greetings!
-
-We are pleased to inform you that your documentary submissions for your ${allocation ? `(${allocation})` : ''} scholarship grant for this semester have been fully verified and approved by the Guidance Office.
-
-Your application is now endorsed to the scholarship administrator for release of entitlements.
-
-Congratulations and keep up the stellar academic performance!
-
-Sincerely,
-Guidance Office
-Capiz State University`
-    },
-    {
-      id: 'renewal',
-      name: 'Scholarship Renewal Notice',
-      subject: 'Reminder: Scholarship Renewal Submission Period',
-      body: (_studentName, allocation) =>
-`Dear Scholar,
-
-Greetings!
-
-Please be reminded that the renewal submission period for ${allocation ? `${allocation}` : 'your designated scholarship'} is now officially ongoing. 
-
-Kindly submit your updated Certificate of Grades (COG) and Certificate of Registration (COR) before the scheduled deadline.
-
-Sincerely,
-Guidance Office
-Capiz State University`
-    },
-    {
-      id: 'custom-greeting',
-      name: 'Custom Greeting Draft',
-      subject: '',
-      body: (studentName) =>
-`Dear ${studentName || 'Student'},
-
-Greetings!
-
-
-
-Sincerely,
-Guidance Office
-Capiz State University`
     }
   ], []);
 
@@ -289,7 +323,7 @@ Capiz State University`
   const [selectedAllocation, setSelectedAllocation] = useState<string>('Scholarship Allocation');
 
   // Email form state
-  const [currentTemplateId, setCurrentTemplateId] = useState<string>(location.state?.prefillTemplate || 'blank');
+  const [currentTemplateId, setCurrentTemplateId] = useState<string>(location.state?.prefillTemplate || 'custom');
   const [isTemplateMenuOpen, setIsTemplateMenuOpen] = useState<boolean>(false);
   const [subject, setSubject] = useState<string>('');
   const [emailBody, setEmailBody] = useState<string>('');
@@ -353,7 +387,7 @@ Capiz State University`
     { id: 'd2', name: 'LOA_Application_Form_Guidance_Office.docx', size: '340 KB', category: 'Official Forms' },
     { id: 'd3', name: 'CHED_Tulong_Dunong_Roster_Endorsement.xlsx', size: '850 KB', category: 'CHED Masterlists' },
     { id: 'd4', name: 'Certificate_of_Registration_Verification_Sheet.pdf', size: '520 KB', category: 'Verification Forms' },
-    { id: 'd5', name: 'UniFast_TES_Documentary_Guidelines.pdf', size: '2.1 MB', category: 'Guidelines' },
+    { id: 'd5', name: 'TES_Documentary_Guidelines.pdf', size: '2.1 MB', category: 'Guidelines' },
     { id: 'd6', name: 'Student_Affairs_Assistance_Directory.pdf', size: '980 KB', category: 'Directories' }
   ];
 
@@ -950,7 +984,6 @@ Capiz State University`
                       <option value="Salutatorian">Salutatorian</option>
                       <option value="TES">TES</option>
                       <option value="Tulong Dunong">Tulong Dunong</option>
-                      <option value="UniFast">UniFast</option>
                       <option value="Valedictorian">Valedictorian</option>
                     </>
                   )}
@@ -1064,7 +1097,7 @@ Capiz State University`
                   onClick={() => setIsTemplateMenuOpen(!isTemplateMenuOpen)}
                   className="bg-[#dce9f9] hover:bg-[#cbe0f8] text-[#154687] border border-[#a8c7ed] px-4 py-2 rounded-xl text-xs font-bold flex items-center justify-between gap-3 min-w-[200px] cursor-pointer shadow-2xs transition-colors"
                 >
-                  <span>{templates.find(t => t.id === currentTemplateId)?.name || 'Blank Custom Draft'}</span>
+                  <span>{templates.find(t => t.id === currentTemplateId)?.name || 'Custom Draft'}</span>
                   <ChevronDown className="w-4 h-4 stroke-[2.5]" />
                 </button>
 
@@ -1574,26 +1607,7 @@ Capiz State University`
 
       </div>
 
-      {/* =========================================================================
-          BOTTOM NAVIGATION ARROWS (< and >)
-          ========================================================================= */}
-      <div className="flex items-center justify-between pt-2">
-        <button
-          onClick={() => navigate('/admin/notifications')}
-          className="bg-white hover:bg-gray-100 text-gray-700 border border-gray-300 rounded-xl px-5 py-2 shadow-xs transition-colors flex items-center justify-center cursor-pointer hover:border-gray-400"
-          title="Back to Notifications"
-        >
-          <ChevronLeft className="w-5 h-5 stroke-[2.5]" />
-        </button>
 
-        <button
-          onClick={() => navigate('/admin/reports')}
-          className="bg-white hover:bg-gray-100 text-gray-700 border border-gray-300 rounded-xl px-5 py-2 shadow-xs transition-colors flex items-center justify-center cursor-pointer hover:border-gray-400"
-          title="Next to Reports & Analytics"
-        >
-          <ChevronRight className="w-5 h-5 stroke-[2.5]" />
-        </button>
-      </div>
 
       {/* =========================================================================
           INTERACTIVE MODAL DIALOGS

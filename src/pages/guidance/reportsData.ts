@@ -44,7 +44,6 @@ export const scholarshipDataMapping: Record<string, Record<string, string[]>> = 
       'Pag - ulikid',
       'Barangay (Legal dependents of Brgy. Officials)',
       'ESGP - PA',
-      'UniFast',
       'Tertiary Education Subsidy (TES)'
     ],
     'Merit': ['VIC', 'Capizeño Circle', 'DOST', 'GRF', 'LGU: Barangay'],
@@ -251,7 +250,7 @@ export const initialBreakdownData: StudentBreakdownItem[] = [
     courseFull: 'Bachelor of Science in Computer Science',
     category: 'Externally-Funded', 
     subType: 'CHED', 
-    allocation: 'UniFast',
+    allocation: 'Tulong Dunong',
     gender: 'Female',
     email: 'jessicamae.delacruz@capsu.edu.ph',
     phone: '+63 927 999 1122',
@@ -263,11 +262,11 @@ export const initialBreakdownData: StudentBreakdownItem[] = [
     requirements: [
       { name: 'Certificate of Grades (COG)', status: 'Verified' },
       { name: 'Certificate of Registration (COR)', status: 'Verified' },
-      { name: 'UniFast Masterlist Proof', status: 'Verified' },
+      { name: 'Tulong Dunong Masterlist Proof', status: 'Verified' },
       { name: 'Good Moral Character', status: 'Verified' },
       { name: '2x2 ID Photo', status: 'Verified' },
     ],
-    remarks: 'UniFast Tertiary Education Subsidy recipient.'
+    remarks: 'Tulong Dunong Tertiary Education Subsidy recipient.'
   },
   { 
     id: '9', 

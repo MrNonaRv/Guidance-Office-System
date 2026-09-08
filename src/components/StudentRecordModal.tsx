@@ -63,7 +63,17 @@ export function StudentRecordModal({
           
           // Deduplicate based on file name or id
           const uniqueFiles = Array.from(new Map(allFiles.map(f => [f.name, f])).values());
-          setSemesterFiles(uniqueFiles);
+          
+          // Exclusively filter for RF and GWA
+          const filteredFiles = uniqueFiles.filter(f => {
+            const cat = (f.category || '').toUpperCase();
+            const n = (f.name || '').toUpperCase();
+            const isRF = cat.includes('RF') || cat.includes('REGISTRATION') || n.includes('REGISTRATION') || n.includes('_RF');
+            const isGWA = cat.includes('GWA') || cat.includes('COG') || cat.includes('GRADE') || n.includes('GWA') || n.includes('GRADE') || n.includes('COG');
+            return isRF || isGWA;
+          });
+          
+          setSemesterFiles(filteredFiles);
         } catch (err) {
           console.error("Failed to fetch semester files", err);
         } finally {
@@ -480,82 +490,63 @@ export function StudentRecordModal({
           {/* VIEW 4: SEMESTER RECORD (1st Sem or 2nd Sem) */}
           {/* ------------------------------------------------------------- */}
           {viewMode === 'semester_record' && (
-            <div className="p-6 space-y-5 bg-gray-50/60">
-              
-              {/* Header info */}
-              <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-xs">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <span className="text-xs font-bold uppercase tracking-wider text-blue-700">{selectedSemester} Academic Term</span>
-                    <h4 className="text-lg font-bold text-gray-900">Academic Year {selectedAcademicYear}</h4>
-                    <p className="text-xs text-gray-600 mt-0.5">{studentName} &bull; {courseCode}</p>
-                  </div>
-                  <span className="px-3 py-1 bg-green-100 text-green-700 border border-green-200 rounded-full text-xs font-bold">
-                    Enrolled & Active
-                  </span>
+            <div className="p-6 bg-gray-50/60 h-full flex flex-col">
+              {isLoadingFiles ? (
+                <div className="py-12 text-center text-gray-500 text-sm font-medium animate-pulse">
+                  Loading documents...
                 </div>
-              </div>
-
-              {/* Semester Academic Summary */}
-              <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-xs space-y-3">
-                <h5 className="text-xs font-bold uppercase tracking-wider text-gray-700">Academic Standing</h5>
-                <div className="grid grid-cols-2 gap-3 text-center">
-                  <div className="bg-blue-50/60 p-3 rounded-xl border border-blue-100">
-                    <span className="text-xs text-gray-500 font-medium">RF</span>
-                    <p className="text-lg font-extrabold text-blue-900">Enrolled</p>
-                  </div>
-                  <div className="bg-blue-50/60 p-3 rounded-xl border border-blue-100">
-                    <span className="text-xs text-gray-500 font-medium">GWA</span>
-                    <p className="text-lg font-extrabold text-blue-900">1.45</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Uploaded Documents for this Semester */}
-              <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-xs space-y-3">
-                <h5 className="text-xs font-bold uppercase tracking-wider text-gray-700">Semester Uploads</h5>
-                
-                {isLoadingFiles ? (
-                  <div className="py-6 text-center text-gray-500 text-sm font-medium animate-pulse">
-                    Loading files...
-                  </div>
-                ) : semesterFiles.length > 0 ? (
-                  <div className="space-y-2">
-                    {semesterFiles.map((file, idx) => (
-                      <div key={file.id || idx} className="p-3 bg-gray-50 rounded-lg flex items-center justify-between border border-gray-100">
-                        <div className="flex items-center gap-2.5">
+              ) : semesterFiles.length > 0 ? (
+                <div className="space-y-6">
+                  {semesterFiles.map((file, idx) => (
+                    <div key={file.id || idx} className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden flex flex-col">
+                      <div className="px-4 py-3 bg-gray-50 border-b border-gray-200 flex justify-between items-center shrink-0">
+                        <h3 className="font-bold text-gray-800 flex items-center gap-2">
                           <FileText className="w-4 h-4 text-blue-600" />
-                          <div>
-                            <p className="text-xs font-bold text-gray-800">{formatDocumentLabel(file.category, file.name)}</p>
-                            <p className="text-[11px] text-gray-500">{file.name} &bull; {file.size || 'Unknown Size'}</p>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span className={cn(
-                            "text-[10px] font-bold uppercase px-2 py-0.5 rounded border",
-                            file.status === 'Verified' ? "text-green-700 bg-green-50 border-green-200" :
-                            "text-blue-700 bg-blue-50 border-blue-200"
-                          )}>
-                            {file.status === 'Verified' ? 'Verified' : 'Submitted'}
-                          </span>
+                          {formatDocumentLabel(file.category, file.name)}
+                        </h3>
+                        <div className="flex gap-2">
                           <button
-                            onClick={() => setPreviewFile(file)}
-                            className="p-1.5 text-blue-600 hover:bg-blue-100 rounded-md transition-colors cursor-pointer"
-                            title="Preview File"
+                            onClick={() => handleVerifyRequirement(file.category || 'RF', file.status === 'Verified' ? 'Pending' : 'Verified')}
+                            className={cn(
+                              "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-colors cursor-pointer",
+                              file.status === 'Verified' 
+                                ? "bg-green-100 hover:bg-green-200 text-green-700" 
+                                : "bg-gray-200 hover:bg-gray-300 text-gray-700"
+                            )}
                           >
-                            <Eye className="w-3.5 h-3.5" />
+                            <CheckCircle2 className="w-3.5 h-3.5" />
+                            {file.status === 'Verified' ? 'Verified' : 'Mark as Verified'}
                           </button>
+                          <a 
+                            href={file.data} 
+                            download={file.name}
+                            className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold transition-colors cursor-pointer"
+                          >
+                            <Download className="w-3.5 h-3.5" /> Download
+                          </a>
                         </div>
                       </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="py-6 text-center text-gray-500 text-sm font-medium">
-                    No files found for this academic term.
-                  </div>
-                )}
-              </div>
-
+                      <div className="bg-gray-100 flex items-center justify-center p-6 min-h-[400px]">
+                        {file.type?.includes('image') || file.data?.startsWith('data:image') ? (
+                          <img src={file.data} alt={file.name} className="max-w-full max-h-[60vh] object-contain shadow-sm" />
+                        ) : file.type?.includes('pdf') || file.data?.startsWith('data:application/pdf') ? (
+                          <iframe src={file.data} className="w-full h-[60vh] border-none bg-white shadow-sm" title={file.name} />
+                        ) : (
+                          <div className="text-center text-gray-500 font-medium py-12">
+                            <FileText className="w-16 h-16 mx-auto text-gray-300 mb-3" />
+                            Cannot preview this file type. <br/> Please download to view.
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="py-12 text-center text-gray-500 font-medium">
+                  <Archive className="w-12 h-12 mx-auto text-gray-300 mb-3" />
+                  No RF or GWA documents found for this academic term.
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -651,7 +642,7 @@ export function StudentRecordModal({
 
                 <div className="flex items-end text-sm">
                   <span className="mr-2">Permanent Address:</span>
-                  <span className="flex-1 border-b border-black inline-block text-center">{formData.street ? `${formData.street}, ${formData.barangay}, ${formData.municipality}, ${formData.province} ${formData.postalCode}` : (formData.permanentAddress || '')}</span>
+                  <span className="flex-1 border-b border-black inline-block text-center">{formData.street ? (formData.municipality === 'Others' ? `${formData.street}, ${formData.outsideCapizAddress || ''}, ${formData.province} ${formData.postalCode}` : `${formData.street}, ${formData.barangay}, ${formData.municipality}, ${formData.province} ${formData.postalCode}`) : (formData.permanentAddress || '')}</span>
                 </div>
               </div>
               
@@ -871,7 +862,6 @@ export function StudentRecordModal({
             <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{isSelectedScholarship('Pag – ulikid') && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>Pag – ulikid</span></div>
             <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{isSelectedScholarship('Barangay') && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>Barangay (Legal dependents of Brgy. Officials)</span></div>
             <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{isSelectedScholarship('ESGP – PA') && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>ESGP – PA</span></div>
-            <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{isSelectedScholarship('UniFast') && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>UniFast</span></div>
             <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{isSelectedScholarship('Tertiary Education Subsidy (TES)') && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>Tertiary Education Subsidy (TES)</span></div>
             <div className="flex items-end gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center mb-1 shrink-0">{isSelectedScholarship('Congressional District') && <Check className="w-4 h-4" strokeWidth={3} />}</div><span className="mb-1">Congressional District (specify)</span><span className="flex-1 border-b border-black inline-block text-center pb-1">{isSelectedScholarship('Congressional District') ? formData.chedCongressionalDistrict : ''}</span></div>
             <div className="flex items-end gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center mb-1 shrink-0">{isSelectedScholarship('One Town One Scholar') && <Check className="w-4 h-4" strokeWidth={3} />}</div><span className="mb-1">One Town One Scholar (specify)</span><span className="flex-1 border-b border-black inline-block text-center pb-1">{isSelectedScholarship('One Town One Scholar') ? formData.chedOneTown : ''}</span></div>

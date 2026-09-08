@@ -1012,6 +1012,7 @@ export function StudentSubmissionForm() {
       municipality: '',
       province: 'Capiz',
       postalCode: '',
+      outsideCapizAddress: '',
       fatherName: '', 
       fatherOccupation: '', 
       fatherContact: '', 
@@ -1186,6 +1187,11 @@ export function StudentSubmissionForm() {
       const updated = { ...prev, [name]: value };
       if (name === 'municipality') {
         updated.barangay = '';
+        if (value === 'Others') {
+          updated.province = '';
+        } else {
+          updated.province = 'Capiz';
+        }
       }
       // Maintain existing special logic for externalCategory if needed
       if (name === 'externalCategory') {
@@ -1412,7 +1418,7 @@ export function StudentSubmissionForm() {
       newErrors.email = 'Email is required';
       missingLabels.push('Email');
     }
-    if (!formData.street || !formData.street.trim() || !formData.barangay || !formData.municipality || !formData.postalCode) {
+    if (!formData.street || !formData.street.trim() || !formData.municipality || !formData.postalCode || (formData.municipality !== 'Others' && !formData.barangay) || (formData.municipality === 'Others' && (!formData.outsideCapizAddress || !formData.province))) {
       newErrors.permanentAddress = 'Complete Permanent Address is required';
       missingLabels.push('Permanent Address');
     }
@@ -2019,7 +2025,7 @@ export function StudentSubmissionForm() {
                       name="municipality" 
                       value={formData.municipality} 
                       onChange={handleChange} 
-                      options={Object.keys(capizMunicipalities)}
+                      options={[...Object.keys(capizMunicipalities), 'Others']}
                       required 
                     />
                   </div>
@@ -2030,9 +2036,9 @@ export function StudentSubmissionForm() {
                       name="barangay" 
                       value={formData.barangay} 
                       onChange={handleChange} 
-                      options={formData.municipality ? capizMunicipalities[formData.municipality as keyof typeof capizMunicipalities] : []}
-                      required 
-                      disabled={!formData.municipality}
+                      options={formData.municipality && formData.municipality !== 'Others' ? capizMunicipalities[formData.municipality as keyof typeof capizMunicipalities] : []}
+                      required={formData.municipality !== 'Others'}
+                      disabled={!formData.municipality || formData.municipality === 'Others'}
                     />
                     <InputGroup 
                       label="Province" 
@@ -2040,7 +2046,7 @@ export function StudentSubmissionForm() {
                       value={formData.province} 
                       onChange={handleChange} 
                       required 
-                      disabled
+                      disabled={formData.municipality !== 'Others'}
                     />
                     <InputGroup 
                       label="Postal Code" 
@@ -2050,6 +2056,18 @@ export function StudentSubmissionForm() {
                       required 
                     />
                   </div>
+                  {formData.municipality === 'Others' && (
+                    <div className="mt-1">
+                      <InputGroup 
+                        label="Others:" 
+                        name="outsideCapizAddress" 
+                        value={formData.outsideCapizAddress} 
+                        onChange={handleChange} 
+                        placeholder="Please specify your complete address outside of Capiz"
+                        required 
+                      />
+                    </div>
+                  )}
                   {errors.permanentAddress && <p className="text-[11px] text-red-500 mt-0.5">{errors.permanentAddress}</p>}
                 </div>
               </div>
