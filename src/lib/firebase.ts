@@ -102,5 +102,9 @@ export const logOut = async () => {
 
 
 export const resetPassword = async (email: string) => {
-  return sendPasswordResetEmail(auth, email.trim());
+  const actionCodeSettings = {
+    url: typeof window !== 'undefined' ? `${window.location.origin}/reset-password` : 'http://localhost:3000/reset-password',
+    handleCodeInApp: false
+  };
+  return sendPasswordResetEmail(auth, email.trim(), actionCodeSettings);
 };

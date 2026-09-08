@@ -23,6 +23,7 @@ const StudentLogin = lazy(() => import('./pages/student').then(module => ({ defa
 const StudentLayout = lazy(() => import('./pages/student').then(module => ({ default: module.StudentLayout })));
 const StudentDashboard = lazy(() => import('./pages/student').then(module => ({ default: module.StudentDashboard })));
 const StudentSubmissionForm = lazy(() => import('./pages/student').then(module => ({ default: module.StudentSubmissionForm })));
+const ResetPassword = lazy(() => import('./pages/ResetPassword').then(module => ({ default: module.ResetPassword })));
 
 const AdminAuthGuard = () => {
   const [isAuth, setIsAuth] = useState<boolean>(() => {
@@ -142,6 +143,9 @@ export default function App() {
           </Route>
         </Route>
         
+        {/* General Routes */}
+        <Route path="/reset-password" element={<ResetPassword />} />
+
         {/* Student Portal Routes */}
         <Route path="/student/login" element={<StudentLogin />} />
         <Route path="/student" element={<StudentAuthGuard />}>
