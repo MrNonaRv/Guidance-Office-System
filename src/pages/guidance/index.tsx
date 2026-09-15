@@ -196,7 +196,7 @@ export function GuidanceLogin() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[url('/BACKGROUND.png')] bg-cover bg-center p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#1e4b9c] to-[#6099d8] p-4">
       <motion.div 
         initial={{ y: 50, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
@@ -684,23 +684,26 @@ export function GuidanceDashboard() {
             <table className="w-full text-left border-collapse min-w-[500px]">
               <thead>
                 <tr className="bg-[#edf3fa] text-[#486581] text-[11px] font-bold uppercase tracking-wider">
-                  <th className="py-3 px-4 sm:px-6 font-bold">STUDENT</th>
-                  <th className="py-3 px-3 sm:px-4 font-bold">COURSE</th>
-                  <th className="py-3 px-3 sm:px-4 font-bold">DATE</th>
+                  <th className="py-3 px-4 sm:px-6 font-bold text-center">STUDENT</th>
+                  <th className="py-3 px-3 sm:px-4 font-bold text-center">COURSE</th>
+                  <th className="py-3 px-3 sm:px-4 font-bold text-center">DATE</th>
                   <th className="py-3 px-4 sm:px-6 font-bold text-center">STATUS</th>
+                  <th className="py-3 px-4 sm:px-6 font-bold text-center">RECORDS</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
                 {displaySubmissions.map((s, idx) => (
                   <tr key={idx} className="hover:bg-blue-50/20 transition-colors">
-                    <td className="py-3.5 px-4 sm:px-6 text-xs font-bold text-gray-900 flex items-center gap-2.5 sm:gap-3">
-                      <div className="w-6 h-6 rounded-full border border-gray-300 flex items-center justify-center text-gray-400 shrink-0">
-                        <User className="w-3.5 h-3.5" />
+                    <td className="py-3.5 px-4 sm:px-6">
+                      <div className="flex items-center justify-center gap-2.5 sm:gap-3">
+                        <div className="w-6 h-6 rounded-full border border-gray-300 flex items-center justify-center text-gray-400 shrink-0">
+                          <User className="w-3.5 h-3.5" />
+                        </div>
+                        <span className="truncate max-w-[180px] sm:max-w-none text-xs font-bold text-gray-900 text-left">{s.studentName}</span>
                       </div>
-                      <span className="truncate max-w-[180px] sm:max-w-none">{s.studentName}</span>
                     </td>
-                    <td className="py-3.5 px-3 sm:px-4 text-xs font-bold text-gray-800">{s.course}</td>
-                    <td className="py-3.5 px-3 sm:px-4 text-xs font-medium text-gray-600 whitespace-nowrap">{s.date}</td>
+                    <td className="py-3.5 px-3 sm:px-4 text-xs font-bold text-gray-800 text-center">{s.course}</td>
+                    <td className="py-3.5 px-3 sm:px-4 text-xs font-medium text-gray-600 whitespace-nowrap text-center">{s.date}</td>
                     <td className="py-3.5 px-4 sm:px-6 text-center">
                       {s.status === 'Incomplete' ? (
                         <span className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded-full text-[10px] sm:text-[11px] font-bold bg-[#fef3c7] text-[#b45309] border border-[#fde68a]">
@@ -713,6 +716,11 @@ export function GuidanceDashboard() {
                           Complete
                         </span>
                       )}
+                    </td>
+                    <td className="py-3.5 px-4 sm:px-6 text-center">
+                      <button className="text-[11px] font-bold text-blue-600 hover:text-blue-800 transition-colors cursor-pointer">
+                        View
+                      </button>
                     </td>
                   </tr>
                 ))}
@@ -931,7 +939,7 @@ export function GuidanceSubmissions() {
           <table className="w-full text-center border-collapse min-w-[650px]">
             <thead>
               <tr className="bg-[#f0f2f5] text-gray-600 text-[11px] font-bold uppercase tracking-widest border-b border-gray-200">
-                <th className="py-4 px-6 text-left w-1/4">Student</th>
+                <th className="py-4 px-6 text-center w-1/4">Student</th>
                 <th className="py-4 px-6 w-1/5">Course</th>
                 <th className="py-4 px-6 w-1/5">Date</th>
                 <th className="py-4 px-6 w-1/6">Status</th>
@@ -946,13 +954,15 @@ export function GuidanceSubmissions() {
               )}
               {filteredSubmissions.map(s => (
                 <tr key={s.id} className="hover:bg-gray-50/50 transition-colors">
-                  <td className="py-4 px-6 text-sm font-medium text-gray-800 flex items-center gap-4 text-left">
-                    <div className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center bg-white text-gray-400">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                  <td className="py-4 px-6">
+                    <div className="flex items-center justify-center gap-4">
+                      <div className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center bg-white text-gray-400 shrink-0">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                      </div>
+                      <span className="text-sm font-medium text-gray-800 text-left">{s.studentName}</span>
                     </div>
-                    {s.studentName}
                   </td>
-                  <td className="py-4 px-6 text-sm text-gray-700 font-medium">
+                  <td className="py-4 px-6 text-sm text-gray-700 font-medium text-center">
                     {/* Inferring course from scholarshipType for demo, or extracting from answers */}
                     {s.data?.course || s.answers?.course || (s.scholarshipType.includes('BS') || s.scholarshipType.includes('BA') ? s.scholarshipType.split(' ')[0] : 'N/A')}
                   </td>
@@ -1271,77 +1281,95 @@ export function GuidanceSettings() {
   return (
     <div className="p-4 sm:p-6 md:p-8 space-y-6 max-w-[1600px] mx-auto">
       {/* Title */}
-      <h1 className="text-2xl sm:text-3xl md:text-4xl font-serif font-bold text-[#0c2340] tracking-tight">Settings</h1>
+      <h1 className="text-2xl sm:text-3xl md:text-4xl font-serif font-bold text-[#0c2340] tracking-tight mb-8">Settings</h1>
 
       {/* Tabs Row matching the reference image */}
-      <div className="flex items-center gap-4 sm:gap-8 border-b border-gray-300/80 px-1 sm:px-2 pt-1 overflow-x-auto scrollbar-none flex-nowrap">
+      <div className="flex items-center gap-6 sm:gap-10 border-b border-gray-300 px-4 pt-2 overflow-x-auto scrollbar-none flex-nowrap">
         <button
           onClick={() => setActiveTab('academic-year')}
           className={cn(
-            "flex items-center gap-2 pb-3 text-xs sm:text-sm font-bold transition-all relative cursor-pointer whitespace-nowrap shrink-0",
+            "flex items-center gap-2.5 pb-3 text-sm font-bold transition-all relative cursor-pointer whitespace-nowrap shrink-0",
             activeTab === 'academic-year'
-              ? "text-[#1864db]"
-              : "text-[#0c2340] hover:text-[#1864db]"
+              ? "text-blue-600"
+              : "text-[#0c2340] hover:text-blue-600"
           )}
         >
-          <Calendar className={cn("w-4 h-4", activeTab === 'academic-year' ? "text-[#1864db]" : "text-[#0c2340]")} />
+          <Calendar className={cn("w-[18px] h-[18px]", activeTab === 'academic-year' ? "text-blue-600" : "text-[#0c2340]")} />
           <span>Academic Year</span>
           {activeTab === 'academic-year' && (
-          <div className="absolute bottom-0 left-0 right-0 h-[2.5px] bg-[#1864db] rounded-t-full" />
+          <div className="absolute bottom-0 left-0 right-0 h-[3px] bg-blue-600 rounded-t-full" />
         )}
       </button>
 
       <button
           onClick={() => setActiveTab('courses')}
           className={cn(
-            "flex items-center gap-2 pb-3 text-xs sm:text-sm font-bold transition-all relative cursor-pointer whitespace-nowrap shrink-0",
+            "flex items-center gap-2.5 pb-3 text-sm font-bold transition-all relative cursor-pointer whitespace-nowrap shrink-0",
             activeTab === 'courses'
-              ? "text-[#1864db]"
-              : "text-[#0c2340] hover:text-[#1864db]"
+              ? "text-blue-600"
+              : "text-[#0c2340] hover:text-blue-600"
           )}
         >
-          <GraduationCap className={cn("w-4 h-4", activeTab === 'courses' ? "text-[#1864db]" : "text-[#0c2340]")} />
+          <GraduationCap className={cn("w-[18px] h-[18px]", activeTab === 'courses' ? "text-blue-600" : "text-[#0c2340]")} />
           <span>Courses</span>
           {activeTab === 'courses' && (
-            <div className="absolute bottom-0 left-0 right-0 h-[2.5px] bg-[#1864db] rounded-t-full" />
+            <div className="absolute bottom-0 left-0 right-0 h-[3px] bg-blue-600 rounded-t-full" />
           )}
         </button>
 
         <button
           onClick={() => setActiveTab('sections')}
           className={cn(
-            "flex items-center gap-2 pb-3 text-xs sm:text-sm font-bold transition-all relative cursor-pointer whitespace-nowrap shrink-0",
+            "flex items-center gap-2.5 pb-3 text-sm font-bold transition-all relative cursor-pointer whitespace-nowrap shrink-0",
             activeTab === 'sections'
-              ? "text-[#1864db]"
-              : "text-[#0c2340] hover:text-[#1864db]"
+              ? "text-blue-600"
+              : "text-[#0c2340] hover:text-blue-600"
           )}
         >
-          <Users className={cn("w-4 h-4", activeTab === 'sections' ? "text-[#1864db]" : "text-[#0c2340]")} />
+          <Users className={cn("w-[18px] h-[18px]", activeTab === 'sections' ? "text-blue-600" : "text-[#0c2340]")} />
           <span>Sections</span>
           {activeTab === 'sections' && (
-            <div className="absolute bottom-0 left-0 right-0 h-[2.5px] bg-[#1864db] rounded-t-full" />
+            <div className="absolute bottom-0 left-0 right-0 h-[3px] bg-blue-600 rounded-t-full" />
           )}
         </button>
-
-      <button
-        onClick={() => setActiveTab('scholarships')}
-        className={cn(
-          "flex items-center gap-2 pb-3 text-xs sm:text-sm font-bold transition-all relative cursor-pointer whitespace-nowrap shrink-0",
-          activeTab === 'scholarships'
-            ? "text-[#1864db]"
-            : "text-[#0c2340] hover:text-[#1864db]"
-        )}
-      >
-        <Award className={cn("w-4 h-4", activeTab === 'scholarships' ? "text-[#1864db]" : "text-[#0c2340]")} />
-        <span>Scholarships</span>
-        {activeTab === 'scholarships' && (
-            <div className="absolute bottom-0 left-0 right-0 h-[2.5px] bg-[#1864db] rounded-t-full" />
+        
+        <button
+          onClick={() => setActiveTab('scholarships')}
+          className={cn(
+            "flex items-center gap-2.5 pb-3 text-sm font-bold transition-all relative cursor-pointer whitespace-nowrap shrink-0",
+            activeTab === 'scholarships'
+              ? "text-blue-600"
+              : "text-[#0c2340] hover:text-blue-600"
           )}
+        >
+          <Award className={cn("w-[18px] h-[18px]", activeTab === 'scholarships' ? "text-blue-600" : "text-[#0c2340]")} />
+          <span>Scholarships</span>
+          {activeTab === 'scholarships' && (
+            <div className="absolute bottom-0 left-0 right-0 h-[3px] bg-blue-600 rounded-t-full" />
+          )}
+        </button>
+        
+        <button
+          className={cn(
+            "flex items-center gap-2.5 pb-3 text-sm font-bold transition-all relative cursor-pointer whitespace-nowrap shrink-0 text-[#0c2340] hover:text-blue-600 opacity-60",
+          )}
+        >
+          <FileText className="w-[18px] h-[18px] text-[#0c2340]" />
+          <span>Form</span>
+        </button>
+        
+        <button
+          className={cn(
+            "flex items-center gap-2.5 pb-3 text-sm font-bold transition-all relative cursor-pointer whitespace-nowrap shrink-0 text-[#0c2340] hover:text-blue-600 opacity-60",
+          )}
+        >
+          <ImageIcon className="w-[18px] h-[18px] text-[#0c2340]" />
+          <span>Files</span>
         </button>
       </div>
 
       {/* Main Settings Card */}
-      <div className="bg-white rounded-2xl shadow-md border border-gray-200/80 overflow-hidden">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-300 overflow-hidden mt-6">
         {/* Card Top Action Bar */}
         <div className="p-5 px-6 flex justify-between items-center border-b border-gray-200/80">
           <h2 className="text-lg font-bold text-[#0c2340]">
@@ -1480,8 +1508,6 @@ export function GuidanceSettings() {
                 <tr className="bg-[#edf3fa] text-[#486581] text-[11px] font-bold uppercase tracking-wider">
                   <th className="py-3 px-8 font-bold text-left">COURSE CODE</th>
                   <th className="py-3 px-6 font-bold text-left">DEGREE TITLE</th>
-                  <th className="py-3 px-6 font-bold text-left">COLLEGE / DEPARTMENT</th>
-                  <th className="py-3 px-6 font-bold text-center">STATUS</th>
                   <th className="py-3 px-8 font-bold text-right"></th>
                 </tr>
               </thead>
@@ -1490,15 +1516,6 @@ export function GuidanceSettings() {
                   <tr key={c.id || idx} className="hover:bg-blue-50/20 transition-colors">
                     <td className="py-4 px-8 font-bold text-[#1864db]">{c.code}</td>
                     <td className="py-4 px-6 font-bold text-gray-900">{c.name}</td>
-                    <td className="py-4 px-6 text-gray-600 text-xs">{c.department}</td>
-                    <td className="py-4 px-6 text-center">
-                      <span className={cn(
-                        "inline-block w-24 py-1 rounded-full text-xs font-semibold text-center",
-                        c.status === 'Active' ? "bg-[#bbf7d0] text-[#15803d]" : "bg-[#fecaca] text-[#dc2626]"
-                      )}>
-                        {c.status}
-                      </span>
-                    </td>
                     <td className="py-4 px-8 text-right space-x-3">
                       <button
                         onClick={() => handleEditCourse(c)}
@@ -1527,42 +1544,29 @@ export function GuidanceSettings() {
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="bg-[#edf3fa] text-[#486581] text-[11px] font-bold uppercase tracking-wider">
-                  <th className="py-3 px-8 font-bold text-left">SECTION NAME</th>
-                  <th className="py-3 px-6 font-bold text-left">COURSE PROGRAM</th>
-                  <th className="py-3 px-6 font-bold text-left">YEAR LEVEL</th>
-                  <th className="py-3 px-6 font-bold text-center">STATUS</th>
+                <tr className="bg-[#edf3fa] text-[#486581] text-[11px] font-bold uppercase tracking-wider border-b border-gray-300">
+                  <th className="py-3 px-8 font-bold text-left">SECTION</th>
                   <th className="py-3 px-8 font-bold text-right"></th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 text-sm">
                 {sections.map((s, idx) => (
                   <tr key={s.id || idx} className="hover:bg-blue-50/20 transition-colors">
-                    <td className="py-4 px-8 font-bold text-gray-900">{s.name}</td>
-                    <td className="py-4 px-6 font-semibold text-blue-800">{s.course}</td>
-                    <td className="py-4 px-6 text-gray-700 text-xs">{s.yearLevel}</td>
-                    <td className="py-4 px-6 text-center">
-                      <span className={cn(
-                        "inline-block w-24 py-1 rounded-full text-xs font-semibold text-center",
-                        s.status === 'Active' ? "bg-[#bbf7d0] text-[#15803d]" : "bg-[#fecaca] text-[#dc2626]"
-                      )}>
-                        {s.status}
-                      </span>
-                    </td>
+                    <td className="py-4 px-8 text-gray-700">{s.name.replace(/^(BSCS|BAEL|BSFT|BSOA)\s+/, '') || s.name}</td>
                     <td className="py-4 px-8 text-right space-x-3">
                       <button
                         onClick={() => handleEditSection(s)}
-                        className="text-gray-400 hover:text-gray-700 transition-colors p-1"
+                        className="text-gray-300 hover:text-gray-700 transition-colors p-1"
                         title="Edit"
                       >
-                        <Pen className="w-4 h-4" />
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
                       </button>
                       <button
                         onClick={() => handleDeleteSection(s.id)}
-                        className="text-gray-400 hover:text-red-600 transition-colors p-1"
+                        className="text-gray-300 hover:text-gray-700 transition-colors p-1"
                         title="Delete"
                       >
-                        <Trash2 className="w-4 h-4" />
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
                       </button>
                     </td>
                   </tr>

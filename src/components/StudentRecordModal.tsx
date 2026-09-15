@@ -265,34 +265,6 @@ export function StudentRecordModal({
       }
     },
     {
-      id: 'req-rf-2',
-      name: 'Registration Form (RF)',
-      group: '2nd Semester',
-      category: 'RF_2',
-      fileName: localSubmission.files?.find((f: any) => f.category === 'RF_2' || (f.category === 'Certificate of Registration (COR)' && f.name.includes('2nd')))?.name || `${studentName.replace(/\s+/g, '_')}_2nd_Sem_RF.pdf`,
-      status: (localSubmission.files?.find((f: any) => f.category === 'RF_2' || (f.category === 'Certificate of Registration (COR)' && f.name.includes('2nd')))?.verified || localSubmission.status === 'Complete' || localSubmission.status === 'Approved') ? 'Verified' : 'Pending',
-      file: localSubmission.files?.find((f: any) => f.category === 'RF_2' || (f.category === 'Certificate of Registration (COR)' && f.name.includes('2nd'))) || {
-        name: `${studentName.replace(/\s+/g, '_')}_2nd_Sem_RF.pdf`,
-        type: 'application/pdf',
-        category: 'RF_2',
-        data: 'data:application/pdf;base64,JVBERi0xLjQKJcOkw7zDtsOfCjIgMCBvYmoKPDwvTGVuZ3RoIDMgMCBSL0ZpbHRlci9GbGF0ZURlY29kZT4+CnN0cmVhbQp4nDPQM1Qo5ypUMFAwALJMLU31jBQsTAz1LBSK0osS84tKUvPSi1QK0lPykxWLkjOA3KLUxDwlAwjN1wAAg5wP3gplbmRzdHJlYW0KZW5kb2JqCgozIDAgb2JqCjY1CmVuZG9iagoKNCAwIG9iago8PC9UeXBlL1BhZ2UvTWVkaWFCb3hbMCAwIDU5NSA4NDJdL1Jlc291cmNlczw8L0ZvbnQ8PC9GMCAxIDAgUj4+Pj4vQ29udGVudHMgMiAwIFIvUGFyZW50IDUgMCBSPj4KZW5kb2JqCgo1IDAgb2JqCjw8L1R5cGUvUGFnZXMvQ291bnQgMS9LaWRzWzQgMCBSXT4+CmVuZG9iagoKMSAwIG9iago8PC9UeXBlL0ZvbnQvU3VidHlwZS9UeXBlMS9CYXNlRm9udC9IZWx2ZXRpY2EvRW5jb2RpbmcvV2luQW5zaUVuY29kaW5nPj4KZW5kb2JqCgo2IDAgb2JqCjw8L1R5cGUvQ2F0YWxvZy9QYWdlcyA1IDAgUj4+CmVuZG9iagoKNyAwIG9iago8PC9DcmVhdG9yKExvY2FsIE1vY2sgRmlsZSkvUHJvZHVjZXIoTG9jYWwgTW9jayBGaWxlKS9DcmVhdGlvbkRhdGUoRDoyMDI2MDMwOTAwMDAwMFopPj4KZW5kb2JqCgp4cmVmCjAgOAowMDAwMDAwMDAwIDY1NTM1IGYgCjAwMDAwMDAyNjAgMDAwMDAgbiAKMDAwMDAwMDAxNSAwMDAwMCBuIAowMDAwMDAwMTMzIDAwMDAwIG4gCjAwMDAwMDAxNTEgMDAwMDAgbiAKMDAwMDAwMDIwNSAwMDAwMCBuIAowMDAwMDAwMzQ4IDAwMDAwIG4gCjAwMDAwMDAzOTcgMDAwMDAgbiAKdHJhaWxlcgo8PC9TaXplIDgvUm9vdCA2IDAgUi9JbmZvIDcgMCBSPj4Kc3RhcnR4cmVmCjUwMAolJUVPRgo='
-      }
-    },
-    {
-      id: 'req-gwa-2',
-      name: 'General Weighted Average (GWA)',
-      group: '2nd Semester',
-      category: 'GWA_2',
-      fileName: localSubmission.files?.find((f: any) => f.category === 'GWA_2' || (f.category === 'Certificate of Grades (COG)' && f.name.includes('2nd')))?.name || `${studentName.replace(/\s+/g, '_')}_2nd_Sem_GWA.pdf`,
-      status: (localSubmission.files?.find((f: any) => f.category === 'GWA_2' || (f.category === 'Certificate of Grades (COG)' && f.name.includes('2nd')))?.verified || localSubmission.status === 'Complete' || localSubmission.status === 'Approved') ? 'Verified' : 'Pending',
-      file: localSubmission.files?.find((f: any) => f.category === 'GWA_2' || (f.category === 'Certificate of Grades (COG)' && f.name.includes('2nd'))) || {
-        name: `${studentName.replace(/\s+/g, '_')}_2nd_Sem_GWA.pdf`,
-        type: 'application/pdf',
-        category: 'GWA_2',
-        data: 'data:application/pdf;base64,JVBERi0xLjQKJcOkw7zDtsOfCjIgMCBvYmoKPDwvTGVuZ3RoIDMgMCBSL0ZpbHRlci9GbGF0ZURlY29kZT4+CnN0cmVhbQp4nDPQM1Qo5ypUMFAwALJMLU31jBQsTAz1LBSK0osS84tKUvPSi1QK0lPykxWLkjOA3KLUxDwlAwjN1wAAg5wP3gplbmRzdHJlYW0KZW5kb2JqCgozIDAgb2JqCjY1CmVuZG9iagoKNCAwIG9iago8PC9UeXBlL1BhZ2UvTWVkaWFCb3hbMCAwIDU5NSA4NDJdL1Jlc291cmNlczw8L0ZvbnQ8PC9GMCAxIDAgUj4+Pj4vQ29udGVudHMgMiAwIFIvUGFyZW50IDUgMCBSPj4KZW5kb2JqCgo1IDAgb2JqCjw8L1R5cGUvUGFnZXMvQ291bnQgMS9LaWRzWzQgMCBSXT4+CmVuZG9iagoKMSAwIG9iago8PC9UeXBlL0ZvbnQvU3VidHlwZS9UeXBlMS9CYXNlRm9udC9IZWx2ZXRpY2EvRW5jb2RpbmcvV2luQW5zaUVuY29kaW5nPj4KZW5kb2JqCgo2IDAgb2JqCjw8L1R5cGUvQ2F0YWxvZy9QYWdlcyA1IDAgUj4+CmVuZG9iagoKNyAwIG9iago8PC9DcmVhdG9yKExvY2FsIE1vY2sgRmlsZSkvUHJvZHVjZXIoTG9jYWwgTW9jayBGaWxlKS9DcmVhdGlvbkRhdGUoRDoyMDI2MDMwOTAwMDAwMFopPj4KZW5kb2JqCgp4cmVmCjAgOAowMDAwMDAwMDAwIDY1NTM1IGYgCjAwMDAwMDAyNjAgMDAwMDAgbiAKMDAwMDAwMDAxNSAwMDAwMCBuIAowMDAwMDAwMTMzIDAwMDAwIG4gCjAwMDAwMDAxNTEgMDAwMDAgbiAKMDAwMDAwMDIwNSAwMDAwMCBuIAowMDAwMDAwMzQ4IDAwMDAwIG4gCjAwMDAwMDAzOTcgMDAwMDAgbiAKdHJhaWxlcgo8PC9TaXplIDgvUm9vdCA2IDAgUi9JbmZvIDcgMCBSPj4Kc3RhcnR4cmVmCjUwMAolJUVPRgo='
-      }
-    },
-    {
       id: 'req-id',
       name: 'Student ID',
       group: 'Other Documents',
@@ -366,24 +338,24 @@ export function StudentRecordModal({
                 <button
                   onClick={() => handleStatusSelect(currentStatus === 'Complete' ? 'Incomplete' : 'Complete')}
                   className={cn(
-                    "w-full font-bold py-3.5 rounded-xl flex items-center justify-center gap-2.5 transition-colors cursor-pointer",
+                    "w-full font-bold py-2 rounded-xl flex items-center justify-center gap-1.5 transition-colors cursor-pointer",
                     currentStatus === 'Complete' 
                       ? "bg-[#dcfce7] hover:bg-[#bbf7d0] text-[#166534]"
                       : "bg-[#ffedd5] hover:bg-[#fed7aa] text-[#c2410c]"
                   )}
                 >
                   {currentStatus === 'Complete' ? (
-                    <><CheckCircle2 className="w-[18px] h-[18px] stroke-[2.5]" /><span className="text-[13px] xl:text-[14px]">Marked Complete</span></>
+                    <><CheckCircle2 className="w-4 h-4 stroke-[2]" /><span className="text-[12px] xl:text-[13px]">Marked Complete</span></>
                   ) : (
-                    <><AlertCircle className="w-[18px] h-[18px] stroke-[2.5]" /><span className="text-[13px] xl:text-[14px]">Mark Incomplete</span></>
+                    <><AlertCircle className="w-4 h-4 stroke-[2]" /><span className="text-[12px] xl:text-[13px]">Mark Incomplete</span></>
                   )}
                 </button>
                 <button
                   onClick={() => setViewMode('form')}
-                  className="w-full bg-[#e0e7ff] hover:bg-[#dbeafe] text-[#2563eb] font-bold py-3.5 rounded-xl flex items-center justify-center gap-2.5 transition-colors cursor-pointer"
+                  className="w-full bg-[#e0e7ff] hover:bg-[#dbeafe] text-[#2563eb] font-bold py-2 rounded-xl flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
                 >
-                  <Eye className="w-[18px] h-[18px] stroke-[2.5]" />
-                  <span className="text-[13px] xl:text-[14px]">View Filled Form</span>
+                  <Eye className="w-4 h-4 stroke-[2]" />
+                  <span className="text-[12px] xl:text-[13px]">View Filled Form</span>
                 </button>
                 <button
                   onClick={() => navigate('/admin/communications', { 
@@ -392,10 +364,10 @@ export function StudentRecordModal({
                       prefillTemplate: currentStatus === 'Approved' || currentStatus === 'Complete' ? 'verified' : currentStatus === 'Incomplete' ? 'missing-docs' : 'blank'
                     }
                   })}
-                  className="w-full bg-[#fce7f3] hover:bg-[#fbcfe8] text-[#be185d] font-bold py-3.5 rounded-xl flex items-center justify-center gap-2.5 transition-colors cursor-pointer"
+                  className="w-full bg-[#fce7f3] hover:bg-[#fbcfe8] text-[#be185d] font-bold py-2 rounded-xl flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
                 >
-                  <Mail className="w-[18px] h-[18px] stroke-[2.5]" />
-                  <span className="text-[13px] xl:text-[14px]">Email Student</span>
+                  <Mail className="w-4 h-4 stroke-[2]" />
+                  <span className="text-[12px] xl:text-[13px]">Email Student</span>
                 </button>
               </div>
 
@@ -913,25 +885,25 @@ export function StudentRecordModal({
             <div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{isSelectedScholarship('DSWD') && <Check className="w-4 h-4" strokeWidth={3} />}</div>
             <div className="flex-1">
               <span className="font-bold">DSWD:</span>
-              <div className="flex items-end gap-2 mt-6">
+              <div className="flex items-end gap-2 mt-4">
                 <span>Municipality:</span><span className="flex-1 border-b border-black inline-block text-center">{isSelectedScholarship('DSWD') ? formData.dswdMunicipality : ''}</span>
               </div>
-              <div className="flex items-end gap-2 mt-6">
+              <div className="flex items-end gap-2 mt-4">
                 <span>Contact person:</span><span className="flex-1 border-b border-black inline-block text-center">{isSelectedScholarship('DSWD') ? formData.dswdContact : ''}</span>
               </div>
-              <div className="flex items-end gap-2 mt-6">
+              <div className="flex items-end gap-2 mt-4">
                 <span>Designation:</span><span className="flex-1 border-b border-black inline-block text-center">{isSelectedScholarship('DSWD') ? formData.dswdDesignation : ''}</span>
               </div>
-              <div className="flex items-end gap-2 mt-6">
+              <div className="flex items-end gap-2 mt-4">
                 <span>Others (specify)</span><span className="flex-1 border-b border-black inline-block text-center">{isSelectedScholarship('DSWD') ? formData.dswdOthers : ''}</span>
               </div>
             </div>
           </div>
 
-          <div className="mt-20 text-center text-[15px]">
+          <div className="mt-10 text-center text-[15px]">
             I hereby certify that the information I have provided is true and correct to the best of my knowledge.
             
-            <div className="mt-12 flex justify-center">
+            <div className="mt-8 flex justify-center">
               <div className="w-64 border-b border-black relative h-12 flex items-center justify-center">
                 {formData.signature && (
                   <img src={formData.signature} alt="Signature" className="absolute bottom-1 max-h-20 object-contain" />

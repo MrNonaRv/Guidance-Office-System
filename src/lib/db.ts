@@ -904,10 +904,32 @@ export const db = {
       }
     },
     async markAllAsRead(): Promise<void> {
-      for (const item of memoryNotifications) {
+      let changed = false;
+      const updates: NotificationItem[] = [];
+
+      memoryNotifications = memoryNotifications.map(item => {
         if (!item.read) {
-          await this.set(item.id, { ...item, read: true });
+          changed = true;
+          const updated = { ...item, read: true };
+          updates.push(updated);
+          return updated;
         }
+        return item;
+      });
+
+      if (!changed) return;
+
+      notifyNotificationListeners();
+
+      for (const item of updates) {
+        notificationsDb.setItem(item.id, item).catch(() => {});
+      }
+
+      if (firestoreDb) {
+        await Promise.all(updates.map(item => 
+          setDoc(doc(firestoreDb, 'notifications', item.id), cleanForFirestore(item), { merge: true })
+            .catch(e => handleFirestoreError(e, OperationType.WRITE, `notifications/${item.id}`))
+        ));
       }
     },
     async listAll(): Promise<NotificationItem[]> {

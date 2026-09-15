@@ -280,7 +280,7 @@ export function StudentLogin() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[url('/BACKGROUND.png')] bg-cover bg-center p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#1e4b9c] to-[#6099d8] p-4">
       <motion.div 
         initial={{ y: 50, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
@@ -299,17 +299,17 @@ export function StudentLogin() {
             </div>
             <h1 className="text-[17px] sm:text-lg font-black text-[#1e4b9c] mb-6 leading-snug tracking-tight">Web-Based Scholarship Submission<br/>Alert System</h1>
             
-            <div className="flex bg-white rounded-full mb-6 border border-[#1e4b9c] overflow-hidden">
+            <div className="flex bg-white rounded-full mb-6 border border-gray-300 overflow-hidden shadow-sm p-1">
               <button 
                 type="button"
-                className={cn("flex-1 py-2 text-[13px] font-bold transition-all cursor-pointer border-r border-[#1e4b9c]", !isLogin ? "bg-white text-[#1e4b9c]" : "text-[#1e4b9c] hover:bg-blue-50/50")}
+                className={cn("flex-1 py-2 text-[13px] font-bold transition-all cursor-pointer rounded-full", !isLogin ? "bg-[#1e4b9c] text-white" : "bg-transparent text-gray-500 hover:text-gray-700")}
                 onClick={() => { setIsLogin(false); setError(''); }}
               >
                 Register
               </button>
               <button 
                 type="button"
-                className={cn("flex-1 py-2 text-[13px] font-bold transition-all cursor-pointer", isLogin ? "bg-white text-[#1e4b9c]" : "text-[#1e4b9c] hover:bg-blue-50/50")}
+                className={cn("flex-1 py-2 text-[13px] font-bold transition-all cursor-pointer rounded-full", isLogin ? "bg-[#1e4b9c] text-white" : "bg-transparent text-gray-500 hover:text-gray-700")}
                 onClick={() => { setIsLogin(true); setError(''); }}
               >
                 Log In
@@ -1994,12 +1994,12 @@ export function StudentSubmissionForm() {
                   </div>
                   <InputGroup label="Age" name="age" value={formData.age} onChange={handleChange} />
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                <div className="grid grid-cols-2 gap-3 sm:gap-4 items-end">
                   <div className="flex flex-col" id="field-sex">
                     <label className="text-[11px] font-bold text-[#0f2e60] mb-2 flex items-center gap-1">
                       Sex <span className="text-red-500 font-bold">*</span>
                     </label>
-                    <div className={`flex items-center gap-4 p-1 rounded ${errors.sex ? 'bg-red-50 border border-red-300' : ''}`}>
+                    <div className={`flex flex-wrap items-center gap-4 p-1 rounded ${errors.sex ? 'bg-red-50 border border-red-300' : ''}`}>
                       <label className="flex items-center gap-1.5 text-xs font-semibold text-[#0f2e60] cursor-pointer">
                         <input type="radio" name="sex" value="Male" checked={formData.sex === 'Male'} onChange={() => handleRadioChange('sex', 'Male')} className="w-3.5 h-3.5" /> Male
                       </label>
@@ -2011,7 +2011,7 @@ export function StudentSubmissionForm() {
                   </div>
                   <div className="flex flex-col">
                     <label className="text-[11px] font-bold text-[#0f2e60] mb-2">Civil Status</label>
-                    <div className="flex items-center gap-4 p-1">
+                    <div className="flex flex-wrap items-center gap-4 p-1">
                       <label className="flex items-center gap-1.5 text-xs font-semibold text-[#0f2e60] cursor-pointer">
                         <input type="radio" name="civilStatus" value="Single" checked={formData.civilStatus === 'Single'} onChange={() => handleRadioChange('civilStatus', 'Single')} className="w-3.5 h-3.5" /> Single
                       </label>
@@ -2159,31 +2159,33 @@ export function StudentSubmissionForm() {
               
               {/* Parent Edu Attainment & Monthly Income */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mt-6">
-                <div>
-                  <SelectGroup 
-                    label="Highest Educational Attainment of Parent/Guardian"
-                    name="parentEduAttainment"
-                    value={formData.parentEduAttainment}
-                    onChange={handleChange}
-                    options={['Elementary Level', 'Elementary Graduate', 'High school Graduate', 'College Graduate', 'High School Level', 'College Level', 'post Graduate level/degree']}
-                  />
-                  <div className="mt-4">
-                    <label className="block text-[12px] font-bold text-[#0f2e60] mb-2">Are you the first in family to attend college?</label>
-                    <div className="flex gap-4">
-                      <label className="flex items-center gap-2 text-xs font-semibold text-[#0f2e60] cursor-pointer"><input type="radio" name="firstInFamily" value="Yes" checked={formData.firstInFamily === 'Yes'} onChange={() => handleRadioChange('firstInFamily', 'Yes')} className="w-3.5 h-3.5" /> Yes</label>
-                      <label className="flex items-center gap-2 text-xs font-semibold text-[#0f2e60] cursor-pointer"><input type="radio" name="firstInFamily" value="No" checked={formData.firstInFamily === 'No'} onChange={() => handleRadioChange('firstInFamily', 'No')} className="w-3.5 h-3.5" /> No</label>
+                  <div className="flex flex-col gap-5">
+                    <SelectGroup 
+                      label="Highest Educational Attainment of Parent/Guardian"
+                      name="parentEduAttainment"
+                      value={formData.parentEduAttainment}
+                      onChange={handleChange}
+                      options={['Elementary Level', 'Elementary Graduate', 'High school Graduate', 'College Graduate', 'High School Level', 'College Level', 'post Graduate level/degree']}
+                    />
+                    <SelectGroup 
+                      label="Family Monthly Income"
+                      name="monthlyIncome"
+                      value={formData.monthlyIncome}
+                      onChange={handleChange}
+                      options={['below ₱ 10,000', '₱ 10,001 - ₱ 20,000', '₱ 20,001 - ₱ 30,000', 'Above ₱ 30,000']}
+                    />
+                    <div className="mt-2">
+                      <label className="block text-[12px] font-bold text-[#0f2e60] mb-4 text-center">Are you the first in family to attend college?</label>
+                      <div className="flex justify-center gap-12">
+                        <label className="flex items-center gap-3 text-sm font-bold text-[#0f2e60] cursor-pointer">
+                          Yes <input type="radio" name="firstInFamily" value="Yes" checked={formData.firstInFamily === 'Yes'} onChange={() => handleRadioChange('firstInFamily', 'Yes')} className="w-5 h-5 border-2 border-[#0f2e60] appearance-none checked:bg-[#0f2e60] rounded-full" /> 
+                        </label>
+                        <label className="flex items-center gap-3 text-sm font-bold text-[#0f2e60] cursor-pointer">
+                          No <input type="radio" name="firstInFamily" value="No" checked={formData.firstInFamily === 'No'} onChange={() => handleRadioChange('firstInFamily', 'No')} className="w-5 h-5 border-2 border-[#0f2e60] appearance-none checked:bg-[#0f2e60] rounded-full" /> 
+                        </label>
+                      </div>
                     </div>
                   </div>
-                </div>
-                <div>
-                  <SelectGroup 
-                    label="Family Monthly Income"
-                    name="monthlyIncome"
-                    value={formData.monthlyIncome}
-                    onChange={handleChange}
-                    options={['below ₱ 10,000', '₱ 10,001 - ₱ 20,000', '₱ 20,001 - ₱ 30,000', 'Above ₱ 30,000']}
-                  />
-                </div>
               </div>
             </div>
           </div>
@@ -2325,7 +2327,7 @@ export function StudentSubmissionForm() {
               >
                 <div>
                   <div className="font-bold text-sm text-[#1e3a8a] flex items-center gap-2">
-                    <span className={`w-4 h-4 rounded-full border flex items-center justify-center ${formData.scholarshipFundType === 'Internal' ? 'border-blue-600 bg-blue-600' : 'border-gray-400'}`}>
+                    <span className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 ${formData.scholarshipFundType === 'Internal' ? 'border-blue-600 bg-blue-600' : 'border-gray-400'}`}>
                       {formData.scholarshipFundType === 'Internal' && <span className="w-1.5 h-1.5 bg-white rounded-full" />}
                     </span>
                     A. Internally-Funded
@@ -2333,7 +2335,7 @@ export function StudentSubmissionForm() {
                   <p className="text-xs text-gray-500 mt-1 pl-6">University academic, leadership, and socio-cultural grants</p>
                 </div>
                 {formData.scholarshipFundType === 'Internal' && (formData.selectedScholarships || []).length > 0 && (
-                  <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-blue-600 text-white">
+                  <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-blue-600 text-white shrink-0 whitespace-nowrap ml-2">
                     {(formData.selectedScholarships || []).length} / 2
                   </span>
                 )}
@@ -2350,7 +2352,7 @@ export function StudentSubmissionForm() {
               >
                 <div>
                   <div className="font-bold text-sm text-[#1e3a8a] flex items-center gap-2">
-                    <span className={`w-4 h-4 rounded-full border flex items-center justify-center ${formData.scholarshipFundType === 'External' ? 'border-blue-600 bg-blue-600' : 'border-gray-400'}`}>
+                    <span className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 ${formData.scholarshipFundType === 'External' ? 'border-blue-600 bg-blue-600' : 'border-gray-400'}`}>
                       {formData.scholarshipFundType === 'External' && <span className="w-1.5 h-1.5 bg-white rounded-full" />}
                     </span>
                     B. Externally-Funded
@@ -2358,7 +2360,7 @@ export function StudentSubmissionForm() {
                   <p className="text-xs text-gray-500 mt-1 pl-6">CHED, UniFAST, DOST, Merit, LGU, and DSWD grants</p>
                 </div>
                 {formData.scholarshipFundType === 'External' && (formData.selectedScholarships || []).length > 0 && (
-                  <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-blue-600 text-white">
+                  <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-blue-600 text-white shrink-0 whitespace-nowrap ml-2">
                     {(formData.selectedScholarships || []).length} / 2
                   </span>
                 )}
