@@ -182,8 +182,8 @@ export function GuidanceCommunications() {
       id: 'custom',
       name: 'Custom Draft',
       subject: '',
-      body: (studentName, _allocation) => 
-`Dear ${studentName || 'Student'},
+      body: (_studentName, _allocation) => 
+`Dear Student,
 
 Greetings!
 
@@ -203,8 +203,8 @@ Capiz State University`
       id: 'complete',
       name: 'Status Update: Complete',
       subject: 'Scholarship Submission : APPROVED',
-      body: (studentName, _allocation) => 
-`Dear ${studentName || 'Student'},
+      body: (_studentName, _allocation) => 
+`Dear Student,
 
 Greetings!
 
@@ -214,7 +214,6 @@ After reviewing your submitted requirements, you have successfully qualified for
 
 Please keep your contact information active and regularly check your email for updates.
 
-
 Sincerely,
 Guidance Office
 Capiz State University – Mambusao Satellite College`
@@ -223,22 +222,23 @@ Capiz State University – Mambusao Satellite College`
       id: 'incomplete',
       name: 'Status Update: Incomplete',
       subject: 'Scholarship Submission : NOT APPROVED',
-      body: (studentName, _allocation) =>
-`Dear ${studentName || 'Student'},
+      body: (_studentName, _allocation) =>
+`Dear Student,
 
 Greetings!
 
-We regret to inform you that your scholarship submission was not approved due to issues found in the uploaded files.
+We regret to inform you that your scholarship submission was not approved due to issues found
+in the uploaded files.
 
 The following concerns were identified during the evaluation process:
 
-Incorrect file format submitted
-Blurred or unreadable of [student ID, RF, or GWA]
-Missing required information
-Wrong file uploaded in the designated section
+● Incorrect file format submitted
+● Blurred or unreadable of [student ID, RF, or GWA]
+● Missing required information
+● Wrong file uploaded in the designated section
 
 Please review your requirements carefully before submitting a new resubmission.
-For further clarification and assistance, you may visit the Guidance Office.
+For further clarification and assistance, you may visit the Guidance Office. 
 
 Thank you for your understanding.
 
@@ -250,21 +250,18 @@ Capiz State University – Mambusao Satellite College`
       id: 'release-update',
       name: 'Scholarship Release Update',
       subject: 'Scholarship Release Date and Required Documents',
-      body: (studentName, _allocation) =>
-`Dear ${studentName || 'Student'},
+      body: (_studentName, _allocation) =>
+`Dear Student,
 
 Greetings!
 
 We are pleased to inform you that the release of your scholarship is scheduled on (mm/dd/yyyy)
 
+Before your funds can be disbursed, you are required to submit the following documents for
+verification:
 
-Before your funds can be disbursed, you are required to submit the following documents for verification:
-
-
-General Weighted Average (GWA)
-
-Registration Form (RF)
-
+● General Weighted Average (GWA)
+● Registration Form (RF)
 
 Sincerely,
 Guidance Office
@@ -274,15 +271,15 @@ Capiz State University – Mambusao Satellite College`
       id: 'allowance-ready',
       name: 'Scholarship Allowance is Ready for Release',
       subject: 'Scholarship Allowance is Ready for Release',
-      body: (studentName, _allocation) =>
-`Dear ${studentName || 'Student'},
+      body: (_studentName, _allocation) =>
+`Dear Student,
 
 Greetings!
 
 We are pleased to inform you that your allowance is now ready for release.
 
-Please check your registered bank account or coordinate with the designated disbursement office to claim your funds.
-
+Please check your registered bank account or coordinate with the designated disbursement
+office to claim your funds.
 
 Sincerely,
 Guidance Office

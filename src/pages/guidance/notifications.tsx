@@ -291,24 +291,7 @@ export function GuidanceNotifications() {
         )}
       </div>
 
-      {/* Navigation Arrows */}
-      <div className="flex items-center justify-between pt-2">
-        <button
-          onClick={() => navigate('/admin/submissions')}
-          className="bg-white hover:bg-gray-100 text-gray-700 border border-gray-300 rounded-xl px-5 py-2 shadow-xs transition-colors flex items-center justify-center cursor-pointer hover:border-gray-400"
-          title="Back to Submissions"
-        >
-          <ChevronLeft className="w-5 h-5 stroke-[2.5]" />
-        </button>
-
-        <button
-          onClick={() => navigate('/admin/communications')}
-          className="bg-white hover:bg-gray-100 text-gray-700 border border-gray-300 rounded-xl px-5 py-2 shadow-xs transition-colors flex items-center justify-center cursor-pointer hover:border-gray-400"
-          title="Next to Communications"
-        >
-          <ChevronRight className="w-5 h-5 stroke-[2.5]" />
-        </button>
-      </div>
+      {/* (Navigation Arrows removed) */}
 
       {/* Notification Detail Modal */}
       {selectedNotification && (
