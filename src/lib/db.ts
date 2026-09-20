@@ -203,14 +203,20 @@ export const defaultSystemFiles: SystemFile[] = [
   { id: 'file-3', name: 'Certificate_of_Indigency_Template.png', category: 'Document Template', size: '450 KB', uploadDate: 'January 20, 2026' },
 ];
 
-// Helper to sanitize undefined values for Firestore
-function cleanForFirestore(obj: any): any {
+// Helper to sanitize undefined values for Firestore and guard against 1MB document limit
+function cleanForFirestore(obj: any, currentDepth = 0): any {
+  if (currentDepth > 10) return null;
   if (obj === null || typeof obj !== 'object') return obj;
-  if (Array.isArray(obj)) return obj.map(cleanForFirestore);
+  if (Array.isArray(obj)) return obj.map(item => cleanForFirestore(item, currentDepth + 1));
   const result: Record<string, any> = {};
   for (const key of Object.keys(obj)) {
     if (obj[key] !== undefined) {
-      result[key] = cleanForFirestore(obj[key]);
+      // If a file data string is excessively huge (> 750KB), safeguard so Firestore 1MB document limit is not exceeded
+      if (key === 'data' && typeof obj[key] === 'string' && obj[key].length > 750000) {
+        result[key] = ''; // Safe fallback for Firestore while retaining complete file in local database
+      } else {
+        result[key] = cleanForFirestore(obj[key], currentDepth + 1);
+      }
     }
   }
   return result;
@@ -234,14 +240,53 @@ const submissionListeners = new Set<(subs: Submission[]) => void>();
 const notificationListeners = new Set<(notifs: NotificationItem[]) => void>();
 const scholarshipListeners = new Set<(items: Scholarship[]) => void>();
 
+// Browser cross-tab synchronization channel
+const syncChannel = typeof window !== 'undefined' && 'BroadcastChannel' in window
+  ? new BroadcastChannel('capsu_scholarship_sync_bus')
+  : null;
+
+if (syncChannel) {
+  syncChannel.onmessage = (event) => {
+    try {
+      const { type, data } = event.data || {};
+      if (type === 'SUBMISSIONS_SYNC' && Array.isArray(data)) {
+        const subMap = new Map<string, Submission>();
+        memorySubmissions.forEach(s => subMap.set(s.id, s));
+        data.forEach((s: Submission) => subMap.set(s.id, s));
+        memorySubmissions = Array.from(subMap.values()).sort(
+          (a, b) => new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime()
+        );
+        submissionListeners.forEach(cb => { try { cb([...memorySubmissions]); } catch (e) { console.error(e); } });
+      } else if (type === 'NOTIFICATIONS_SYNC' && Array.isArray(data)) {
+        memoryNotifications = sortNotifications(data);
+        notificationListeners.forEach(cb => { try { cb([...memoryNotifications]); } catch (e) { console.error(e); } });
+      } else if (type === 'SCHOLARSHIPS_SYNC' && Array.isArray(data)) {
+        memoryScholarships = data;
+        scholarshipListeners.forEach(cb => { try { cb([...memoryScholarships]); } catch (e) { console.error(e); } });
+      }
+    } catch (err) {
+      console.warn("Cross-tab sync handling error:", err);
+    }
+  };
+}
+
 function notifySubmissionListeners() {
   submissionListeners.forEach(cb => {
     try { cb([...memorySubmissions]); } catch (e) { console.error(e); }
   });
+  if (syncChannel) {
+    try {
+      syncChannel.postMessage({ type: 'SUBMISSIONS_SYNC', data: memorySubmissions });
+    } catch (e) {
+      console.warn("Broadcast post error:", e);
+    }
+  }
 }
 
 function sortNotifications(notifs: NotificationItem[]): NotificationItem[] {
-  return [...notifs].sort((a, b) => {
+  if (!Array.isArray(notifs)) return [];
+  return [...notifs].filter(Boolean).sort((a, b) => {
+    if (!a || !b) return 0;
     const dateA = parseNotificationDate(a.timestamp, a.createdAt || a.id);
     const dateB = parseNotificationDate(b.timestamp, b.createdAt || b.id);
     const timeA = dateA ? dateA.getTime() : 0;
@@ -254,12 +299,26 @@ function notifyNotificationListeners() {
   notificationListeners.forEach(cb => {
     try { cb([...memoryNotifications]); } catch (e) { console.error(e); }
   });
+  if (syncChannel) {
+    try {
+      syncChannel.postMessage({ type: 'NOTIFICATIONS_SYNC', data: memoryNotifications });
+    } catch (e) {
+      console.warn("Broadcast post error:", e);
+    }
+  }
 }
 
 function notifyScholarshipListeners() {
   scholarshipListeners.forEach(cb => {
     try { cb([...memoryScholarships]); } catch (e) { console.error(e); }
   });
+  if (syncChannel) {
+    try {
+      syncChannel.postMessage({ type: 'SCHOLARSHIPS_SYNC', data: memoryScholarships });
+    } catch (e) {
+      console.warn("Broadcast post error:", e);
+    }
+  }
 }
 
 // Hydrate from LocalForage in background on startup
@@ -328,8 +387,32 @@ function setupRealtimeListeners() {
           remoteSubs.push(docSnap.data() as Submission);
         });
         if (remoteSubs.length > 0) {
-          memorySubmissions = remoteSubs.sort((a, b) => new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime());
-          Promise.all(remoteSubs.map(s => submissionsDb.setItem(s.id, s))).catch(() => {});
+          const subMap = new Map<string, Submission>();
+          // Preserve local or default memory submissions
+          memorySubmissions.forEach(s => subMap.set(s.id, s));
+          // Update with remote submissions, protecting complete image data
+          remoteSubs.forEach(s => {
+            const local = subMap.get(s.id);
+            if (local && local.files && s.files) {
+              const mergedFiles = s.files.map(rf => {
+                const lf = local.files?.find(f => f.id === rf.id || f.category === rf.category || f.name === rf.name);
+                // If local has real base64/url data and remote is missing or empty, retain local
+                if (lf && lf.data && (!rf.data || rf.data.length < lf.data.length)) {
+                  return { ...rf, data: lf.data };
+                }
+                return rf;
+              });
+              const remoteFileKeys = new Set(s.files.map(f => f.id || `${f.category}-${f.name}`));
+              const extraLocalFiles = (local.files || []).filter(f => !remoteFileKeys.has(f.id || `${f.category}-${f.name}`));
+              subMap.set(s.id, { ...s, files: [...mergedFiles, ...extraLocalFiles] });
+            } else {
+              subMap.set(s.id, s);
+            }
+          });
+          memorySubmissions = Array.from(subMap.values()).sort(
+            (a, b) => new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime()
+          );
+          Promise.all(Array.from(subMap.values()).map(s => submissionsDb.setItem(s.id, s))).catch(() => {});
           notifySubmissionListeners();
         }
       }
@@ -373,14 +456,13 @@ function setupRealtimeListeners() {
   }
 }
 
-// Reactively attach listeners when user is authenticated
-onAuthStateChanged(auth, (user) => {
-  if (user) {
+// Immediately initialize real-time synchronization on startup
+setupRealtimeListeners();
+
+// Re-verify listeners if auth state changes without disconnecting public Firestore listeners
+onAuthStateChanged(auth, () => {
+  if (!unsubscribeSubmissions || !unsubscribeNotifications || !unsubscribeScholarships) {
     setupRealtimeListeners();
-  } else {
-    if (unsubscribeSubmissions) { try { unsubscribeSubmissions(); } catch (e) { /* ignore */ } unsubscribeSubmissions = null; }
-    if (unsubscribeNotifications) { try { unsubscribeNotifications(); } catch (e) { /* ignore */ } unsubscribeNotifications = null; }
-    if (unsubscribeScholarships) { try { unsubscribeScholarships(); } catch (e) { /* ignore */ } unsubscribeScholarships = null; }
   }
 });
 
@@ -541,25 +623,129 @@ export const db = {
       return updated;
     },
     async listByStudent(studentId: string): Promise<Submission[]> {
-      return memorySubmissions.filter(s => s.studentId === studentId);
+      const norm = (studentId || '').trim().toLowerCase();
+      if (!norm) return [];
+      
+      // If memory cache is somehow unhydrated, trigger hydration
+      if (memorySubmissions.length === 0) {
+        await this.listAll();
+      }
+
+      return memorySubmissions.filter(s => {
+        const sId = (s.studentId || '').trim().toLowerCase();
+        const sAuth = (s.studentAuthId || '').trim().toLowerCase();
+        const sEmail = (s.data?.email || '').trim().toLowerCase();
+        const sDataId = (s.data?.studentId || '').trim().toLowerCase();
+        const sName = (s.studentName || '').trim().toLowerCase();
+        return sId === norm || sAuth === norm || sEmail === norm || sDataId === norm || sName === norm;
+      });
+    },
+    async saveStudentFiles(
+      studentIdentifier: string,
+      filesToSave: SubmissionFile[],
+      meta?: { studentName?: string; scholarshipType?: string; academicYear?: string }
+    ): Promise<Submission> {
+      const all = await this.listAll();
+      const norm = (studentIdentifier || '').trim().toLowerCase();
+      
+      let target = all.find(s => {
+        const sId = (s.studentId || '').trim().toLowerCase();
+        const sAuth = (s.studentAuthId || '').trim().toLowerCase();
+        const sEmail = (s.data?.email || '').trim().toLowerCase();
+        const sDataId = (s.data?.studentId || '').trim().toLowerCase();
+        const sName = (s.studentName || '').trim().toLowerCase();
+        return s.id === studentIdentifier || sId === norm || sAuth === norm || sEmail === norm || sDataId === norm || sName === norm;
+      });
+
+      const now = new Date().toISOString();
+
+      if (target) {
+        const existingFiles = target.files || [];
+        const updatedFiles = [...existingFiles];
+
+        filesToSave.forEach(newF => {
+          const matchIdx = updatedFiles.findIndex(f => 
+            (newF.id && f.id === newF.id) ||
+            (newF.category && f.category === newF.category)
+          );
+          if (matchIdx >= 0) {
+            updatedFiles[matchIdx] = { ...updatedFiles[matchIdx], ...newF, uploadedAt: now };
+          } else {
+            updatedFiles.push({ ...newF, uploadedAt: now });
+          }
+        });
+
+        const updated: Submission = {
+          ...target,
+          files: updatedFiles,
+          submittedAt: target.submittedAt || now
+        };
+
+        await this.set(target.id, updated);
+
+        try {
+          db.notifications.create({
+            type: 'submission',
+            title: 'Scholarship Documents Uploaded',
+            description: `${target.studentName} updated academic document uploads (${filesToSave.map(f => f.category || f.name).join(', ')}).`,
+            studentName: target.studentName,
+            studentId: target.studentId,
+            scholarship: target.scholarshipType,
+            timestamp: now,
+            createdAt: now,
+            read: false,
+            priority: 'high'
+          }).catch(() => {});
+        } catch (e) {
+          console.warn("Notification skipped:", e);
+        }
+
+        return updated;
+      } else {
+        const newId = `sub-${Date.now()}`;
+        const newSub: Submission = {
+          id: newId,
+          studentId: studentIdentifier,
+          studentName: meta?.studentName || 'Student Applicant',
+          scholarshipType: meta?.scholarshipType || 'Institutional Scholarship',
+          status: 'Pending',
+          submittedAt: now,
+          data: {
+            studentId: studentIdentifier,
+            familyName: meta?.studentName?.split(' ').pop() || '',
+            firstName: meta?.studentName?.split(' ')[0] || '',
+            academicYear: meta?.academicYear || 'A.Y. 2025-2026',
+            submittedAt: now
+          },
+          files: filesToSave.map(f => ({ ...f, uploadedAt: now }))
+        };
+
+        await this.create(newSub);
+        return newSub;
+      }
     },
     async listAll(): Promise<Submission[]> {
-      // Instant return with zero latency
-      if (memorySubmissions.length > 0) {
-        return [...memorySubmissions];
-      }
-      const keys = await submissionsDb.keys();
-      if (keys.length > 0) {
-        const subs: Submission[] = [];
-        for (const key of keys) {
-          const sub = await submissionsDb.getItem(key);
-          if (sub) subs.push(sub);
+      try {
+        const keys = await submissionsDb.keys();
+        if (keys.length > 0) {
+          const subs: Submission[] = [];
+          for (const key of keys) {
+            const sub = await submissionsDb.getItem(key);
+            if (sub) subs.push(sub);
+          }
+          if (subs.length > 0) {
+            const subMap = new Map<string, Submission>();
+            memorySubmissions.forEach(s => subMap.set(s.id, s));
+            subs.forEach(s => subMap.set(s.id, s));
+            memorySubmissions = Array.from(subMap.values()).sort(
+              (a, b) => new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime()
+            );
+          }
         }
-        memorySubmissions = subs.sort((a, b) => new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime());
-        return [...memorySubmissions];
+      } catch (e) {
+        console.warn("Storage list fetch notice:", e);
       }
-      memorySubmissions = [...defaultSubmissions];
-      return [...defaultSubmissions];
+      return [...memorySubmissions];
     },
     async verifyRequirement(submissionId: string, requirementNameOrKey: string, status: 'Verified' | 'Pending' | 'Missing' | 'Rejected', remarks?: string): Promise<Submission | null> {
       const existing = await this.get(submissionId);
@@ -935,13 +1121,25 @@ export const db = {
       }
     },
     async markAllAsRead(): Promise<void> {
+      const unread = memoryNotifications.filter(n => !n.read);
+      for (const notif of unread) {
+        await this.set(notif.id, { ...notif, read: true });
+      }
+    },
+    async markAsUnread(id: string): Promise<void> {
+      const existing = await this.get(id);
+      if (existing) {
+        await this.set(id, { ...existing, read: false });
+      }
+    },
+    async markAllAsUnread(): Promise<void> {
       let changed = false;
       const updates: NotificationItem[] = [];
 
-      memoryNotifications = memoryNotifications.map(item => {
-        if (!item.read) {
+      memoryNotifications = (memoryNotifications || []).filter(Boolean).map(item => {
+        if (item.read !== false) {
           changed = true;
-          const updated = { ...item, read: true };
+          const updated = { ...item, read: false };
           updates.push(updated);
           return updated;
         }

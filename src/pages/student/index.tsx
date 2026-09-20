@@ -10,6 +10,7 @@ import { SignaturePad } from '../../components/SignaturePad';
 import { SubmissionReviewSummary } from '../../components/SubmissionReviewSummary';
 import { SubmissionSuccessModal } from '../../components/SubmissionSuccessModal';
 import { DocumentPreviewModal } from '../../components/DocumentPreviewModal';
+import { isRFDocument, isGWADocument, isImageFile, formatDocumentTitle } from '../../lib/imageUtils';
 import { capizMunicipalities } from '../../lib/capiz';
 
 import { signInWithGoogle, signInWithEmail, signUpWithEmail, logOut, auth, resetPassword } from '../../lib/firebase';
@@ -635,6 +636,7 @@ export function StudentDashboard() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const [existingSubmission, setExistingSubmission] = useState<any>(null);
+  const [previewDoc, setPreviewDoc] = useState<any>(null);
           
   // Hardcode available semesters for demonstration (1st is available, 2nd is not)
   const availableSemesters = ['1st'];
@@ -709,6 +711,43 @@ export function StudentDashboard() {
     }
   };
 
+  const readFileAsDataUrl = (file: File): Promise<string> => {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const rawUrl = (e.target?.result as string) || '';
+        const img = new Image();
+        img.onload = () => {
+          let { width, height } = img;
+          const maxWidth = 1200;
+          const maxHeight = 1200;
+          if (width > maxWidth || height > maxHeight) {
+            if (width > height) {
+              height = Math.round((height * maxWidth) / width);
+              width = maxWidth;
+            } else {
+              width = Math.round((width * maxHeight) / height);
+              height = maxHeight;
+            }
+          }
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          if (ctx) {
+            ctx.drawImage(img, 0, 0, width, height);
+            resolve(canvas.toDataURL('image/jpeg', 0.82));
+          } else {
+            resolve(rawUrl);
+          }
+        };
+        img.onerror = () => resolve(rawUrl);
+        img.src = rawUrl;
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
   const handleSubmit = async (sem: '1st' | '2nd') => {
     const rfKey = `${sem}_rf`;
     const gwaKey = `${sem}_gwa`;
@@ -719,18 +758,71 @@ export function StudentDashboard() {
     }
     
     setIsSubmitting(true);
-    // Simulate submission delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // Show Toast instead of alert
-    setShowToast(true);
-    setTimeout(() => setShowToast(false), 4000);
-    
-    // Clear state
-    setFiles(prev => ({ ...prev, [rfKey]: null, [gwaKey]: null }));
-    setOpenDropdown(null);
-    setIsSubmitting(false);
+    try {
+      const rfDataUrl = await readFileAsDataUrl(files[rfKey]!);
+      const gwaDataUrl = await readFileAsDataUrl(files[gwaKey]!);
+      const now = new Date().toISOString();
+
+      const newFiles = [
+        {
+          id: `file-${Date.now()}-rf`,
+          name: files[rfKey]!.name,
+          category: 'RF',
+          type: files[rfKey]!.type || 'image/jpeg',
+          size: `${Math.round(files[rfKey]!.size / 1024)} KB`,
+          data: rfDataUrl,
+          verified: false,
+          status: 'Pending',
+          uploadedAt: now
+        },
+        {
+          id: `file-${Date.now()}-gwa`,
+          name: files[gwaKey]!.name,
+          category: 'GWA',
+          type: files[gwaKey]!.type || 'image/jpeg',
+          size: `${Math.round(files[gwaKey]!.size / 1024)} KB`,
+          data: gwaDataUrl,
+          verified: false,
+          status: 'Pending',
+          uploadedAt: now
+        }
+      ];
+
+      const effectiveUser = user || (auth.currentUser ? {
+        id: auth.currentUser.uid,
+        email: auth.currentUser.email || '',
+        firstName: auth.currentUser.displayName?.split(' ')[0] || '',
+        lastName: auth.currentUser.displayName?.split(' ').slice(1).join(' ') || ''
+      } : null);
+
+      const targetIdentifier = existingSubmission?.id || effectiveUser?.email || effectiveUser?.id || 'current-student';
+      const saved = await db.submissions.saveStudentFiles(targetIdentifier, newFiles, {
+        studentName: existingSubmission?.studentName || `${effectiveUser?.firstName || ''} ${effectiveUser?.lastName || ''}`.trim() || 'Student',
+        scholarshipType: existingSubmission?.scholarshipType || 'CAPSU Scholarship Program',
+        academicYear: '2026-2027'
+      });
+
+      if (saved) {
+        setExistingSubmission(saved);
+      }
+
+      // Show Toast notification
+      setShowToast(true);
+      setTimeout(() => setShowToast(false), 4000);
+      
+      // Clear local file input state
+      setFiles(prev => ({ ...prev, [rfKey]: null, [gwaKey]: null }));
+      setOpenDropdown(null);
+    } catch (err) {
+      console.error("Error submitting semester files:", err);
+      alert("Failed to save files. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
+
+  const existingRF = existingSubmission?.files?.find((f: any) => isRFDocument(f));
+  const existingGWA = existingSubmission?.files?.find((f: any) => isGWADocument(f));
 
   const renderFileButton = (key: string) => {
     const file = files[key];
@@ -815,24 +907,60 @@ export function StudentDashboard() {
           {openDropdown === '1st' && (
             <div className="border-t border-gray-100 bg-[#f8fafc] p-4 sm:p-6 md:p-8 animate-in fade-in slide-in-from-top-2 duration-200">
               <div className="max-w-2xl mx-auto space-y-4">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3 bg-white rounded-xl border border-gray-200">
-                  <div>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 bg-white rounded-xl border border-gray-200">
+                  <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
                       <span className="px-2 py-0.5 bg-blue-100 text-[#1e3a8a] text-[11px] font-bold rounded">RF</span>
                       <h4 className="font-bold text-[#0c2340] text-sm sm:text-base leading-tight">Registration Form (RF)</h4>
                     </div>
                     <p className="text-gray-500 text-xs sm:text-sm mt-0.5">Certificate of Registration / Enrollment for 1st Semester</p>
+                    {existingRF && (
+                      <div className="mt-2 flex flex-wrap items-center gap-2">
+                        <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-green-700 bg-green-50 border border-green-200 px-2 py-0.5 rounded-md">
+                          <CheckCircle2 className="w-3 h-3 text-green-600" />
+                          {existingRF.verified ? 'Verified on Record' : 'Submitted on Record'}
+                        </span>
+                        <span className="text-[11px] text-gray-500 truncate max-w-[150px]">{existingRF.name}</span>
+                        {(existingRF.data || existingRF.url) && (
+                          <button
+                            type="button"
+                            onClick={() => setPreviewDoc(existingRF)}
+                            className="inline-flex items-center gap-1 text-[11px] font-bold text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 px-2.5 py-0.5 rounded-md transition-colors cursor-pointer"
+                          >
+                            <Eye className="w-3 h-3" /> Preview Current RF
+                          </button>
+                        )}
+                      </div>
+                    )}
                   </div>
                   {renderFileButton('1st_rf')}
                 </div>
                 
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3 bg-white rounded-xl border border-gray-200">
-                  <div>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 bg-white rounded-xl border border-gray-200">
+                  <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
                       <span className="px-2 py-0.5 bg-blue-100 text-[#1e3a8a] text-[11px] font-bold rounded">GWA</span>
                       <h4 className="font-bold text-[#0c2340] text-sm sm:text-base leading-tight">General Weighted Average (GWA)</h4>
                     </div>
                     <p className="text-gray-500 text-xs sm:text-sm mt-0.5">Official Certificate of Grades / Grade Slip for 1st Semester</p>
+                    {existingGWA && (
+                      <div className="mt-2 flex flex-wrap items-center gap-2">
+                        <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-green-700 bg-green-50 border border-green-200 px-2 py-0.5 rounded-md">
+                          <CheckCircle2 className="w-3 h-3 text-green-600" />
+                          {existingGWA.verified ? 'Verified on Record' : 'Submitted on Record'}
+                        </span>
+                        <span className="text-[11px] text-gray-500 truncate max-w-[150px]">{existingGWA.name}</span>
+                        {(existingGWA.data || existingGWA.url) && (
+                          <button
+                            type="button"
+                            onClick={() => setPreviewDoc(existingGWA)}
+                            className="inline-flex items-center gap-1 text-[11px] font-bold text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 px-2.5 py-0.5 rounded-md transition-colors cursor-pointer"
+                          >
+                            <Eye className="w-3 h-3" /> Preview Current GWA
+                          </button>
+                        )}
+                      </div>
+                    )}
                   </div>
                   {renderFileButton('1st_gwa')}
                 </div>
@@ -1403,20 +1531,73 @@ export function StudentSubmissionForm() {
     });
   };
 
+  const compressImageFile = (file: File, maxWidth = 1200, maxHeight = 1200, quality = 0.8): Promise<{ dataUrl: string; sizeStr: string }> => {
+    return new Promise((resolve) => {
+      if (!file.type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const dataUrl = (e.target?.result as string) || '';
+          const sizeStr = file.size > 1024 * 1024 ? `${(file.size / (1024 * 1024)).toFixed(1)} MB` : `${Math.round(file.size / 1024)} KB`;
+          resolve({ dataUrl, sizeStr });
+        };
+        reader.readAsDataURL(file);
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          let { width, height } = img;
+          if (width > maxWidth || height > maxHeight) {
+            if (width > height) {
+              height = Math.round((height * maxWidth) / width);
+              width = maxWidth;
+            } else {
+              width = Math.round((width * maxHeight) / height);
+              height = maxHeight;
+            }
+          }
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          if (ctx) {
+            ctx.drawImage(img, 0, 0, width, height);
+            const compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
+            const approxBytes = Math.round((compressedDataUrl.length * 3) / 4);
+            const sizeStr = approxBytes > 1024 * 1024 ? `${(approxBytes / (1024 * 1024)).toFixed(1)} MB` : `${Math.round(approxBytes / 1024)} KB`;
+            resolve({ dataUrl: compressedDataUrl, sizeStr });
+          } else {
+            const rawUrl = (e.target?.result as string) || '';
+            const sizeStr = file.size > 1024 * 1024 ? `${(file.size / (1024 * 1024)).toFixed(1)} MB` : `${Math.round(file.size / 1024)} KB`;
+            resolve({ dataUrl: rawUrl, sizeStr });
+          }
+        };
+        img.onerror = () => {
+          const rawUrl = (e.target?.result as string) || '';
+          const sizeStr = file.size > 1024 * 1024 ? `${(file.size / (1024 * 1024)).toFixed(1)} MB` : `${Math.round(file.size / 1024)} KB`;
+          resolve({ dataUrl: rawUrl, sizeStr });
+        };
+        img.src = (e.target?.result as string) || '';
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
   const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
-      if (file.size > 10 * 1024 * 1024) {
+      if (file.size > 15 * 1024 * 1024) {
         setValidationWarning({
           title: 'Photo is too large',
-          details: ['Please upload an image smaller than 10MB.']
+          details: ['Please upload an image smaller than 15MB.']
         });
         return;
       }
-      const reader = new FileReader();
-      reader.onload = async (event) => {
-        const localData = event.target?.result as string;
-        setFormData(prev => ({ ...prev, photo2x2: localData }));
+      try {
+        const { dataUrl } = await compressImageFile(file, 800, 800, 0.85);
+        setFormData(prev => ({ ...prev, photo2x2: dataUrl }));
 
         if (isSupabaseConfigured()) {
           const userStr = localStorage.getItem('studentUser');
@@ -1428,8 +1609,9 @@ export function StudentSubmissionForm() {
             setFormData(prev => ({ ...prev, photo2x2: publicUrl }));
           }
         }
-      };
-      reader.readAsDataURL(file);
+      } catch (err) {
+        console.warn("Photo upload error:", err);
+      }
     }
   };
 
@@ -1632,6 +1814,7 @@ export function StudentSubmissionForm() {
         submittedAt: new Date().toISOString(),
         data: {
           ...formData,
+          academicYear: formData.academicYear || 'A.Y. 2025-2026 - 1st Semester',
           scholarshipProgram,
           selectedScholarships: formattedScholarship.items,
           scholarshipSubCategory: formattedScholarship.category,
@@ -1720,10 +1903,8 @@ export function StudentSubmissionForm() {
         e.target.value = '';
         return;
       }
-      const reader = new FileReader();
-      reader.onload = async (event) => {
-        const dataUrl = event.target?.result as string;
-        const sizeStr = file.size > 1024 * 1024 ? `${(file.size / (1024 * 1024)).toFixed(1)} MB` : `${Math.round(file.size / 1024)} KB`;
+      try {
+        const { dataUrl, sizeStr } = await compressImageFile(file, 1200, 1200, 0.8);
         const fileId = `file-${Date.now()}`;
         const newFileObj = { 
           id: fileId, 
@@ -1749,8 +1930,9 @@ export function StudentSubmissionForm() {
             setFiles(prev => prev.map(f => f.id === fileId ? { ...f, data: publicUrl, url: publicUrl } : f));
           }
         }
-      };
-      reader.readAsDataURL(file);
+      } catch (err) {
+        console.warn("File compression/upload error:", err);
+      }
     }
   };
 
@@ -1909,17 +2091,27 @@ export function StudentSubmissionForm() {
         </div>
       )}
 
-      <div className="bg-white rounded-xl shadow-sm overflow-hidden mb-4 border-t-[5px] border-[#eab308]">
-        <div className="p-4 sm:p-6 text-center">
-          <h2 className="text-xl sm:text-2xl md:text-3xl font-bold font-serif text-gray-900 mb-2 sm:mb-3">Scholarship Record Form</h2>
-          <p className="text-xs sm:text-[13px] font-serif text-gray-700 max-w-2xl mx-auto leading-relaxed">
-            Data and Personal Information will be kept with utmost confidentiality and will be protected through RA 10173 also known as Data Privacy Act of 2012
-          </p>
+      {step === 1 && (
+        <div className="bg-white rounded-xl shadow-sm overflow-hidden mb-4 border-t-[5px] border-[#eab308]">
+          <div className="p-4 sm:p-6 text-center">
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold font-serif text-gray-900 mb-2 sm:mb-3">Scholarship Documents</h2>
+            <p className="text-xs sm:text-[13px] font-serif text-gray-700 max-w-2xl mx-auto leading-relaxed">
+              Data and Personal Information will be kept with utmost confidentiality and will be protected through RA 10173 also known as Data Privacy Act of 2012
+            </p>
+          </div>
         </div>
-      </div>
-      <div className="bg-[#fef9c3] border border-[#facc15] rounded-lg p-3 mb-6">
-        <p className="text-[#a16207] text-xs sm:text-[13px] text-center leading-relaxed">
-          Please fill out all required fields (<span className="text-red-600 font-bold">*</span>) accurately and completely. This form will be reviewed by the Guidance Office prior to processing.
+      )}
+      <div className={`bg-[#fef9c3] border border-[#facc15] rounded-lg p-3 ${step !== 1 ? '-mt-2 sm:-mt-4 mb-5 sm:mb-6' : 'mb-6'}`}>
+        <p className="text-[#a16207] text-xs sm:text-[13px] text-center leading-relaxed font-medium">
+          {step === 3 ? (
+            "Please review all information before submitting."
+          ) : step === 2 ? (
+            "Upload the following required scholarship documents"
+          ) : (
+            <>
+              Please fill out all required fields (<span className="text-red-600 font-bold">*</span>) accurately and completely. This form will be reviewed by the Guidance Office prior to processing.
+            </>
+          )}
         </p>
       </div>
 

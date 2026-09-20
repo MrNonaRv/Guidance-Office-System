@@ -41,7 +41,7 @@ export function GuidanceNotifications() {
 
   useEffect(() => {
     const unsub = db.notifications.subscribe(list => {
-      if (list && list.length > 0) {
+      if (Array.isArray(list)) {
         setNotifications(list);
       }
     });
@@ -49,9 +49,10 @@ export function GuidanceNotifications() {
   }, []);
 
   const filteredNotifications = notifications.filter(n => {
+    if (!n) return false;
     const matchesSearch = !searchQuery || 
-      n.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      n.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (n.title && n.title.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      (n.description && n.description.toLowerCase().includes(searchQuery.toLowerCase())) ||
       (n.studentName && n.studentName.toLowerCase().includes(searchQuery.toLowerCase()));
 
     if (!matchesSearch) return false;
@@ -62,11 +63,18 @@ export function GuidanceNotifications() {
     return true;
   });
 
-  const unreadCount = notifications.filter(n => !n.read).length;
+  const unreadCount = notifications.filter(n => n && !n.read).length;
 
   const handleMarkAllAsRead = async () => {
+    // If activeFilter is 'unread', transition to 'all' so that notifications remain visible on screen instead of disappearing
+    if (activeFilter === 'unread') {
+      setActiveFilter('all');
+    }
     // Optimistic UI update
-    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+    setNotifications(prev => (prev || []).map(n => ({ ...n, read: true })));
+    if (selectedNotification) {
+      setSelectedNotification(prev => prev ? { ...prev, read: true } : null);
+    }
     // Real database sync
     try {
       await db.notifications.markAllAsRead();
@@ -75,17 +83,36 @@ export function GuidanceNotifications() {
     }
   };
 
+  const handleMarkAllAsUnread = async () => {
+    // Optimistic UI update
+    setNotifications(prev => (prev || []).map(n => ({ ...n, read: false })));
+    if (selectedNotification) {
+      setSelectedNotification(prev => prev ? { ...prev, read: false } : null);
+    }
+    // Real database sync
+    try {
+      await db.notifications.markAllAsUnread();
+    } catch (e) {
+      console.error("Failed to mark all as unread in DB", e);
+    }
+  };
+
   const handleToggleRead = async (id: string, e?: React.MouseEvent) => {
     e?.stopPropagation();
-    const notif = notifications.find(n => n.id === id);
+    const notif = notifications.find(n => n && n.id === id);
     if (!notif) return;
     
+    const newReadStatus = !notif.read;
+
     // Optimistic UI update
-    setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: !n.read } : n));
+    setNotifications(prev => (prev || []).map(n => n.id === id ? { ...n, read: newReadStatus } : n));
+    if (selectedNotification?.id === id) {
+      setSelectedNotification(prev => prev ? { ...prev, read: newReadStatus } : null);
+    }
     
     // Real database sync
     try {
-      await db.notifications.set(id, { ...notif, read: !notif.read });
+      await db.notifications.set(id, { ...notif, read: newReadStatus });
     } catch (err) {
       console.error("Failed to toggle read in DB", err);
     }
@@ -158,14 +185,19 @@ export function GuidanceNotifications() {
           </button>
         </div>
         
-        {unreadCount > 0 && (
-          <button
-            onClick={handleMarkAllAsRead}
-            className="text-[14px] font-bold text-[#2563eb] hover:text-blue-800 underline transition-colors cursor-pointer pb-2"
-          >
-            Mark as all read
-          </button>
-        )}
+        <button
+          id="mark-all-read-btn"
+          onClick={handleMarkAllAsRead}
+          className={cn(
+            "text-[14px] font-bold pb-2 transition-colors cursor-pointer",
+            unreadCount > 0
+              ? "text-[#2563eb] hover:text-blue-800 underline"
+              : "text-gray-400 hover:text-gray-600 underline"
+          )}
+          title={unreadCount > 0 ? "Mark all notifications as read" : "All notifications are already marked as read"}
+        >
+          Mark as all read
+        </button>
       </div>
 
       {/* Notifications List */}
@@ -190,11 +222,18 @@ export function GuidanceNotifications() {
               )}
             >
               <div className="flex items-center gap-4">
-                {/* Status Dot */}
-                <div className={cn(
-                  "w-3 h-3 rounded-full shrink-0 ml-1",
-                  !notif.read ? "bg-[#2563eb]" : "bg-transparent"
-                )} />
+                {/* Status Dot (interactive toggle) */}
+                <button
+                  type="button"
+                  onClick={(e) => handleToggleRead(notif.id, e)}
+                  title={notif.read ? "Mark as unread" : "Mark as read"}
+                  className="p-1 hover:scale-110 transition-transform cursor-pointer rounded-full"
+                >
+                  <div className={cn(
+                    "w-3 h-3 rounded-full shrink-0 transition-colors",
+                    !notif.read ? "bg-[#2563eb] ring-2 ring-blue-200" : "bg-transparent border border-gray-400"
+                  )} />
+                </button>
                 
                 {/* Icon */}
                 <div className="w-10 h-10 rounded-full border border-[#1e3a8a]/40 flex items-center justify-center shrink-0 bg-transparent">
@@ -219,14 +258,25 @@ export function GuidanceNotifications() {
                 </div>
               </div>
 
-              {/* Delete button (shows on hover) */}
-              <button
-                onClick={(e) => handleDeleteNotification(notif.id, e)}
-                className="opacity-0 group-hover:opacity-100 p-2 text-gray-400 hover:text-red-600 transition-all rounded-md hover:bg-red-50"
-                title="Delete alert"
-              >
-                <Trash2 className="w-4 h-4" />
-              </button>
+              {/* Action buttons (Mark read/unread + Delete) */}
+              <div className="flex items-center gap-1 shrink-0">
+                <button
+                  type="button"
+                  onClick={(e) => handleToggleRead(notif.id, e)}
+                  className="opacity-0 group-hover:opacity-100 p-2 text-gray-500 hover:text-[#2563eb] transition-all rounded-md hover:bg-blue-50 cursor-pointer"
+                  title={notif.read ? "Mark as unread" : "Mark as read"}
+                >
+                  <Mail className="w-4 h-4" />
+                </button>
+                <button
+                  type="button"
+                  onClick={(e) => handleDeleteNotification(notif.id, e)}
+                  className="opacity-0 group-hover:opacity-100 p-2 text-gray-400 hover:text-red-600 transition-all rounded-md hover:bg-red-50 cursor-pointer"
+                  title="Delete alert"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
             </div>
           ))
         )}

@@ -15,20 +15,23 @@ interface DocumentPreviewModalProps {
 export function DocumentPreviewModal({ file, onClose }: DocumentPreviewModalProps) {
   if (!file) return null;
 
-  const fileSource = file.data || '';
+  const fileSource = file.data || (file as any).url || '';
   const isImage = 
     file.type?.startsWith('image/') || 
     fileSource.startsWith('data:image/') ||
+    fileSource.startsWith('data:application/octet-stream') && fileSource.includes('image') ||
     /\.(png|jpe?g|webp|gif|svg)(\?.*)?$/i.test(fileSource) ||
     /\.(png|jpe?g|webp|gif|svg)$/i.test(file.name);
 
-  const isPdf = 
+  const isPdf = !isImage && (
     file.type?.includes('pdf') || 
     fileSource.startsWith('data:application/pdf') ||
     /\.pdf(\?.*)?$/i.test(fileSource) ||
-    /\.pdf$/i.test(file.name);
+    /\.pdf$/i.test(file.name)
+  );
 
   const handleDownload = () => {
+    if (!fileSource) return;
     const link = document.createElement('a');
     link.href = fileSource;
     link.download = file.name || 'document';
@@ -106,14 +109,14 @@ export function DocumentPreviewModal({ file, onClose }: DocumentPreviewModalProp
           {isImage ? (
             <div className="max-w-full max-h-full flex items-center justify-center p-2">
               <img
-                src={file.data}
+                src={fileSource}
                 alt={file.name}
                 className="max-w-full max-h-[70vh] object-contain rounded-lg shadow-sm bg-white"
               />
             </div>
           ) : isPdf ? (
             <iframe
-              src={file.data}
+              src={fileSource}
               title={file.name}
               className="w-full h-[65vh] sm:h-[70vh] rounded-lg bg-white shadow-sm border border-gray-300"
             />
@@ -139,9 +142,9 @@ export function DocumentPreviewModal({ file, onClose }: DocumentPreviewModalProp
           <span>Capiz State University — Scholarship Document Viewer</span>
           <button
             onClick={onClose}
-            className="px-4 py-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold transition-colors cursor-pointer"
+            className="flex items-center justify-center bg-[#2c4a7c] hover:bg-[#1a325a] text-white border border-[#1a325a] shadow-[0_2px_4px_rgba(0,0,0,0.2)] px-6 py-2 rounded-2xl text-sm font-bold transition-all cursor-pointer"
           >
-            Close
+            Back
           </button>
         </div>
       </div>

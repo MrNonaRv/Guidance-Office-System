@@ -2,13 +2,18 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   X, ArrowLeft, ChevronDown, CheckCircle2, AlertCircle, FileText, Download, 
-  Printer, Eye, Check, Archive, Mail
+  Printer, Eye, Check, Archive, Mail, Loader2
 } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { db, Submission, SubmissionFile } from '../lib/db';
 import { formatScholarshipAllocations } from '../lib/scholarshipCategories';
+import { isRFDocument, isGWADocument, is2ndSemesterDoc, isImageFile, isPdfFile, formatDocumentTitle } from '../lib/imageUtils';
+import { dummyBase64RF, dummyBase64GWA, dummyBase64StudentId } from '../lib/defaultData';
+import { DocumentPreviewModal } from './DocumentPreviewModal';
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
+import { jsPDF } from 'jspdf';
+import html2canvas from 'html2canvas';
 
 interface StudentRecordModalProps {
   submission: Submission | any;
@@ -27,13 +32,23 @@ export function StudentRecordModal({
   const [currentStatus, setCurrentStatus] = useState<string>(submission.status || 'Incomplete');
   const [viewMode, setViewMode] = useState<'overview' | 'requirements' | 'id_signature' | 'semester_record' | 'form'>('overview');
   const [selectedSemester, setSelectedSemester] = useState<'1st Semester' | '2nd Semester'>('1st Semester');
-  const [selectedAcademicYear, setSelectedAcademicYear] = useState<string>('2025-2026');
+  const initialAY = submission.data?.academicYear?.match(/\d{4}-\d{4}/)?.[0] || '2025-2026';
+  const [selectedAcademicYear, setSelectedAcademicYear] = useState<string>(initialAY);
   const [previewFile, setPreviewFile] = useState<SubmissionFile | null>(null);
 
-  const [firstSemAY, setFirstSemAY] = useState<string>('');
-  const [secondSemAY, setSecondSemAY] = useState<string>('');
+  const [firstSemAY, setFirstSemAY] = useState<string>(initialAY);
+  const [secondSemAY, setSecondSemAY] = useState<string>(initialAY);
 
   const [localSubmission, setLocalSubmission] = useState<Submission>(submission);
+
+  useEffect(() => {
+    setLocalSubmission(submission);
+    setCurrentStatus(submission.status || 'Incomplete');
+    const ay = submission.data?.academicYear?.match(/\d{4}-\d{4}/)?.[0] || '2025-2026';
+    setSelectedAcademicYear(ay);
+    setFirstSemAY(ay);
+    setSecondSemAY(ay);
+  }, [submission]);
 
   const [semesterFiles, setSemesterFiles] = useState<SubmissionFile[]>([]);
   const [isLoadingFiles, setIsLoadingFiles] = useState(false);
@@ -43,37 +58,54 @@ export function StudentRecordModal({
       const fetchSemesterFiles = async () => {
         setIsLoadingFiles(true);
         try {
-          // Find all submissions by this student
-          const studentSubmissions = await db.submissions.listByStudent(submission.studentId);
-          let allFiles: SubmissionFile[] = [];
-          
-          studentSubmissions.forEach(sub => {
-            const ayField = sub.data?.academicYear || sub.answers?.academicYear || '';
-            // If the submission is explicitly for this academic year & semester
-            if (ayField.includes(selectedAcademicYear) && ayField.includes(selectedSemester)) {
-              allFiles = [...allFiles, ...(sub.files || [])];
-            } else {
-              // Also check if any files inside are categorized for this semester
-              const matchingFiles = (sub.files || []).filter((f: SubmissionFile) => 
-                f.name.includes(selectedSemester) || (f.category && f.category.includes(selectedSemester.charAt(0)))
-              );
-              allFiles = [...allFiles, ...matchingFiles];
+          // 1. Gather all files directly from current submission
+          let allFiles: SubmissionFile[] = [
+            ...(localSubmission.files || []),
+            ...(submission.files || [])
+          ];
+
+          // 2. Also retrieve records across terms by studentId or email
+          try {
+            const sid = submission.studentId || localSubmission.studentId || submission.data?.studentId;
+            if (sid) {
+              const studentSubs = await db.submissions.listByStudent(sid);
+              studentSubs.forEach(sub => {
+                if (sub.files && Array.isArray(sub.files)) {
+                  allFiles = [...allFiles, ...sub.files];
+                }
+              });
+            }
+          } catch (e) {
+            console.warn("Could not query extra submissions for student:", e);
+          }
+
+          // 3. Deduplicate
+          const fileMap = new Map<string, SubmissionFile>();
+          allFiles.forEach(f => {
+            const key = f.id || `${f.category || ''}-${f.name || ''}-${f.data?.slice(0, 30) || ''}`;
+            if (!fileMap.has(key)) {
+              fileMap.set(key, f);
             }
           });
-          
-          // Deduplicate based on file name or id
-          const uniqueFiles = Array.from(new Map(allFiles.map(f => [f.name, f])).values());
-          
-          // Exclusively filter for RF and GWA
-          const filteredFiles = uniqueFiles.filter(f => {
-            const cat = (f.category || '').toUpperCase();
-            const n = (f.name || '').toUpperCase();
-            const isRF = cat.includes('RF') || cat.includes('REGISTRATION') || n.includes('REGISTRATION') || n.includes('_RF');
-            const isGWA = cat.includes('GWA') || cat.includes('COG') || cat.includes('GRADE') || n.includes('GWA') || n.includes('GRADE') || n.includes('COG');
-            return isRF || isGWA;
+          const uniqueFiles = Array.from(fileMap.values());
+
+          const is2ndSem = selectedSemester === '2nd Semester';
+
+          // Filter for the requested semester AND academic year
+          let filtered = uniqueFiles.filter(f => {
+            if (!isRFDocument(f) && !isGWADocument(f)) return false;
+            
+            // Semester check
+            const has2ndTag = is2ndSemesterDoc(f);
+            const matchesSemester = is2ndSem ? has2ndTag : !has2ndTag;
+            
+            // Academic Year check
+            const docAY = f.data?.academicYear || localSubmission.data?.academicYear || '';
+            const matchesAY = docAY === selectedAcademicYear;
+            
+            return matchesSemester && matchesAY;
           });
-          
-          setSemesterFiles(filteredFiles);
+          setSemesterFiles(filtered);
         } catch (err) {
           console.error("Failed to fetch semester files", err);
         } finally {
@@ -82,7 +114,7 @@ export function StudentRecordModal({
       };
       fetchSemesterFiles();
     }
-  }, [viewMode, selectedSemester, selectedAcademicYear, submission.studentId]);
+  }, [viewMode, selectedSemester, selectedAcademicYear, submission.studentId, localSubmission.files]);
 
   const formData = localSubmission.data || {};
   const studentName = localSubmission.studentName || `${formData.firstName || 'Anna Marie'} ${formData.middleName || 'A.'} ${formData.familyName || 'Santos'}`.trim();
@@ -104,9 +136,10 @@ export function StudentRecordModal({
   };
   
   // Available Academic Years for dropdowns
-  const academicYearsOptions = academicYearsList && academicYearsList.length > 0
+  const rawAcademicYears = academicYearsList && academicYearsList.length > 0
     ? academicYearsList.map(ay => (typeof ay === 'string' ? ay : ay.label || ay.year || '2025-2026'))
-    : ['2026-2027', '2025-2026', '2024-2025', '2023-2024'];
+    : ['2025-2026', '2026-2027', '2024-2025', '2023-2024'];
+  const academicYearsOptions = Array.from(new Set([initialAY, ...rawAcademicYears]));
 
   const handleStatusSelect = async (newStatus: string) => {
     setCurrentStatus(newStatus);
@@ -116,6 +149,77 @@ export function StudentRecordModal({
       onStatusChange(localSubmission.id, newStatus);
     }
     await db.submissions.update(localSubmission.id, { status: newStatus as any });
+  };
+
+  const [isExportingPDF, setIsExportingPDF] = useState(false);
+  const [exportProgress, setExportProgress] = useState('');
+
+  const handleBrowserPrint = () => {
+    const originalTitle = document.title;
+    const cleanStudentName = studentName.replace(/[^a-zA-Z0-9_-]/g, '_');
+    document.title = `Scholarship_Record_Form_${cleanStudentName}`;
+    window.print();
+    setTimeout(() => {
+      document.title = originalTitle;
+    }, 1000);
+  };
+
+  const handleExportPDF = async () => {
+    if (isExportingPDF) return;
+    setIsExportingPDF(true);
+    setExportProgress('Preparing...');
+
+    try {
+      // Find all form pages
+      const pageElements = Array.from(document.querySelectorAll<HTMLElement>('.print-page'));
+      if (!pageElements || pageElements.length === 0) {
+        throw new Error('No printable pages found.');
+      }
+
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4',
+        compress: true,
+      });
+
+      const pdfWidth = pdf.internal.pageSize.getWidth(); // 210mm
+      const pdfHeight = pdf.internal.pageSize.getHeight(); // 297mm
+
+      for (let i = 0; i < pageElements.length; i++) {
+        setExportProgress(`Page ${i + 1} of ${pageElements.length}`);
+        const el = pageElements[i];
+
+        const canvas = await html2canvas(el, {
+          scale: 2,
+          useCORS: true,
+          allowTaint: true,
+          logging: false,
+          backgroundColor: '#ffffff',
+          scrollX: 0,
+          scrollY: 0,
+          windowWidth: 1200,
+        });
+
+        const imgData = canvas.toDataURL('image/jpeg', 0.96);
+        if (i > 0) {
+          pdf.addPage('a4', 'portrait');
+        }
+        pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight, undefined, 'FAST');
+      }
+
+      setExportProgress('Saving PDF...');
+      const cleanStudentName = studentName.replace(/[^a-zA-Z0-9_-]/g, '_');
+      const filename = `Scholarship_Record_Form_${cleanStudentName}.pdf`;
+      const blob = pdf.output('blob');
+      saveAs(blob, filename);
+    } catch (err) {
+      console.error('Failed to export PDF via canvas:', err);
+      handleBrowserPrint();
+    } finally {
+      setIsExportingPDF(false);
+      setExportProgress('');
+    }
   };
 
   const [isDownloading, setIsDownloading] = useState(false);
@@ -241,13 +345,13 @@ export function StudentRecordModal({
       name: 'Registration Form (RF)',
       group: '1st Semester',
       category: 'RF',
-      fileName: localSubmission.files?.find((f: any) => f.category === 'RF' || f.category === 'Certificate of Registration (COR)')?.name || `${studentName.replace(/\s+/g, '_')}_1st_Sem_RF.pdf`,
-      status: (localSubmission.files?.find((f: any) => f.category === 'RF' || f.category === 'Certificate of Registration (COR)')?.verified || localSubmission.status === 'Complete' || localSubmission.status === 'Approved') ? 'Verified' : 'Pending',
-      file: localSubmission.files?.find((f: any) => f.category === 'RF' || f.category === 'Certificate of Registration (COR)') || {
-        name: `${studentName.replace(/\s+/g, '_')}_1st_Sem_RF.pdf`,
-        type: 'application/pdf',
+      fileName: localSubmission.files?.find((f: any) => isRFDocument(f))?.name || `${studentName.replace(/\s+/g, '_')}_Registration_Form_RF.png`,
+      status: (localSubmission.files?.find((f: any) => isRFDocument(f))?.verified || localSubmission.status === 'Complete' || localSubmission.status === 'Approved') ? 'Verified' : 'Pending',
+      file: localSubmission.files?.find((f: any) => isRFDocument(f)) || {
+        name: `${studentName.replace(/\s+/g, '_')}_Registration_Form_RF.png`,
+        type: 'image/svg+xml',
         category: 'RF',
-        data: 'data:application/pdf;base64,JVBERi0xLjQKJcOkw7zDtsOfCjIgMCBvYmoKPDwvTGVuZ3RoIDMgMCBSL0ZpbHRlci9GbGF0ZURlY29kZT4+CnN0cmVhbQp4nDPQM1Qo5ypUMFAwALJMLU31jBQsTAz1LBSK0osS84tKUvPSi1QK0lPykxWLkjOA3KLUxDwlAwjN1wAAg5wP3gplbmRzdHJlYW0KZW5kb2JqCgozIDAgb2JqCjY1CmVuZG9iagoKNCAwIG9iago8PC9UeXBlL1BhZ2UvTWVkaWFCb3hbMCAwIDU5NSA4NDJdL1Jlc291cmNlczw8L0ZvbnQ8PC9GMCAxIDAgUj4+Pj4vQ29udGVudHMgMiAwIFIvUGFyZW50IDUgMCBSPj4KZW5kb2JqCgo1IDAgb2JqCjw8L1R5cGUvUGFnZXMvQ291bnQgMS9LaWRzWzQgMCBSXT4+CmVuZG9iagoKMSAwIG9iago8PC9UeXBlL0ZvbnQvU3VidHlwZS9UeXBlMS9CYXNlRm9udC9IZWx2ZXRpY2EvRW5jb2RpbmcvV2luQW5zaUVuY29kaW5nPj4KZW5kb2JqCgo2IDAgb2JqCjw8L1R5cGUvQ2F0YWxvZy9QYWdlcyA1IDAgUj4+CmVuZG9iagoKNyAwIG9iago8PC9DcmVhdG9yKExvY2FsIE1vY2sgRmlsZSkvUHJvZHVjZXIoTG9jYWwgTW9jayBGaWxlKS9DcmVhdGlvbkRhdGUoRDoyMDI2MDMwOTAwMDAwMFopPj4KZW5kb2JqCgp4cmVmCjAgOAowMDAwMDAwMDAwIDY1NTM1IGYgCjAwMDAwMDAyNjAgMDAwMDAgbiAKMDAwMDAwMDAxNSAwMDAwMCBuIAowMDAwMDAwMTMzIDAwMDAwIG4gCjAwMDAwMDAxNTEgMDAwMDAgbiAKMDAwMDAwMDIwNSAwMDAwMCBuIAowMDAwMDAwMzQ4IDAwMDAwIG4gCjAwMDAwMDAzOTcgMDAwMDAgbiAKdHJhaWxlcgo8PC9TaXplIDgvUm9vdCA2IDAgUi9JbmZvIDcgMCBSPj4Kc3RhcnR4cmVmCjUwMAolJUVPRgo='
+        data: dummyBase64RF
       }
     },
     {
@@ -255,13 +359,13 @@ export function StudentRecordModal({
       name: 'General Weighted Average (GWA)',
       group: '1st Semester',
       category: 'GWA',
-      fileName: localSubmission.files?.find((f: any) => f.category === 'GWA' || f.category === 'Certificate of Grades (COG)')?.name || `${studentName.replace(/\s+/g, '_')}_1st_Sem_GWA.pdf`,
-      status: (localSubmission.files?.find((f: any) => f.category === 'GWA' || f.category === 'Certificate of Grades (COG)')?.verified || localSubmission.status === 'Complete' || localSubmission.status === 'Approved') ? 'Verified' : 'Pending',
-      file: localSubmission.files?.find((f: any) => f.category === 'GWA' || f.category === 'Certificate of Grades (COG)') || {
-        name: `${studentName.replace(/\s+/g, '_')}_1st_Sem_GWA.pdf`,
-        type: 'application/pdf',
+      fileName: localSubmission.files?.find((f: any) => isGWADocument(f))?.name || `${studentName.replace(/\s+/g, '_')}_General_Weighted_Average_GWA.png`,
+      status: (localSubmission.files?.find((f: any) => isGWADocument(f))?.verified || localSubmission.status === 'Complete' || localSubmission.status === 'Approved') ? 'Verified' : 'Pending',
+      file: localSubmission.files?.find((f: any) => isGWADocument(f)) || {
+        name: `${studentName.replace(/\s+/g, '_')}_General_Weighted_Average_GWA.png`,
+        type: 'image/svg+xml',
         category: 'GWA',
-        data: 'data:application/pdf;base64,JVBERi0xLjQKJcOkw7zDtsOfCjIgMCBvYmoKPDwvTGVuZ3RoIDMgMCBSL0ZpbHRlci9GbGF0ZURlY29kZT4+CnN0cmVhbQp4nDPQM1Qo5ypUMFAwALJMLU31jBQsTAz1LBSK0osS84tKUvPSi1QK0lPykxWLkjOA3KLUxDwlAwjN1wAAg5wP3gplbmRzdHJlYW0KZW5kb2JqCgozIDAgb2JqCjY1CmVuZG9iagoKNCAwIG9iago8PC9UeXBlL1BhZ2UvTWVkaWFCb3hbMCAwIDU5NSA4NDJdL1Jlc291cmNlczw8L0ZvbnQ8PC9GMCAxIDAgUj4+Pj4vQ29udGVudHMgMiAwIFIvUGFyZW50IDUgMCBSPj4KZW5kb2JqCgo1IDAgb2JqCjw8L1R5cGUvUGFnZXMvQ291bnQgMS9LaWRzWzQgMCBSXT4+CmVuZG9iagoKMSAwIG9iago8PC9UeXBlL0ZvbnQvU3VidHlwZS9UeXBlMS9CYXNlRm9udC9IZWx2ZXRpY2EvRW5jb2RpbmcvV2luQW5zaUVuY29kaW5nPj4KZW5kb2JqCgo2IDAgb2JqCjw8L1R5cGUvQ2F0YWxvZy9QYWdlcyA1IDAgUj4+CmVuZG9iagoKNyAwIG9iago8PC9DcmVhdG9yKExvY2FsIE1vY2sgRmlsZSkvUHJvZHVjZXIoTG9jYWwgTW9jayBGaWxlKS9DcmVhdGlvbkRhdGUoRDoyMDI2MDMwOTAwMDAwMFopPj4KZW5kb2JqCgp4cmVmCjAgOAowMDAwMDAwMDAwIDY1NTM1IGYgCjAwMDAwMDAyNjAgMDAwMDAgbiAKMDAwMDAwMDAxNSAwMDAwMCBuIAowMDAwMDAwMTMzIDAwMDAwIG4gCjAwMDAwMDAxNTEgMDAwMDAgbiAKMDAwMDAwMDIwNSAwMDAwMCBuIAowMDAwMDAwMzQ4IDAwMDAwIG4gCjAwMDAwMDAzOTcgMDAwMDAgbiAKdHJhaWxlcgo8PC9TaXplIDgvUm9vdCA2IDAgUi9JbmZvIDcgMCBSPj4Kc3RhcnR4cmVmCjUwMAolJUVPRgo='
+        data: dummyBase64GWA
       }
     },
     {
@@ -269,13 +373,13 @@ export function StudentRecordModal({
       name: 'Student ID',
       group: 'Other Documents',
       category: 'ID',
-      fileName: localSubmission.files?.find((f: any) => f.category === 'ID' || f.category === 'Student ID' || f.category === 'Valid Student ID' || f.category === '2x2 Recent Formal ID Photo')?.name || `${studentName.replace(/\s+/g, '_')}_ID.png`,
+      fileName: localSubmission.files?.find((f: any) => f.category === 'ID' || f.category === 'Student ID' || f.category === 'Valid Student ID' || f.category === '2x2 Recent Formal ID Photo')?.name || `${studentName.replace(/\s+/g, '_')}_Student_ID.png`,
       status: (localSubmission.files?.find((f: any) => f.category === 'ID' || f.category === 'Student ID' || f.category === 'Valid Student ID' || f.category === '2x2 Recent Formal ID Photo')?.verified || localSubmission.status === 'Complete' || localSubmission.status === 'Approved') ? 'Verified' : 'Pending',
       file: localSubmission.files?.find((f: any) => f.category === 'ID' || f.category === 'Student ID' || f.category === 'Valid Student ID' || f.category === '2x2 Recent Formal ID Photo') || {
-        name: `${studentName.replace(/\s+/g, '_')}_ID.png`,
-        type: 'image/png',
+        name: `${studentName.replace(/\s+/g, '_')}_Student_ID.png`,
+        type: 'image/svg+xml',
         category: 'ID',
-        data: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII='
+        data: dummyBase64StudentId
       }
     }
   ];
@@ -290,7 +394,7 @@ export function StudentRecordModal({
         <div className="bg-[#003884] text-white px-4 py-3 flex items-center justify-between relative shadow-md shrink-0">
           <button
             onClick={viewMode === 'overview' ? onClose : () => setViewMode('overview')}
-            className="flex items-center justify-center bg-white/10 hover:bg-white/20 border border-transparent px-4 py-1.5 rounded-lg text-sm font-bold transition-colors cursor-pointer"
+            className="flex items-center justify-center bg-[#2c4a7c] hover:bg-[#1a325a] text-white border border-[#1a325a] shadow-[0_2px_4px_rgba(0,0,0,0.2)] px-6 py-2 rounded-2xl text-sm font-bold transition-all cursor-pointer"
           >
             Back
           </button>
@@ -387,9 +491,11 @@ export function StudentRecordModal({
                         onChange={(e) => setFirstSemAY(e.target.value)}
                         className="text-xs font-medium border border-gray-300 rounded-md bg-white p-1.5 text-gray-700 outline-none focus:border-blue-500 cursor-pointer"
                       >
-                        {academicYearsOptions.map((ay: string) => (
-                          <option key={ay} value={ay}>{ay}</option>
-                        ))}
+                        {academicYearsOptions.filter(ay => !ay.toLowerCase().includes('2nd')).map((ay: string) => {
+                          let label = ay.replace(' - 1st Semester', '').replace(' - 2nd Semester', '');
+                          if (!label.startsWith('A.Y. ')) label = `A.Y. ${label}`;
+                          return <option key={ay} value={ay}>{label}</option>;
+                        })}
                       </select>
                     </div>
                     <button
@@ -413,9 +519,11 @@ export function StudentRecordModal({
                         onChange={(e) => setSecondSemAY(e.target.value)}
                         className="text-xs font-medium border border-gray-300 rounded-md bg-white p-1.5 text-gray-700 outline-none focus:border-blue-500 cursor-pointer"
                       >
-                        {academicYearsOptions.map((ay: string) => (
-                          <option key={ay} value={ay}>{ay}</option>
-                        ))}
+                        {academicYearsOptions.filter(ay => !ay.toLowerCase().includes('1st')).map((ay: string) => {
+                          let label = ay.replace(' - 1st Semester', '').replace(' - 2nd Semester', '');
+                          if (!label.startsWith('A.Y. ')) label = `A.Y. ${label}`;
+                          return <option key={ay} value={ay}>{label}</option>;
+                        })}
                       </select>
                     </div>
                     <button
@@ -469,49 +577,96 @@ export function StudentRecordModal({
                 </div>
               ) : semesterFiles.length > 0 ? (
                 <div className="space-y-6">
-                  {semesterFiles.map((file, idx) => (
-                    <div key={file.id || idx} className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden flex flex-col">
-                      <div className="px-4 py-3 bg-gray-50 border-b border-gray-200 flex justify-between items-center shrink-0">
-                        <h3 className="font-bold text-gray-800 flex items-center gap-2">
-                          <FileText className="w-4 h-4 text-blue-600" />
-                          {formatDocumentLabel(file.category, file.name)}
-                        </h3>
-                        <div className="flex gap-2">
-                          <button
-                            onClick={() => handleVerifyRequirement(file.category || 'RF', file.status === 'Verified' ? 'Pending' : 'Verified')}
-                            className={cn(
-                              "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-colors cursor-pointer",
-                              file.status === 'Verified' 
-                                ? "bg-green-100 hover:bg-green-200 text-green-700" 
-                                : "bg-gray-200 hover:bg-gray-300 text-gray-700"
+                  {semesterFiles.map((file, idx) => {
+                    const isImg = isImageFile(file);
+                    const isPdf = !isImg && isPdfFile(file);
+                    const fileSource = file.data || (file as any).url || '';
+
+                    return (
+                      <div key={file.id || idx} className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden flex flex-col">
+                        <div className="px-4 py-3 bg-gray-50 border-b border-gray-200 flex flex-wrap gap-2 justify-between items-center shrink-0">
+                          <div>
+                            <h3 className="font-bold text-gray-800 flex items-center gap-2 text-sm sm:text-base">
+                              <FileText className="w-4 h-4 text-blue-600" />
+                              {formatDocumentTitle(file)}
+                            </h3>
+                            <span className="text-[11px] text-gray-500 font-medium">
+                              {file.name} {file.size ? `• ${file.size}` : ''}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={() => setPreviewFile(file)}
+                              className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg text-xs font-bold transition-colors cursor-pointer"
+                              title="Open Fullscreen Preview"
+                            >
+                              <Eye className="w-3.5 h-3.5" /> Full View
+                            </button>
+                            <button
+                              onClick={() => handleVerifyRequirement(file.category || 'RF', file.status === 'Verified' ? 'Pending' : 'Verified')}
+                              className={cn(
+                                "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-colors cursor-pointer",
+                                file.status === 'Verified' 
+                                  ? "bg-green-100 hover:bg-green-200 text-green-700" 
+                                  : "bg-gray-200 hover:bg-gray-300 text-gray-700"
+                              )}
+                            >
+                              <CheckCircle2 className="w-3.5 h-3.5" />
+                              {file.status === 'Verified' ? 'Verified' : 'Mark as Verified'}
+                            </button>
+                            {fileSource && (
+                              <a 
+                                href={fileSource} 
+                                download={file.name}
+                                className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold transition-colors cursor-pointer"
+                              >
+                                <Download className="w-3.5 h-3.5" /> Download
+                              </a>
                             )}
-                          >
-                            <CheckCircle2 className="w-3.5 h-3.5" />
-                            {file.status === 'Verified' ? 'Verified' : 'Mark as Verified'}
-                          </button>
-                          <a 
-                            href={file.data} 
-                            download={file.name}
-                            className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold transition-colors cursor-pointer"
-                          >
-                            <Download className="w-3.5 h-3.5" /> Download
-                          </a>
+                          </div>
+                        </div>
+                        <div className="bg-gray-100 flex items-center justify-center p-4 sm:p-6 min-h-[350px]">
+                          {isImg && fileSource ? (
+                            <div 
+                              className="relative group cursor-zoom-in max-w-full flex items-center justify-center"
+                              onClick={() => setPreviewFile(file)}
+                              title="Click to view full size"
+                            >
+                              <img 
+                                src={fileSource} 
+                                alt={file.name} 
+                                className="max-w-full max-h-[60vh] object-contain shadow-md rounded-lg bg-white border border-gray-200" 
+                              />
+                              <div className="absolute bottom-3 right-3 bg-black/75 hover:bg-black text-white px-2.5 py-1 rounded-md text-[11px] font-semibold flex items-center gap-1.5 shadow-sm opacity-90 group-hover:opacity-100 transition-opacity">
+                                <Eye className="w-3.5 h-3.5" /> Click to enlarge
+                              </div>
+                            </div>
+                          ) : isPdf && fileSource ? (
+                            <iframe 
+                              src={fileSource} 
+                              className="w-full h-[60vh] border-none bg-white shadow-sm rounded-lg" 
+                              title={file.name} 
+                            />
+                          ) : (
+                            <div className="text-center text-gray-500 font-medium py-12">
+                              <FileText className="w-16 h-16 mx-auto text-gray-300 mb-3" />
+                              <p className="text-sm font-semibold text-gray-700">{file.name}</p>
+                              <p className="text-xs text-gray-400 mt-1">Preview not directly available in standard format.</p>
+                              {fileSource && (
+                                <a 
+                                  href={fileSource} 
+                                  download={file.name}
+                                  className="mt-3 inline-flex items-center gap-1.5 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold transition-colors"
+                                >
+                                  <Download className="w-3.5 h-3.5" /> Download File
+                                </a>
+                              )}
+                            </div>
+                          )}
                         </div>
                       </div>
-                      <div className="bg-gray-100 flex items-center justify-center p-6 min-h-[400px]">
-                        {file.type?.includes('image') || file.data?.startsWith('data:image') ? (
-                          <img src={file.data} alt={file.name} className="max-w-full max-h-[60vh] object-contain shadow-sm" />
-                        ) : file.type?.includes('pdf') || file.data?.startsWith('data:application/pdf') ? (
-                          <iframe src={file.data} className="w-full h-[60vh] border-none bg-white shadow-sm" title={file.name} />
-                        ) : (
-                          <div className="text-center text-gray-500 font-medium py-12">
-                            <FileText className="w-16 h-16 mx-auto text-gray-300 mb-3" />
-                            Cannot preview this file type. <br/> Please download to view.
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               ) : (
                 <div className="py-12 text-center text-gray-500 font-medium">
@@ -526,14 +681,51 @@ export function StudentRecordModal({
       </div>
 
       {/* ----------------- EXACT PRINT LAYOUT FOR BROWSER PRINT ----------------- */}
-      <div className={cn("text-black bg-white font-sans", viewMode === 'form' ? "block absolute inset-2 sm:inset-4 md:inset-12 bg-white rounded-2xl overflow-y-auto overflow-x-auto shadow-2xl p-4 sm:p-8" : "hidden print:block print:w-full")}>
+      <div className={cn(
+        "text-black bg-white font-sans print:block print:static print:inset-auto print:m-0 print:p-0 print:overflow-visible print:shadow-none print:rounded-none print:w-full", 
+        viewMode === 'form' 
+          ? "block absolute inset-2 sm:inset-4 md:inset-12 bg-white rounded-2xl overflow-y-auto overflow-x-auto shadow-2xl p-4 sm:p-8" 
+          : "hidden"
+      )}>
         {viewMode === 'form' && (
+          <div className="flex items-center justify-between mb-6 pb-3 border-b border-gray-100 print:hidden sticky top-0 bg-white/95 backdrop-blur-xs z-20">
             <button
               onClick={() => setViewMode('overview')}
-              className="mb-6 text-sm font-bold text-blue-600 hover:text-blue-800 underline transition-colors cursor-pointer print:hidden"
+              className="flex items-center justify-center bg-[#2c4a7c] hover:bg-[#1a325a] text-white border border-[#1a325a] shadow-[0_2px_4px_rgba(0,0,0,0.2)] px-6 py-2 rounded-2xl text-sm font-bold transition-all cursor-pointer"
             >
-              ← Back to Requirements
+              Back
             </button>
+
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleBrowserPrint}
+                className="flex items-center gap-1.5 px-3.5 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-semibold rounded-xl transition-all cursor-pointer"
+                title="Print via browser dialog"
+              >
+                <Printer className="w-4 h-4 stroke-[2.2]" />
+                <span className="hidden sm:inline">Print</span>
+              </button>
+
+              <button
+                onClick={handleExportPDF}
+                disabled={isExportingPDF}
+                className="flex items-center gap-2 px-4 py-2 bg-[#003884] hover:bg-[#002b66] disabled:opacity-75 text-white text-sm font-bold rounded-xl transition-all shadow-sm hover:shadow cursor-pointer active:scale-98"
+                title="Export form as PDF file"
+              >
+                {isExportingPDF ? (
+                  <>
+                    <Loader2 className="w-4 h-4 stroke-[2.5] animate-spin" />
+                    <span>{exportProgress ? `Exporting (${exportProgress})` : 'Exporting PDF...'}</span>
+                  </>
+                ) : (
+                  <>
+                    <Download className="w-4 h-4 stroke-[2.5]" />
+                    <span>Export PDF</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
         )}
         {/* PAGE 1: SCHOLARSHIP RECORD FORM */}
         <div className="print-page w-[793px] h-[1122px] mx-auto pt-8 break-after-page">
@@ -939,8 +1131,8 @@ export function StudentRecordModal({
             {requirementsList.map((req, i) => req.file?.data ? (
               <div key={i} className="border border-black p-4 flex flex-col items-center justify-center h-[400px]">
                 <h4 className="font-bold font-serif mb-4 text-center border-b border-black w-full pb-2">{req.name}</h4>
-                {req.file.type.includes('image') ? (
-                  <img src={req.file.data} className="max-h-[300px] object-contain" />
+                {isImageFile(req.file) && (req.file.data || (req.file as any).url) ? (
+                  <img src={req.file.data || (req.file as any).url} alt={req.name} className="max-h-[300px] object-contain" />
                 ) : (
                   <div className="text-gray-500 italic font-serif flex flex-col items-center gap-2">
                     <FileText className="w-12 h-12" />
@@ -956,42 +1148,10 @@ export function StudentRecordModal({
       </div>
 
       {previewFile && (
-        <div className="fixed inset-0 z-[60] bg-black/90 flex items-center justify-center p-4 print:hidden">
-          <button 
-            onClick={() => setPreviewFile(null)}
-            className="absolute top-4 right-4 text-white/50 hover:text-white p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors cursor-pointer"
-          >
-            <X className="w-6 h-6" />
-          </button>
-          
-          <div className="w-full max-w-4xl h-full max-h-[85vh] bg-white rounded-xl overflow-hidden flex flex-col shadow-2xl animate-in zoom-in-95 duration-200">
-            <div className="px-4 py-3 bg-gray-50 border-b border-gray-200 flex justify-between items-center shrink-0">
-              <h3 className="font-bold text-gray-800 flex items-center gap-2">
-                <FileText className="w-4 h-4 text-blue-600" />
-                {previewFile.name}
-              </h3>
-              <a 
-                href={previewFile.data} 
-                download={previewFile.name}
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold transition-colors cursor-pointer"
-              >
-                <Download className="w-3.5 h-3.5" /> Download
-              </a>
-            </div>
-            <div className="flex-1 overflow-auto bg-gray-100 flex items-center justify-center p-6">
-              {previewFile.type?.includes('image') ? (
-                <img src={previewFile.data} alt={previewFile.name} className="max-w-full max-h-full object-contain shadow-sm" />
-              ) : previewFile.type?.includes('pdf') ? (
-                <iframe src={previewFile.data} className="w-full h-full border-none bg-white shadow-sm" title={previewFile.name} />
-              ) : (
-                <div className="text-center text-gray-500 font-medium">
-                  <FileText className="w-16 h-16 mx-auto text-gray-300 mb-3" />
-                  Cannot preview this file type. <br/> Please download to view.
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
+        <DocumentPreviewModal 
+          file={previewFile} 
+          onClose={() => setPreviewFile(null)} 
+        />
       )}
     </div>
   );

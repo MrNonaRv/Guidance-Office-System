@@ -13,8 +13,11 @@ import {
   Mail, 
   RotateCcw,
   HardDrive,
-  Download
+  Download,
+  Eye
 } from 'lucide-react';
+import { DocumentPreviewModal } from '../../components/DocumentPreviewModal';
+import { formatDocumentTitle, isImageFile } from '../../lib/imageUtils';
 
 import { 
   StudentBreakdownItem, 
@@ -43,6 +46,7 @@ export function GuidanceReports() {
   const [selectedStudent, setSelectedStudent] = useState<StudentBreakdownItem | null>(null);
   const [printSingleStudent, setPrintSingleStudent] = useState<StudentBreakdownItem | null>(null);
   const [allBreakdownData, setAllBreakdownData] = useState<StudentBreakdownItem[]>([]);
+  const [previewDoc, setPreviewDoc] = useState<any>(null);
 
   useEffect(() => {
     async function loadData() {
@@ -825,34 +829,67 @@ export function GuidanceReports() {
                   <h4 className="font-bold text-xs uppercase tracking-wider text-gray-700 flex items-center gap-1.5">
                     <HardDrive className="w-4 h-4 text-[#1864db]" /> Attached Uploads & Verification Files ({selectedStudent.files.length})
                   </h4>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                    {selectedStudent.files.map((file: any, i: number) => (
-                      <div key={i} className="flex items-center justify-between bg-white border border-gray-200 p-2.5 rounded-xl shadow-2xs hover:border-blue-300 transition-colors">
-                        <div className="flex items-center gap-2 overflow-hidden">
-                          <FileText className="w-4 h-4 text-blue-600 shrink-0" />
-                          <div className="truncate">
-                            <p className="text-xs font-semibold text-gray-900 truncate">{file.name || `Document_${i+1}.pdf`}</p>
-                            <p className="text-[10px] text-gray-500">{file.size || 'Stored in Cloud'}</p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    {selectedStudent.files.map((file: any, i: number) => {
+                      const isImg = isImageFile(file);
+                      const fileSrc = file.data || file.url || '';
+
+                      return (
+                        <div key={i} className="flex items-center justify-between bg-white border border-gray-200 p-2.5 rounded-xl shadow-2xs hover:border-blue-300 transition-colors gap-2">
+                          <div 
+                            className="flex items-center gap-2.5 overflow-hidden flex-1 cursor-pointer"
+                            onClick={() => fileSrc && setPreviewDoc(file)}
+                            title="Click to preview file"
+                          >
+                            {isImg && fileSrc ? (
+                              <div className="w-8 h-8 rounded-md bg-gray-100 border border-gray-200 overflow-hidden shrink-0 flex items-center justify-center">
+                                <img src={fileSrc} alt={file.name} className="w-full h-full object-cover" />
+                              </div>
+                            ) : (
+                              <div className="w-8 h-8 rounded-md bg-blue-50 border border-blue-100 flex items-center justify-center shrink-0">
+                                <FileText className="w-4 h-4 text-blue-600" />
+                              </div>
+                            )}
+                            <div className="truncate min-w-0">
+                              <p className="text-xs font-bold text-gray-900 truncate leading-tight">
+                                {formatDocumentTitle(file)}
+                              </p>
+                              <p className="text-[10px] text-gray-500 truncate mt-0.5">
+                                {file.name} {file.size ? `• ${file.size}` : ''}
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-1 shrink-0">
+                            {fileSrc && (
+                              <button
+                                onClick={() => setPreviewDoc(file)}
+                                className="text-xs bg-blue-50 hover:bg-blue-100 text-blue-700 p-1.5 rounded-lg flex items-center gap-1 font-semibold transition-colors cursor-pointer"
+                                title="View Document"
+                              >
+                                <Eye className="w-3.5 h-3.5" />
+                              </button>
+                            )}
+                            {fileSrc ? (
+                              <a
+                                href={fileSrc}
+                                download={file.name || 'document'}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 p-1.5 rounded-lg flex items-center gap-1 font-semibold transition-colors cursor-pointer"
+                                title="Download file"
+                              >
+                                <Download className="w-3.5 h-3.5" />
+                              </a>
+                            ) : (
+                              <span className="text-[10px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded-md font-medium">
+                                Synced
+                              </span>
+                            )}
                           </div>
                         </div>
-                        {file.data ? (
-                          <a
-                            href={file.data}
-                            download={file.name || 'document'}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-xs bg-blue-50 text-blue-700 hover:bg-blue-100 p-1.5 rounded-lg flex items-center gap-1 font-semibold transition-colors"
-                            title="Download or view file"
-                          >
-                            <Download className="w-3.5 h-3.5" />
-                          </a>
-                        ) : (
-                          <span className="text-[10px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded-md font-medium">
-                            Synced
-                          </span>
-                        )}
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
               )}
@@ -900,6 +937,13 @@ export function GuidanceReports() {
             </div>
           </div>
         </div>
+      )}
+
+      {previewDoc && (
+        <DocumentPreviewModal
+          file={previewDoc}
+          onClose={() => setPreviewDoc(null)}
+        />
       )}
     </div>
   );

@@ -1,4 +1,4 @@
-import { LayoutGrid, FileText, Bell, Mail, BarChart2, Settings, User, LogOut, Users, TrendingUp, BookOpen, Filter, Calendar, Award, GraduationCap, ImageIcon, Plus, Pen, Trash2, Paperclip, View, Eye, EyeOff, Menu, X, ChevronRight, Loader2, Cloud, CheckCircle2, AlertCircle, RefreshCw } from 'lucide-react';
+import { LayoutGrid, FileText, Bell, Mail, BarChart2, Settings, User, LogOut, Users, TrendingUp, BookOpen, Filter, Calendar, Award, GraduationCap, ImageIcon, Plus, Pen, Trash2, Paperclip, View, Eye, EyeOff, Menu, X, ChevronRight, Loader2, Cloud, CheckCircle2, AlertCircle, RefreshCw, Package, PackageOpen, FileSpreadsheet, Folder } from 'lucide-react';
 import { cn, formatTimeAgo } from '../../lib/utils';
 import React, { useState, useEffect} from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
@@ -638,11 +638,15 @@ export function GuidanceDashboard() {
     }))
     .slice(0, 10);
 
+  const unreadCount = notifications.filter(n => !n.read).length;
+
   const displayNotifications = notifications.slice(0, 6).map(n => ({
+    id: n.id,
     studentName: n.studentName || n.title,
     action: n.description || 'System update',
     time: formatTimeAgo(n.timestamp, n.createdAt || n.id),
-    type: n.type
+    type: n.type,
+    read: n.read
   }));
 
 
@@ -726,8 +730,8 @@ export function GuidanceDashboard() {
               <tbody className="divide-y divide-gray-100">
                 {displaySubmissions.map((s, idx) => (
                   <tr key={idx} className="hover:bg-blue-50/20 transition-colors">
-                    <td className="py-3.5 px-4 sm:px-6">
-                      <div className="flex items-center justify-center gap-2.5 sm:gap-3">
+                    <td className="py-3.5 px-4 sm:px-6 text-left">
+                      <div className="flex items-center justify-start gap-2.5 sm:gap-3">
                         <div className="w-6 h-6 rounded-full border border-gray-300 flex items-center justify-center text-gray-400 shrink-0">
                           <User className="w-3.5 h-3.5" />
                         </div>
@@ -801,16 +805,24 @@ export function GuidanceDashboard() {
           <div className="bg-white rounded-2xl shadow-sm border border-gray-200/80 p-5">
             <div className="flex justify-between items-center mb-3">
               <h2 className="text-sm font-bold text-[#0c2340]">Recent Notifcations</h2>
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-2">
+                {unreadCount > 0 && (
+                   <button 
+                     onClick={() => db.notifications.markAllAsRead()}
+                     className="text-[10px] font-bold text-[#1864db] hover:text-[#15397a] hover:underline"
+                   >
+                     Mark all as read
+                   </button>
+                )}
                 <Link to="/admin/notifications" className="text-xs font-semibold text-[#1864db] hover:underline">View all</Link>
-                <span className="w-2 h-2 rounded-full bg-red-500"></span>
+                {unreadCount > 0 && <span className="w-2 h-2 rounded-full bg-red-500"></span>}
               </div>
             </div>
             
             <div className="space-y-2.5">
               {displayNotifications.map((n, idx) => (
-                <div key={idx} className="bg-[#eef6ff] border border-[#d3e5fa] rounded-xl p-2.5 flex items-center gap-3 hover:bg-[#e4effc] transition-colors">
-                  <div className="w-8 h-8 rounded-full border border-blue-400 bg-white flex items-center justify-center text-blue-600 shrink-0 shadow-xs">
+                <div key={idx} className={cn("border rounded-xl p-2.5 flex items-center gap-3 transition-colors", n.read ? "bg-white border-gray-100" : "bg-[#eef6ff] border-[#d3e5fa]")}>
+                  <div className={cn("w-8 h-8 rounded-full border bg-white flex items-center justify-center shrink-0 shadow-xs", n.read ? "border-gray-300 text-gray-500" : "border-blue-400 text-blue-600")}>
                     <BookOpen className="w-4 h-4" />
                   </div>
                   <div className="overflow-hidden">
@@ -841,6 +853,8 @@ export function GuidanceSubmissions() {
   const [filterStatus, setFilterStatus] = useState(location.state?.filterStatus || 'All status');
   const [filterCourse, setFilterCourse] = useState('All courses');
   const [filterDate, setFilterDate] = useState('');
+  const [filterAcademicYear, setFilterAcademicYear] = useState('All academic years');
+  const [filterSemester, setFilterSemester] = useState('All semesters');
   const [coursesList, setCoursesList] = useState<any[]>(() => db.courses.getCached());
   const [academicYearsList, setAcademicYearsList] = useState<any[]>(() => db.academicYears.getCached());
 
@@ -883,7 +897,9 @@ export function GuidanceSubmissions() {
     const subCourse = s.data?.course || s.answers?.course || (s.scholarshipType.includes('BS') || s.scholarshipType.includes('BA') ? s.scholarshipType.split(' ')[0] : '');
     const matchesCourse = filterCourse === 'All courses' || subCourse === filterCourse || s.scholarshipType.includes(filterCourse);
     const matchesDate = !filterDate || (s.submittedAt && s.submittedAt.startsWith(filterDate));
-    return matchesSearch && matchesStatus && matchesCourse && matchesDate;
+    const matchesAcademicYear = filterAcademicYear === 'All academic years' || s.data?.academicYear === filterAcademicYear;
+    const matchesSemester = filterSemester === 'All semesters' || s.data?.semester === filterSemester;
+    return matchesSearch && matchesStatus && matchesCourse && matchesDate && matchesAcademicYear && matchesSemester;
   });
   
   return (
@@ -942,6 +958,32 @@ export function GuidanceSubmissions() {
                       </select>
                     </div>
                     <div>
+                      <label className="block text-sm font-bold text-gray-900 mb-1.5">By Academic Year</label>
+                      <select 
+                        value={filterAcademicYear}
+                        onChange={(e) => setFilterAcademicYear(e.target.value)}
+                        className="w-full text-sm border border-gray-300 text-gray-600 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 outline-none bg-white"
+                      >
+                        <option>All academic years</option>
+                        {academicYearsList.map(ay => (
+                          <option key={ay.id} value={ay.year}>{ay.year}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-bold text-gray-900 mb-1.5">By Semester</label>
+                      <select 
+                        value={filterSemester}
+                        onChange={(e) => setFilterSemester(e.target.value)}
+                        className="w-full text-sm border border-gray-300 text-gray-600 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 outline-none bg-white"
+                      >
+                        <option>All semesters</option>
+                        <option>1st Semester</option>
+                        <option>2nd Semester</option>
+                        <option>Summer</option>
+                      </select>
+                    </div>
+                    <div>
                       <label className="block text-sm font-bold text-gray-900 mb-1.5">By Date</label>
                       <input 
                         type="date"
@@ -953,7 +995,7 @@ export function GuidanceSubmissions() {
                     </div>
                     <div className="flex justify-between items-center gap-2 pt-3 mt-1">
                       <button 
-                        onClick={() => { setFilterStatus('All status'); setFilterCourse('All courses'); setFilterDate(''); setFilterOpen(false); }} 
+                        onClick={() => { setFilterStatus('All status'); setFilterCourse('All courses'); setFilterDate(''); setFilterAcademicYear('All academic years'); setFilterSemester('All semesters'); setFilterOpen(false); }} 
                         className="px-6 py-2 text-sm text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 hover:text-gray-900 font-semibold transition-all duration-300 flex-1"
                       >
                         Reset
@@ -986,8 +1028,8 @@ export function GuidanceSubmissions() {
               )}
               {filteredSubmissions.map(s => (
                 <tr key={s.id} className="hover:bg-gray-50/50 transition-colors">
-                  <td className="py-4 px-6">
-                    <div className="flex items-center justify-center gap-4">
+                  <td className="py-4 px-6 text-left">
+                    <div className="flex items-center justify-start gap-3 sm:gap-4">
                       <div className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center bg-white text-gray-400 shrink-0">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                       </div>
@@ -1037,11 +1079,385 @@ export function GuidanceSubmissions() {
   );
 }
 
-export function GuidanceSettings() {
-  const [activeTab, setActiveTab] = useState<'academic-year' | 'courses' | 'sections' | 'scholarships'>('academic-year');
-  
-  // Academic Years state (Matching the reference screenshot)
+export interface ScholarshipAllocationItem {
+  id: string;
+  name: string;
+  description?: string;
+}
 
+export interface ScholarshipSubtypeItem {
+  id: string;
+  name: string;
+  allocations: ScholarshipAllocationItem[];
+}
+
+export interface ScholarshipCategoryItem {
+  id: string;
+  name: string;
+  subtypes: ScholarshipSubtypeItem[];
+}
+
+const INITIAL_SCHOLARSHIP_CATEGORIES: ScholarshipCategoryItem[] = [
+  {
+    id: 'internally-funded',
+    name: 'Internally-Funded',
+    subtypes: [
+      {
+        id: 'entrance',
+        name: 'Entrance',
+        allocations: [] // Starts empty as shown in the reference image
+      },
+      {
+        id: 'academic',
+        name: 'Academic',
+        allocations: [
+          { id: 'full', name: 'Full (1.00 - 1.25)', description: '100% Tuition Fee Exemption' },
+          { id: 'partial', name: 'Partial (1.26 - 1.45)', description: '50% Tuition Fee Exemption' },
+          { id: 'regional-acad', name: 'Regional', description: 'Regional Academic Achiever' },
+          { id: 'national-acad', name: 'National', description: 'National Academic Achiever' }
+        ]
+      },
+      {
+        id: 'socio-cultural',
+        name: 'Socio-cultural',
+        allocations: [
+          { id: 'sc-regional', name: 'Regional', description: 'Socio-cultural regional awardee' },
+          { id: 'sc-national', name: 'National', description: 'Socio-cultural national awardee' }
+        ]
+      },
+      {
+        id: 'institutional',
+        name: 'Institutional',
+        allocations: [
+          { id: 'dep-faculty', name: 'Dependent of Faculty or Staff', description: 'Faculty & staff dependent grant' },
+          { id: 'pres-ssc', name: 'President – SSC', description: 'Supreme Student Council President' },
+          { id: 'pres-flp', name: 'President – FLP', description: 'Future Leaders of the Philippines President' },
+          { id: 'editor-in-chief', name: 'Editor-in-Chief', description: 'Campus Publication Editor' },
+          { id: 'capsu-band', name: 'CAPSU Band / Chorale', description: 'University Performing Artist' }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'externally-funded',
+    name: 'Externally-Funded',
+    subtypes: [
+      {
+        id: 'ched',
+        name: 'CHED',
+        allocations: [
+          { id: 'tes', name: 'Tertiary Education Subsidy (TES)', description: 'UniFAST subsidy' },
+          { id: 'pag-ulikid', name: 'Pag-ulikid', description: 'Provincial scholarship program' },
+          { id: 'tulong-dunong', name: 'Tulong Dunong', description: 'TDP-TES financial assistance' },
+          { id: 'anac-ip', name: 'ANAC - IP', description: 'Indigenous Peoples scholarship grant' },
+          { id: 'brgy-officials', name: 'Barangay (Legal dependents of Brgy. Officials)', description: 'Barangay official dependent grant' },
+          { id: 'esgp-pa', name: 'ESGP - PA', description: 'Expanded Students Grants-in-Aid' }
+        ]
+      },
+      {
+        id: 'merit',
+        name: 'Merit',
+        allocations: [
+          { id: 'dost', name: 'DOST', description: 'DOST-SEI S&T Scholarship' },
+          { id: 'vic', name: 'VIC', description: 'VIC Foundation' },
+          { id: 'capizeno-circle', name: 'Capizeño Circle', description: 'Capizeño Circle Merit' },
+          { id: 'grf', name: 'GRF', description: 'GRF Foundation' }
+        ]
+      },
+      {
+        id: 'lgu',
+        name: 'LGU',
+        allocations: [
+          { id: 'lgu-grant', name: 'LGU: Barangay, Municipality, Province', description: 'Local Government Unit Grant' }
+        ]
+      },
+      {
+        id: 'private-ngo',
+        name: 'Private/NGO',
+        allocations: [
+          { id: 'ngo-grant', name: 'Corporate & Civic Foundations', description: 'Private Foundation Scholarships' }
+        ]
+      }
+    ]
+  }
+];
+
+export function GuidanceSettings() {
+  const [activeTab, setActiveTab] = useState<'academic-year' | 'courses' | 'sections' | 'form' | 'scholarships'>('form');
+
+  // Scholarship Categories hierarchical state (matching reference image)
+  const [categories, setCategories] = useState<ScholarshipCategoryItem[]>(() => {
+    try {
+      const saved = localStorage.getItem('capsu_scholarship_categories');
+      if (saved) {
+        return JSON.parse(saved);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+    return INITIAL_SCHOLARSHIP_CATEGORIES;
+  });
+
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string>('internally-funded');
+  const [selectedSubtypeId, setSelectedSubtypeId] = useState<string>('entrance');
+
+  // Modals for Category structure
+  const [showCategoryModal, setShowCategoryModal] = useState(false);
+  const [editingCategory, setEditingCategory] = useState<ScholarshipCategoryItem | null>(null);
+  const [categoryNameInput, setCategoryNameInput] = useState('');
+
+  const [showSubtypeModal, setShowSubtypeModal] = useState(false);
+  const [editingSubtype, setEditingSubtype] = useState<ScholarshipSubtypeItem | null>(null);
+  const [subtypeNameInput, setSubtypeNameInput] = useState('');
+
+  const [showAllocationModal, setShowAllocationModal] = useState(false);
+  const [editingAllocation, setEditingAllocation] = useState<ScholarshipAllocationItem | null>(null);
+  const [allocationForm, setAllocationForm] = useState({ name: '', description: '' });
+
+  // Files Tab State
+  const [filesList, setFilesList] = useState([
+    { id: '1', name: 'Scholarship Application Form 2026-2027', type: 'PDF', category: 'General', size: '245 KB', lastUpdated: '2026-09-15' },
+    { id: '2', name: 'Certificate of Grades (COG) Template', type: 'PDF', category: 'Academic', size: '180 KB', lastUpdated: '2026-09-10' },
+    { id: '3', name: 'Certificate of Registration (RF) Verification Form', type: 'PDF', category: 'Enrollment', size: '310 KB', lastUpdated: '2026-09-08' },
+    { id: '4', name: 'Certificate of Indigency Format', type: 'DOCX', category: 'Financial', size: '95 KB', lastUpdated: '2026-09-01' },
+  ]);
+  const [showFileModal, setShowFileModal] = useState(false);
+  const [fileForm, setFileForm] = useState({ name: '', type: 'PDF', category: 'General' });
+
+  // Persistence helper
+  const saveCategoriesState = (newCategories: ScholarshipCategoryItem[]) => {
+    setCategories(newCategories);
+    try {
+      localStorage.setItem('capsu_scholarship_categories', JSON.stringify(newCategories));
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  // Active Category & Subtype
+  const currentCategory = categories.find(c => c.id === selectedCategoryId) || categories[0];
+  const currentSubtypes = currentCategory?.subtypes || [];
+  const currentSubtype = currentSubtypes.find(s => s.id === selectedSubtypeId) || currentSubtypes[0];
+  const currentAllocations = currentSubtype?.allocations || [];
+
+  // Category Actions
+  const handleSelectCategory = (catId: string) => {
+    setSelectedCategoryId(catId);
+    const cat = categories.find(c => c.id === catId);
+    if (cat && cat.subtypes.length > 0) {
+      setSelectedSubtypeId(cat.subtypes[0].id);
+    } else {
+      setSelectedSubtypeId('');
+    }
+  };
+
+  const handleEditCategory = (cat: ScholarshipCategoryItem) => {
+    setEditingCategory(cat);
+    setCategoryNameInput(cat.name);
+    setShowCategoryModal(true);
+  };
+
+  const handleSaveCategory = () => {
+    if (!categoryNameInput.trim()) {
+      alert("Please enter a category name.");
+      return;
+    }
+    if (editingCategory) {
+      const updated = categories.map(c => c.id === editingCategory.id ? { ...c, name: categoryNameInput.trim() } : c);
+      saveCategoriesState(updated);
+    }
+    setShowCategoryModal(false);
+  };
+
+  const handleDeleteCategory = (catId: string) => {
+    if (confirm("Are you sure you want to delete this category and all its subtypes?")) {
+      const updated = categories.filter(c => c.id !== catId);
+      saveCategoriesState(updated);
+      if (selectedCategoryId === catId && updated.length > 0) {
+        handleSelectCategory(updated[0].id);
+      }
+    }
+  };
+
+  // Subtype Actions
+  const handleOpenAddSubtype = () => {
+    setEditingSubtype(null);
+    setSubtypeNameInput('');
+    setShowSubtypeModal(true);
+  };
+
+  const handleEditSubtype = (sub: ScholarshipSubtypeItem) => {
+    setEditingSubtype(sub);
+    setSubtypeNameInput(sub.name);
+    setShowSubtypeModal(true);
+  };
+
+  const handleSaveSubtype = () => {
+    if (!subtypeNameInput.trim()) {
+      alert("Please enter a subtype name.");
+      return;
+    }
+    const name = subtypeNameInput.trim();
+    if (editingSubtype) {
+      const updated = categories.map(c => {
+        if (c.id === selectedCategoryId) {
+          return {
+            ...c,
+            subtypes: c.subtypes.map(s => s.id === editingSubtype.id ? { ...s, name } : s)
+          };
+        }
+        return c;
+      });
+      saveCategoriesState(updated);
+    } else {
+      const newSubtype: ScholarshipSubtypeItem = {
+        id: `sub-${Date.now()}`,
+        name,
+        allocations: []
+      };
+      const updated = categories.map(c => {
+        if (c.id === selectedCategoryId) {
+          return {
+            ...c,
+            subtypes: [...c.subtypes, newSubtype]
+          };
+        }
+        return c;
+      });
+      saveCategoriesState(updated);
+      setSelectedSubtypeId(newSubtype.id);
+    }
+    setShowSubtypeModal(false);
+  };
+
+  const handleDeleteSubtype = (subId: string) => {
+    const sub = currentSubtypes.find(s => s.id === subId);
+    if (confirm(`Are you sure you want to delete "${sub?.name || 'this'}" subtype and its allocations?`)) {
+      const updated = categories.map(c => {
+        if (c.id === selectedCategoryId) {
+          return {
+            ...c,
+            subtypes: c.subtypes.filter(s => s.id !== subId)
+          };
+        }
+        return c;
+      });
+      saveCategoriesState(updated);
+      const remaining = currentSubtypes.filter(s => s.id !== subId);
+      if (remaining.length > 0) {
+        setSelectedSubtypeId(remaining[0].id);
+      } else {
+        setSelectedSubtypeId('');
+      }
+    }
+  };
+
+  // Allocation Actions
+  const handleOpenAddAllocation = () => {
+    setEditingAllocation(null);
+    setAllocationForm({ name: '', description: '' });
+    setShowAllocationModal(true);
+  };
+
+  const handleEditAllocation = (alloc: ScholarshipAllocationItem) => {
+    setEditingAllocation(alloc);
+    setAllocationForm({ name: alloc.name, description: alloc.description || '' });
+    setShowAllocationModal(true);
+  };
+
+  const handleSaveAllocation = async () => {
+    if (!allocationForm.name.trim()) {
+      alert("Please enter an allocation name.");
+      return;
+    }
+    const name = allocationForm.name.trim();
+    const description = allocationForm.description.trim();
+
+    if (editingAllocation) {
+      const updated = categories.map(c => {
+        if (c.id === selectedCategoryId) {
+          return {
+            ...c,
+            subtypes: c.subtypes.map(s => {
+              if (s.id === selectedSubtypeId) {
+                return {
+                  ...s,
+                  allocations: s.allocations.map(a => a.id === editingAllocation.id ? { ...a, name, description } : a)
+                };
+              }
+              return s;
+            })
+          };
+        }
+        return c;
+      });
+      saveCategoriesState(updated);
+    } else {
+      const newAlloc: ScholarshipAllocationItem = {
+        id: `alloc-${Date.now()}`,
+        name,
+        description
+      };
+      const updated = categories.map(c => {
+        if (c.id === selectedCategoryId) {
+          return {
+            ...c,
+            subtypes: c.subtypes.map(s => {
+              if (s.id === selectedSubtypeId) {
+                return {
+                  ...s,
+                  allocations: [...s.allocations, newAlloc]
+                };
+              }
+              return s;
+            })
+          };
+        }
+        return c;
+      });
+      saveCategoriesState(updated);
+
+      // Sync into db.scholarships for application forms
+      try {
+        await db.scholarships.create({
+          name: `${name} (${currentCategory?.name || 'Scholarship'})`,
+          type: currentCategory?.name || 'Internally-Funded',
+          category: currentSubtype?.name || 'Academic',
+          status: 'Active',
+          description: description || `${currentSubtype?.name} Allocation`
+        });
+      } catch (err) {
+        console.error(err);
+      }
+    }
+    setShowAllocationModal(false);
+  };
+
+  const handleDeleteAllocation = (allocId: string) => {
+    const alloc = currentAllocations.find(a => a.id === allocId);
+    if (confirm(`Are you sure you want to delete "${alloc?.name || 'this'}" allocation?`)) {
+      const updated = categories.map(c => {
+        if (c.id === selectedCategoryId) {
+          return {
+            ...c,
+            subtypes: c.subtypes.map(s => {
+              if (s.id === selectedSubtypeId) {
+                return {
+                  ...s,
+                  allocations: s.allocations.filter(a => a.id !== allocId)
+                };
+              }
+              return s;
+            })
+          };
+        }
+        return c;
+      });
+      saveCategoriesState(updated);
+    }
+  };
+
+  // Legacy scholarships state for backward-compatibility
   const [scholarships, setScholarships] = useState<any[]>([]);
   const [showScholarshipModal, setShowScholarshipModal] = useState(false);
   const [editingScholarship, setEditingScholarship] = useState<any>(null);
@@ -1303,10 +1719,11 @@ export function GuidanceSettings() {
       setEditingSection(null);
       setSectionForm({ name: '', course: 'BSCS', yearLevel: '1st Year', status: 'Active' });
       setShowSectionModal(true);
-    } else if (activeTab === 'form') {
-      setEditingFormField(null);
-      setFormFieldForm({ title: '', description: '', mandatory: 'Required', status: 'Active' });
-      setShowFormModal(true);
+    } else if (activeTab === 'form' || activeTab === 'scholarships') {
+      handleOpenAddAllocation();
+    } else if (activeTab === 'files') {
+      setFileForm({ name: '', type: 'PDF', category: 'General' });
+      setShowFileModal(true);
     }
   };
 
@@ -1329,11 +1746,11 @@ export function GuidanceSettings() {
           <Calendar className={cn("w-[18px] h-[18px]", activeTab === 'academic-year' ? "text-blue-600" : "text-[#0c2340]")} />
           <span>Academic Year</span>
           {activeTab === 'academic-year' && (
-          <div className="absolute bottom-0 left-0 right-0 h-[3px] bg-blue-600 rounded-t-full" />
-        )}
-      </button>
+            <div className="absolute bottom-0 left-0 right-0 h-[3px] bg-blue-600 rounded-t-full" />
+          )}
+        </button>
 
-      <button
+        <button
           onClick={() => setActiveTab('courses')}
           className={cn(
             "flex items-center gap-2.5 pb-3 text-sm font-bold transition-all relative cursor-pointer whitespace-nowrap shrink-0",
@@ -1366,101 +1783,220 @@ export function GuidanceSettings() {
         </button>
         
         <button
-          onClick={() => setActiveTab('scholarships')}
+          onClick={() => setActiveTab('form')}
           className={cn(
             "flex items-center gap-2.5 pb-3 text-sm font-bold transition-all relative cursor-pointer whitespace-nowrap shrink-0",
-            activeTab === 'scholarships'
+            (activeTab === 'form' || activeTab === 'scholarships')
               ? "text-blue-600"
               : "text-[#0c2340] hover:text-blue-600"
           )}
         >
-          <Award className={cn("w-[18px] h-[18px]", activeTab === 'scholarships' ? "text-blue-600" : "text-[#0c2340]")} />
+          <FileText className={cn("w-[18px] h-[18px]", (activeTab === 'form' || activeTab === 'scholarships') ? "text-blue-600" : "text-[#0c2340]")} />
           <span>Scholarships</span>
-          {activeTab === 'scholarships' && (
+          {(activeTab === 'form' || activeTab === 'scholarships') && (
             <div className="absolute bottom-0 left-0 right-0 h-[3px] bg-blue-600 rounded-t-full" />
           )}
         </button>
-        
-        <button
-          className={cn(
-            "flex items-center gap-2.5 pb-3 text-sm font-bold transition-all relative cursor-pointer whitespace-nowrap shrink-0 text-[#0c2340] hover:text-blue-600 opacity-60",
-          )}
-        >
-          <FileText className="w-[18px] h-[18px] text-[#0c2340]" />
-          <span>Form</span>
-        </button>
-        
-        <button
-          className={cn(
-            "flex items-center gap-2.5 pb-3 text-sm font-bold transition-all relative cursor-pointer whitespace-nowrap shrink-0 text-[#0c2340] hover:text-blue-600 opacity-60",
-          )}
-        >
-          <ImageIcon className="w-[18px] h-[18px] text-[#0c2340]" />
-          <span>Files</span>
-        </button>
+
+
       </div>
 
-      {/* Main Settings Card */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-300 overflow-hidden mt-6">
-        {/* Card Top Action Bar */}
-        <div className="p-5 px-6 flex justify-between items-center border-b border-gray-200/80">
-          <h2 className="text-lg font-bold text-[#0c2340]">
-            {activeTab === 'academic-year' && 'Academic Year'}
-            {activeTab === 'scholarships' && 'Scholarships & Requirements'}
-            {activeTab === 'courses' && 'Courses'}
-            {activeTab === 'sections' && 'Sections'}
-          </h2>
-          <button
-            onClick={handleOpenAddModal}
-            className="bg-[#072b6b] hover:bg-[#051c47] text-white px-6 py-2 rounded-full font-bold text-sm flex items-center gap-2 shadow-sm transition-all hover:scale-[1.02] cursor-pointer"
-          >
-            <Plus className="w-4 h-4 stroke-[3]" />
-            <span>Add</span>
-          </button>
-        </div>
+      {/* When activeTab is 'form' or 'scholarships', show the 3 cards matching image.png exactly */}
+      {(activeTab === 'form' || activeTab === 'scholarships') ? (
+        <div className="mt-6 space-y-6">
+          <h2 className="text-xl font-bold text-[#0c2340]">Scholarship Category</h2>
 
-        
-        {/* TAB: SCHOLARSHIPS */}
-        {activeTab === 'scholarships' && (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="bg-gray-50 border-b border-gray-200 text-xs font-bold text-gray-500 uppercase tracking-wider">
-                  <th className="p-4 px-6 font-semibold">Scholarship Name</th>
-                  <th className="p-4 px-6 font-semibold">Funding Type</th>
-                  <th className="p-4 px-6 font-semibold">Requirements</th>
-                  <th className="p-4 px-6 font-semibold">Status</th>
-                  <th className="p-4 px-6 font-semibold text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {scholarships.length === 0 ? (
-                  <tr><td colSpan={5} className="p-8 text-center text-gray-500 italic">No scholarships configured.</td></tr>
-                ) : scholarships.map((item: any) => (
-                  <tr key={item.id} className="hover:bg-blue-50/30 transition-colors">
-                    <td className="p-4 px-6 font-semibold text-gray-900">{item.name}</td>
-                    <td className="p-4 px-6 text-gray-600 text-sm">{item.fundingType}</td>
-                    <td className="p-4 px-6 text-gray-600 text-sm">
-                      {item.requirements?.length || 0} document(s)
-                    </td>
-                    <td className="p-4 px-6">
-                      <span className={cn(
-                        "px-2.5 py-1 text-[11px] font-bold rounded-md",
-                        item.status === 'Active' ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-600"
-                      )}>
-                        {item.status}
-                      </span>
-                    </td>
-                    <td className="p-4 px-6 text-right">
-                      <button onClick={() => handleEditScholarship(item)} className="p-2 text-gray-400 hover:text-[#1864db] transition-colors" title="Edit"><Pen className="w-4 h-4" /></button>
-                      <button onClick={() => handleDeleteScholarship(item.id)} className="p-2 text-gray-400 hover:text-red-500 transition-colors ml-1" title="Delete"><Trash2 className="w-4 h-4" /></button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          {/* 1. Category Card */}
+          <div className="bg-white rounded-xl border border-gray-200 shadow-xs overflow-hidden">
+            <div className="px-6 py-4 border-b border-gray-100 bg-white">
+              <h3 className="font-bold text-[#0c2340] text-base">Category</h3>
+            </div>
+            <div className="divide-y divide-gray-100">
+              {categories.map((cat) => {
+                const isSelected = selectedCategoryId === cat.id;
+                return (
+                  <div
+                    key={cat.id}
+                    onClick={() => handleSelectCategory(cat.id)}
+                    className={cn(
+                      "relative px-6 py-4 flex items-center justify-between cursor-pointer transition-colors select-none",
+                      isSelected ? "bg-[#dbeafe]/70 text-[#0c2340]" : "bg-white hover:bg-gray-50/80 text-gray-800"
+                    )}
+                  >
+                    {isSelected && (
+                      <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-[#2563eb]" />
+                    )}
+                    <span className={cn("text-sm tracking-tight", isSelected ? "font-bold text-[#0c2340]" : "font-semibold text-gray-700")}>
+                      {cat.name}
+                    </span>
+                    <div className="flex items-center gap-4 text-gray-400">
+                      <button
+                        type="button"
+                        onClick={(e) => { e.stopPropagation(); handleEditCategory(cat); }}
+                        className="p-1 hover:text-blue-600 transition-colors cursor-pointer"
+                        title="Edit Category Name"
+                      >
+                        <Pen className="w-4 h-4" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={(e) => { e.stopPropagation(); handleDeleteCategory(cat.id); }}
+                        className="p-1 hover:text-red-600 transition-colors cursor-pointer"
+                        title="Delete Category"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
-        )}
+
+          {/* 2. Subtype Card */}
+          <div className="bg-white rounded-xl border border-gray-200 shadow-xs overflow-hidden">
+            <div className="px-6 py-3.5 border-b border-gray-100 bg-white flex justify-between items-center">
+              <h3 className="font-bold text-[#0c2340] text-base">Subtype</h3>
+              <button
+                type="button"
+                onClick={handleOpenAddSubtype}
+                className="bg-[#002b66] hover:bg-[#001e47] text-white px-5 py-1.5 rounded-full text-xs font-bold flex items-center gap-1.5 shadow-xs transition-transform hover:scale-[1.02] cursor-pointer"
+              >
+                <Plus className="w-3.5 h-3.5 stroke-[3]" />
+                <span>Add</span>
+              </button>
+            </div>
+            <div className="divide-y divide-gray-100">
+              {currentSubtypes.length === 0 ? (
+                <div className="py-8 text-center text-gray-400 text-xs italic">
+                  No subtypes configured under {currentCategory?.name}. Click + Add to create one.
+                </div>
+              ) : (
+                currentSubtypes.map((sub) => {
+                  const isSelected = selectedSubtypeId === sub.id;
+                  return (
+                    <div
+                      key={sub.id}
+                      onClick={() => setSelectedSubtypeId(sub.id)}
+                      className={cn(
+                        "relative px-6 py-4 flex items-center justify-between cursor-pointer transition-colors select-none",
+                        isSelected ? "bg-[#dbeafe]/70 text-[#0c2340]" : "bg-white hover:bg-gray-50/80 text-gray-800"
+                      )}
+                    >
+                      {isSelected && (
+                        <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-[#2563eb]" />
+                      )}
+                      <span className={cn("text-sm tracking-tight", isSelected ? "font-bold text-[#0c2340]" : "font-semibold text-gray-700")}>
+                        {sub.name}
+                      </span>
+                      <div className="flex items-center gap-4 text-gray-400">
+                        <button
+                          type="button"
+                          onClick={(e) => { e.stopPropagation(); handleEditSubtype(sub); }}
+                          className="p-1 hover:text-blue-600 transition-colors cursor-pointer"
+                          title="Edit Subtype Name"
+                        >
+                          <Pen className="w-4 h-4" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={(e) => { e.stopPropagation(); handleDeleteSubtype(sub.id); }}
+                          className="p-1 hover:text-red-600 transition-colors cursor-pointer"
+                          title="Delete Subtype"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          </div>
+
+          {/* 3. Scholarship Allocation Card */}
+          <div className="bg-white rounded-xl border border-gray-200 shadow-xs overflow-hidden">
+            <div className="px-6 py-3.5 border-b border-gray-100 bg-white flex justify-between items-center">
+              <h3 className="font-bold text-[#0c2340] text-base">Scholarship Allocation</h3>
+              <button
+                type="button"
+                onClick={handleOpenAddAllocation}
+                className="bg-[#002b66] hover:bg-[#001e47] text-white px-5 py-1.5 rounded-full text-xs font-bold flex items-center gap-1.5 shadow-xs transition-transform hover:scale-[1.02] cursor-pointer"
+              >
+                <Plus className="w-3.5 h-3.5 stroke-[3]" />
+                <span>Add</span>
+              </button>
+            </div>
+            <div>
+              {currentAllocations.length === 0 ? (
+                <div className="py-14 flex flex-col items-center justify-center text-center">
+                  <div className="mb-2 text-gray-300">
+                    <svg className="w-12 h-12 mx-auto text-gray-300 stroke-[1.5]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M16.5 9.4 7.55 4.24" />
+                      <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+                      <polyline points="3.29 7 12 12 20.71 7" />
+                      <line x1="12" y1="22" x2="12" y2="12" />
+                    </svg>
+                  </div>
+                  <p className="text-xs text-gray-500 font-medium">Add an allocation under this subtype.</p>
+                </div>
+              ) : (
+                <div className="divide-y divide-gray-100">
+                  {currentAllocations.map((alloc) => (
+                    <div
+                      key={alloc.id}
+                      className="px-6 py-4 flex items-center justify-between hover:bg-gray-50/80 transition-colors"
+                    >
+                      <div>
+                        <span className="text-sm font-bold text-gray-800">{alloc.name}</span>
+                        {alloc.description && (
+                          <p className="text-xs text-gray-500 mt-0.5">{alloc.description}</p>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-4 text-gray-400">
+                        <button
+                          type="button"
+                          onClick={() => handleEditAllocation(alloc)}
+                          className="p-1 hover:text-blue-600 transition-colors cursor-pointer"
+                          title="Edit Allocation"
+                        >
+                          <Pen className="w-4 h-4" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteAllocation(alloc.id)}
+                          className="p-1 hover:text-red-600 transition-colors cursor-pointer"
+                          title="Delete Allocation"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      ) : (
+        /* Main Settings Card for other tabs */
+        <div className="bg-white rounded-lg shadow-sm border border-gray-300 overflow-hidden mt-6">
+          {/* Card Top Action Bar */}
+          <div className="p-5 px-6 flex justify-between items-center border-b border-gray-200/80">
+            <h2 className="text-lg font-bold text-[#0c2340]">
+              {activeTab === 'academic-year' && 'Academic Year'}
+              {activeTab === 'courses' && 'Courses'}
+              {activeTab === 'sections' && 'Sections'}
+              {activeTab === 'files' && 'Files & Document Templates'}
+            </h2>
+            <button
+              onClick={handleOpenAddModal}
+              className="bg-[#072b6b] hover:bg-[#051c47] text-white px-6 py-2 rounded-full font-bold text-sm flex items-center gap-2 shadow-sm transition-all hover:scale-[1.02] cursor-pointer"
+            >
+              <Plus className="w-4 h-4 stroke-[3]" />
+              <span>Add</span>
+            </button>
+          </div>
 
         {/* TAB 1: ACADEMIC YEAR (Matching screenshot exactly) */}
         {activeTab === 'academic-year' && (
@@ -1607,7 +2143,58 @@ export function GuidanceSettings() {
             </table>
           </div>
         )}
+
+        {/* TAB 4: FILES */}
+        {activeTab === 'files' && (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-[#edf3fa] text-[#486581] text-[11px] font-bold uppercase tracking-wider border-b border-gray-300">
+                  <th className="py-3 px-8 font-bold text-left">DOCUMENT TITLE</th>
+                  <th className="py-3 px-6 font-bold text-left">CATEGORY</th>
+                  <th className="py-3 px-6 font-bold text-left">FORMAT</th>
+                  <th className="py-3 px-6 font-bold text-left">FILE SIZE</th>
+                  <th className="py-3 px-8 font-bold text-right">ACTIONS</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100 text-sm">
+                {filesList.map((file) => (
+                  <tr key={file.id} className="hover:bg-blue-50/20 transition-colors">
+                    <td className="py-4 px-8 font-bold text-gray-900">{file.name}</td>
+                    <td className="py-4 px-6 text-gray-600">{file.category}</td>
+                    <td className="py-4 px-6">
+                      <span className="px-2.5 py-0.5 text-xs font-bold rounded bg-blue-100 text-blue-700">
+                        {file.type}
+                      </span>
+                    </td>
+                    <td className="py-4 px-6 text-gray-500 text-xs">{file.size}</td>
+                    <td className="py-4 px-8 text-right space-x-3">
+                      <button
+                        onClick={() => alert(`Downloading "${file.name}"...`)}
+                        className="text-blue-600 hover:text-blue-800 text-xs font-bold transition-colors cursor-pointer"
+                      >
+                        Download
+                      </button>
+                      <button
+                        onClick={() => {
+                          if (confirm(`Delete file "${file.name}"?`)) {
+                            setFilesList(filesList.filter(f => f.id !== file.id));
+                          }
+                        }}
+                        className="text-gray-300 hover:text-red-600 transition-colors p-1 cursor-pointer"
+                        title="Delete"
+                      >
+                        <Trash2 className="w-4 h-4 inline" />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
+      )}
 
       {/* Modal for Scholarship */}
       {showScholarshipModal && (
@@ -1919,6 +2506,184 @@ export function GuidanceSettings() {
             <div className="px-6 py-4 border-t border-gray-100 bg-gray-50 flex justify-end gap-3">
               <button onClick={() => setShowFormModal(false)} className="px-4 py-2 font-bold text-sm text-gray-600 hover:bg-gray-200 rounded-lg">Cancel</button>
               <button onClick={handleSaveFormField} className="px-6 py-2 bg-[#072b6b] hover:bg-[#051c47] text-white rounded-full font-bold text-sm">Save Requirement</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal for Category */}
+      {showCategoryModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden">
+            <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+              <h3 className="font-bold text-lg text-gray-900">Edit Category Name</h3>
+              <button onClick={() => setShowCategoryModal(false)} className="text-gray-400 hover:text-gray-600 text-xl font-bold">×</button>
+            </div>
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1">Category Name</label>
+                <input
+                  type="text"
+                  value={categoryNameInput}
+                  onChange={e => setCategoryNameInput(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#1864db] text-sm"
+                  placeholder="e.g. Internally-Funded"
+                />
+              </div>
+            </div>
+            <div className="px-6 py-4 border-t border-gray-100 bg-gray-50 flex justify-end gap-3">
+              <button onClick={() => setShowCategoryModal(false)} className="px-4 py-2 font-bold text-sm text-gray-600 hover:bg-gray-200 rounded-lg cursor-pointer">Cancel</button>
+              <button onClick={handleSaveCategory} className="px-6 py-2 bg-[#072b6b] hover:bg-[#051c47] text-white rounded-full font-bold text-sm cursor-pointer">Save Changes</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal for Subtype */}
+      {showSubtypeModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden">
+            <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+              <h3 className="font-bold text-lg text-gray-900">{editingSubtype ? 'Edit Subtype' : 'Add New Subtype'}</h3>
+              <button onClick={() => setShowSubtypeModal(false)} className="text-gray-400 hover:text-gray-600 text-xl font-bold">×</button>
+            </div>
+            <div className="p-6 space-y-4">
+              <div className="p-3 bg-blue-50/70 border border-blue-100 rounded-lg text-xs text-blue-900">
+                Category: <span className="font-bold">{currentCategory?.name}</span>
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1">Subtype Name</label>
+                <input
+                  type="text"
+                  value={subtypeNameInput}
+                  onChange={e => setSubtypeNameInput(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#1864db] text-sm"
+                  placeholder="e.g. Academic, Socio-cultural, CHED, Merit"
+                />
+              </div>
+            </div>
+            <div className="px-6 py-4 border-t border-gray-100 bg-gray-50 flex justify-end gap-3">
+              <button onClick={() => setShowSubtypeModal(false)} className="px-4 py-2 font-bold text-sm text-gray-600 hover:bg-gray-200 rounded-lg cursor-pointer">Cancel</button>
+              <button onClick={handleSaveSubtype} className="px-6 py-2 bg-[#072b6b] hover:bg-[#051c47] text-white rounded-full font-bold text-sm cursor-pointer">Save Subtype</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal for Allocation */}
+      {showAllocationModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden">
+            <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+              <h3 className="font-bold text-lg text-gray-900">{editingAllocation ? 'Edit Allocation' : 'Add Scholarship Allocation'}</h3>
+              <button onClick={() => setShowAllocationModal(false)} className="text-gray-400 hover:text-gray-600 text-xl font-bold">×</button>
+            </div>
+            <div className="p-6 space-y-4">
+              <div className="p-3 bg-blue-50/70 border border-blue-100 rounded-lg text-xs text-blue-900 space-y-1">
+                <div>Category: <span className="font-bold">{currentCategory?.name}</span></div>
+                <div>Subtype: <span className="font-bold">{currentSubtype?.name}</span></div>
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1">Allocation Title / Grant Name</label>
+                <input
+                  type="text"
+                  value={allocationForm.name}
+                  onChange={e => setAllocationForm({ ...allocationForm, name: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#1864db] text-sm"
+                  placeholder="e.g. Full (1.00 - 1.25) or Tertiary Education Subsidy (TES)"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1">Description / Benefit Details</label>
+                <textarea
+                  value={allocationForm.description}
+                  onChange={e => setAllocationForm({ ...allocationForm, description: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#1864db] text-sm"
+                  placeholder="e.g. 100% Tuition Fee Exemption or Monthly Stipend"
+                  rows={2}
+                />
+              </div>
+            </div>
+            <div className="px-6 py-4 border-t border-gray-100 bg-gray-50 flex justify-end gap-3">
+              <button onClick={() => setShowAllocationModal(false)} className="px-4 py-2 font-bold text-sm text-gray-600 hover:bg-gray-200 rounded-lg cursor-pointer">Cancel</button>
+              <button onClick={handleSaveAllocation} className="px-6 py-2 bg-[#072b6b] hover:bg-[#051c47] text-white rounded-full font-bold text-sm cursor-pointer">Save Allocation</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal for Files */}
+      {showFileModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden">
+            <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+              <h3 className="font-bold text-lg text-gray-900">Add Document Template</h3>
+              <button onClick={() => setShowFileModal(false)} className="text-gray-400 hover:text-gray-600 text-xl font-bold">×</button>
+            </div>
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1">Document Title</label>
+                <input
+                  type="text"
+                  value={fileForm.name}
+                  onChange={e => setFileForm({ ...fileForm, name: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#1864db] text-sm"
+                  placeholder="e.g. Certificate of Grades (COG) Template"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1">Format</label>
+                  <select
+                    value={fileForm.type}
+                    onChange={e => setFileForm({ ...fileForm, type: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none text-sm"
+                  >
+                    <option value="PDF">PDF Document</option>
+                    <option value="DOCX">DOCX Word Document</option>
+                    <option value="XLSX">XLSX Excel Spreadsheet</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1">Category</label>
+                  <select
+                    value={fileForm.category}
+                    onChange={e => setFileForm({ ...fileForm, category: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none text-sm"
+                  >
+                    <option value="General">General</option>
+                    <option value="Academic">Academic</option>
+                    <option value="Enrollment">Enrollment</option>
+                    <option value="Financial">Financial</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+            <div className="px-6 py-4 border-t border-gray-100 bg-gray-50 flex justify-end gap-3">
+              <button onClick={() => setShowFileModal(false)} className="px-4 py-2 font-bold text-sm text-gray-600 hover:bg-gray-200 rounded-lg cursor-pointer">Cancel</button>
+              <button
+                onClick={() => {
+                  if (!fileForm.name.trim()) {
+                    alert("Please enter a document title.");
+                    return;
+                  }
+                  setFilesList([
+                    ...filesList,
+                    {
+                      id: `file-${Date.now()}`,
+                      name: fileForm.name.trim(),
+                      type: fileForm.type,
+                      category: fileForm.category,
+                      size: '120 KB',
+                      lastUpdated: new Date().toISOString().split('T')[0]
+                    }
+                  ]);
+                  setShowFileModal(false);
+                }}
+                className="px-6 py-2 bg-[#072b6b] hover:bg-[#051c47] text-white rounded-full font-bold text-sm cursor-pointer"
+              >
+                Add Document
+              </button>
             </div>
           </div>
         </div>
