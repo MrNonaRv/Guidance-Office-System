@@ -1,5 +1,5 @@
 import { LayoutGrid, FileText, Bell, Mail, BarChart2, Settings, User, LogOut, Users, TrendingUp, BookOpen, Filter, Calendar, Award, GraduationCap, ImageIcon, Plus, Pen, Trash2, Paperclip, View, Eye, EyeOff, Menu, X, ChevronRight, Loader2, Cloud, CheckCircle2, AlertCircle, RefreshCw } from 'lucide-react';
-import { cn } from '../../lib/utils';
+import { cn, formatTimeAgo } from '../../lib/utils';
 import React, { useState, useEffect} from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 /* import { Award, LayoutGrid, TrendingUp, BookOpen, FileText, Bell, Mail, BarChart2, Settings, LogOut, Filter, View, User, Paperclip, Image as ImageIcon, Pen, Trash2, Calendar, GraduationCap, Users, Plus, } from 'lucide-react'; */
@@ -382,6 +382,16 @@ export function GuidanceLayout() {
   const [adminEmail, setAdminEmail] = useState<string>(() => {
     return typeof window !== 'undefined' ? localStorage.getItem('adminEmail') || 'aguilos.relie@capsu.edu' : 'aguilos.relie@capsu.edu';
   });
+  const [unreadNotifsCount, setUnreadNotifsCount] = useState<number>(0);
+
+  useEffect(() => {
+    const unsub = db.notifications.subscribe(notifs => {
+      if (notifs) {
+        setUnreadNotifsCount(notifs.filter(n => !n.read).length);
+      }
+    });
+    return () => unsub();
+  }, []);
 
   // Close mobile drawer on route navigation
   useEffect(() => {
@@ -511,14 +521,24 @@ export function GuidanceLayout() {
                     key={item.path}
                     to={item.path}
                     className={cn(
-                      "flex items-center gap-3.5 px-4 py-2.5 rounded-xl transition-all duration-200 text-sm font-semibold",
+                      "flex items-center justify-between px-4 py-2.5 rounded-xl transition-all duration-200 text-sm font-semibold",
                       isActive 
                         ? "bg-[#fbc02d] text-[#0f2e60] shadow-sm font-bold" 
                         : "text-white hover:bg-white/10"
                     )}
                   >
-                    <item.icon className={cn("w-5 h-5", isActive ? "text-[#0f2e60]" : "text-white")} />
-                    <span>{item.label}</span>
+                    <div className="flex items-center gap-3.5">
+                      <item.icon className={cn("w-5 h-5", isActive ? "text-[#0f2e60]" : "text-white")} />
+                      <span>{item.label}</span>
+                    </div>
+                    {item.label === 'Notifications' && unreadNotifsCount > 0 && (
+                      <span className={cn(
+                        "text-[11px] font-bold px-2 py-0.5 rounded-full",
+                        isActive ? "bg-[#0f2e60] text-[#fbc02d]" : "bg-red-500 text-white"
+                      )}>
+                        {unreadNotifsCount}
+                      </span>
+                    )}
                   </Link>
                 );
               })}
@@ -557,11 +577,16 @@ export function GuidanceLayout() {
               key={item.path}
               to={item.path}
               className={cn(
-                "flex flex-col items-center justify-center py-1 px-1.5 rounded-lg transition-all min-w-[50px]",
+                "flex flex-col items-center justify-center py-1 px-1.5 rounded-lg transition-all min-w-[50px] relative",
                 isActive ? "text-[#fbc02d] font-bold" : "text-blue-100/70 hover:text-white"
               )}
             >
-              <item.icon className="w-5 h-5" />
+              <div className="relative">
+                <item.icon className="w-5 h-5" />
+                {item.label === 'Notifications' && unreadNotifsCount > 0 && (
+                  <span className="absolute -top-1 -right-1.5 w-2 h-2 bg-red-500 rounded-full border border-[#072b6b]" />
+                )}
+              </div>
               <span className="text-[10px] mt-0.5 tracking-tight font-medium">{item.label}</span>
             </Link>
           );
@@ -575,6 +600,13 @@ export function GuidanceDashboard() {
   const navigate = useNavigate();
   const [submissions, setSubmissions] = useState<any[]>(() => db.submissions.getCached());
   const [notifications, setNotifications] = useState<any[]>(() => db.notifications.getCached());
+
+  // Dynamic relative timestamp updates every 30 seconds
+  const [, setTick] = useState(0);
+  useEffect(() => {
+    const timer = setInterval(() => setTick(t => t + 1), 30000);
+    return () => clearInterval(timer);
+  }, []);
 
   useEffect(() => {
     const unsubSubs = db.submissions.subscribe(subs => {
@@ -609,7 +641,7 @@ export function GuidanceDashboard() {
   const displayNotifications = notifications.slice(0, 6).map(n => ({
     studentName: n.studentName || n.title,
     action: n.description || 'System update',
-    time: n.timestamp || 'Just now',
+    time: formatTimeAgo(n.timestamp, n.createdAt || n.id),
     type: n.type
   }));
 

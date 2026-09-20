@@ -2,7 +2,7 @@ export interface ScholarshipOption {
   id: string;
   name: string;
   label: string;
-  hasSpecifyField?: 'internalCategoryOthers' | 'chedCongressionalDistrict' | 'chedOneTown' | 'chedTulongDunong' | 'chedOthers' | 'lguContact' | 'dswdFields';
+  hasSpecifyField?: 'internalCategoryOthers' | 'chedCongressionalDistrict' | 'chedOneTown' | 'chedTulongDunong' | 'chedOthers' | 'lguContact' | 'dswdFields' | 'meritChedAndOthers';
 }
 
 export interface ScholarshipSubCategoryGroup {

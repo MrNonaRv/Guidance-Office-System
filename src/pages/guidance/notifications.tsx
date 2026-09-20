@@ -12,22 +12,10 @@ import {
   User,
   Files
 } from 'lucide-react';
-import { cn } from '../../lib/utils';
+import { cn, formatTimeAgo } from '../../lib/utils';
 import { useNavigate } from 'react-router-dom';
-import { db } from '../../lib/db';
-
-interface NotificationItem {
-  id: string;
-  type: 'submission' | 'deadline' | 'system' | 'inquiry';
-  title: string;
-  description: string;
-  studentName?: string;
-  studentId?: string;
-  scholarship?: string;
-  timestamp: string;
-  read: boolean;
-  priority: 'high' | 'normal' | 'low';
-}
+import { db, NotificationItem } from '../../lib/db';
+import { defaultNotifications } from '../../lib/defaultData';
 
 export function GuidanceNotifications() {
   const navigate = useNavigate();
@@ -39,64 +27,17 @@ export function GuidanceNotifications() {
   const [notifications, setNotifications] = useState<NotificationItem[]>(() => {
     const cached = db.notifications.getCached();
     if (cached && cached.length > 0) return cached;
-    return [
-      {
-        id: 'notif-1',
-        type: 'submission',
-        title: 'New Scholarship Submission Uploaded',
-        description: 'Anna Marie A. Santos uploaded Certificate of Grades (COG) and Certificate of Registration (COR) for Pag-Ulikid Provincial Scholarship.',
-        studentName: 'Anna Marie A. Santos',
-        studentId: '2024-CAPSU-0182',
-        scholarship: 'Pag-Ulikid',
-        timestamp: '10 minutes ago',
-        read: false,
-        priority: 'high'
-      },
-      {
-        id: 'notif-2',
-        type: 'deadline',
-        title: 'CHED Tulong Dunong Renewal Deadline Approaching',
-        description: 'The submission window for 2nd semester renewal closes in 3 days. 18 scholars have pending document uploads.',
-        scholarship: 'Tulong Dunong',
-        timestamp: '2 hours ago',
-        read: false,
-        priority: 'high'
-      },
-      {
-        id: 'notif-3',
-        type: 'submission',
-        title: 'Updated Registration Form Submitted',
-        description: 'Damian James O. Emilio re-uploaded NCIP Indigenous Peoples Certificate for ANAC-IP grant validation.',
-        studentName: 'Damian James O. Emilio',
-        studentId: '2022-CAPSU-0041',
-        scholarship: 'ANAC-IP',
-        timestamp: '5 hours ago',
-        read: true,
-        priority: 'normal'
-      },
-      {
-        id: 'notif-4',
-        type: 'inquiry',
-        title: 'Student Inquiry on Leave of Absence (LOA)',
-        description: 'Paul John N. Dela Cruz requested guidance advisory regarding LOA status for President—FLP Scholarship.',
-        studentName: 'Paul John N. Dela Cruz',
-        studentId: '2022-CAPSU-0089',
-        scholarship: 'President—FLP',
-        timestamp: 'Yesterday at 3:45 PM',
-        read: true,
-        priority: 'normal'
-      },
-      {
-        id: 'notif-5',
-        type: 'system',
-        title: 'Masterlist Synchronized with OSAS Central',
-        description: 'Academic Year 2025–2026 2nd Semester scholarship records successfully verified and backed up.',
-        timestamp: 'Aug 17, 2026',
-        read: true,
-        priority: 'low'
-      }
-    ];
+    return defaultNotifications;
   });
+
+  // Re-render relative timestamps in real-time every 30 seconds
+  const [, setTick] = useState(0);
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setTick(t => t + 1);
+    }, 30000);
+    return () => clearInterval(timer);
+  }, []);
 
   useEffect(() => {
     const unsub = db.notifications.subscribe(list => {
@@ -273,7 +214,7 @@ export function GuidanceNotifications() {
                     )}
                   </p>
                   <p className="text-[13px] font-medium text-[#475569]">
-                    {notif.timestamp}
+                    {formatTimeAgo(notif.timestamp, notif.createdAt || notif.id)}
                   </p>
                 </div>
               </div>

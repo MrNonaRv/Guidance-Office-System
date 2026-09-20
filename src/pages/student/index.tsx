@@ -1661,6 +1661,7 @@ export function StudentSubmissionForm() {
 
       // Add real-time notification alert to Guidance Office
       try {
+        const notifTime = submission.submittedAt || new Date().toISOString();
         await db.notifications.create({
           type: 'submission',
           title: existingId ? 'Scholarship Application Updated' : 'New Scholarship Application Submitted',
@@ -1668,7 +1669,8 @@ export function StudentSubmissionForm() {
           studentName: effectiveStudentName,
           studentId: effectiveStudentId,
           scholarship: scholarshipProgram,
-          timestamp: 'Just now',
+          timestamp: notifTime,
+          createdAt: notifTime,
           read: false,
           priority: 'high'
         });

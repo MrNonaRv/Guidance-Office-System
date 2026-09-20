@@ -522,7 +522,8 @@ export const defaultNotifications: NotificationItem[] = [
     studentName: 'Anna Marie A. Santos',
     studentId: '2024-CAPSU-0182',
     scholarship: 'Pag-Ulikid',
-    timestamp: '10 minutes ago',
+    timestamp: new Date(Date.now() - 10 * 60 * 1000).toISOString(),
+    createdAt: new Date(Date.now() - 10 * 60 * 1000).toISOString(),
     read: false,
     priority: 'high'
   },
@@ -532,7 +533,8 @@ export const defaultNotifications: NotificationItem[] = [
     title: 'CHED Tulong Dunong Renewal Deadline Approaching',
     description: 'The submission window for 2nd semester renewal closes in 3 days. 18 scholars have pending document uploads.',
     scholarship: 'Tulong Dunong',
-    timestamp: '2 hours ago',
+    timestamp: new Date(Date.now() - 2 * 3600 * 1000).toISOString(),
+    createdAt: new Date(Date.now() - 2 * 3600 * 1000).toISOString(),
     read: false,
     priority: 'high'
   },
@@ -544,7 +546,8 @@ export const defaultNotifications: NotificationItem[] = [
     studentName: 'Damian James O. Emilio',
     studentId: '2022-CAPSU-0041',
     scholarship: 'ANAC-IP',
-    timestamp: '5 hours ago',
+    timestamp: new Date(Date.now() - 5 * 3600 * 1000).toISOString(),
+    createdAt: new Date(Date.now() - 5 * 3600 * 1000).toISOString(),
     read: true,
     priority: 'normal'
   },
@@ -556,7 +559,8 @@ export const defaultNotifications: NotificationItem[] = [
     studentName: 'Paul John N. Dela Cruz',
     studentId: '2022-CAPSU-0089',
     scholarship: 'President—FLP',
-    timestamp: 'Yesterday at 3:45 PM',
+    timestamp: new Date(Date.now() - 24 * 3600 * 1000).toISOString(),
+    createdAt: new Date(Date.now() - 24 * 3600 * 1000).toISOString(),
     read: true,
     priority: 'normal'
   },
@@ -565,7 +569,8 @@ export const defaultNotifications: NotificationItem[] = [
     type: 'system',
     title: 'Masterlist Synchronized with OSAS Central',
     description: 'Academic Year 2025–2026 2nd Semester scholarship records successfully verified and backed up.',
-    timestamp: 'Aug 17, 2026',
+    timestamp: new Date(Date.now() - 3 * 86400 * 1000).toISOString(),
+    createdAt: new Date(Date.now() - 3 * 86400 * 1000).toISOString(),
     read: true,
     priority: 'low'
   }

@@ -588,11 +588,13 @@ Capiz State University – Mambusao Satellite College`
       }
 
       // Also create notification
+      const now = new Date().toISOString();
       await db.notifications.create({
         type: 'inquiry',
         title: `Communication Sent: ${subject}`,
         description: `Official advisory delivered to ${recipientNames.join(', ')}.`,
-        timestamp: 'Just now',
+        timestamp: now,
+        createdAt: now,
         read: false,
         priority: 'normal'
       });

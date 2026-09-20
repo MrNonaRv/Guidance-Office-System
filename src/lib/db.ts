@@ -4,6 +4,7 @@ import { onAuthStateChanged } from 'firebase/auth';
 import { firestoreDb, auth } from './firebase';
 import { Course, AcademicYear, defaultCourses, defaultAcademicYears, defaultScholarships, ScholarshipItem } from '../types';
 import { defaultSubmissions, defaultNotifications, dummyBase64Pdf, dummyBase64Photo2x2, dummyBase64StudentId, dummyBase64Signature } from './defaultData';
+import { parseNotificationDate } from './utils';
 
 export enum OperationType {
   CREATE = 'create',
@@ -142,6 +143,7 @@ export interface NotificationItem {
   studentId?: string;
   scholarship?: string;
   timestamp: string;
+  createdAt?: string;
   read: boolean;
   priority: 'high' | 'normal' | 'low';
 }
@@ -238,6 +240,16 @@ function notifySubmissionListeners() {
   });
 }
 
+function sortNotifications(notifs: NotificationItem[]): NotificationItem[] {
+  return [...notifs].sort((a, b) => {
+    const dateA = parseNotificationDate(a.timestamp, a.createdAt || a.id);
+    const dateB = parseNotificationDate(b.timestamp, b.createdAt || b.id);
+    const timeA = dateA ? dateA.getTime() : 0;
+    const timeB = dateB ? dateB.getTime() : 0;
+    return timeB - timeA;
+  });
+}
+
 function notifyNotificationListeners() {
   notificationListeners.forEach(cb => {
     try { cb([...memoryNotifications]); } catch (e) { console.error(e); }
@@ -277,7 +289,16 @@ function notifyScholarshipListeners() {
         if (item) loadedNotifs.push(item);
       }
       if (loadedNotifs.length > 0) {
-        memoryNotifications = loadedNotifs;
+        // Upgrade any legacy static timestamps and sort newest first
+        memoryNotifications = sortNotifications(loadedNotifs.map(item => {
+          if (!item.createdAt) {
+            const date = parseNotificationDate(item.timestamp, item.id);
+            if (date) {
+              return { ...item, createdAt: date.toISOString() };
+            }
+          }
+          return item;
+        }));
         notifyNotificationListeners();
       }
     }
@@ -323,7 +344,7 @@ function setupRealtimeListeners() {
           remoteNotifs.push(docSnap.data() as NotificationItem);
         });
         if (remoteNotifs.length > 0) {
-          memoryNotifications = remoteNotifs;
+          memoryNotifications = sortNotifications(remoteNotifs);
           Promise.all(remoteNotifs.map(n => notificationsDb.setItem(n.id, n))).catch(() => {});
           notifyNotificationListeners();
         }
@@ -494,6 +515,7 @@ export const db = {
     async create(sub: Submission): Promise<Submission> {
       await this.set(sub.id, sub);
       try {
+        const now = sub.submittedAt || new Date().toISOString();
         db.notifications.create({
           type: 'submission',
           title: 'New Scholarship Submission Uploaded',
@@ -501,7 +523,8 @@ export const db = {
           studentName: sub.studentName,
           studentId: sub.studentId,
           scholarship: sub.scholarshipType,
-          timestamp: 'Just now',
+          timestamp: now,
+          createdAt: now,
           read: false,
           priority: 'high'
         }).catch(() => {});
@@ -878,12 +901,17 @@ export const db = {
       return await notificationsDb.getItem(id);
     },
     async set(id: string, notif: NotificationItem): Promise<void> {
+      if (!notif.createdAt) {
+        const parsed = parseNotificationDate(notif.timestamp, id);
+        notif.createdAt = parsed ? parsed.toISOString() : new Date().toISOString();
+      }
       const idx = memoryNotifications.findIndex(n => n.id === id);
       if (idx >= 0) {
         memoryNotifications[idx] = notif;
       } else {
         memoryNotifications.unshift(notif);
       }
+      memoryNotifications = sortNotifications(memoryNotifications);
       notifyNotificationListeners();
       notificationsDb.setItem(id, notif).catch(() => {});
       if (firestoreDb) {
@@ -892,8 +920,11 @@ export const db = {
       }
     },
     async create(notif: Omit<NotificationItem, 'id'> & { id?: string }): Promise<NotificationItem> {
+      const now = new Date().toISOString();
       const id = notif.id || `notif-${Date.now()}`;
-      const newNotif: NotificationItem = { ...notif, id };
+      const createdAt = notif.createdAt || now;
+      const timestamp = (notif.timestamp && notif.timestamp !== 'Just now') ? notif.timestamp : now;
+      const newNotif: NotificationItem = { ...notif, id, timestamp, createdAt };
       await this.set(id, newNotif);
       return newNotif;
     },
