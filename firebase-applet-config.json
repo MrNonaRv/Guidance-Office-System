@@ -3,6 +3,7 @@
   "appId": "1:752407989664:web:d2e1601a6db093249268c5",
   "apiKey": "AIzaSyDIxNzVfx_gaAVKKQ3En8BvH0mnzg66nUU",
   "authDomain": "mathquest-new.firebaseapp.com",
+  "firestoreDatabaseId": "ai-studio-webbasedscholars-1e280336-8fb9-41d3-8c2f-71557c6b152a",
   "storageBucket": "mathquest-new.firebasestorage.app",
   "messagingSenderId": "752407989664",
   "measurementId": "",

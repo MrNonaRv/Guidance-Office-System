@@ -531,7 +531,8 @@ export const defaultNotifications: NotificationItem[] = [
     timestamp: new Date(Date.now() - 10 * 60 * 1000).toISOString(),
     createdAt: new Date(Date.now() - 10 * 60 * 1000).toISOString(),
     read: false,
-    priority: 'high'
+    priority: 'high',
+    submissionId: 'sub-seed-1'
   },
   {
     id: 'notif-2',
@@ -555,7 +556,8 @@ export const defaultNotifications: NotificationItem[] = [
     timestamp: new Date(Date.now() - 5 * 3600 * 1000).toISOString(),
     createdAt: new Date(Date.now() - 5 * 3600 * 1000).toISOString(),
     read: true,
-    priority: 'normal'
+    priority: 'normal',
+    submissionId: 'sub-seed-2'
   },
   {
     id: 'notif-4',

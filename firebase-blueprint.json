@@ -121,7 +121,8 @@
         "scholarship": { "type": "string" },
         "timestamp": { "type": "string" },
         "read": { "type": "boolean" },
-        "priority": { "type": "string" }
+        "priority": { "type": "string" },
+        "submissionId": { "type": "string" }
       },
       "required": ["id", "type", "title", "description", "timestamp"]
     },

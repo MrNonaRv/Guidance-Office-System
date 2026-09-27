@@ -58,10 +58,11 @@ export function StudentRecordModal({
       const fetchSemesterFiles = async () => {
         setIsLoadingFiles(true);
         try {
-          // 1. Gather all files directly from current submission
-          let allFiles: SubmissionFile[] = [
-            ...(localSubmission.files || []),
-            ...(submission.files || [])
+          // 1. Gather all files directly from current submission with their associated academicYear
+          const currentAY = localSubmission.data?.academicYear || submission.data?.academicYear || '';
+          let allFiles: (SubmissionFile & { academicYear?: string })[] = [
+            ...(localSubmission.files || []).map(f => ({ ...f, academicYear: currentAY })),
+            ...(submission.files || []).map(f => ({ ...f, academicYear: currentAY }))
           ];
 
           // 2. Also retrieve records across terms by studentId or email
@@ -71,7 +72,12 @@ export function StudentRecordModal({
               const studentSubs = await db.submissions.listByStudent(sid);
               studentSubs.forEach(sub => {
                 if (sub.files && Array.isArray(sub.files)) {
-                  allFiles = [...allFiles, ...sub.files];
+                  const subAY = sub.data?.academicYear || '';
+                  const filesWithAY = sub.files.map(f => ({
+                    ...f,
+                    academicYear: subAY
+                  }));
+                  allFiles = [...allFiles, ...filesWithAY];
                 }
               });
             }
@@ -80,7 +86,7 @@ export function StudentRecordModal({
           }
 
           // 3. Deduplicate
-          const fileMap = new Map<string, SubmissionFile>();
+          const fileMap = new Map<string, SubmissionFile & { academicYear?: string }>();
           allFiles.forEach(f => {
             const key = f.id || `${f.category || ''}-${f.name || ''}-${f.data?.slice(0, 30) || ''}`;
             if (!fileMap.has(key)) {
@@ -100,7 +106,7 @@ export function StudentRecordModal({
             const matchesSemester = is2ndSem ? has2ndTag : !has2ndTag;
             
             // Academic Year check
-            const docAY = f.data?.academicYear || localSubmission.data?.academicYear || '';
+            const docAY = f.academicYear || currentAY || '';
             const matchesAY = docAY === selectedAcademicYear;
             
             return matchesSemester && matchesAY;
@@ -392,12 +398,7 @@ export function StudentRecordModal({
         
         {/* Top Navy Blue Header Banner */}
         <div className="bg-[#003884] text-white px-4 py-3 flex items-center justify-between relative shadow-md shrink-0">
-          <button
-            onClick={viewMode === 'overview' ? onClose : () => setViewMode('overview')}
-            className="flex items-center justify-center bg-[#2c4a7c] hover:bg-[#1a325a] text-white border border-[#1a325a] shadow-[0_2px_4px_rgba(0,0,0,0.2)] px-6 py-2 rounded-2xl text-sm font-bold transition-all cursor-pointer"
-          >
-            Back
-          </button>
+          <div className="w-8 h-8" /> {/* Placeholder to balance the flexbox center alignment */}
           
           <h2 className="text-lg font-bold text-center tracking-wide text-white absolute left-1/2 -translate-x-1/2">
             Student Records
@@ -637,9 +638,6 @@ export function StudentRecordModal({
                                 alt={file.name} 
                                 className="max-w-full max-h-[60vh] object-contain shadow-md rounded-lg bg-white border border-gray-200" 
                               />
-                              <div className="absolute bottom-3 right-3 bg-black/75 hover:bg-black text-white px-2.5 py-1 rounded-md text-[11px] font-semibold flex items-center gap-1.5 shadow-sm opacity-90 group-hover:opacity-100 transition-opacity">
-                                <Eye className="w-3.5 h-3.5" /> Click to enlarge
-                              </div>
                             </div>
                           ) : isPdf && fileSource ? (
                             <iframe 
@@ -697,15 +695,6 @@ export function StudentRecordModal({
             </button>
 
             <div className="flex items-center gap-2">
-              <button
-                onClick={handleBrowserPrint}
-                className="flex items-center gap-1.5 px-3.5 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-semibold rounded-xl transition-all cursor-pointer"
-                title="Print via browser dialog"
-              >
-                <Printer className="w-4 h-4 stroke-[2.2]" />
-                <span className="hidden sm:inline">Print</span>
-              </button>
-
               <button
                 onClick={handleExportPDF}
                 disabled={isExportingPDF}
@@ -1062,7 +1051,12 @@ export function StudentRecordModal({
             <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{isSelectedScholarship('Capizeño Circle') && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>Capizeño Circle</span></div>
             <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{isSelectedScholarship('DOST') && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>DOST</span></div>
             <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{isSelectedScholarship('GRF') && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>GRF</span></div>
-            <div className="flex items-end gap-2 col-span-2 mt-2"><div className="w-5 h-5 border border-black flex items-center justify-center mb-1 shrink-0">{isSelectedScholarship('CHED and Others') && <Check className="w-4 h-4" strokeWidth={3} />}</div><span className="mb-1">CHED and Others (specify)</span><span className="flex-1 border-b border-black inline-block text-center pb-1">{isSelectedScholarship('CHED and Others') ? formData.meritChedAndOthers : ''}</span></div>
+            <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{isSelectedScholarship('CHED') && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>CHED</span></div>
+            <div className="flex items-end gap-2 col-span-2 mt-2">
+              <div className="w-5 h-5 border border-black flex items-center justify-center mb-1 shrink-0">{(isSelectedScholarship('Others') || isSelectedScholarship('CHED and Others')) && <Check className="w-4 h-4" strokeWidth={3} />}</div>
+              <span className="mb-1">Others (specify)</span>
+              <span className="flex-1 border-b border-black inline-block text-center pb-1">{(isSelectedScholarship('Others') || isSelectedScholarship('CHED and Others')) ? formData.meritChedAndOthers : ''}</span>
+            </div>
           </div>
 
           <div className="flex gap-2 mb-10 text-[15px]">

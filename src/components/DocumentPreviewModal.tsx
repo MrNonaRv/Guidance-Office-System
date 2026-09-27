@@ -124,28 +124,16 @@ export function DocumentPreviewModal({ file, onClose }: DocumentPreviewModalProp
             <div className="text-center p-8 bg-white rounded-xl shadow-sm max-w-md border border-gray-200">
               <FileText className="w-12 h-12 text-blue-600 mx-auto mb-3" />
               <h4 className="font-bold text-gray-900 text-base mb-1">{file.name}</h4>
-              <p className="text-gray-500 text-xs mb-4">
-                Preview not directly available for this format. You can download the file to inspect its contents.
+              <p className="text-gray-500 text-xs">
+                Preview not directly available for this format. You can download the file using the Download button at the top of the viewer.
               </p>
-              <button
-                onClick={handleDownload}
-                className="bg-[#1e3a8a] text-white px-5 py-2 rounded-xl text-xs font-bold hover:bg-[#152c6b] transition-colors flex items-center justify-center gap-2 mx-auto cursor-pointer"
-              >
-                <Download className="w-4 h-4" /> Download Document
-              </button>
             </div>
           )}
         </div>
 
         {/* Footer */}
-        <div className="bg-white border-t border-gray-200 px-4 py-2.5 flex justify-between items-center text-xs text-gray-500 shrink-0">
+        <div className="bg-white border-t border-gray-200 px-4 py-3 flex justify-center items-center text-xs text-gray-400 font-medium shrink-0">
           <span>Capiz State University — Scholarship Document Viewer</span>
-          <button
-            onClick={onClose}
-            className="flex items-center justify-center bg-[#2c4a7c] hover:bg-[#1a325a] text-white border border-[#1a325a] shadow-[0_2px_4px_rgba(0,0,0,0.2)] px-6 py-2 rounded-2xl text-sm font-bold transition-all cursor-pointer"
-          >
-            Back
-          </button>
         </div>
       </div>
     </div>

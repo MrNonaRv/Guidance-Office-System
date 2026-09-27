@@ -214,6 +214,7 @@ After reviewing your submitted requirements, you have successfully qualified for
 
 Please keep your contact information active and regularly check your email for updates.
 
+
 Sincerely,
 Guidance Office
 Capiz State University – Mambusao Satellite College`
@@ -227,18 +228,17 @@ Capiz State University – Mambusao Satellite College`
 
 Greetings!
 
-We regret to inform you that your scholarship submission was not approved due to issues found
-in the uploaded files.
+We regret to inform you that your scholarship submission was not approved due to issues found in the uploaded files.
 
 The following concerns were identified during the evaluation process:
 
-● Incorrect file format submitted
-● Blurred or unreadable of [student ID, RF, or GWA]
-● Missing required information
-● Wrong file uploaded in the designated section
+Incorrect file format submitted
+Blurred or unreadable of [student ID, RF, or GWA]
+Missing required information
+Wrong file uploaded in the designated section
 
 Please review your requirements carefully before submitting a new resubmission.
-For further clarification and assistance, you may visit the Guidance Office. 
+For further clarification and assistance, you may visit the Guidance Office.
 
 Thank you for your understanding.
 
@@ -257,11 +257,14 @@ Greetings!
 
 We are pleased to inform you that the release of your scholarship is scheduled on (mm/dd/yyyy)
 
-Before your funds can be disbursed, you are required to submit the following documents for
-verification:
 
-● General Weighted Average (GWA)
-● Registration Form (RF)
+Before your funds can be disbursed, you are required to submit the following documents for verification:
+
+
+General Weighted Average (GWA)
+
+Registration Form (RF)
+
 
 Sincerely,
 Guidance Office
@@ -278,8 +281,8 @@ Greetings!
 
 We are pleased to inform you that your allowance is now ready for release.
 
-Please check your registered bank account or coordinate with the designated disbursement
-office to claim your funds.
+Please check your registered bank account or coordinate with the designated disbursement office to claim your funds.
+
 
 Sincerely,
 Guidance Office
@@ -971,7 +974,8 @@ Capiz State University – Mambusao Satellite College`
                       <option value="ANAC-IP">ANAC-IP</option>
                       <option value="Barangay (Legal dependents of Brgy. Officials)">Barangay (Legal dependents of Brgy. Officials)</option>
                       <option value="Capizeño Circle">Capizeño Circle</option>
-                      <option value="CHED and Others">CHED and Others</option>
+                      <option value="CHED">CHED</option>
+                      <option value="Others">Others (specify)</option>
                       <option value="Dependent of Faculty or Staff">Dependent of Faculty or Staff</option>
                       <option value="DOST">DOST</option>
                       <option value="ESGP – PA">ESGP – PA</option>
@@ -1143,7 +1147,8 @@ Capiz State University – Mambusao Satellite College`
                 <div className="flex items-center gap-2 flex-wrap">
                   {selectedStudentIds.length === 0 ? (
                     <span className="text-xs text-gray-400 italic">No student selected (select from left roster)</span>
-                  ) : (
+                  ) : selectedStudentIds.length === 1 ? (
+                    // Messaging a single, specific student: render their email chip in the "To" field
                     selectedStudentIds.map(id => {
                       const st = studentList.find(s => s.id === id);
                       if (!st) return null;
@@ -1155,7 +1160,48 @@ Capiz State University – Mambusao Satellite College`
                           {/* Pink dot exactly as in reference image */}
                           <div className="w-3 h-3 rounded-full bg-[#d81b60] shrink-0" />
                           <span>{st.email}</span>
-                          {selectedStudentIds.length > 1 && (
+                        </div>
+                      );
+                    })
+                  ) : (
+                    // Bulk messaging: show privacy-safe generic Undisclosed Recipients in "To" field
+                    <div className="inline-flex items-center gap-2 bg-blue-50 border border-[#1864db]/30 px-3.5 py-1 rounded-full text-xs font-bold text-[#1864db] shadow-2xs">
+                      <div className="w-2 h-2 rounded-full bg-[#1864db] shrink-0 animate-pulse" />
+                      <span>Undisclosed Recipients (Bulk Blast)</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Bcc toggle */}
+              <div className="flex items-center gap-2 text-xs font-bold text-gray-500 shrink-0">
+                <button 
+                  onClick={() => setShowCcBcc(p => ({ ...p, bcc: !p.bcc }))}
+                  className={cn("hover:text-gray-800 cursor-pointer px-1 py-0.5 rounded", (showCcBcc.bcc || selectedStudentIds.length > 1) ? "bg-gray-200 text-gray-900" : "")}
+                >
+                  Bcc
+                </button>
+              </div>
+            </div>
+
+            {/* Bcc Field: Visible either if toggled, or automatically if multiple students are selected */}
+            {(showCcBcc.bcc || selectedStudentIds.length > 1) && (
+              <div className="flex items-start border-b border-gray-200 py-3 gap-3">
+                <span className="text-xs font-bold text-gray-500 w-10 shrink-0 pt-1.5">Bcc</span>
+                <div className="flex-1 flex flex-col gap-2">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    {selectedStudentIds.length > 1 ? (
+                      // Display the individual secure BCC chips of the multiple students
+                      selectedStudentIds.map(id => {
+                        const st = studentList.find(s => s.id === id);
+                        if (!st) return null;
+                        return (
+                          <div
+                            key={id}
+                            className="inline-flex items-center gap-2 bg-white border border-gray-300 px-3 py-0.5 rounded-md text-[11px] font-medium text-gray-700 shadow-3xs"
+                          >
+                            <div className="w-2 h-2 rounded-full bg-[#d81b60] shrink-0" />
+                            <span>{st.email}</span>
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
@@ -1166,56 +1212,27 @@ Capiz State University – Mambusao Satellite College`
                             >
                               <X className="w-3 h-3" />
                             </button>
-                          )}
-                        </div>
-                      );
-                    })
-                  )}
+                          </div>
+                        );
+                      })
+                    ) : (
+                      // Only custom BCC values
+                      <span className="text-xs text-gray-400 italic">No auto-bcc scholars (add custom or select multiple from roster)</span>
+                    )}
+                  </div>
+                  
+                  {/* Custom Bcc input box */}
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-semibold text-gray-400">Custom Bcc:</span>
+                    <input
+                      type="text"
+                      value={bccValue}
+                      onChange={(e) => setBccValue(e.target.value)}
+                      placeholder="e.g., admin.records@capsu.edu.ph"
+                      className="flex-1 text-xs text-gray-800 focus:outline-none bg-transparent border-b border-transparent hover:border-gray-300 focus:border-[#1864db] pb-0.5"
+                    />
+                  </div>
                 </div>
-              </div>
-
-              {/* Cc / Bcc toggles */}
-              <div className="flex items-center gap-2 text-xs font-bold text-gray-500 shrink-0">
-                <button 
-                  onClick={() => setShowCcBcc(p => ({ ...p, cc: !p.cc }))}
-                  className={cn("hover:text-gray-800 cursor-pointer px-1 py-0.5 rounded", showCcBcc.cc ? "bg-gray-200 text-gray-900" : "")}
-                >
-                  Cc
-                </button>
-                <button 
-                  onClick={() => setShowCcBcc(p => ({ ...p, bcc: !p.bcc }))}
-                  className={cn("hover:text-gray-800 cursor-pointer px-1 py-0.5 rounded", showCcBcc.bcc ? "bg-gray-200 text-gray-900" : "")}
-                >
-                  Bcc
-                </button>
-              </div>
-            </div>
-
-            {/* Optional Cc Field */}
-            {showCcBcc.cc && (
-              <div className="flex items-center border-b border-gray-200 pb-2 gap-3">
-                <span className="text-xs font-bold text-gray-500 w-10 shrink-0">Cc</span>
-                <input
-                  type="text"
-                  value={ccValue}
-                  onChange={(e) => setCcValue(e.target.value)}
-                  placeholder="guidance.tapaz@capsu.edu.ph, osas@capsu.edu.ph"
-                  className="w-full text-xs text-gray-800 focus:outline-none"
-                />
-              </div>
-            )}
-
-            {/* Optional Bcc Field */}
-            {showCcBcc.bcc && (
-              <div className="flex items-center border-b border-gray-200 pb-2 gap-3">
-                <span className="text-xs font-bold text-gray-500 w-10 shrink-0">Bcc</span>
-                <input
-                  type="text"
-                  value={bccValue}
-                  onChange={(e) => setBccValue(e.target.value)}
-                  placeholder="admin.records@capsu.edu.ph"
-                  className="w-full text-xs text-gray-800 focus:outline-none"
-                />
               </div>
             )}
 

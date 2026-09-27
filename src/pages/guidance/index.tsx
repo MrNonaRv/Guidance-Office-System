@@ -88,8 +88,8 @@ export function GuidanceLogin() {
       setError('Passwords do not match.');
       return;
     }
-    if (adminEmailInput.length < 8) {
-      setError('Password must be at least 8 characters long.');
+    if (adminEmailInput.length < 1) {
+      setError('Password cannot be empty.');
       return;
     }
     setLoading(true);
@@ -228,9 +228,9 @@ export function GuidanceLogin() {
             <p className="text-[#1e4b9c] font-bold text-[14px] mb-8 leading-snug px-6">
               Set your new password
             </p>
-            <form className="space-y-5" onSubmit={handleForgotPassword}>
+            <form className="space-y-3" onSubmit={handleForgotPassword}>
               <div className="text-left">
-                <label className="block text-[13px] font-bold text-[#1e4b9c] mb-1.5 ml-0.5">New Password</label>
+                <label className="block text-[13px] font-bold text-[#1e4b9c] mb-1 ml-0.5">New Password</label>
                 <div className="relative flex items-center">
                   <input 
                     type="password" 
@@ -244,7 +244,7 @@ export function GuidanceLogin() {
               </div>
               
               <div className="text-left">
-                <label className="block text-[13px] font-bold text-[#1e4b9c] mb-1.5 ml-0.5">Confirm Password</label>
+                <label className="block text-[13px] font-bold text-[#1e4b9c] mb-1 ml-0.5">Confirm Password</label>
                 <div className="relative flex items-center">
                   <input 
                     type={showPassword ? "text" : "password"} 
@@ -640,13 +640,35 @@ export function GuidanceDashboard() {
 
   const unreadCount = notifications.filter(n => !n.read).length;
 
+  const handleNotificationClick = async (n: any) => {
+    // 1. Mark as read
+    if (!n.read) {
+      try {
+        const fullNotif = notifications.find(notif => notif.id === n.id);
+        if (fullNotif) {
+          await db.notifications.set(n.id, { ...fullNotif, read: true });
+        }
+      } catch (err) {
+        console.error("Failed to mark notification as read:", err);
+      }
+    }
+    
+    // 2. Redirect/Route based on submissionId
+    if (n.submissionId) {
+      navigate('/admin/submissions', { state: { autoOpenSubmissionId: n.submissionId } });
+    } else {
+      navigate('/admin/notifications');
+    }
+  };
+
   const displayNotifications = notifications.slice(0, 6).map(n => ({
     id: n.id,
     studentName: n.studentName || n.title,
     action: n.description || 'System update',
     time: formatTimeAgo(n.timestamp, n.createdAt || n.id),
     type: n.type,
-    read: n.read
+    read: n.read,
+    submissionId: n.submissionId
   }));
 
 
@@ -821,7 +843,14 @@ export function GuidanceDashboard() {
             
             <div className="space-y-2.5">
               {displayNotifications.map((n, idx) => (
-                <div key={idx} className={cn("border rounded-xl p-2.5 flex items-center gap-3 transition-colors", n.read ? "bg-white border-gray-100" : "bg-[#eef6ff] border-[#d3e5fa]")}>
+                <div 
+                  key={idx} 
+                  onClick={() => handleNotificationClick(n)}
+                  className={cn(
+                    "border rounded-xl p-2.5 flex items-center gap-3 transition-colors cursor-pointer hover:border-blue-300", 
+                    n.read ? "bg-white border-gray-100 hover:bg-gray-50" : "bg-[#eef6ff] border-[#d3e5fa] hover:bg-blue-50/50"
+                  )}
+                >
                   <div className={cn("w-8 h-8 rounded-full border bg-white flex items-center justify-center shrink-0 shadow-xs", n.read ? "border-gray-300 text-gray-500" : "border-blue-400 text-blue-600")}>
                     <BookOpen className="w-4 h-4" />
                   </div>
@@ -845,6 +874,7 @@ export function GuidanceDashboard() {
 
 export function GuidanceSubmissions() {
   const location = useLocation();
+  const navigate = useNavigate();
   const [filterOpen, setFilterOpen] = useState(false);
   const [submissions, setSubmissions] = useState<any[]>(() => db.submissions.getCached());
   const [selectedSubmission, setSelectedSubmission] = useState<any | null>(null);
@@ -857,6 +887,18 @@ export function GuidanceSubmissions() {
   const [filterSemester, setFilterSemester] = useState('All semesters');
   const [coursesList, setCoursesList] = useState<any[]>(() => db.courses.getCached());
   const [academicYearsList, setAcademicYearsList] = useState<any[]>(() => db.academicYears.getCached());
+
+  useEffect(() => {
+    const autoOpenId = location.state?.autoOpenSubmissionId;
+    if (autoOpenId && submissions.length > 0) {
+      const match = submissions.find(s => s.id === autoOpenId);
+      if (match) {
+        setSelectedSubmission(match);
+        // Clean the state so it doesn't pop open again on page refresh
+        navigate(location.pathname, { replace: true, state: { ...location.state, autoOpenSubmissionId: undefined } });
+      }
+    }
+  }, [location.state?.autoOpenSubmissionId, submissions, navigate, location.pathname]);
 
   const fetchSubmissions = () => {
     db.submissions.listAll().then(subs => {
@@ -968,19 +1010,6 @@ export function GuidanceSubmissions() {
                         {academicYearsList.map(ay => (
                           <option key={ay.id} value={ay.year}>{ay.year}</option>
                         ))}
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-bold text-gray-900 mb-1.5">By Semester</label>
-                      <select 
-                        value={filterSemester}
-                        onChange={(e) => setFilterSemester(e.target.value)}
-                        className="w-full text-sm border border-gray-300 text-gray-600 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 outline-none bg-white"
-                      >
-                        <option>All semesters</option>
-                        <option>1st Semester</option>
-                        <option>2nd Semester</option>
-                        <option>Summer</option>
                       </select>
                     </div>
                     <div>
@@ -1804,7 +1833,6 @@ export function GuidanceSettings() {
       {/* When activeTab is 'form' or 'scholarships', show the 3 cards matching image.png exactly */}
       {(activeTab === 'form' || activeTab === 'scholarships') ? (
         <div className="mt-6 space-y-6">
-          <h2 className="text-xl font-bold text-[#0c2340]">Scholarship Category</h2>
 
           {/* 1. Category Card */}
           <div className="bg-white rounded-xl border border-gray-200 shadow-xs overflow-hidden">

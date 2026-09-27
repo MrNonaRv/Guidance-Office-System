@@ -106,6 +106,7 @@ export interface Submission {
   answers?: Record<string, any>;
   data?: any;
   files: SubmissionFile[];
+  studentAuthId?: string;
 }
 
 export interface Section {
@@ -146,6 +147,7 @@ export interface NotificationItem {
   createdAt?: string;
   read: boolean;
   priority: 'high' | 'normal' | 'low';
+  submissionId?: string;
 }
 
 export interface CommunicationItem {
@@ -608,7 +610,8 @@ export const db = {
           timestamp: now,
           createdAt: now,
           read: false,
-          priority: 'high'
+          priority: 'high',
+          submissionId: sub.id
         }).catch(() => {});
       } catch (err) {
         console.warn("Notice creation skipped:", err);
@@ -694,7 +697,8 @@ export const db = {
             timestamp: now,
             createdAt: now,
             read: false,
-            priority: 'high'
+            priority: 'high',
+            submissionId: target.id
           }).catch(() => {});
         } catch (e) {
           console.warn("Notification skipped:", e);

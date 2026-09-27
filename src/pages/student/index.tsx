@@ -3,7 +3,7 @@ import { Outlet, useNavigate } from 'react-router-dom';
 import { cn } from '../../lib/utils';
 import { FileEdit, FileText, ClipboardCheck, Calendar, User, Upload, CheckCircle2, ChevronDown, ChevronUp, View, Eye, EyeOff, RefreshCw, Check,
   Image as ImageIcon, AlertCircle, Edit3, X, ArrowRight, ArrowLeft, Printer, Loader2, Award } from 'lucide-react';
-import { db } from '../../lib/db';
+import { db, SubmissionFile } from '../../lib/db';
 import { dummyBase64Pdf, dummyBase64Photo2x2, dummyBase64StudentId, dummyBase64Signature } from '../../lib/defaultData';
 import { motion } from 'motion/react';
 import { SignaturePad } from '../../components/SignaturePad';
@@ -441,12 +441,10 @@ export function StudentLogin() {
                 )}
               </button>
             </div>
-            {isLogin ? (
+            {isLogin && (
               <div className="text-right mt-1">
                 <a href="#" onClick={(e) => { e.preventDefault(); setIsForgotPassword(true); setError(''); setResetSuccess(false); }} className="text-[10px] text-gray-500 hover:text-[#1e4b9c] hover:underline px-1">Forgot Password?</a>
               </div>
-            ) : (
-              <p className="text-[10px] text-gray-500 mt-1 px-1">Atleast 8 characters</p>
             )}
           </div>
           
@@ -763,7 +761,7 @@ export function StudentDashboard() {
       const gwaDataUrl = await readFileAsDataUrl(files[gwaKey]!);
       const now = new Date().toISOString();
 
-      const newFiles = [
+      const newFiles: SubmissionFile[] = [
         {
           id: `file-${Date.now()}-rf`,
           name: files[rfKey]!.name,
@@ -772,7 +770,7 @@ export function StudentDashboard() {
           size: `${Math.round(files[rfKey]!.size / 1024)} KB`,
           data: rfDataUrl,
           verified: false,
-          status: 'Pending',
+          status: 'Pending' as const,
           uploadedAt: now
         },
         {
@@ -783,7 +781,7 @@ export function StudentDashboard() {
           size: `${Math.round(files[gwaKey]!.size / 1024)} KB`,
           data: gwaDataUrl,
           verified: false,
-          status: 'Pending',
+          status: 'Pending' as const,
           uploadedAt: now
         }
       ];
@@ -1133,8 +1131,8 @@ const SelectGroup = ({ label, name, value, onChange, options, required, error, i
   </div>
 );
 
-const SectionHeader = ({ title }: { title: string }) => (
-  <div className="bg-[#1846b0] text-white text-center py-2.5 rounded-lg font-bold tracking-wider mb-6 text-sm mt-8">{title}</div>
+const SectionHeader = ({ title, className }: { title: string; className?: string }) => (
+  <div className={cn("bg-[#1846b0] text-white text-center py-2.5 rounded-lg font-bold tracking-wider mb-6 text-sm mt-8", className)}>{title}</div>
 );
 
 export function StudentSubmissionForm() {
@@ -1855,7 +1853,8 @@ export function StudentSubmissionForm() {
           timestamp: notifTime,
           createdAt: notifTime,
           read: false,
-          priority: 'high'
+          priority: 'high',
+          submissionId: submission.id
         });
       } catch (notifErr) {
         console.warn("Notification sync notice:", notifErr);
@@ -2117,7 +2116,7 @@ export function StudentSubmissionForm() {
 
       {step === 1 && (
         <>
-          <SectionHeader title="STUDENT DEMOGRAPHICS" />
+          <SectionHeader title="STUDENT DEMOGRAPHICS" className="mt-1" />
 
           {/* Personal Information */}
           <div className="border border-[#93c5fd] rounded-lg mb-6 bg-white overflow-hidden shadow-sm">
@@ -2304,7 +2303,7 @@ export function StudentSubmissionForm() {
                   {formData.municipality === 'Others' && (
                     <div className="mt-1">
                       <InputGroup 
-                        label="Others:" 
+                        label="Address (if not from Capiz)" 
                         name="outsideCapizAddress" 
                         value={formData.outsideCapizAddress} 
                         onChange={handleChange} 
@@ -2869,7 +2868,7 @@ export function StudentSubmissionForm() {
 
       {step === 2 && (
         <div className="bg-white p-4 sm:p-8 rounded-lg shadow-sm border border-gray-200">
-          <SectionHeader title="STUDENT DOCUMENTS" />
+          <SectionHeader title="STUDENT DOCUMENTS" className="mt-1" />
           <p className="text-xs text-gray-500 mb-6 text-center">
             Please attach valid copies for all 3 required documents. Files up to 10MB accepted.
           </p>

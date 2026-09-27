@@ -88,7 +88,8 @@ export const SCHOLARSHIP_STRUCTURE: ScholarshipStructure = {
         { id: 'Capizeño Circle', name: 'Capizeño Circle', label: 'Capizeño Circle' },
         { id: 'DOST', name: 'DOST', label: 'DOST' },
         { id: 'GRF', name: 'GRF', label: 'GRF' },
-        { id: 'CHED and Others', name: 'CHED and Others', label: 'CHED and Others (specify)', hasSpecifyField: 'meritChedAndOthers' }
+        { id: 'CHED', name: 'CHED', label: 'CHED' },
+        { id: 'Others', name: 'Others', label: 'Others (specify)', hasSpecifyField: 'meritChedAndOthers' }
       ]
     },
     {
@@ -220,6 +221,9 @@ export function formatScholarshipAllocations(data: {
     }
     if (item === 'CHED and Others' && data.meritChedAndOthers) {
       return `CHED and Others (${data.meritChedAndOthers})`;
+    }
+    if (item === 'Others' && data.meritChedAndOthers) {
+      return `Others (${data.meritChedAndOthers})`;
     }
     if (item === 'LGU' && data.lguContact) {
       return `LGU (Contact: ${data.lguContact})`;

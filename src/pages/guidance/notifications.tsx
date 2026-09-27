@@ -212,9 +212,15 @@ export function GuidanceNotifications() {
           filteredNotifications.map((notif) => (
             <div
               key={notif.id}
-              onClick={() => {
-                setSelectedNotification(notif);
-                if (!notif.read) handleToggleRead(notif.id);
+              onClick={async () => {
+                if (!notif.read) {
+                  await handleToggleRead(notif.id);
+                }
+                if (notif.submissionId) {
+                  navigate('/admin/submissions', { state: { autoOpenSubmissionId: notif.submissionId } });
+                } else {
+                  setSelectedNotification(notif);
+                }
               }}
               className={cn(
                 "p-4 rounded-xl shadow-sm border transition-all cursor-pointer flex items-center justify-between group",
