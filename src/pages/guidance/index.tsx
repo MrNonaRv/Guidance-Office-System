@@ -1212,7 +1212,7 @@ const INITIAL_SCHOLARSHIP_CATEGORIES: ScholarshipCategoryItem[] = [
 ];
 
 export function GuidanceSettings() {
-  const [activeTab, setActiveTab] = useState<'academic-year' | 'courses' | 'sections' | 'form' | 'scholarships'>('form');
+  const [activeTab, setActiveTab] = useState<'academic-year' | 'courses' | 'sections' | 'form' | 'scholarships'>('academic-year');
 
   // Scholarship Categories hierarchical state (matching reference image)
   const [categories, setCategories] = useState<ScholarshipCategoryItem[]>(() => {
