@@ -42,6 +42,28 @@ export function GuidanceReports() {
     search: ''
   });
 
+  const scholarshipHierarchy: Record<string, Record<string, string[]>> = {
+    'Internally-Funded': {
+      'Entrance': ['Valedictorian', 'Salutatorian'],
+      'Academic': ['Full', 'Partial', 'Regional', 'National'],
+      'Socio-cultural': ['Regional', 'National'],
+      'Institutional': ['Dependent of Faculty or Staff', 'President – SSC', 'President – FLP', 'Editor-in-Chief (Campus Publication)', 'CapSU Band / Chorale']
+    },
+    'Externally-Funded': {
+      'CHED': ['Congressional District', 'One Town One Scholar', 'Tulong Dunong', 'ANAC – IP', 'Pag – ulikid', 'Barangay (Legal dependents of Brgy. Officials)', 'ESGP – PA', 'UniFast', 'Tertiary Education Subsidy / TES'],
+      'Merit': ['VIC', 'Capizeño Circle', 'DOST', 'GRF', 'LGU: Barangay'],
+      'DSWD': ['DSWD']
+    }
+  };
+
+  const availableSubTypes = selectedCategory in scholarshipHierarchy 
+    ? Object.keys(scholarshipHierarchy[selectedCategory]) 
+    : [];
+
+  const availableAllocations = (selectedCategory in scholarshipHierarchy && selectedSubType in scholarshipHierarchy[selectedCategory])
+    ? scholarshipHierarchy[selectedCategory][selectedSubType]
+    : [];
+
   // Modal state for student profile
   const [selectedStudent, setSelectedStudent] = useState<StudentBreakdownItem | null>(null);
   const [printSingleStudent, setPrintSingleStudent] = useState<StudentBreakdownItem | null>(null);
@@ -221,7 +243,7 @@ export function GuidanceReports() {
               <div><strong>Program & Course:</strong> {printSingleStudent.courseFull} ({printSingleStudent.course})</div>
               <div><strong>Year Level:</strong> {printSingleStudent.yearLevel}</div>
               <div><strong>Gender:</strong> {printSingleStudent.gender}</div>
-              <div><strong>General Weighted Average (GWA):</strong> {printSingleStudent.gwa}</div>
+              <div><strong>General Weighted Average:</strong> {printSingleStudent.gwa}</div>
               <div><strong>Scholarship Allocation:</strong> {printSingleStudent.allocation}</div>
               <div><strong>Funding Category:</strong> {printSingleStudent.category} ({printSingleStudent.subType})</div>
               <div><strong>Status:</strong> {printSingleStudent.status}</div>
@@ -595,71 +617,36 @@ export function GuidanceReports() {
 
             {/* PAGE 2 Filters */}
             <div className="bg-[#edf3fa] border border-[#d6e3f0] rounded-2xl p-5 shadow-xs">
-              <div className="flex flex-col sm:flex-row gap-4">
-                {/* CATEGORY Dropdown */}
-                <div className="space-y-1.5 flex-1">
-                  <label className="block text-xs font-extrabold text-[#0c2340] uppercase tracking-wider">
-                    CATEGORY
-                  </label>
-                  <div className="relative">
-                    <select
-                      value={selectedCategory}
-                      onChange={(e) => setSelectedCategory(e.target.value)}
-                      className="w-full bg-white border border-gray-300 rounded-xl px-4 py-2.5 text-sm font-medium text-gray-800 appearance-none focus:outline-none focus:ring-2 focus:ring-[#1864db]/30 cursor-pointer shadow-xs"
-                    >
+                <div className="flex items-end gap-3">
+                  <div className="flex-1 space-y-1.5">
+                    <label className="block text-xs font-extrabold text-[#0c2340] uppercase tracking-wider">CATEGORY</label>
+                    <select value={selectedCategory} onChange={(e) => { setSelectedCategory(e.target.value); setSelectedSubType('Sub Type'); setSelectedAllocation('Scholarship Allocation'); }} className="w-full bg-white border border-gray-300 rounded-xl px-4 py-2.5 text-sm font-medium text-gray-800 appearance-none focus:outline-none focus:ring-2 focus:ring-[#1864db]/30 cursor-pointer shadow-xs">
                       <option value="Category">Category</option>
-                      <option value="Academic">Academic</option>
-                      <option value="Non-Academic">Non-Academic</option>
+                      <option value="Internally-Funded">Internally-Funded</option>
+                      <option value="Externally-Funded">Externally-Funded</option>
                     </select>
-                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-700">
-                      <ChevronDown className="w-4 h-4 stroke-[2.5]" />
-                    </div>
                   </div>
-                </div>
 
-                {/* SUB TYPE Dropdown */}
-                <div className="space-y-1.5 flex-1">
-                  <label className="block text-xs font-extrabold text-[#0c2340] uppercase tracking-wider">
-                    SUB TYPE
-                  </label>
-                  <div className="relative">
-                    <select
-                      value={selectedSubType}
-                      onChange={(e) => setSelectedSubType(e.target.value)}
-                      className="w-full bg-white border border-gray-300 rounded-xl px-4 py-2.5 text-sm font-medium text-gray-800 appearance-none focus:outline-none focus:ring-2 focus:ring-[#1864db]/30 cursor-pointer shadow-xs"
-                    >
+                  <div className="flex-1 space-y-1.5">
+                    <label className="block text-xs font-extrabold text-[#0c2340] uppercase tracking-wider">SUB TYPE</label>
+                    <select value={selectedSubType} onChange={(e) => { setSelectedSubType(e.target.value); setSelectedAllocation('Scholarship Allocation'); }} className="w-full bg-white border border-gray-300 rounded-xl px-4 py-2.5 text-sm font-medium text-gray-800 appearance-none focus:outline-none focus:ring-2 focus:ring-[#1864db]/30 cursor-pointer shadow-xs">
                       <option value="Sub Type">Sub Type</option>
-                      <option value="Athletic">Athletic</option>
-                      <option value="Cultural">Cultural</option>
-                      <option value="Dean's Lister">Dean's Lister</option>
+                      {availableSubTypes.map(st => <option key={st} value={st}>{st}</option>)}
                     </select>
-                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-700">
-                      <ChevronDown className="w-4 h-4 stroke-[2.5]" />
-                    </div>
                   </div>
-                </div>
 
-                {/* SCHOLARSHIP ALLOCATION Dropdown */}
-                <div className="space-y-1.5 flex-1">
-                  <label className="block text-xs font-extrabold text-[#0c2340] uppercase tracking-wider">
-                    SCHOLARSHIP ALLOCATION
-                  </label>
-                  <div className="relative">
-                    <select
-                      value={selectedAllocation}
-                      onChange={(e) => setSelectedAllocation(e.target.value)}
-                      className="w-full bg-white border border-gray-300 rounded-xl px-4 py-2.5 text-sm font-medium text-gray-800 appearance-none focus:outline-none focus:ring-2 focus:ring-[#1864db]/30 cursor-pointer shadow-xs"
-                    >
+                  <div className="flex-1 space-y-1.5">
+                    <label className="block text-xs font-extrabold text-[#0c2340] uppercase tracking-wider">SCHOLARSHIP ALLOCATION</label>
+                    <select value={selectedAllocation} onChange={(e) => setSelectedAllocation(e.target.value)} className="w-full bg-white border border-gray-300 rounded-xl px-4 py-2.5 text-sm font-medium text-gray-800 appearance-none focus:outline-none focus:ring-2 focus:ring-[#1864db]/30 cursor-pointer shadow-xs">
                       <option value="Scholarship Allocation">Scholarship Allocation</option>
-                      <option value="Full">Full</option>
-                      <option value="Partial">Partial</option>
+                      {availableAllocations.map(al => <option key={al} value={al}>{al}</option>)}
                     </select>
-                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-700">
-                      <ChevronDown className="w-4 h-4 stroke-[2.5]" />
-                    </div>
                   </div>
+                  
+                  <button onClick={handleResetFilters} className="bg-white border border-gray-300 text-gray-700 px-5 py-2.5 rounded-xl font-bold text-sm shadow-xs hover:bg-gray-50 flex items-center gap-2">
+                    <RotateCcw className="w-4 h-4" /> Clear
+                  </button>
                 </div>
-              </div>
             </div>
 
             {/* Scholarship Breakdown Table */}
@@ -680,11 +667,9 @@ export function GuidanceReports() {
                     {filteredBreakdown.map((row) => (
                       <tr 
                         key={row.id} 
-                        onClick={() => setSelectedStudent(row)}
-                        className="hover:bg-blue-50/60 transition-colors cursor-pointer group"
-                        title="Click to view detailed student scholarship profile"
+                        className="transition-colors"
                       >
-                        <td className="py-3.5 px-6 font-bold text-gray-900 text-center group-hover:text-[#1864db] transition-colors flex items-center justify-center gap-2">
+                        <td className="py-3.5 px-6 font-bold text-gray-900 text-center flex items-center justify-center gap-2">
                           <span>{row.student}</span>
                         </td>
                         <td className="py-3.5 px-6 text-gray-800 text-center">{row.yearLevel}</td>
@@ -822,77 +807,6 @@ export function GuidanceReports() {
                   </div>
                 </div>
               </div>
-
-              {/* Uploaded Documents & File Attachments */}
-              {selectedStudent.files && selectedStudent.files.length > 0 && (
-                <div className="space-y-2">
-                  <h4 className="font-bold text-xs uppercase tracking-wider text-gray-700 flex items-center gap-1.5">
-                    <HardDrive className="w-4 h-4 text-[#1864db]" /> Attached Uploads & Verification Files ({selectedStudent.files.length})
-                  </h4>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                    {selectedStudent.files.map((file: any, i: number) => {
-                      const isImg = isImageFile(file);
-                      const fileSrc = file.data || file.url || '';
-
-                      return (
-                        <div key={i} className="flex items-center justify-between bg-white border border-gray-200 p-2.5 rounded-xl shadow-2xs hover:border-blue-300 transition-colors gap-2">
-                          <div 
-                            className="flex items-center gap-2.5 overflow-hidden flex-1 cursor-pointer"
-                            onClick={() => fileSrc && setPreviewDoc(file)}
-                            title="Click to preview file"
-                          >
-                            {isImg && fileSrc ? (
-                              <div className="w-8 h-8 rounded-md bg-gray-100 border border-gray-200 overflow-hidden shrink-0 flex items-center justify-center">
-                                <img src={fileSrc} alt={file.name} className="w-full h-full object-cover" />
-                              </div>
-                            ) : (
-                              <div className="w-8 h-8 rounded-md bg-blue-50 border border-blue-100 flex items-center justify-center shrink-0">
-                                <FileText className="w-4 h-4 text-blue-600" />
-                              </div>
-                            )}
-                            <div className="truncate min-w-0">
-                              <p className="text-xs font-bold text-gray-900 truncate leading-tight">
-                                {formatDocumentTitle(file)}
-                              </p>
-                              <p className="text-[10px] text-gray-500 truncate mt-0.5">
-                                {file.name} {file.size ? `• ${file.size}` : ''}
-                              </p>
-                            </div>
-                          </div>
-
-                          <div className="flex items-center gap-1 shrink-0">
-                            {fileSrc && (
-                              <button
-                                onClick={() => setPreviewDoc(file)}
-                                className="text-xs bg-blue-50 hover:bg-blue-100 text-blue-700 p-1.5 rounded-lg flex items-center gap-1 font-semibold transition-colors cursor-pointer"
-                                title="View Document"
-                              >
-                                <Eye className="w-3.5 h-3.5" />
-                              </button>
-                            )}
-                            {fileSrc ? (
-                              <a
-                                href={fileSrc}
-                                download={file.name || 'document'}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 p-1.5 rounded-lg flex items-center gap-1 font-semibold transition-colors cursor-pointer"
-                                title="Download file"
-                              >
-                                <Download className="w-3.5 h-3.5" />
-                              </a>
-                            ) : (
-                              <span className="text-[10px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded-md font-medium">
-                                Synced
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
 
               {/* Documentary Verification Checklist */}
               <div className="space-y-2">

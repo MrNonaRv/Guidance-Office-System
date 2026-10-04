@@ -327,16 +327,16 @@ export function StudentRecordModal({
     const cat = (category || '').toUpperCase();
     const n = (name || '').toUpperCase();
     if (cat === 'RF' || cat.includes('REGISTRATION') || n.includes('REGISTRATION') || n.includes('_RF')) {
-      return 'Registration Form (RF)';
+      return 'Registration Form';
     }
     if (cat === 'RF_2' || (cat.includes('RF') && n.includes('2ND'))) {
-      return 'Registration Form (RF) — 2nd Sem';
+      return 'Registration Form — 2nd Sem';
     }
     if (cat === 'GWA' || cat.includes('COG') || cat.includes('GRADE') || n.includes('GWA') || n.includes('GRADE') || n.includes('COG')) {
-      return 'General Weighted Average (GWA)';
+      return 'General Weighted Average';
     }
     if (cat === 'GWA_2' || (cat.includes('GWA') && n.includes('2ND'))) {
-      return 'General Weighted Average (GWA) — 2nd Sem';
+      return 'General Weighted Average — 2nd Sem';
     }
     if (cat === 'ID' || cat.includes('STUDENT ID') || n.includes('STUDENT_ID') || n.includes('_ID')) {
       return 'Student ID';
@@ -348,7 +348,7 @@ export function StudentRecordModal({
   const requirementsList = [
     {
       id: 'req-rf-1',
-      name: 'Registration Form (RF)',
+      name: 'Registration Form',
       group: '1st Semester',
       category: 'RF',
       fileName: localSubmission.files?.find((f: any) => isRFDocument(f))?.name || `${studentName.replace(/\s+/g, '_')}_Registration_Form_RF.png`,
@@ -362,7 +362,7 @@ export function StudentRecordModal({
     },
     {
       id: 'req-gwa-1',
-      name: 'General Weighted Average (GWA)',
+      name: 'General Weighted Average',
       group: '1st Semester',
       category: 'GWA',
       fileName: localSubmission.files?.find((f: any) => isGWADocument(f))?.name || `${studentName.replace(/\s+/g, '_')}_General_Weighted_Average_GWA.png`,

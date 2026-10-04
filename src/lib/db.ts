@@ -428,11 +428,15 @@ function setupRealtimeListeners() {
         snap.forEach(docSnap => {
           remoteNotifs.push(docSnap.data() as NotificationItem);
         });
-        if (remoteNotifs.length > 0) {
-          memoryNotifications = sortNotifications(remoteNotifs);
-          Promise.all(remoteNotifs.map(n => notificationsDb.setItem(n.id, n))).catch(() => {});
-          notifyNotificationListeners();
-        }
+        
+        // Merge remote notifications with local memory to ensure nothing is lost
+        const notifMap = new Map<string, NotificationItem>();
+        memoryNotifications.forEach(n => notifMap.set(n.id, n));
+        remoteNotifs.forEach(n => notifMap.set(n.id, n));
+        
+        memoryNotifications = sortNotifications(Array.from(notifMap.values()));
+        Promise.all(memoryNotifications.map(n => notificationsDb.setItem(n.id, n))).catch(() => {});
+        notifyNotificationListeners();
       }
     }, (err) => {
       handleFirestoreError(err, OperationType.GET, 'notifications');

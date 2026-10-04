@@ -165,7 +165,7 @@ export function getFileSource(file: any): string {
 }
 
 /**
- * Checks if a file is a Registration Form (RF) document
+ * Checks if a file is a Registration Form document
  */
 export function isRFDocument(file: any): boolean {
   if (!file) return false;
@@ -189,7 +189,7 @@ export function isRFDocument(file: any): boolean {
 }
 
 /**
- * Checks if a file is a General Weighted Average (GWA) document
+ * Checks if a file is a General Weighted Average document
  */
 export function isGWADocument(file: any): boolean {
   if (!file) return false;
@@ -257,16 +257,16 @@ export function formatDocumentTitle(file: any): string {
 
   if (isRFDocument(file)) {
     if (is2ndSemesterDoc(file)) {
-      return 'Registration Form (RF) — 2nd Semester';
+      return 'Registration Form — 2nd Semester';
     }
-    return 'Registration Form (RF) — 1st Semester';
+    return 'Registration Form — 1st Semester';
   }
 
   if (isGWADocument(file)) {
     if (is2ndSemesterDoc(file)) {
-      return 'General Weighted Average (GWA) — 2nd Semester';
+      return 'General Weighted Average — 2nd Semester';
     }
-    return 'General Weighted Average (GWA) — 1st Semester';
+    return 'General Weighted Average — 1st Semester';
   }
 
   if (cat === 'ID' || cat.includes('STUDENT ID') || n.includes('STUDENT_ID') || n.includes('_ID')) {

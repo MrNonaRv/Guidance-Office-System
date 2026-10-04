@@ -368,7 +368,7 @@ const navItems = [
   { icon: LayoutGrid, label: 'Dashboard', path: '/admin/dashboard' },
   { icon: FileText, label: 'Submissions', path: '/admin/submissions' },
   { icon: Bell, label: 'Notifications', path: '/admin/notifications' },
-  { icon: Mail, label: 'Communications', path: '/admin/communications' },
+  { icon: Mail, label: 'Responses', path: '/admin/responses' },
   { icon: BarChart2, label: 'Reports', path: '/admin/reports' },
   { icon: Settings, label: 'Settings', path: '/admin/settings' },
 ];
@@ -661,7 +661,7 @@ export function GuidanceDashboard() {
     }
   };
 
-  const displayNotifications = notifications.slice(0, 6).map(n => ({
+  const displayNotifications = notifications.map(n => ({
     id: n.id,
     studentName: n.studentName || n.title,
     action: n.description || 'System update',
@@ -788,9 +788,9 @@ export function GuidanceDashboard() {
         </div>
 
         {/* Right Column: Reports & Recent Notifications */}
-        <div className="lg:col-span-4 space-y-6">
+        <div className="lg:col-span-4 flex flex-col gap-6">
           {/* Reports Card */}
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-200/80 p-5">
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-200/80 p-5 shrink-0">
             <div className="flex justify-between items-center mb-3">
               <h2 className="text-sm font-bold text-[#0c2340]">Reports</h2>
               <Link to="/admin/reports" className="text-xs font-semibold text-[#1864db] hover:underline">View all</Link>
@@ -824,8 +824,8 @@ export function GuidanceDashboard() {
           </div>
 
           {/* Recent Notifications Card */}
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-200/80 p-5">
-            <div className="flex justify-between items-center mb-3">
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-200/80 p-5 flex-1 min-h-0 flex flex-col">
+            <div className="flex justify-between items-center mb-3 shrink-0">
               <h2 className="text-sm font-bold text-[#0c2340]">Recent Notifcations</h2>
               <div className="flex items-center gap-2">
                 {unreadCount > 0 && (
@@ -841,7 +841,7 @@ export function GuidanceDashboard() {
               </div>
             </div>
             
-            <div className="space-y-2.5">
+            <div className="space-y-2.5 overflow-y-auto pr-1 flex-1 min-h-0">
               {displayNotifications.map((n, idx) => (
                 <div 
                   key={idx} 
@@ -1241,7 +1241,7 @@ export function GuidanceSettings() {
 
   const [showAllocationModal, setShowAllocationModal] = useState(false);
   const [editingAllocation, setEditingAllocation] = useState<ScholarshipAllocationItem | null>(null);
-  const [allocationForm, setAllocationForm] = useState({ name: '', description: '' });
+  const [allocationForm, setAllocationForm] = useState({ name: '' });
 
   // Files Tab State
   const [filesList, setFilesList] = useState([
@@ -1400,7 +1400,6 @@ export function GuidanceSettings() {
       return;
     }
     const name = allocationForm.name.trim();
-    const description = allocationForm.description.trim();
 
     if (editingAllocation) {
       const updated = categories.map(c => {
@@ -2612,23 +2611,13 @@ export function GuidanceSettings() {
                 <div>Subtype: <span className="font-bold">{currentSubtype?.name}</span></div>
               </div>
               <div>
-                <label className="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1">Allocation Title / Grant Name</label>
+                <label className="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1">SCHOLARSHIP ALLOCATION NAME</label>
                 <input
                   type="text"
                   value={allocationForm.name}
                   onChange={e => setAllocationForm({ ...allocationForm, name: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#1864db] text-sm"
                   placeholder="e.g. Full (1.00 - 1.25) or Tertiary Education Subsidy (TES)"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1">Description / Benefit Details</label>
-                <textarea
-                  value={allocationForm.description}
-                  onChange={e => setAllocationForm({ ...allocationForm, description: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#1864db] text-sm"
-                  placeholder="e.g. 100% Tuition Fee Exemption or Monthly Stipend"
-                  rows={2}
                 />
               </div>
             </div>

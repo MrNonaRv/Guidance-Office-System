@@ -751,7 +751,7 @@ export function StudentDashboard() {
     const gwaKey = `${sem}_gwa`;
     
     if (!files[rfKey] || !files[gwaKey]) {
-      alert('Please upload both the Registration Form (RF) and General Weighted Average (GWA) documents.');
+      alert('Please upload both the Registration Form and General Weighted Average documents.');
       return;
     }
     
@@ -909,7 +909,7 @@ export function StudentDashboard() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
                       <span className="px-2 py-0.5 bg-blue-100 text-[#1e3a8a] text-[11px] font-bold rounded">RF</span>
-                      <h4 className="font-bold text-[#0c2340] text-sm sm:text-base leading-tight">Registration Form (RF)</h4>
+                      <h4 className="font-bold text-[#0c2340] text-sm sm:text-base leading-tight">Registration Form</h4>
                     </div>
                     <p className="text-gray-500 text-xs sm:text-sm mt-0.5">Certificate of Registration / Enrollment for 1st Semester</p>
                     {existingRF && (
@@ -938,7 +938,7 @@ export function StudentDashboard() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
                       <span className="px-2 py-0.5 bg-blue-100 text-[#1e3a8a] text-[11px] font-bold rounded">GWA</span>
-                      <h4 className="font-bold text-[#0c2340] text-sm sm:text-base leading-tight">General Weighted Average (GWA)</h4>
+                      <h4 className="font-bold text-[#0c2340] text-sm sm:text-base leading-tight">General Weighted Average</h4>
                     </div>
                     <p className="text-gray-500 text-xs sm:text-sm mt-0.5">Official Certificate of Grades / Grade Slip for 1st Semester</p>
                     {existingGWA && (
@@ -1014,7 +1014,7 @@ export function StudentDashboard() {
                   <div>
                     <div className="flex items-center gap-2">
                       <span className="px-2 py-0.5 bg-blue-100 text-[#1e3a8a] text-[11px] font-bold rounded">RF</span>
-                      <h4 className="font-bold text-[#0c2340] text-sm sm:text-base leading-tight">Registration Form (RF)</h4>
+                      <h4 className="font-bold text-[#0c2340] text-sm sm:text-base leading-tight">Registration Form</h4>
                     </div>
                     <p className="text-gray-500 text-xs sm:text-sm mt-0.5">Certificate of Registration / Enrollment for 2nd Semester</p>
                   </div>
@@ -1025,7 +1025,7 @@ export function StudentDashboard() {
                   <div>
                     <div className="flex items-center gap-2">
                       <span className="px-2 py-0.5 bg-blue-100 text-[#1e3a8a] text-[11px] font-bold rounded">GWA</span>
-                      <h4 className="font-bold text-[#0c2340] text-sm sm:text-base leading-tight">General Weighted Average (GWA)</h4>
+                      <h4 className="font-bold text-[#0c2340] text-sm sm:text-base leading-tight">General Weighted Average</h4>
                     </div>
                     <p className="text-gray-500 text-xs sm:text-sm mt-0.5">Official Certificate of Grades / Grade Slip for 2nd Semester</p>
                   </div>
@@ -1193,9 +1193,6 @@ export function StudentSubmissionForm() {
       motherName: '', 
       motherOccupation: '', 
       motherContact: '', 
-      guardianName: '', 
-      guardianOccupation: '', 
-      guardianContact: '',
       // Page 2
       parentEduAttainment: '', 
       monthlyIncome: '', 
@@ -1618,44 +1615,52 @@ export function StudentSubmissionForm() {
     const missingLabels: string[] = [];
 
     if (!formData.familyName || !formData.familyName.trim()) {
-      newErrors.familyName = 'Last Name is required';
+      newErrors.familyName = 'This field is required';
       missingLabels.push('Last Name');
     }
     if (!formData.firstName || !formData.firstName.trim()) {
-      newErrors.firstName = 'First Name is required';
+      newErrors.firstName = 'This field is required';
       missingLabels.push('First Name');
     }
+    if (!formData.middleName || !formData.middleName.trim()) {
+      newErrors.middleName = 'This field is required';
+      missingLabels.push('Middle Name');
+    }
+    if (!formData.age || !formData.age.trim()) {
+      newErrors.age = 'This field is required';
+      missingLabels.push('Age');
+    }
     if (!formData.birthdate) {
-      newErrors.birthdate = 'Birthdate is required';
+      newErrors.birthdate = 'This field is required';
       missingLabels.push('Birthdate');
     }
     if (!formData.sex) {
-      newErrors.sex = 'Sex is required';
+      newErrors.sex = 'This field is required';
       missingLabels.push('Sex (Male / Female)');
     }
     if (!formData.yearLevel) {
-      newErrors.yearLevel = 'Year Level is required';
+      newErrors.yearLevel = 'This field is required';
       missingLabels.push('Year Level');
     }
     if (!formData.course) {
-      newErrors.course = 'Course is required';
+      newErrors.course = 'This field is required';
       missingLabels.push('Course');
     }
     if (!formData.contactNo || !formData.contactNo.trim()) {
-      newErrors.contactNo = 'Contact No. is required';
+      newErrors.contactNo = 'This field is required';
       missingLabels.push('Contact No.');
     }
     if (!formData.email || !formData.email.trim()) {
-      newErrors.email = 'Email is required';
+      newErrors.email = 'This field is required';
       missingLabels.push('Email');
     }
     if (!formData.street || !formData.street.trim() || !formData.municipality || !formData.postalCode || (formData.municipality !== 'Others' && !formData.barangay) || (formData.municipality === 'Others' && (!formData.outsideCapizAddress || !formData.province))) {
-      newErrors.permanentAddress = 'Complete Permanent Address is required';
+      newErrors.permanentAddress = 'This field is required';
       missingLabels.push('Permanent Address');
     }
     if (!formData.signature) {
       newErrors.signature = 'Applicant Signature is required';
-      missingLabels.push("Applicant's Signature (Click signature box at the bottom to sign)");
+      missingLabels.push("Your Signature (Click signature box at the bottom to sign)");
     }
 
     const selectedScholarshipsCount = (formData.selectedScholarships && formData.selectedScholarships.length) || (formData.internalCategory || formData.externalCategory ? 1 : 0);
@@ -1691,8 +1696,8 @@ export function StudentSubmissionForm() {
 
   const validateStep2 = () => {
     const requiredDocs = [
-      { key: 'RF', label: 'Registration Form (RF)' },
-      { key: 'GWA', label: 'General Weighted Average (GWA)' },
+      { key: 'RF', label: 'Registration Form' },
+      { key: 'GWA', label: 'General Weighted Average' },
       { key: 'ID', label: 'Student ID' }
     ];
 
@@ -1750,7 +1755,6 @@ export function StudentSubmissionForm() {
     if (formData.guardianName) {
       summaryText += `Guardian               : ${formData.guardianName} | Occupation: ${formData.guardianOccupation || 'N/A'} | Contact: ${formData.guardianContact || 'N/A'}\n`;
     }
-    summaryText += `\n`;
 
     summaryText += `III. SOCIO-ECONOMIC STATUS\n`;
     summaryText += `----------------------------------------------------------------------\n`;
@@ -2150,6 +2154,7 @@ export function StudentSubmissionForm() {
                     value={formData.familyName} 
                     onChange={handleChange} 
                     required 
+                    placeholder="e.g. Dela Cruz"
                     error={errors.familyName} 
                   />
                   <InputGroup 
@@ -2158,6 +2163,7 @@ export function StudentSubmissionForm() {
                     value={formData.firstName} 
                     onChange={handleChange} 
                     required 
+                    placeholder="e.g. Juan"
                     error={errors.firstName} 
                   />
                   <InputGroup 
@@ -2165,9 +2171,11 @@ export function StudentSubmissionForm() {
                     name="middleName" 
                     value={formData.middleName} 
                     onChange={handleChange} 
+                    placeholder="e.g. Santos"
                   />
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-[2fr_1.5fr] gap-3 sm:gap-4">
+                {/* Row 1: Birthdate | Age */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                   <div className="flex flex-col relative" id="field-birthdate">
                     <label className="text-[11px] font-bold text-[#0f2e60] mb-1 flex items-center gap-1">
                       Birthdate <span className="text-red-500 font-bold">*</span>
@@ -2185,14 +2193,22 @@ export function StudentSubmissionForm() {
                     </div>
                     {errors.birthdate && <span className="text-[10px] text-red-600 font-semibold mt-0.5">{errors.birthdate}</span>}
                   </div>
-                  <InputGroup label="Age" name="age" value={formData.age} onChange={handleChange} />
+                  <InputGroup 
+                    label="Age" 
+                    name="age" 
+                    value={formData.age} 
+                    onChange={handleChange} 
+                    placeholder="e.g. 18"
+                    error={errors.age} 
+                  />
                 </div>
-                <div className="grid grid-cols-2 gap-3 sm:gap-4 items-end">
+                {/* Row 2: Sex | Civil Status */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mt-1">
                   <div className="flex flex-col" id="field-sex">
-                    <label className="text-[11px] font-bold text-[#0f2e60] mb-2 flex items-center gap-1">
+                    <label className="text-[11px] font-bold text-[#0f2e60] mb-1 flex items-center gap-1">
                       Sex <span className="text-red-500 font-bold">*</span>
                     </label>
-                    <div className={`flex flex-wrap items-center gap-4 p-1 rounded ${errors.sex ? 'bg-red-50 border border-red-300' : ''}`}>
+                    <div className={`flex flex-wrap items-center gap-4 p-1 rounded h-[34px] ${errors.sex ? 'bg-red-50 border border-red-300' : 'border border-transparent'}`}>
                       <label className="flex items-center gap-1.5 text-xs font-semibold text-[#0f2e60] cursor-pointer">
                         <input type="radio" name="sex" value="Male" checked={formData.sex === 'Male'} onChange={() => handleRadioChange('sex', 'Male')} className="w-3.5 h-3.5" /> Male
                       </label>
@@ -2203,8 +2219,10 @@ export function StudentSubmissionForm() {
                     {errors.sex && <span className="text-[10px] text-red-600 font-semibold mt-0.5">{errors.sex}</span>}
                   </div>
                   <div className="flex flex-col">
-                    <label className="text-[11px] font-bold text-[#0f2e60] mb-2">Civil Status</label>
-                    <div className="flex flex-wrap items-center gap-4 p-1">
+                    <label className="text-[11px] font-bold text-[#0f2e60] mb-1 flex items-center gap-1">
+                      Civil Status
+                    </label>
+                    <div className="flex flex-wrap items-center gap-4 p-1 h-[34px]">
                       <label className="flex items-center gap-1.5 text-xs font-semibold text-[#0f2e60] cursor-pointer">
                         <input type="radio" name="civilStatus" value="Single" checked={formData.civilStatus === 'Single'} onChange={() => handleRadioChange('civilStatus', 'Single')} className="w-3.5 h-3.5" /> Single
                       </label>
@@ -2341,14 +2359,6 @@ export function StudentSubmissionForm() {
                   <InputGroup label="Contact No." name="motherContact" value={formData.motherContact} onChange={handleChange} />
                 </div>
               </div>
-              <div>
-                <div className="inline-block bg-[#e0e7ff] border border-[#1e3a8a] text-[#1e3a8a] text-[11px] font-bold px-4 py-0.5 rounded-sm mb-3">Guardian Information</div>
-                <div className="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-[2fr_1.5fr_1.5fr] gap-3 sm:gap-4">
-                  <InputGroup label="Name" name="guardianName" value={formData.guardianName} onChange={handleChange} />
-                  <InputGroup label="Occupation" name="guardianOccupation" value={formData.guardianOccupation} onChange={handleChange} />
-                  <InputGroup label="Contact No." name="guardianContact" value={formData.guardianContact} onChange={handleChange} />
-                </div>
-              </div>
               
               {/* Parent Edu Attainment & Monthly Income */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mt-6">
@@ -2368,13 +2378,13 @@ export function StudentSubmissionForm() {
                       options={['below ₱ 10,000', '₱ 10,001 - ₱ 20,000', '₱ 20,001 - ₱ 30,000', 'Above ₱ 30,000']}
                     />
                     <div className="mt-2">
-                      <label className="block text-[12px] font-bold text-[#0f2e60] mb-4 text-center">Are you the first in family to attend college?</label>
-                      <div className="flex justify-center gap-12">
-                        <label className="flex items-center gap-3 text-sm font-bold text-[#0f2e60] cursor-pointer">
-                          Yes <input type="radio" name="firstInFamily" value="Yes" checked={formData.firstInFamily === 'Yes'} onChange={() => handleRadioChange('firstInFamily', 'Yes')} className="w-5 h-5 border-2 border-[#0f2e60] appearance-none checked:bg-[#0f2e60] rounded-full" /> 
+                      <label className="block text-[11px] font-bold text-[#0f2e60] mb-2 text-center">Are you the first in family to attend college?</label>
+                      <div className="flex justify-center items-center gap-4 p-1 h-[34px]">
+                        <label className="flex items-center gap-1.5 text-xs font-semibold text-[#0f2e60] cursor-pointer">
+                          <input type="radio" name="firstInFamily" value="Yes" checked={formData.firstInFamily === 'Yes'} onChange={() => handleRadioChange('firstInFamily', 'Yes')} className="w-3.5 h-3.5" /> Yes
                         </label>
-                        <label className="flex items-center gap-3 text-sm font-bold text-[#0f2e60] cursor-pointer">
-                          No <input type="radio" name="firstInFamily" value="No" checked={formData.firstInFamily === 'No'} onChange={() => handleRadioChange('firstInFamily', 'No')} className="w-5 h-5 border-2 border-[#0f2e60] appearance-none checked:bg-[#0f2e60] rounded-full" /> 
+                        <label className="flex items-center gap-1.5 text-xs font-semibold text-[#0f2e60] cursor-pointer">
+                          <input type="radio" name="firstInFamily" value="No" checked={formData.firstInFamily === 'No'} onChange={() => handleRadioChange('firstInFamily', 'No')} className="w-3.5 h-3.5" /> No
                         </label>
                       </div>
                     </div>
@@ -2601,7 +2611,7 @@ export function StudentSubmissionForm() {
                         )}
                       </div>
 
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         {group.options.map(opt => {
                           const isSelected = isCurrentCategoryGroup && groupSelections.includes(opt.id);
                           const allocationIndex = isSelected ? groupSelections.indexOf(opt.id) + 1 : null;
@@ -2873,8 +2883,8 @@ export function StudentSubmissionForm() {
             Please attach valid copies for all 3 required documents. Files up to 10MB accepted.
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-6">
-            {renderFileUpload('Registration Form (RF)', 'RF')}
-            {renderFileUpload('General Weighted Average (GWA)', 'GWA')}
+            {renderFileUpload('Registration Form', 'RF')}
+            {renderFileUpload('General Weighted Average', 'GWA')}
           </div>
           <div className="max-w-md mx-auto">
             {renderFileUpload('Student ID', 'ID')}

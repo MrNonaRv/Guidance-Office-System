@@ -75,7 +75,7 @@ interface SentEmailRecord {
   attachmentsCount: number;
 }
 
-export function GuidanceCommunications() {
+export function GuidanceResponses() {
   const navigate = useNavigate();
   const location = useLocation();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -261,9 +261,9 @@ We are pleased to inform you that the release of your scholarship is scheduled o
 Before your funds can be disbursed, you are required to submit the following documents for verification:
 
 
-General Weighted Average (GWA)
+General Weighted Average
 
-Registration Form (RF)
+Registration Form
 
 
 Sincerely,
@@ -793,7 +793,7 @@ Capiz State University – Mambusao Satellite College`
       {/* Page Title & Gmail Integration Banner */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <h1 className="text-2xl sm:text-3xl md:text-4xl font-serif font-bold text-[#0c2340] tracking-tight">
-          Communications
+          Responses
         </h1>
         
         <div className="flex items-center gap-3 bg-white px-4 py-2.5 rounded-2xl border border-blue-200 shadow-2xs">

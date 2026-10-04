@@ -46,16 +46,16 @@ export function DocumentPreviewModal({ file, onClose }: DocumentPreviewModalProp
     const categoryUpper = (cat || '').toUpperCase();
     const nameUpper = (name || '').toUpperCase();
     if (categoryUpper === 'RF' || categoryUpper.includes('REGISTRATION') || nameUpper.includes('REGISTRATION') || nameUpper.includes('_RF')) {
-      return 'Registration Form (RF)';
+      return 'Registration Form';
     }
     if (categoryUpper === 'RF_2' || (categoryUpper.includes('RF') && nameUpper.includes('2ND'))) {
-      return 'Registration Form (RF) — 2nd Semester';
+      return 'Registration Form — 2nd Semester';
     }
     if (categoryUpper === 'GWA' || categoryUpper.includes('COG') || categoryUpper.includes('GRADE') || nameUpper.includes('GWA') || nameUpper.includes('GRADE') || nameUpper.includes('COG')) {
-      return 'General Weighted Average (GWA)';
+      return 'General Weighted Average';
     }
     if (categoryUpper === 'GWA_2' || (categoryUpper.includes('GWA') && nameUpper.includes('2ND'))) {
-      return 'General Weighted Average (GWA) — 2nd Semester';
+      return 'General Weighted Average — 2nd Semester';
     }
     if (categoryUpper === 'ID' || categoryUpper.includes('STUDENT ID') || nameUpper.includes('STUDENT_ID') || nameUpper.includes('_ID')) {
       return 'Student ID';

@@ -414,11 +414,11 @@ export function SubmissionReviewSummary({
           <div className="p-4 rounded-xl border-2 border-green-200 bg-green-50/20 flex flex-col justify-between">
             <div>
               <div className="flex items-center justify-between mb-2">
-                <span className="text-[11px] font-bold text-green-800 uppercase tracking-wide">Registration Form (RF)</span>
+                <span className="text-[11px] font-bold text-green-800 uppercase tracking-wide">Registration Form</span>
                 <CheckCircle2 className="w-4 h-4 text-green-600" />
               </div>
-              <p className="font-bold text-xs text-[#0c2340] truncate" title={rfFile?.name || 'Registration Form (RF)'}>
-                {rfFile?.name || 'Registration Form (RF).pdf'}
+              <p className="font-bold text-xs text-[#0c2340] truncate" title={rfFile?.name || 'Registration Form'}>
+                {rfFile?.name || 'Registration Form.pdf'}
               </p>
               <p className="text-[11px] text-gray-500 mt-0.5">{rfFile?.size || 'Attached'}</p>
             </div>
@@ -437,10 +437,10 @@ export function SubmissionReviewSummary({
           <div className="p-4 rounded-xl border-2 border-green-200 bg-green-50/20 flex flex-col justify-between">
             <div>
               <div className="flex items-center justify-between mb-2">
-                <span className="text-[11px] font-bold text-green-800 uppercase tracking-wide">General Weighted Average (GWA)</span>
+                <span className="text-[11px] font-bold text-green-800 uppercase tracking-wide">General Weighted Average</span>
                 <CheckCircle2 className="w-4 h-4 text-green-600" />
               </div>
-              <p className="font-bold text-xs text-[#0c2340] truncate" title={gwaFile?.name || 'General Weighted Average (GWA)'}>
+              <p className="font-bold text-xs text-[#0c2340] truncate" title={gwaFile?.name || 'General Weighted Average'}>
                 {gwaFile?.name || 'GWA Slip / COG.pdf'}
               </p>
               <p className="text-[11px] text-gray-500 mt-0.5">{gwaFile?.size || 'Attached'}</p>
@@ -497,7 +497,7 @@ export function SubmissionReviewSummary({
         </div>
 
         <div className="inline-block border-t-2 border-black w-56 sm:w-64 pt-1.5 text-xs sm:text-sm font-bold text-[#0f2e60]">
-          Applicant's Signature
+          Your Signature
         </div>
       </div>
 
