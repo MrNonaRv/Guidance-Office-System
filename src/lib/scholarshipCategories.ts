@@ -45,7 +45,8 @@ export const SCHOLARSHIP_STRUCTURE: ScholarshipStructure = {
       description: 'For socio-cultural, artistic, and athletic regional/national achievers.',
       options: [
         { id: 'SC-Regional', name: 'SC-Regional', label: 'Regional' },
-        { id: 'SC-National', name: 'SC-National', label: 'National' }
+        { id: 'SC-National', name: 'SC-National', label: 'National' },
+        { id: 'Regional', name: 'Regional', label: 'Regional' }
       ]
     },
     {

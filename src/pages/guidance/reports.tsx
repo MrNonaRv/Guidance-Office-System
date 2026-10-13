@@ -50,7 +50,7 @@ export function GuidanceReports() {
       'Institutional': ['Dependent of Faculty or Staff', 'President – SSC', 'President – FLP', 'Editor-in-Chief (Campus Publication)', 'CapSU Band / Chorale']
     },
     'Externally-Funded': {
-      'CHED': ['Congressional District', 'One Town One Scholar', 'Tulong Dunong', 'ANAC – IP', 'Pag – ulikid', 'Barangay (Legal dependents of Brgy. Officials)', 'ESGP – PA', 'UniFast', 'Tertiary Education Subsidy / TES'],
+      'CHED': ['Congressional District', 'One Town One Scholar', 'Tulong Dunong', 'ANAC – IP', 'Pag – ulikid', 'Barangay (Legal dependents of Brgy. Officials)', 'ESGP – PA', 'Tertiary Education Subsidy / TES'],
       'Merit': ['VIC', 'Capizeño Circle', 'DOST', 'GRF', 'LGU: Barangay'],
       'DSWD': ['DSWD']
     }
@@ -620,27 +620,54 @@ export function GuidanceReports() {
                 <div className="flex items-end gap-3">
                   <div className="flex-1 space-y-1.5">
                     <label className="block text-xs font-extrabold text-[#0c2340] uppercase tracking-wider">CATEGORY</label>
-                    <select value={selectedCategory} onChange={(e) => { setSelectedCategory(e.target.value); setSelectedSubType('Sub Type'); setSelectedAllocation('Scholarship Allocation'); }} className="w-full bg-white border border-gray-300 rounded-xl px-4 py-2.5 text-sm font-medium text-gray-800 appearance-none focus:outline-none focus:ring-2 focus:ring-[#1864db]/30 cursor-pointer shadow-xs">
-                      <option value="Category">Category</option>
-                      <option value="Internally-Funded">Internally-Funded</option>
-                      <option value="Externally-Funded">Externally-Funded</option>
-                    </select>
+                    <div className="relative">
+                      <select 
+                        value={selectedCategory} 
+                        onChange={(e) => { setSelectedCategory(e.target.value); setSelectedSubType('Sub Type'); setSelectedAllocation('Scholarship Allocation'); }} 
+                        className="w-full bg-white border border-gray-300 rounded-xl pl-4 pr-10 py-2.5 text-sm font-medium text-gray-800 appearance-none focus:outline-none focus:ring-2 focus:ring-[#1864db]/30 cursor-pointer shadow-xs"
+                      >
+                        <option value="Category">Category</option>
+                        <option value="Internally-Funded">Internally-Funded</option>
+                        <option value="Externally-Funded">Externally-Funded</option>
+                      </select>
+                      <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3.5 text-gray-700">
+                        <ChevronDown className="w-4 h-4 stroke-[2.5]" />
+                      </div>
+                    </div>
                   </div>
 
                   <div className="flex-1 space-y-1.5">
                     <label className="block text-xs font-extrabold text-[#0c2340] uppercase tracking-wider">SUB TYPE</label>
-                    <select value={selectedSubType} onChange={(e) => { setSelectedSubType(e.target.value); setSelectedAllocation('Scholarship Allocation'); }} className="w-full bg-white border border-gray-300 rounded-xl px-4 py-2.5 text-sm font-medium text-gray-800 appearance-none focus:outline-none focus:ring-2 focus:ring-[#1864db]/30 cursor-pointer shadow-xs">
-                      <option value="Sub Type">Sub Type</option>
-                      {availableSubTypes.map(st => <option key={st} value={st}>{st}</option>)}
-                    </select>
+                    <div className="relative">
+                      <select 
+                        value={selectedSubType} 
+                        onChange={(e) => { setSelectedSubType(e.target.value); setSelectedAllocation('Scholarship Allocation'); }} 
+                        className="w-full bg-white border border-gray-300 rounded-xl pl-4 pr-10 py-2.5 text-sm font-medium text-gray-800 appearance-none focus:outline-none focus:ring-2 focus:ring-[#1864db]/30 cursor-pointer shadow-xs"
+                      >
+                        <option value="Sub Type">Sub Type</option>
+                        {availableSubTypes.map(st => <option key={st} value={st}>{st}</option>)}
+                      </select>
+                      <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3.5 text-gray-700">
+                        <ChevronDown className="w-4 h-4 stroke-[2.5]" />
+                      </div>
+                    </div>
                   </div>
 
                   <div className="flex-1 space-y-1.5">
                     <label className="block text-xs font-extrabold text-[#0c2340] uppercase tracking-wider">SCHOLARSHIP ALLOCATION</label>
-                    <select value={selectedAllocation} onChange={(e) => setSelectedAllocation(e.target.value)} className="w-full bg-white border border-gray-300 rounded-xl px-4 py-2.5 text-sm font-medium text-gray-800 appearance-none focus:outline-none focus:ring-2 focus:ring-[#1864db]/30 cursor-pointer shadow-xs">
-                      <option value="Scholarship Allocation">Scholarship Allocation</option>
-                      {availableAllocations.map(al => <option key={al} value={al}>{al}</option>)}
-                    </select>
+                    <div className="relative">
+                      <select 
+                        value={selectedAllocation} 
+                        onChange={(e) => setSelectedAllocation(e.target.value)} 
+                        className="w-full bg-white border border-gray-300 rounded-xl pl-4 pr-10 py-2.5 text-sm font-medium text-gray-800 appearance-none focus:outline-none focus:ring-2 focus:ring-[#1864db]/30 cursor-pointer shadow-xs"
+                      >
+                        <option value="Scholarship Allocation">Scholarship Allocation</option>
+                        {availableAllocations.map(al => <option key={al} value={al}>{al}</option>)}
+                      </select>
+                      <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3.5 text-gray-700">
+                        <ChevronDown className="w-4 h-4 stroke-[2.5]" />
+                      </div>
+                    </div>
                   </div>
                   
                   <button onClick={handleResetFilters} className="bg-white border border-gray-300 text-gray-700 px-5 py-2.5 rounded-xl font-bold text-sm shadow-xs hover:bg-gray-50 flex items-center gap-2">
