@@ -1227,7 +1227,7 @@ const InputGroup = ({ label, name, value, onChange, required, error, id, placeho
       placeholder={placeholder}
       onChange={onChange} 
       disabled={disabled}
-      className={`border rounded px-3 py-1.5 text-sm outline-none transition-colors w-full ${
+      className={`border rounded px-3 py-1.5 text-sm outline-none transition-colors w-full placeholder:text-gray-400 ${
         disabled ? 'bg-gray-100 text-gray-500 cursor-not-allowed' : ''
       } ${
         error ? 'border-red-500 bg-red-50/30 focus:ring-1 focus:ring-red-500' : 'border-[#1e3a8a] focus:ring-1 focus:ring-[#1e3a8a]'
@@ -1247,9 +1247,10 @@ interface SelectGroupProps {
   error?: string;
   id?: string;
   disabled?: boolean;
+  placeholder?: string;
 }
 
-const SelectGroup = ({ label, name, value, onChange, options, required, error, id, disabled }: SelectGroupProps) => (
+const SelectGroup = ({ label, name, value, onChange, options, required, error, id, disabled, placeholder = 'Select' }: SelectGroupProps) => (
   <div className="flex flex-col relative w-full" id={id || `field-${name}`}>
     <label className="text-[11px] font-bold text-[#0f2e60] mb-1 flex items-center gap-1">
       {label}
@@ -1262,13 +1263,15 @@ const SelectGroup = ({ label, name, value, onChange, options, required, error, i
         onChange={onChange} 
         disabled={disabled}
         className={`border rounded px-3 py-1.5 text-sm outline-none appearance-none bg-white transition-colors w-full ${
+          !value ? 'text-gray-400' : 'text-gray-800'
+        } ${
           disabled ? 'bg-gray-100 text-gray-500 cursor-not-allowed' : ''
         } ${
           error ? 'border-red-500 bg-red-50/30 focus:ring-1 focus:ring-red-500' : 'border-[#1e3a8a] focus:ring-1 focus:ring-[#1e3a8a]'
         }`}
       >
-        <option value="" disabled>Select {label.toLowerCase()}</option>
-        {options.map((opt: string) => <option key={opt} value={opt}>{opt}</option>)}
+        <option value="" disabled className="text-gray-400">{placeholder}</option>
+        {options.map((opt: string) => <option key={opt} value={opt} className="text-gray-800">{opt}</option>)}
       </select>
       <div className="absolute right-3 top-2.5 pointer-events-none">
         <ChevronDown className="w-4 h-4 text-[#1e3a8a]" />
@@ -2500,49 +2503,59 @@ export function StudentSubmissionForm() {
               <div>
                 <div className="inline-block bg-[#e0e7ff] border border-[#1e3a8a] text-[#1e3a8a] text-[11px] font-bold px-4 py-0.5 rounded-sm mb-3">Father Information</div>
                 <div className="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-[2fr_1.5fr_1.5fr] gap-3 sm:gap-4">
-                  <InputGroup label="Name" name="fatherName" value={formData.fatherName} onChange={handleChange} />
-                  <InputGroup label="Occupation" name="fatherOccupation" value={formData.fatherOccupation} onChange={handleChange} />
-                  <InputGroup label="Contact No." name="fatherContact" value={formData.fatherContact} onChange={handleChange} />
+                  <InputGroup label="Name" name="fatherName" value={formData.fatherName} onChange={handleChange} placeholder="e.g. Rafael Tuvera" />
+                  <InputGroup label="Occupation" name="fatherOccupation" value={formData.fatherOccupation} onChange={handleChange} placeholder="e.g. work" />
+                  <InputGroup label="Contact No." name="fatherContact" value={formData.fatherContact} onChange={handleChange} placeholder="09xxxxxxxxxxxx" />
                 </div>
               </div>
               <div>
                 <div className="inline-block bg-[#e0e7ff] border border-[#1e3a8a] text-[#1e3a8a] text-[11px] font-bold px-4 py-0.5 rounded-sm mb-3">Mother Information</div>
                 <div className="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-[2fr_1.5fr_1.5fr] gap-3 sm:gap-4">
-                  <InputGroup label="Name (Maiden Name)" name="motherName" value={formData.motherName} onChange={handleChange} placeholder="e.g. Maria Santos Dela Cruz" />
-                  <InputGroup label="Occupation" name="motherOccupation" value={formData.motherOccupation} onChange={handleChange} />
-                  <InputGroup label="Contact No." name="motherContact" value={formData.motherContact} onChange={handleChange} />
+                  <InputGroup label="Name (Maiden Name)" name="motherName" value={formData.motherName} onChange={handleChange} placeholder="e.g. Maria A. Sermon" />
+                  <InputGroup label="Occupation" name="motherOccupation" value={formData.motherOccupation} onChange={handleChange} placeholder="e.g. work" />
+                  <InputGroup label="Contact No." name="motherContact" value={formData.motherContact} onChange={handleChange} placeholder="09xxxxxxxxxxxx" />
+                </div>
+              </div>
+              <div>
+                <div className="inline-block bg-[#e0e7ff] border border-[#1e3a8a] text-[#1e3a8a] text-[11px] font-bold px-4 py-0.5 rounded-sm mb-3">Guardian Information</div>
+                <div className="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-[2fr_1.5fr_1.5fr] gap-3 sm:gap-4">
+                  <InputGroup label="Name" name="guardianName" value={formData.guardianName} onChange={handleChange} placeholder="e.g. Martin L. Dela Cruz" />
+                  <InputGroup label="Occupation" name="guardianOccupation" value={formData.guardianOccupation} onChange={handleChange} placeholder="e.g. work" />
+                  <InputGroup label="Contact No." name="guardianContact" value={formData.guardianContact} onChange={handleChange} placeholder="09xxxxxxxxxxxx" />
                 </div>
               </div>
               
-              {/* Parent Edu Attainment & Monthly Income */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mt-6">
-                  <div className="flex flex-col gap-5">
-                    <SelectGroup 
-                      label="Highest Educational Attainment of Parent/Guardian"
-                      name="parentEduAttainment"
-                      value={formData.parentEduAttainment}
-                      onChange={handleChange}
-                      options={['Elementary Level', 'Elementary Graduate', 'High school Graduate', 'College Graduate', 'High School Level', 'College Level', 'post Graduate level/degree']}
-                    />
-                    <SelectGroup 
-                      label="Family Monthly Income"
-                      name="monthlyIncome"
-                      value={formData.monthlyIncome}
-                      onChange={handleChange}
-                      options={['below ₱ 10,000', '₱ 10,001 - ₱ 20,000', '₱ 20,001 - ₱ 30,000', 'Above ₱ 30,000']}
-                    />
-                    <div className="mt-2">
-                      <label className="block text-[11px] font-bold text-[#0f2e60] mb-2 text-center">Are you the first in family to attend college?</label>
-                      <div className="flex justify-center items-center gap-4 p-1 h-[34px]">
-                        <label className="flex items-center gap-1.5 text-xs font-semibold text-[#0f2e60] cursor-pointer">
-                          <input type="radio" name="firstInFamily" value="Yes" checked={formData.firstInFamily === 'Yes'} onChange={() => handleRadioChange('firstInFamily', 'Yes')} className="w-3.5 h-3.5" /> Yes
-                        </label>
-                        <label className="flex items-center gap-1.5 text-xs font-semibold text-[#0f2e60] cursor-pointer">
-                          <input type="radio" name="firstInFamily" value="No" checked={formData.firstInFamily === 'No'} onChange={() => handleRadioChange('firstInFamily', 'No')} className="w-3.5 h-3.5" /> No
-                        </label>
-                      </div>
-                    </div>
+              {/* Parent Edu Attainment, Income, and First in Family */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-[2fr_1.5fr_1.5fr] gap-4 sm:gap-6 mt-2">
+                <SelectGroup 
+                  label="Highest Educational Attainment of Parent/Guardian"
+                  name="parentEduAttainment"
+                  value={formData.parentEduAttainment}
+                  onChange={handleChange}
+                  placeholder="Select"
+                  options={['Elementary Level', 'Elementary Graduate', 'High school Graduate', 'College Graduate', 'High School Level', 'College Level', 'post Graduate level/degree']}
+                />
+                <SelectGroup 
+                  label="Family Monthly Income"
+                  name="monthlyIncome"
+                  value={formData.monthlyIncome}
+                  onChange={handleChange}
+                  placeholder="Select"
+                  options={['below ₱ 10,000', '₱ 10,001 - ₱ 20,000', '₱ 20,001 - ₱ 30,000', 'Above ₱ 30,000']}
+                />
+                <div className="flex flex-col">
+                  <label className="text-[11px] font-bold text-[#0f2e60] mb-1 flex items-center gap-1">
+                    Are you the first in family to attend college?
+                  </label>
+                  <div className="flex items-center gap-6 h-[34px] mt-1">
+                    <label className="flex items-center gap-2 text-xs font-semibold text-[#0f2e60] cursor-pointer">
+                      <input type="radio" name="firstInFamily" value="Yes" checked={formData.firstInFamily === 'Yes'} onChange={() => handleRadioChange('firstInFamily', 'Yes')} className="w-3.5 h-3.5 text-[#0f2e60]" /> Yes
+                    </label>
+                    <label className="flex items-center gap-2 text-xs font-semibold text-[#0f2e60] cursor-pointer">
+                      <input type="radio" name="firstInFamily" value="No" checked={formData.firstInFamily === 'No'} onChange={() => handleRadioChange('firstInFamily', 'No')} className="w-3.5 h-3.5 text-[#0f2e60]" /> No
+                    </label>
                   </div>
+                </div>
               </div>
             </div>
           </div>

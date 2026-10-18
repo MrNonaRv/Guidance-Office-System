@@ -1281,29 +1281,29 @@ const INITIAL_SCHOLARSHIP_CATEGORIES: ScholarshipCategoryItem[] = [
         id: 'academic',
         name: 'Academic',
         allocations: [
-          { id: 'full', name: 'Full (1.00 - 1.25)', description: '100% Tuition Fee Exemption' },
-          { id: 'partial', name: 'Partial (1.26 - 1.45)', description: '50% Tuition Fee Exemption' },
-          { id: 'regional-acad', name: 'Regional', description: 'Regional Academic Achiever' },
-          { id: 'national-acad', name: 'National', description: 'National Academic Achiever' }
+          { id: 'full', name: 'Full (1.00 - 1.25)' },
+          { id: 'partial', name: 'Partial (1.26 - 1.45)' },
+          { id: 'regional-acad', name: 'Regional' },
+          { id: 'national-acad', name: 'National' }
         ]
       },
       {
         id: 'socio-cultural',
         name: 'Socio-cultural',
         allocations: [
-          { id: 'sc-regional', name: 'Regional', description: 'Socio-cultural regional awardee' },
-          { id: 'sc-national', name: 'National', description: 'Socio-cultural national awardee' }
+          { id: 'sc-regional', name: 'Regional' },
+          { id: 'sc-national', name: 'National' }
         ]
       },
       {
         id: 'institutional',
         name: 'Institutional',
         allocations: [
-          { id: 'dep-faculty', name: 'Dependent of Faculty or Staff', description: 'Faculty & staff dependent grant' },
-          { id: 'pres-ssc', name: 'President – SSC', description: 'Supreme Student Council President' },
-          { id: 'pres-flp', name: 'President – FLP', description: 'Future Leaders of the Philippines President' },
-          { id: 'editor-in-chief', name: 'Editor-in-Chief', description: 'Campus Publication Editor' },
-          { id: 'capsu-band', name: 'CAPSU Band / Chorale', description: 'University Performing Artist' }
+          { id: 'dep-faculty', name: 'Dependent of Faculty or Staff' },
+          { id: 'pres-ssc', name: 'President – SSC' },
+          { id: 'pres-flp', name: 'President – FLP' },
+          { id: 'editor-in-chief', name: 'Editor-in-Chief' },
+          { id: 'capsu-band', name: 'CAPSU Band / Chorale' }
         ]
       }
     ]
@@ -1316,36 +1316,36 @@ const INITIAL_SCHOLARSHIP_CATEGORIES: ScholarshipCategoryItem[] = [
         id: 'ched',
         name: 'CHED',
         allocations: [
-          { id: 'tes', name: 'Tertiary Education Subsidy (TES)', description: 'UniFAST subsidy' },
-          { id: 'pag-ulikid', name: 'Pag-ulikid', description: 'Provincial scholarship program' },
-          { id: 'tulong-dunong', name: 'Tulong Dunong', description: 'TDP-TES financial assistance' },
-          { id: 'anac-ip', name: 'ANAC - IP', description: 'Indigenous Peoples scholarship grant' },
-          { id: 'brgy-officials', name: 'Barangay (Legal dependents of Brgy. Officials)', description: 'Barangay official dependent grant' },
-          { id: 'esgp-pa', name: 'ESGP - PA', description: 'Expanded Students Grants-in-Aid' }
+          { id: 'tes', name: 'Tertiary Education Subsidy (TES)' },
+          { id: 'pag-ulikid', name: 'Pag-ulikid' },
+          { id: 'tulong-dunong', name: 'Tulong Dunong' },
+          { id: 'anac-ip', name: 'ANAC - IP' },
+          { id: 'brgy-officials', name: 'Barangay (Legal dependents of Brgy. Officials)' },
+          { id: 'esgp-pa', name: 'ESGP - PA' }
         ]
       },
       {
         id: 'merit',
         name: 'Merit',
         allocations: [
-          { id: 'dost', name: 'DOST', description: 'DOST-SEI S&T Scholarship' },
-          { id: 'vic', name: 'VIC', description: 'VIC Foundation' },
-          { id: 'capizeno-circle', name: 'Capizeño Circle', description: 'Capizeño Circle Merit' },
-          { id: 'grf', name: 'GRF', description: 'GRF Foundation' }
+          { id: 'dost', name: 'DOST' },
+          { id: 'vic', name: 'VIC' },
+          { id: 'capizeno-circle', name: 'Capizeño Circle' },
+          { id: 'grf', name: 'GRF' }
         ]
       },
       {
         id: 'lgu',
         name: 'LGU',
         allocations: [
-          { id: 'lgu-grant', name: 'LGU: Barangay, Municipality, Province', description: 'Local Government Unit Grant' }
+          { id: 'lgu-grant', name: 'LGU: Barangay, Municipality, Province' }
         ]
       },
       {
         id: 'private-ngo',
         name: 'Private/NGO',
         allocations: [
-          { id: 'ngo-grant', name: 'Corporate & Civic Foundations', description: 'Private Foundation Scholarships' }
+          { id: 'ngo-grant', name: 'Corporate & Civic Foundations' }
         ]
       }
     ]
@@ -1360,7 +1360,18 @@ export function GuidanceSettings() {
     try {
       const saved = localStorage.getItem('capsu_scholarship_categories');
       if (saved) {
-        return JSON.parse(saved);
+        const parsed = JSON.parse(saved);
+        // Ensure all allocations contain only name and id without secondary description subtitles
+        return parsed.map((cat: any) => ({
+          ...cat,
+          subtypes: (cat.subtypes || []).map((sub: any) => ({
+            ...sub,
+            allocations: (sub.allocations || []).map((a: any) => ({
+              id: a.id,
+              name: a.name
+            }))
+          }))
+        }));
       }
     } catch (e) {
       console.error(e);
@@ -1525,13 +1536,13 @@ export function GuidanceSettings() {
   // Allocation Actions
   const handleOpenAddAllocation = () => {
     setEditingAllocation(null);
-    setAllocationForm({ name: '', description: '' });
+    setAllocationForm({ name: '' });
     setShowAllocationModal(true);
   };
 
   const handleEditAllocation = (alloc: ScholarshipAllocationItem) => {
     setEditingAllocation(alloc);
-    setAllocationForm({ name: alloc.name, description: alloc.description || '' });
+    setAllocationForm({ name: alloc.name });
     setShowAllocationModal(true);
   };
 
@@ -1541,7 +1552,6 @@ export function GuidanceSettings() {
       return;
     }
     const name = allocationForm.name.trim();
-    const description = allocationForm.description?.trim() || '';
 
     if (editingAllocation) {
       const updated = categories.map(c => {
@@ -1552,7 +1562,7 @@ export function GuidanceSettings() {
               if (s.id === selectedSubtypeId) {
                 return {
                   ...s,
-                  allocations: s.allocations.map(a => a.id === editingAllocation.id ? { ...a, name, description } : a)
+                  allocations: s.allocations.map(a => a.id === editingAllocation.id ? { ...a, name } : a)
                 };
               }
               return s;
@@ -1565,8 +1575,7 @@ export function GuidanceSettings() {
     } else {
       const newAlloc: ScholarshipAllocationItem = {
         id: `alloc-${Date.now()}`,
-        name,
-        description
+        name
       };
       const updated = categories.map(c => {
         if (c.id === selectedCategoryId) {
@@ -1594,7 +1603,7 @@ export function GuidanceSettings() {
           type: currentCategory?.name || 'Internally-Funded',
           category: currentSubtype?.name || 'Academic',
           status: 'Active',
-          description: description || `${currentSubtype?.name} Allocation`
+          description: `${currentSubtype?.name || 'Scholarship'} Allocation`
         });
       } catch (err) {
         console.error(err);
@@ -2118,9 +2127,6 @@ export function GuidanceSettings() {
                     >
                       <div>
                         <span className="text-sm font-bold text-gray-800">{alloc.name}</span>
-                        {alloc.description && (
-                          <p className="text-xs text-gray-500 mt-0.5">{alloc.description}</p>
-                        )}
                       </div>
                       <div className="flex items-center gap-4 text-gray-400">
                         <button

@@ -870,12 +870,6 @@ export function StudentRecordModal({
                   <span className="ml-4 mr-2 whitespace-nowrap">Contact No.:</span>
                   <span className="flex-1 border-b border-black inline-block text-center">{formData.guardianContact || ''}</span>
                 </div>
-                <div className="flex items-end text-sm mt-4">
-                  <span className="mr-2 whitespace-nowrap">Address:</span>
-                  <span className="flex-1 border-b border-black inline-block text-center">{formData.guardianAddress || ''}</span>
-                  <span className="ml-4 mr-2 whitespace-nowrap">Relationship:</span>
-                  <span className="w-48 border-b border-black inline-block text-center">{formData.guardianRelationship || ''}</span>
-                </div>
               </div>
             </div>
 
