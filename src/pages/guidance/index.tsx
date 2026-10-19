@@ -965,24 +965,13 @@ export function GuidanceDashboard() {
           </div>
 
           {/* Recent Notifications Card */}
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-200/80 p-5 flex-1 min-h-0 flex flex-col">
-            <div className="flex justify-between items-center mb-3 shrink-0">
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-200/80 p-5">
+            <div className="flex justify-between items-center mb-3">
               <h2 className="text-sm font-bold text-[#0c2340]">Recent Notifcations</h2>
-              <div className="flex items-center gap-2">
-                {unreadCount > 0 && (
-                   <button 
-                     onClick={() => db.notifications.markAllAsRead()}
-                     className="text-[10px] font-bold text-[#1864db] hover:text-[#15397a] hover:underline"
-                   >
-                     Mark all as read
-                   </button>
-                )}
-                <Link to="/admin/notifications" className="text-xs font-semibold text-[#1864db] hover:underline">View all</Link>
-                {unreadCount > 0 && <span className="w-2 h-2 rounded-full bg-red-500"></span>}
-              </div>
+              <Link to="/admin/notifications" className="text-xs font-semibold text-[#1864db] hover:underline">View all</Link>
             </div>
             
-            <div className="space-y-2.5 overflow-y-auto pr-1 flex-1 min-h-0">
+            <div className="space-y-2.5 overflow-y-auto pr-1 max-h-[350px]">
               {displayNotifications.map((n, idx) => (
                 <div 
                   key={idx} 

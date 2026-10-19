@@ -205,6 +205,27 @@ export function StudentRecordModal({
           scrollX: 0,
           scrollY: 0,
           windowWidth: 1200,
+          onclone: (clonedDoc) => {
+            try {
+              for (let i = 0; i < clonedDoc.styleSheets.length; i++) {
+                try {
+                  const sheet = clonedDoc.styleSheets[i];
+                  const rules = sheet.cssRules || sheet.rules;
+                  if (rules) {
+                    for (let j = rules.length - 1; j >= 0; j--) {
+                      if (rules[j].cssText && rules[j].cssText.includes('oklch')) {
+                        sheet.deleteRule(j);
+                      }
+                    }
+                  }
+                } catch (e) {
+                  // Ignore cross-origin or security restrictions
+                }
+              }
+            } catch (e) {
+              console.warn("Could not sanitize oklch in stylesheets:", e);
+            }
+          }
         });
 
         const imgData = canvas.toDataURL('image/jpeg', 0.96);
@@ -982,40 +1003,131 @@ export function StudentRecordModal({
           <div className="font-bold mb-2">If you are a PDL (Drop out, or learner with interrupted schooling), please state the reason why your schooling was previously interrupted.</div>
           <div className="w-full border-b border-black mb-16 h-6 text-center">{formData.pdlReason || ''}</div>
 
-          <div className="text-center font-bold text-lg mb-10 tracking-wider">SCHOLARSHIP CATEGORY</div>
+          <div className="text-center font-bold text-lg mb-8 tracking-wider">SCHOLARSHIP CATEGORY</div>
 
-          <div className="font-bold mb-8">A. Internally-Funded</div>
+          <div className="font-bold mb-4">A. Internally-Funded</div>
           
-          <div className="font-bold mb-4 pl-4">Entrance</div>
-          <div className="flex gap-16 pl-12 mb-8 text-[15px]">
-            <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{isSelectedScholarship('Valedictorian') && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>Valedictorian</span></div>
-            <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{isSelectedScholarship('Salutatorian') && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>Salutatorian</span></div>
-          </div>
+          <div className="font-bold mb-2 pl-4 text-sm">Entrance</div>
+          <table className="w-full border-collapse pl-12 mb-6 text-[15px]" style={{ tableLayout: 'fixed' }}>
+            <colgroup><col style={{ width: '50%' }} /><col style={{ width: '50%' }} /></colgroup>
+            <tbody>
+              <tr>
+                <td className="py-1 align-middle">
+                  <div className="inline-flex items-center gap-2" style={{ display: 'inline-flex', alignItems: 'center', whiteSpace: 'nowrap' }}>
+                    <div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{isSelectedScholarship('Valedictorian') && <Check className="w-4 h-4" strokeWidth={3} />}</div>
+                    <span>Valedictorian</span>
+                  </div>
+                </td>
+                <td className="py-1 align-middle">
+                  <div className="inline-flex items-center gap-2" style={{ display: 'inline-flex', alignItems: 'center', whiteSpace: 'nowrap' }}>
+                    <div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{isSelectedScholarship('Salutatorian') && <Check className="w-4 h-4" strokeWidth={3} />}</div>
+                    <span>Salutatorian</span>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
 
-          <div className="font-bold mb-4 pl-4">Academic</div>
-          <div className="flex gap-12 pl-12 mb-8 text-[15px]">
-            <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{isSelectedScholarship('Full') && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>Full</span></div>
-            <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{isSelectedScholarship('Partial') && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>Partial</span></div>
-            <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{isSelectedScholarship('Regional (Academic)') && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>Regional</span></div>
-            <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{isSelectedScholarship('National (Academic)') && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>National</span></div>
-          </div>
+          <div className="font-bold mb-2 pl-4 text-sm">Academic</div>
+          <table className="w-full border-collapse pl-12 mb-6 text-[15px]" style={{ tableLayout: 'fixed' }}>
+            <colgroup><col style={{ width: '50%' }} /><col style={{ width: '50%' }} /></colgroup>
+            <tbody>
+              <tr>
+                <td className="py-1 align-middle">
+                  <div className="inline-flex items-center gap-2" style={{ display: 'inline-flex', alignItems: 'center', whiteSpace: 'nowrap' }}>
+                    <div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{isSelectedScholarship('Full') && <Check className="w-4 h-4" strokeWidth={3} />}</div>
+                    <span>Full</span>
+                  </div>
+                </td>
+                <td className="py-1 align-middle">
+                  <div className="inline-flex items-center gap-2" style={{ display: 'inline-flex', alignItems: 'center', whiteSpace: 'nowrap' }}>
+                    <div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{isSelectedScholarship('Partial') && <Check className="w-4 h-4" strokeWidth={3} />}</div>
+                    <span>Partial</span>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td className="py-1 align-middle">
+                  <div className="inline-flex items-center gap-2" style={{ display: 'inline-flex', alignItems: 'center', whiteSpace: 'nowrap' }}>
+                    <div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{isSelectedScholarship('Regional (Academic)') && <Check className="w-4 h-4" strokeWidth={3} />}</div>
+                    <span>Regional</span>
+                  </div>
+                </td>
+                <td className="py-1 align-middle">
+                  <div className="inline-flex items-center gap-2" style={{ display: 'inline-flex', alignItems: 'center', whiteSpace: 'nowrap' }}>
+                    <div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{isSelectedScholarship('National (Academic)') && <Check className="w-4 h-4" strokeWidth={3} />}</div>
+                    <span>National</span>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
 
-          <div className="font-bold mb-4 pl-4">Socio-cultural</div>
-          <div className="flex gap-12 pl-12 mb-8 text-[15px]">
-            <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{isSelectedScholarship('Regional (Socio-cultural)') && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>Regional</span></div>
-            <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{isSelectedScholarship('National (Socio-cultural)') && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>National</span></div>
-          </div>
+          <div className="font-bold mb-2 pl-4 text-sm">Socio-cultural</div>
+          <table className="w-full border-collapse pl-12 mb-6 text-[15px]" style={{ tableLayout: 'fixed' }}>
+            <colgroup><col style={{ width: '50%' }} /><col style={{ width: '50%' }} /></colgroup>
+            <tbody>
+              <tr>
+                <td className="py-1 align-middle">
+                  <div className="inline-flex items-center gap-2" style={{ display: 'inline-flex', alignItems: 'center', whiteSpace: 'nowrap' }}>
+                    <div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{isSelectedScholarship('Regional (Socio-cultural)') && <Check className="w-4 h-4" strokeWidth={3} />}</div>
+                    <span>Regional</span>
+                  </div>
+                </td>
+                <td className="py-1 align-middle">
+                  <div className="inline-flex items-center gap-2" style={{ display: 'inline-flex', alignItems: 'center', whiteSpace: 'nowrap' }}>
+                    <div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{isSelectedScholarship('National (Socio-cultural)') && <Check className="w-4 h-4" strokeWidth={3} />}</div>
+                    <span>National</span>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
 
-          <div className="font-bold mb-4 pl-4">Institutional</div>
-          <div className="grid grid-cols-2 gap-y-3 gap-x-4 pl-12 mb-12 text-[15px]">
-            <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{isSelectedScholarship('Dependent of Faculty or Staff') && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>Dependent of Faculty or Staff</span></div>
-            <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{isSelectedScholarship('President – SSC') && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>President – SSC</span></div>
-            <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{isSelectedScholarship('President – FLP') && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>President – FLP</span></div>
-            <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{isSelectedScholarship('Editor-in-Chief (Campus Publication)') && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>Editor-in-Chief (Campus Publication)</span></div>
-            <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{isSelectedScholarship('CapSU Band / Chorale') && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>CapSU Band / Chorale</span></div>
-          </div>
+          <div className="font-bold mb-2 pl-4 text-sm">Institutional</div>
+          <table className="w-full border-collapse pl-12 mb-6 text-[15px]" style={{ tableLayout: 'fixed' }}>
+            <colgroup><col style={{ width: '50%' }} /><col style={{ width: '50%' }} /></colgroup>
+            <tbody>
+              <tr>
+                <td className="py-1 align-middle">
+                  <div className="inline-flex items-center gap-2" style={{ display: 'inline-flex', alignItems: 'center', whiteSpace: 'nowrap' }}>
+                    <div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{isSelectedScholarship('Dependent of Faculty or Staff') && <Check className="w-4 h-4" strokeWidth={3} />}</div>
+                    <span>Dependent of Faculty or Staff</span>
+                  </div>
+                </td>
+                <td className="py-1 align-middle">
+                  <div className="inline-flex items-center gap-2" style={{ display: 'inline-flex', alignItems: 'center', whiteSpace: 'nowrap' }}>
+                    <div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{isSelectedScholarship('President – SSC') && <Check className="w-4 h-4" strokeWidth={3} />}</div>
+                    <span>President – SSC</span>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td className="py-1 align-middle">
+                  <div className="inline-flex items-center gap-2" style={{ display: 'inline-flex', alignItems: 'center', whiteSpace: 'nowrap' }}>
+                    <div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{isSelectedScholarship('President – FLP') && <Check className="w-4 h-4" strokeWidth={3} />}</div>
+                    <span>President – FLP</span>
+                  </div>
+                </td>
+                <td className="py-1 align-middle">
+                  <div className="inline-flex items-center gap-2" style={{ display: 'inline-flex', alignItems: 'center', whiteSpace: 'nowrap' }}>
+                    <div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{isSelectedScholarship('Editor-in-Chief (Campus Publication)') && <Check className="w-4 h-4" strokeWidth={3} />}</div>
+                    <span>Editor-in-Chief (Campus Publication)</span>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td className="py-1 align-middle" colSpan={2}>
+                  <div className="inline-flex items-center gap-2" style={{ display: 'inline-flex', alignItems: 'center', whiteSpace: 'nowrap' }}>
+                    <div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{isSelectedScholarship('CapSU Band / Chorale') && <Check className="w-4 h-4" strokeWidth={3} />}</div>
+                    <span>CapSU Band / Chorale</span>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
           
-          <div className="flex items-end gap-2 pl-12 text-[15px]">
+          <div className="flex items-end gap-2 pl-12 text-[15px] mt-4">
             <div className="w-5 h-5 border border-black flex items-center justify-center mb-1 shrink-0">{isSelectedScholarship('Others') && <Check className="w-4 h-4" strokeWidth={3} />}</div>
             <span className="mb-1 shrink-0">Others (specify)</span>
             <span className="flex-1 border-b border-black inline-block text-center pb-1">{isSelectedScholarship('Others') ? formData.internalCategoryOthers : ''}</span>
@@ -1024,34 +1136,72 @@ export function StudentRecordModal({
 
         {/* PAGE 5 */}
         <div className="print-page w-[793px] h-[1122px] mx-auto pt-16 break-after-page font-serif text-black pl-8 pr-4">
-          <div className="font-bold mb-8">B. Externally-Funded</div>
+          <div className="font-bold mb-6">B. Externally-Funded</div>
           
-          <div className="font-bold mb-4">CHED</div>
-          <div className="space-y-2 pl-4 mb-8 text-[15px]">
-            <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{isSelectedScholarship('ANAC – IP') && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>ANAC – IP</span></div>
-            <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{isSelectedScholarship('Pag – ulikid') && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>Pag – ulikid</span></div>
+          <div className="font-bold mb-2 text-sm">CHED</div>
+          <div className="space-y-1.5 pl-4 mb-6 text-[15px]">
+            <div className="inline-flex items-center gap-2" style={{ display: 'inline-flex', alignItems: 'center', whiteSpace: 'nowrap' }}><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{isSelectedScholarship('ANAC – IP') && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>ANAC – IP</span></div>
+            <div className="inline-flex items-center gap-2 ml-8" style={{ display: 'inline-flex', alignItems: 'center', whiteSpace: 'nowrap' }}><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{isSelectedScholarship('Pag – ulikid') && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>Pag – ulikid</span></div>
             <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{isSelectedScholarship('Barangay') && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>Barangay (Legal dependents of Brgy. Officials)</span></div>
-            <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{isSelectedScholarship('ESGP – PA') && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>ESGP – PA</span></div>
-            <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{isSelectedScholarship('Tertiary Education Subsidy (TES)') && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>Tertiary Education Subsidy (TES)</span></div>
-            <div className="flex items-end gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center mb-1 shrink-0">{isSelectedScholarship('Congressional District') && <Check className="w-4 h-4" strokeWidth={3} />}</div><span className="mb-1">Congressional District (specify)</span><span className="flex-1 border-b border-black inline-block text-center pb-1">{isSelectedScholarship('Congressional District') ? formData.chedCongressionalDistrict : ''}</span></div>
-            <div className="flex items-end gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center mb-1 shrink-0">{isSelectedScholarship('One Town One Scholar') && <Check className="w-4 h-4" strokeWidth={3} />}</div><span className="mb-1">One Town One Scholar (specify)</span><span className="flex-1 border-b border-black inline-block text-center pb-1">{isSelectedScholarship('One Town One Scholar') ? formData.chedOneTown : ''}</span></div>
-            <div className="flex items-end gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center mb-1 shrink-0">{isSelectedScholarship('Tulong Dunong') && <Check className="w-4 h-4" strokeWidth={3} />}</div><span className="mb-1">Tulong Dunong (specify)</span><span className="flex-1 border-b border-black inline-block text-center pb-1">{isSelectedScholarship('Tulong Dunong') ? formData.chedTulongDunong : ''}</span></div>
-            <div className="flex items-end gap-2 mt-4"><div className="w-5 h-5 border border-black flex items-center justify-center mb-1 shrink-0">{isSelectedScholarship('CHED Others') && <Check className="w-4 h-4" strokeWidth={3} />}</div><span className="mb-1">Others (specify)</span><span className="flex-1 border-b border-black inline-block text-center pb-1">{isSelectedScholarship('CHED Others') ? formData.chedOthers : ''}</span></div>
+            <div className="inline-flex items-center gap-2" style={{ display: 'inline-flex', alignItems: 'center', whiteSpace: 'nowrap' }}><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{isSelectedScholarship('ESGP – PA') && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>ESGP – PA</span></div>
+            <div className="inline-flex items-center gap-2 ml-8" style={{ display: 'inline-flex', alignItems: 'center', whiteSpace: 'nowrap' }}><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{isSelectedScholarship('Tertiary Education Subsidy (TES)') && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>Tertiary Education Subsidy (TES)</span></div>
+            <div className="flex items-end gap-2 pt-1"><div className="w-5 h-5 border border-black flex items-center justify-center mb-1 shrink-0">{isSelectedScholarship('Congressional District') && <Check className="w-4 h-4" strokeWidth={3} />}</div><span className="mb-1">Congressional District (specify)</span><span className="flex-1 border-b border-black inline-block text-center pb-1">{isSelectedScholarship('Congressional District') ? formData.chedCongressionalDistrict : ''}</span></div>
+            <div className="flex items-end gap-2 pt-1"><div className="w-5 h-5 border border-black flex items-center justify-center mb-1 shrink-0">{isSelectedScholarship('One Town One Scholar') && <Check className="w-4 h-4" strokeWidth={3} />}</div><span className="mb-1">One Town One Scholar (specify)</span><span className="flex-1 border-b border-black inline-block text-center pb-1">{isSelectedScholarship('One Town One Scholar') ? formData.chedOneTown : ''}</span></div>
+            <div className="flex items-end gap-2 pt-1"><div className="w-5 h-5 border border-black flex items-center justify-center mb-1 shrink-0">{isSelectedScholarship('Tulong Dunong') && <Check className="w-4 h-4" strokeWidth={3} />}</div><span className="mb-1">Tulong Dunong (specify)</span><span className="flex-1 border-b border-black inline-block text-center pb-1">{isSelectedScholarship('Tulong Dunong') ? formData.chedTulongDunong : ''}</span></div>
+            <div className="flex items-end gap-2 pt-2"><div className="w-5 h-5 border border-black flex items-center justify-center mb-1 shrink-0">{isSelectedScholarship('CHED Others') && <Check className="w-4 h-4" strokeWidth={3} />}</div><span className="mb-1">Others (specify)</span><span className="flex-1 border-b border-black inline-block text-center pb-1">{isSelectedScholarship('CHED Others') ? formData.chedOthers : ''}</span></div>
           </div>
 
-          <div className="font-bold mb-4">Merit</div>
-          <div className="grid grid-cols-2 gap-y-2 gap-x-4 pl-12 mb-10 text-[15px]">
-            <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{isSelectedScholarship('VIC') && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>VIC</span></div>
-            <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{isSelectedScholarship('Capizeño Circle') && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>Capizeño Circle</span></div>
-            <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{isSelectedScholarship('DOST') && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>DOST</span></div>
-            <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{isSelectedScholarship('GRF') && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>GRF</span></div>
-            <div className="flex items-center gap-2"><div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{isSelectedScholarship('CHED') && <Check className="w-4 h-4" strokeWidth={3} />}</div><span>CHED</span></div>
-            <div className="flex items-end gap-2 col-span-2 mt-2">
-              <div className="w-5 h-5 border border-black flex items-center justify-center mb-1 shrink-0">{(isSelectedScholarship('Others') || isSelectedScholarship('CHED and Others')) && <Check className="w-4 h-4" strokeWidth={3} />}</div>
-              <span className="mb-1">Others (specify)</span>
-              <span className="flex-1 border-b border-black inline-block text-center pb-1">{(isSelectedScholarship('Others') || isSelectedScholarship('CHED and Others')) ? formData.meritChedAndOthers : ''}</span>
-            </div>
-          </div>
+          <div className="font-bold mb-2 text-sm">Merit</div>
+          <table className="w-full border-collapse pl-12 mb-6 text-[15px]" style={{ tableLayout: 'fixed' }}>
+            <colgroup><col style={{ width: '50%' }} /><col style={{ width: '50%' }} /></colgroup>
+            <tbody>
+              <tr>
+                <td className="py-1 align-middle">
+                  <div className="inline-flex items-center gap-2" style={{ display: 'inline-flex', alignItems: 'center', whiteSpace: 'nowrap' }}>
+                    <div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{isSelectedScholarship('VIC') && <Check className="w-4 h-4" strokeWidth={3} />}</div>
+                    <span>VIC</span>
+                  </div>
+                </td>
+                <td className="py-1 align-middle">
+                  <div className="inline-flex items-center gap-2" style={{ display: 'inline-flex', alignItems: 'center', whiteSpace: 'nowrap' }}>
+                    <div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{isSelectedScholarship('Capizeño Circle') && <Check className="w-4 h-4" strokeWidth={3} />}</div>
+                    <span>Capizeño Circle</span>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td className="py-1 align-middle">
+                  <div className="inline-flex items-center gap-2" style={{ display: 'inline-flex', alignItems: 'center', whiteSpace: 'nowrap' }}>
+                    <div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{isSelectedScholarship('DOST') && <Check className="w-4 h-4" strokeWidth={3} />}</div>
+                    <span>DOST</span>
+                  </div>
+                </td>
+                <td className="py-1 align-middle">
+                  <div className="inline-flex items-center gap-2" style={{ display: 'inline-flex', alignItems: 'center', whiteSpace: 'nowrap' }}>
+                    <div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{isSelectedScholarship('GRF') && <Check className="w-4 h-4" strokeWidth={3} />}</div>
+                    <span>GRF</span>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td className="py-1 align-middle" colSpan={2}>
+                  <div className="inline-flex items-center gap-2" style={{ display: 'inline-flex', alignItems: 'center', whiteSpace: 'nowrap' }}>
+                    <div className="w-5 h-5 border border-black flex items-center justify-center shrink-0">{isSelectedScholarship('CHED') && <Check className="w-4 h-4" strokeWidth={3} />}</div>
+                    <span>CHED</span>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td className="py-2 align-middle" colSpan={2}>
+                  <div className="flex items-end gap-2 w-full">
+                    <div className="w-5 h-5 border border-black flex items-center justify-center mb-1 shrink-0">{(isSelectedScholarship('Others') || isSelectedScholarship('CHED and Others')) && <Check className="w-4 h-4" strokeWidth={3} />}</div>
+                    <span className="mb-1 shrink-0">Others (specify)</span>
+                    <span className="flex-1 border-b border-black inline-block text-center pb-1">{(isSelectedScholarship('Others') || isSelectedScholarship('CHED and Others')) ? formData.meritChedAndOthers : ''}</span>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
 
           <div className="flex gap-2 mb-10 text-[15px]">
             <div className="w-5 h-5 border border-black flex items-center justify-center shrink-0 mt-1">{isSelectedScholarship('LGU') && <Check className="w-4 h-4" strokeWidth={3} />}</div>
