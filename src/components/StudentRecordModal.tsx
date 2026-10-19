@@ -207,11 +207,53 @@ export function StudentRecordModal({
           windowWidth: 1200,
         });
 
-        const imgData = canvas.toDataURL('image/jpeg', 0.96);
+        // Crop blank padding so content fills the A4 page with a small margin
+        let source: HTMLCanvasElement = canvas;
+        try {
+          const ctx = canvas.getContext('2d');
+          if (ctx) {
+            const { width, height } = canvas;
+            const data = ctx.getImageData(0, 0, width, height).data;
+            let minX = width, minY = height, maxX = -1, maxY = -1;
+            for (let y = 0; y < height; y++) {
+              for (let x = 0; x < width; x++) {
+                const idx = (y * width + x) * 4;
+                if (data[idx + 3] > 0 && (data[idx] < 245 || data[idx + 1] < 245 || data[idx + 2] < 245)) {
+                  if (x < minX) minX = x;
+                  if (x > maxX) maxX = x;
+                  if (y < minY) minY = y;
+                  if (y > maxY) maxY = y;
+                }
+              }
+            }
+            if (maxX > minX && maxY > minY) {
+              const cropped = document.createElement('canvas');
+              cropped.width = maxX - minX + 1;
+              cropped.height = maxY - minY + 1;
+              const cctx = cropped.getContext('2d');
+              if (cctx) {
+                cctx.fillStyle = '#ffffff';
+                cctx.fillRect(0, 0, cropped.width, cropped.height);
+                cctx.drawImage(canvas, minX, minY, cropped.width, cropped.height, 0, 0, cropped.width, cropped.height);
+                source = cropped;
+              }
+            }
+          }
+        } catch (e) {
+          console.warn('Could not crop page whitespace:', e);
+        }
+
+        const imgData = source.toDataURL('image/jpeg', 0.96);
         if (i > 0) {
           pdf.addPage('a4', 'portrait');
         }
-        pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight, undefined, 'FAST');
+        const marginMm = 8;
+        const maxW = pdfWidth - marginMm * 2;
+        const maxH = pdfHeight - marginMm * 2;
+        const ratio = Math.min(maxW / source.width, maxH / source.height);
+        const drawW = source.width * ratio;
+        const drawH = source.height * ratio;
+        pdf.addImage(imgData, 'JPEG', (pdfWidth - drawW) / 2, marginMm, drawW, drawH, undefined, 'FAST');
       }
 
       setExportProgress('Saving PDF...');
