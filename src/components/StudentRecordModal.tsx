@@ -13,7 +13,7 @@ import { DocumentPreviewModal } from './DocumentPreviewModal';
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 import { jsPDF } from 'jspdf';
-import html2canvas from 'html2canvas';
+import html2canvas from 'html2canvas-pro';
 
 interface StudentRecordModalProps {
   submission: Submission | any;
@@ -205,27 +205,6 @@ export function StudentRecordModal({
           scrollX: 0,
           scrollY: 0,
           windowWidth: 1200,
-          onclone: (clonedDoc) => {
-            try {
-              for (let i = 0; i < clonedDoc.styleSheets.length; i++) {
-                try {
-                  const sheet = clonedDoc.styleSheets[i];
-                  const rules = sheet.cssRules || sheet.rules;
-                  if (rules) {
-                    for (let j = rules.length - 1; j >= 0; j--) {
-                      if (rules[j].cssText && rules[j].cssText.includes('oklch')) {
-                        sheet.deleteRule(j);
-                      }
-                    }
-                  }
-                } catch (e) {
-                  // Ignore cross-origin or security restrictions
-                }
-              }
-            } catch (e) {
-              console.warn("Could not sanitize oklch in stylesheets:", e);
-            }
-          }
         });
 
         const imgData = canvas.toDataURL('image/jpeg', 0.96);
