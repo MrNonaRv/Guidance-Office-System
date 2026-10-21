@@ -36,12 +36,6 @@ export function GuidanceReports() {
   const [selectedSubType, setSelectedSubType] = useState<string>('Sub Type');
   const [selectedAllocation, setSelectedAllocation] = useState<string>('Scholarship Allocation');
   const [searchQuery, setSearchQuery] = useState<string>('');
-  const [appliedFilters, setAppliedFilters] = useState({
-    category: 'Category',
-    subType: 'Sub Type',
-    allocation: 'Scholarship Allocation',
-    search: ''
-  });
 
   const [scholarshipHierarchy, setScholarshipHierarchy] = useState<Record<string, Record<string, string[]>>>(() => getDynamicScholarshipHierarchy());
 
@@ -178,22 +172,16 @@ export function GuidanceReports() {
     setSelectedSubType('Sub Type');
     setSelectedAllocation('Scholarship Allocation');
     setSearchQuery('');
-    setAppliedFilters({
-      category: 'Category',
-      subType: 'Sub Type',
-      allocation: 'Scholarship Allocation',
-      search: ''
-    });
   };
 
   const filteredBreakdown = allBreakdownData.filter(item => {
-    const matchCategory = appliedFilters.category === 'Category' || item.category === appliedFilters.category;
-    const matchSubType = appliedFilters.subType === 'Sub Type' || item.subType === appliedFilters.subType;
-    const matchAllocation = appliedFilters.allocation === 'Scholarship Allocation' || item.allocation === appliedFilters.allocation;
-    const matchSearch = !appliedFilters.search || 
-      item.student.toLowerCase().includes(appliedFilters.search.toLowerCase()) ||
-      item.course.toLowerCase().includes(appliedFilters.search.toLowerCase()) ||
-      item.allocation.toLowerCase().includes(appliedFilters.search.toLowerCase());
+    const matchCategory = selectedCategory === 'Category' || item.category === selectedCategory;
+    const matchSubType = selectedSubType === 'Sub Type' || item.subType === selectedSubType;
+    const matchAllocation = selectedAllocation === 'Scholarship Allocation' || item.allocation === selectedAllocation;
+    const matchSearch = !searchQuery || 
+      item.student.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.course.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.allocation.toLowerCase().includes(searchQuery.toLowerCase());
     return matchCategory && matchSubType && matchAllocation && matchSearch;
   }).sort((a, b) => a.student.localeCompare(b.student));
 
@@ -665,10 +653,7 @@ export function GuidanceReports() {
                     </div>
                   </div>
                   
-                  <div className="flex items-center gap-2">
-                    <button onClick={() => setAppliedFilters({ category: selectedCategory, subType: selectedSubType, allocation: selectedAllocation, search: searchQuery })} className="bg-[#2861c8] hover:bg-[#1f4ea3] text-white px-5 py-2.5 rounded-xl font-bold text-sm shadow-md transition-all cursor-pointer">
-                      Apply
-                    </button>
+                  <div>
                     <button onClick={handleResetFilters} className="bg-white border border-gray-300 text-gray-700 px-5 py-2.5 rounded-xl font-bold text-sm shadow-xs hover:bg-gray-50 flex items-center gap-2">
                       <RotateCcw className="w-4 h-4" /> Clear
                     </button>
@@ -720,15 +705,7 @@ export function GuidanceReports() {
               </div>
             </div>
 
-            {/* Bottom Action (Back Button on bottom-left) */}
-            <div className="flex justify-start pt-2">
-              <button
-                onClick={() => setCurrentPage(1)}
-                className="bg-[#2861c8] hover:bg-[#1f4ea3] text-white px-10 py-2.5 rounded-xl font-bold text-sm shadow-md transition-all hover:scale-[1.02] cursor-pointer"
-              >
-                Back
-              </button>
-            </div>
+
           </div>
         )}
       </div>
