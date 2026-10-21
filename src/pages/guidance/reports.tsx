@@ -24,6 +24,7 @@ import {
   scholarshipDataMapping, 
   initialBreakdownData 
 } from './reportsData';
+import { getDynamicScholarshipHierarchy } from '../../lib/scholarshipCategories';
 
 export function GuidanceReports() {
   const [selectedCourse, setSelectedCourse] = useState<string>('All courses');
@@ -42,19 +43,15 @@ export function GuidanceReports() {
     search: ''
   });
 
-  const scholarshipHierarchy: Record<string, Record<string, string[]>> = {
-    'Internally-Funded': {
-      'Entrance': ['Valedictorian', 'Salutatorian'],
-      'Academic': ['Full', 'Partial', 'Regional', 'National'],
-      'Socio-cultural': ['Regional', 'National'],
-      'Institutional': ['Dependent of Faculty or Staff', 'President – SSC', 'President – FLP', 'Editor-in-Chief (Campus Publication)', 'CapSU Band / Chorale']
-    },
-    'Externally-Funded': {
-      'CHED': ['Congressional District', 'One Town One Scholar', 'Tulong Dunong', 'ANAC – IP', 'Pag – ulikid', 'Barangay (Legal dependents of Brgy. Officials)', 'ESGP – PA', 'Tertiary Education Subsidy / TES'],
-      'Merit': ['VIC', 'Capizeño Circle', 'DOST', 'GRF', 'LGU: Barangay'],
-      'DSWD': ['DSWD']
-    }
-  };
+  const [scholarshipHierarchy, setScholarshipHierarchy] = useState<Record<string, Record<string, string[]>>>(() => getDynamicScholarshipHierarchy());
+
+  useEffect(() => {
+    const handleUpdate = () => {
+      setScholarshipHierarchy(getDynamicScholarshipHierarchy());
+    };
+    window.addEventListener('scholarship_categories_updated', handleUpdate);
+    return () => window.removeEventListener('scholarship_categories_updated', handleUpdate);
+  }, []);
 
   const availableSubTypes = selectedCategory in scholarshipHierarchy 
     ? Object.keys(scholarshipHierarchy[selectedCategory]) 
@@ -192,9 +189,7 @@ export function GuidanceReports() {
   const filteredBreakdown = allBreakdownData.filter(item => {
     const matchCategory = appliedFilters.category === 'Category' || item.category === appliedFilters.category;
     const matchSubType = appliedFilters.subType === 'Sub Type' || item.subType === appliedFilters.subType;
-    const matchAllocation = appliedFilters.allocation === 'Scholarship Allocation' || 
-      item.allocation.toLowerCase().includes(appliedFilters.allocation.toLowerCase()) || 
-      appliedFilters.allocation.toLowerCase().includes(item.allocation.toLowerCase());
+    const matchAllocation = appliedFilters.allocation === 'Scholarship Allocation' || item.allocation === appliedFilters.allocation;
     const matchSearch = !appliedFilters.search || 
       item.student.toLowerCase().includes(appliedFilters.search.toLowerCase()) ||
       item.course.toLowerCase().includes(appliedFilters.search.toLowerCase()) ||
@@ -670,9 +665,14 @@ export function GuidanceReports() {
                     </div>
                   </div>
                   
-                  <button onClick={handleResetFilters} className="bg-white border border-gray-300 text-gray-700 px-5 py-2.5 rounded-xl font-bold text-sm shadow-xs hover:bg-gray-50 flex items-center gap-2">
-                    <RotateCcw className="w-4 h-4" /> Clear
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button onClick={() => setAppliedFilters({ category: selectedCategory, subType: selectedSubType, allocation: selectedAllocation, search: searchQuery })} className="bg-[#2861c8] hover:bg-[#1f4ea3] text-white px-5 py-2.5 rounded-xl font-bold text-sm shadow-md transition-all cursor-pointer">
+                      Apply
+                    </button>
+                    <button onClick={handleResetFilters} className="bg-white border border-gray-300 text-gray-700 px-5 py-2.5 rounded-xl font-bold text-sm shadow-xs hover:bg-gray-50 flex items-center gap-2">
+                      <RotateCcw className="w-4 h-4" /> Clear
+                    </button>
+                  </div>
                 </div>
             </div>
 

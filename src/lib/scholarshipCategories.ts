@@ -1,3 +1,159 @@
+export interface ScholarshipAllocationItem {
+  id: string;
+  name: string;
+  description?: string;
+}
+
+export interface ScholarshipSubtypeItem {
+  id: string;
+  name: string;
+  allocations: ScholarshipAllocationItem[];
+}
+
+export interface ScholarshipCategoryItem {
+  id: string;
+  name: string;
+  subtypes: ScholarshipSubtypeItem[];
+}
+
+export const INITIAL_SCHOLARSHIP_CATEGORIES: ScholarshipCategoryItem[] = [
+  {
+    id: 'internally-funded',
+    name: 'Internally-Funded',
+    subtypes: [
+      {
+        id: 'entrance',
+        name: 'Entrance',
+        allocations: [
+          { id: 'valedictorian', name: 'Valedictorian' },
+          { id: 'salutatorian', name: 'Salutatorian' }
+        ]
+      },
+      {
+        id: 'academic',
+        name: 'Academic',
+        allocations: [
+          { id: 'full', name: 'Full (1.00 - 1.25)' },
+          { id: 'partial', name: 'Partial (1.26 - 1.45)' },
+          { id: 'regional-acad', name: 'Regional' },
+          { id: 'national-acad', name: 'National' }
+        ]
+      },
+      {
+        id: 'socio-cultural',
+        name: 'Socio-cultural',
+        allocations: [
+          { id: 'sc-regional', name: 'Regional' },
+          { id: 'sc-national', name: 'National' }
+        ]
+      },
+      {
+        id: 'institutional',
+        name: 'Institutional',
+        allocations: [
+          { id: 'dep-faculty', name: 'Dependent of Faculty or Staff' },
+          { id: 'pres-ssc', name: 'President – SSC' },
+          { id: 'pres-flp', name: 'President – FLP' },
+          { id: 'editor-in-chief', name: 'Editor-in-Chief' },
+          { id: 'capsu-band', name: 'CAPSU Band / Chorale' },
+          { id: 'others', name: 'Others' }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'externally-funded',
+    name: 'Externally-Funded',
+    subtypes: [
+      {
+        id: 'ched',
+        name: 'CHED',
+        allocations: [
+          { id: 'tes', name: 'Tertiary Education Subsidy (TES)' },
+          { id: 'pag-ulikid', name: 'Pag-ulikid' },
+          { id: 'tulong-dunong', name: 'Tulong Dunong' },
+          { id: 'anac-ip', name: 'ANAC - IP' },
+          { id: 'brgy-officials', name: 'Barangay (Legal dependents of Brgy. Officials)' },
+          { id: 'esgp-pa', name: 'ESGP - PA' },
+          { id: 'congressional-district', name: 'Congressional District' },
+          { id: 'one-town', name: 'One Town One Scholar' },
+          { id: 'ched-others', name: 'Others' }
+        ]
+      },
+      {
+        id: 'merit',
+        name: 'Merit',
+        allocations: [
+          { id: 'dost', name: 'DOST' },
+          { id: 'vic', name: 'VIC' },
+          { id: 'capizeno-circle', name: 'Capizeño Circle' },
+          { id: 'grf', name: 'GRF' },
+          { id: 'ched', name: 'CHED' },
+          { id: 'merit-others', name: 'Others' }
+        ]
+      },
+      {
+        id: 'lgu',
+        name: 'LGU',
+        allocations: [
+          { id: 'lgu-grant', name: 'LGU: Barangay, Municipality, Province' }
+        ]
+      },
+      {
+        id: 'dswd',
+        name: 'DSWD',
+        allocations: [
+          { id: 'dswd-grant', name: 'DSWD Educational Assistance' }
+        ]
+      }
+    ]
+  }
+];
+
+export function getStoredScholarshipCategories(): ScholarshipCategoryItem[] {
+  if (typeof window === 'undefined') return INITIAL_SCHOLARSHIP_CATEGORIES;
+  try {
+    const saved = localStorage.getItem('capsu_scholarship_categories');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return parsed;
+      }
+    }
+  } catch (e) {
+    console.error(e);
+  }
+  return INITIAL_SCHOLARSHIP_CATEGORIES;
+}
+
+export function saveStoredScholarshipCategories(categories: ScholarshipCategoryItem[]): void {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.setItem('capsu_scholarship_categories', JSON.stringify(categories));
+    window.dispatchEvent(new Event('scholarship_categories_updated'));
+  } catch (e) {
+    console.error(e);
+  }
+}
+
+/**
+ * Returns dynamic scholarship hierarchy Record<categoryName, Record<subtypeName, allocationNames[]>>
+ * synchronized with centralized storage.
+ */
+export function getDynamicScholarshipHierarchy(): Record<string, Record<string, string[]>> {
+  const categories = getStoredScholarshipCategories();
+  const hierarchy: Record<string, Record<string, string[]>> = {};
+
+  categories.forEach(cat => {
+    hierarchy[cat.name] = {};
+    (cat.subtypes || []).forEach(sub => {
+      hierarchy[cat.name][sub.name] = (sub.allocations || []).map(a => a.name);
+    });
+  });
+
+  return hierarchy;
+}
+
 export interface ScholarshipOption {
   id: string;
   name: string;
@@ -17,100 +173,30 @@ export interface ScholarshipStructure {
   External: ScholarshipSubCategoryGroup[];
 }
 
-export const SCHOLARSHIP_STRUCTURE: ScholarshipStructure = {
-  Internal: [
-    {
-      subCategory: 'Entrance',
-      title: 'Entrance',
-      description: 'Awarded to honor graduates upon entry.',
-      options: [
-        { id: 'Valedictorian', name: 'Valedictorian', label: 'Valedictorian' },
-        { id: 'Salutatorian', name: 'Salutatorian', label: 'Salutatorian' }
-      ]
-    },
-    {
-      subCategory: 'Academic',
-      title: 'Academic',
-      description: 'Awarded based on academic standing and GWA.',
-      options: [
-        { id: 'Full', name: 'Full', label: 'Full' },
-        { id: 'Partial', name: 'Partial', label: 'Partial' },
-        { id: 'Regional', name: 'Regional', label: 'Regional' },
-        { id: 'National', name: 'National', label: 'National' }
-      ]
-    },
-    {
-      subCategory: 'Socio-cultural',
-      title: 'Socio-cultural',
-      description: 'For socio-cultural, artistic, and athletic regional/national achievers.',
-      options: [
-        { id: 'SC-Regional', name: 'SC-Regional', label: 'Regional' },
-        { id: 'SC-National', name: 'SC-National', label: 'National' },
-        { id: 'Regional', name: 'Regional', label: 'Regional' }
-      ]
-    },
-    {
-      subCategory: 'Institutional',
-      title: 'Institutional',
-      description: 'University student leadership, publication, band, chorale, and staff grants.',
-      options: [
-        { id: 'Dependent of Faculty', name: 'Dependent of Faculty', label: 'Dependent of Faculty or Staff' },
-        { id: 'President - SSC', name: 'President - SSC', label: 'President – SSC' },
-        { id: 'President - FLP', name: 'President - FLP', label: 'President – FLP' },
-        { id: 'Editor-in-Chief', name: 'Editor-in-Chief', label: 'Editor-in-Chief (Campus Publication)' },
-        { id: 'CAPSU Band / Chorale', name: 'CAPSU Band / Chorale', label: 'CAPSU Band / Chorale' },
-        { id: 'Others', name: 'Others', label: 'Others (specify)', hasSpecifyField: 'internalCategoryOthers' }
-      ]
-    }
-  ],
-  External: [
-    {
-      subCategory: 'CHED',
-      title: 'CHED',
-      description: 'Commission on Higher Education and UniFAST national scholarship programs.',
-      options: [
-        { id: 'ANAC - IP', name: 'ANAC - IP', label: 'ANAC - IP' },
-        { id: 'Pag - ulikid', name: 'Pag - ulikid', label: 'Pag - ulikid' },
-        { id: 'Barangay (Legal dependents of Brgy. Officials)', name: 'Barangay (Legal dependents of Brgy. Officials)', label: 'Barangay (Legal dependents of Brgy. Officials)' },
-        { id: 'ESGP - PA', name: 'ESGP - PA', label: 'ESGP - PA' },
-        { id: 'Tertiary Education Subsidy (TES)', name: 'Tertiary Education Subsidy (TES)', label: 'Tertiary Education Subsidy (TES)' },
-        { id: 'Congressional District', name: 'Congressional District', label: 'Congressional District (specify)', hasSpecifyField: 'chedCongressionalDistrict' },
-        { id: 'One Town One Scholar', name: 'One Town One Scholar', label: 'One Town One Scholar (specify)', hasSpecifyField: 'chedOneTown' },
-        { id: 'Tulong Dunong', name: 'Tulong Dunong', label: 'Tulong Dunong (specify)', hasSpecifyField: 'chedTulongDunong' },
-        { id: 'Others', name: 'Others', label: 'Others (specify)', hasSpecifyField: 'chedOthers' }
-      ]
-    },
-    {
-      subCategory: 'Merit',
-      title: 'Merit',
-      description: 'Special merit and science foundations grants.',
-      options: [
-        { id: 'VIC', name: 'VIC', label: 'VIC' },
-        { id: 'Capizeño Circle', name: 'Capizeño Circle', label: 'Capizeño Circle' },
-        { id: 'DOST', name: 'DOST', label: 'DOST' },
-        { id: 'GRF', name: 'GRF', label: 'GRF' },
-        { id: 'CHED', name: 'CHED', label: 'CHED' },
-        { id: 'Others', name: 'Others', label: 'Others (specify)', hasSpecifyField: 'meritChedAndOthers' }
-      ]
-    },
-    {
-      subCategory: 'LGU',
-      title: 'LGU',
-      description: 'Local Government Unit educational grants (Barangay, Municipality, Province).',
-      options: [
-        { id: 'LGU', name: 'LGU', label: 'LGU: Barangay, Municipality, Province (Landline) Contact person or issuing office:', hasSpecifyField: 'lguContact' }
-      ]
-    },
-    {
-      subCategory: 'DSWD',
-      title: 'DSWD',
-      description: 'Department of Social Welfare and Development educational assistance.',
-      options: [
-        { id: 'DSWD', name: 'DSWD', label: 'DSWD: Educational Assistance', hasSpecifyField: 'dswdFields' }
-      ]
-    }
-  ]
-};
+export function getDynamicScholarshipStructure(): ScholarshipStructure {
+  const cats = getStoredScholarshipCategories();
+  const internalCat = cats.find(c => c.id === 'internally-funded' || c.name === 'Internally-Funded') || cats[0];
+  const externalCat = cats.find(c => c.id === 'externally-funded' || c.name === 'Externally-Funded') || cats[1];
+
+  const mapSubtypes = (subtypes: ScholarshipSubtypeItem[]): ScholarshipSubCategoryGroup[] => {
+    return (subtypes || []).map(sub => ({
+      subCategory: sub.name,
+      title: sub.name,
+      description: '',
+      options: (sub.allocations || []).map(alloc => ({
+        id: alloc.name,
+        name: alloc.name,
+        label: alloc.name,
+        hasSpecifyField: alloc.name.toLowerCase().includes('others') ? 'internalCategoryOthers' : undefined
+      }))
+    }));
+  };
+
+  return {
+    Internal: mapSubtypes(internalCat?.subtypes || []),
+    External: mapSubtypes(externalCat?.subtypes || [])
+  };
+}
 
 /**
  * Helper to find which subCategory and fundType an option belongs to
@@ -121,8 +207,9 @@ export function findScholarshipInfo(scholarshipIdOrName: string): {
   subCategory: string | null;
   option: ScholarshipOption | null;
 } {
+  const structure = getDynamicScholarshipStructure();
   for (const fundType of ['Internal', 'External'] as const) {
-    for (const group of SCHOLARSHIP_STRUCTURE[fundType]) {
+    for (const group of structure[fundType]) {
       const match = group.options.find(
         o => o.id === scholarshipIdOrName || o.name === scholarshipIdOrName || o.label === scholarshipIdOrName
       );

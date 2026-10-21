@@ -48,7 +48,7 @@ export function SubmissionReviewSummary({
 }: SubmissionReviewSummaryProps) {
   const isEditingExisting = isUpdate || !!existingId;
 
-  const fullName = `${formData.familyName ? formData.familyName + ',' : ''} ${formData.firstName || ''} ${formData.middleName || ''}`.trim() || 'Not specified';
+  const fullName = `${formData.familyName ? formData.familyName + ',' : ''} ${formData.firstName || ''} ${formData.middleName || ''} ${formData.suffix || ''}`.trim() || 'Not specified';
   
   const formattedScholarship = formatScholarshipAllocations(formData);
 

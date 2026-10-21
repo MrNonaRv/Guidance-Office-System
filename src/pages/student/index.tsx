@@ -16,7 +16,7 @@ import { capizMunicipalities } from '../../lib/capiz';
 import { signInWithGoogle, signInWithEmail, signUpWithEmail, logOut, auth, resetPassword } from '../../lib/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import { uploadFileToSupabase, uploadBase64ToSupabase, isSupabaseConfigured } from '../../lib/supabase';
-import { SCHOLARSHIP_STRUCTURE, formatScholarshipAllocations, findScholarshipInfo } from '../../lib/scholarshipCategories';
+import { getDynamicScholarshipStructure, formatScholarshipAllocations, findScholarshipInfo } from '../../lib/scholarshipCategories';
 
 export function StudentLogin() {
   const navigate = useNavigate();
@@ -1308,6 +1308,16 @@ export function StudentSubmissionForm() {
   } | null>(null);
   const [previewFile, setPreviewFile] = useState<any | null>(null);
 
+  const [scholarshipStructure, setScholarshipStructure] = useState(() => getDynamicScholarshipStructure());
+
+  useEffect(() => {
+    const handleUpdate = () => {
+      setScholarshipStructure(getDynamicScholarshipStructure());
+    };
+    window.addEventListener('scholarship_categories_updated', handleUpdate);
+    return () => window.removeEventListener('scholarship_categories_updated', handleUpdate);
+  }, []);
+
   const [formData, setFormData] = useState(() => {
     let initialUser: any = {};
     if (typeof window !== 'undefined') {
@@ -1321,6 +1331,7 @@ export function StudentSubmissionForm() {
       photo2x2: '', 
       familyName: initialUser.lastName || '', 
       middleName: '', 
+      suffix: '',
       firstName: initialUser.firstName || '', 
       birthdate: '', 
       age: '', 
@@ -2330,6 +2341,13 @@ export function StudentSubmissionForm() {
                     onChange={handleChange} 
                     placeholder="e.g. Santos"
                   />
+                  <InputGroup 
+                    label="Suffix" 
+                    name="suffix" 
+                    value={formData.suffix} 
+                    onChange={handleChange} 
+                    placeholder="e.g. Jr."
+                  />
                 </div>
                 {/* Row 1: Birthdate | Age */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
@@ -2740,7 +2758,7 @@ export function StudentSubmissionForm() {
             {/* SELECTION GROUPS */}
             {formData.scholarshipFundType && (
               <div className="space-y-6">
-                {(formData.scholarshipFundType === 'Internal' ? SCHOLARSHIP_STRUCTURE.Internal : SCHOLARSHIP_STRUCTURE.External).map(group => {
+                {(formData.scholarshipFundType === 'Internal' ? scholarshipStructure.Internal : scholarshipStructure.External).map(group => {
                   const isCurrentCategoryGroup = formData.scholarshipSubCategory === group.subCategory;
                   const groupSelections = isCurrentCategoryGroup ? (formData.selectedScholarships || []) : [];
                   const isGroupFull = groupSelections.length >= 2;

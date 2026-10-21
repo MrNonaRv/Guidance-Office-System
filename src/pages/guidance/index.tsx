@@ -10,6 +10,7 @@ import { testSupabaseConnection, isSupabaseConfigured, BUCKET_NAME } from '../..
 
 import { signInWithGoogle, signInWithEmail, signUpWithEmail, resetPassword } from '../../lib/firebase';
 import { requestGmailToken } from '../../lib/gmailService';
+import { saveStoredScholarshipCategories } from '../../lib/scholarshipCategories';
 
 export function GuidanceLogin() {
   const navigate = useNavigate();
@@ -1397,11 +1398,7 @@ export function GuidanceSettings() {
   // Persistence helper
   const saveCategoriesState = (newCategories: ScholarshipCategoryItem[]) => {
     setCategories(newCategories);
-    try {
-      localStorage.setItem('capsu_scholarship_categories', JSON.stringify(newCategories));
-    } catch (e) {
-      console.error(e);
-    }
+    saveStoredScholarshipCategories(newCategories);
   };
 
   // Active Category & Subtype
