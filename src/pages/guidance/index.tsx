@@ -1644,8 +1644,18 @@ export function GuidanceSettings() {
     const targetSubTypeName = isInternal ? 'Institutional' : 'CHED';
 
     if (editingScholarship) {
+      const oldName = editingScholarship.name;
       await db.scholarships.update(editingScholarship.id, scholarshipForm);
       setScholarships(scholarships.map(s => s.id === editingScholarship.id ? { ...s, ...scholarshipForm } : s));
+
+      const updatedCategories = categories.map(cat => ({
+        ...cat,
+        subtypes: (cat.subtypes || []).map(sub => ({
+          ...sub,
+          allocations: (sub.allocations || []).map(a => a.name === oldName ? { ...a, name: sName } : a)
+        }))
+      }));
+      saveCategoriesState(updatedCategories);
     } else {
       const newScholarship = await db.scholarships.create(scholarshipForm);
       setScholarships([...scholarships, newScholarship || { id: `sch-${Date.now()}`, ...scholarshipForm }]);
