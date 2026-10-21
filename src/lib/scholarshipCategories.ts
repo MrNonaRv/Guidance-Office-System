@@ -75,6 +75,7 @@ export const INITIAL_SCHOLARSHIP_CATEGORIES: ScholarshipCategoryItem[] = [
           { id: 'anac-ip', name: 'ANAC - IP' },
           { id: 'brgy-officials', name: 'Barangay (Legal dependents of Brgy. Officials)' },
           { id: 'esgp-pa', name: 'ESGP - PA' },
+          { id: 'unifast', name: 'UniFast' },
           { id: 'congressional-district', name: 'Congressional District' },
           { id: 'one-town', name: 'One Town One Scholar' },
           { id: 'ched-others', name: 'Others' }

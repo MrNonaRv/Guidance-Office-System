@@ -1638,12 +1638,39 @@ export function GuidanceSettings() {
       alert("Please enter a scholarship name.");
       return;
     }
+    const sName = scholarshipForm.name.trim();
+    const isInternal = (scholarshipForm.fundingType || '').toLowerCase().includes('internal');
+    const targetCatName = isInternal ? 'Internally-Funded' : 'Externally-Funded';
+    const targetSubTypeName = isInternal ? 'Institutional' : 'CHED';
+
     if (editingScholarship) {
       await db.scholarships.update(editingScholarship.id, scholarshipForm);
       setScholarships(scholarships.map(s => s.id === editingScholarship.id ? { ...s, ...scholarshipForm } : s));
     } else {
       const newScholarship = await db.scholarships.create(scholarshipForm);
       setScholarships([...scholarships, newScholarship || { id: `sch-${Date.now()}`, ...scholarshipForm }]);
+
+      // Also add to capsu_scholarship_categories hierarchy so it appears in student form & reports!
+      const updatedCategories = categories.map(cat => {
+        if (cat.name === targetCatName) {
+          return {
+            ...cat,
+            subtypes: cat.subtypes.map(sub => {
+              if (sub.name === targetSubTypeName || (sub.allocations && sub.allocations.length === 0)) {
+                const exists = sub.allocations.some(a => a.name === sName);
+                if (exists) return sub;
+                return {
+                  ...sub,
+                  allocations: [...sub.allocations, { id: `alloc-${Date.now()}`, name: sName }]
+                };
+              }
+              return sub;
+            })
+          };
+        }
+        return cat;
+      });
+      saveCategoriesState(updatedCategories);
     }
     setShowScholarshipModal(false);
   };
@@ -1660,9 +1687,21 @@ export function GuidanceSettings() {
   };
 
   const handleDeleteScholarship = async (id: string) => {
+    const sToDelete = scholarships.find(s => s.id === id);
     if (confirm("Are you sure you want to delete this scholarship?")) {
       await db.scholarships.delete(id);
       setScholarships(scholarships.filter(s => s.id !== id));
+
+      if (sToDelete && sToDelete.name) {
+        const updatedCategories = categories.map(cat => ({
+          ...cat,
+          subtypes: (cat.subtypes || []).map(sub => ({
+            ...sub,
+            allocations: (sub.allocations || []).filter(a => a.name !== sToDelete.name)
+          }))
+        }));
+        saveCategoriesState(updatedCategories);
+      }
     }
   };
 
