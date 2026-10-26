@@ -2315,7 +2315,7 @@ export function StudentSubmissionForm() {
                 </label>
               </div>
               <div className="flex-1 w-full space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 sm:gap-4">
                   <InputGroup 
                     label="Last Name" 
                     name="familyName" 

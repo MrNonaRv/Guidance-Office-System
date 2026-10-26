@@ -10,13 +10,16 @@ import {
   createUserWithEmailAndPassword,
   sendPasswordResetEmail,
   updateProfile,
-  User as FirebaseUser
+  User as FirebaseUser,
+  setPersistence,
+  inMemoryPersistence
 } from 'firebase/auth';
 import { getFirestore, initializeFirestore, doc, getDocFromServer } from 'firebase/firestore';
 import firebaseConfig from '../../firebase-applet-config.json';
 
 const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
 export const auth = getAuth(app);
+setPersistence(auth, inMemoryPersistence).catch((err) => console.error("Firebase Auth Persistence error", err));
 export const googleProvider = new GoogleAuthProvider();
 
 export let cachedGoogleAccessToken: string | null = null;

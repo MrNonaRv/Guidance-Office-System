@@ -841,15 +841,13 @@ export function StudentRecordModal({
                     <span className="mr-2 whitespace-nowrap">Name:</span>
                     <span className="flex-1 border-b border-black inline-block text-center">{formData.familyName || ''}</span>
                     <span className="flex-1 border-b border-black inline-block text-center ml-2">{formData.firstName || ''}</span>
-                    <span className="flex-1 border-b border-black inline-block text-center ml-2">{formData.middleName || ''}</span>
-                    <span className="w-20 border-b border-black inline-block text-center ml-2">{formData.suffix || ''}</span>
+                    <span className="flex-1 border-b border-black inline-block text-center ml-2">{formData.middleName || ''} {formData.suffix || ''}</span>
                   </div>
                   <div className="flex text-[11px] italic mt-0.5">
                     <span className="mr-2 opacity-0 whitespace-nowrap">Name:</span>
                     <span className="flex-1 text-center">Last Name</span>
                     <span className="flex-1 text-center ml-2">First Name</span>
-                    <span className="flex-1 text-center ml-2">Middle Name</span>
-                    <span className="w-20 text-center ml-2">Suffix</span>
+                    <span className="flex-1 text-center ml-2">Middle Name + Suffix</span>
                   </div>
                 </div>
 
