@@ -1215,7 +1215,7 @@ interface InputGroupProps {
 }
 
 const InputGroup = ({ label, name, value, onChange, required, error, id, placeholder, type = "text", disabled }: InputGroupProps) => (
-  <div className="flex flex-col relative" id={id || `field-${name}`}>
+  <div className="flex flex-col relative w-full" id={id || `field-${name}`}>
     <label className="text-[11px] font-bold text-[#0f2e60] mb-1 flex items-center gap-1">
       {label}
       {required && <span className="text-red-500 font-bold">*</span>}
@@ -1228,12 +1228,12 @@ const InputGroup = ({ label, name, value, onChange, required, error, id, placeho
       onChange={onChange} 
       disabled={disabled}
       className={`border rounded px-3 py-1.5 text-sm outline-none transition-colors w-full placeholder:text-gray-400 ${
-        disabled ? 'bg-gray-100 text-gray-500 cursor-not-allowed' : ''
+        disabled ? 'bg-gray-100 text-gray-500 cursor-not-allowed' : 'bg-white'
       } ${
-        error ? 'border-red-500 bg-red-50/30 focus:ring-1 focus:ring-red-500' : 'border-[#1e3a8a] focus:ring-1 focus:ring-[#1e3a8a]'
+        error ? 'border-red-500 bg-red-50/40 focus:ring-1 focus:ring-red-500' : 'border-[#1e3a8a] focus:ring-1 focus:ring-[#1e3a8a]'
       }`} 
     />
-    {error && <span className="text-[10px] text-red-600 font-semibold mt-0.5">{error}</span>}
+    {error && <span className="text-xs text-red-600 font-semibold mt-1">{error}</span>}
   </div>
 );
 
@@ -1262,24 +1262,75 @@ const SelectGroup = ({ label, name, value, onChange, options, required, error, i
         value={value || ''} 
         onChange={onChange} 
         disabled={disabled}
-        className={`border rounded px-3 py-1.5 text-sm outline-none appearance-none bg-white transition-colors w-full ${
+        className={`border rounded px-3 py-1.5 text-sm outline-none appearance-none transition-colors w-full ${
           !value ? 'text-gray-400' : 'text-gray-800'
         } ${
-          disabled ? 'bg-gray-100 text-gray-500 cursor-not-allowed' : ''
+          disabled ? 'bg-gray-100 text-gray-500 cursor-not-allowed' : 'bg-white'
         } ${
-          error ? 'border-red-500 bg-red-50/30 focus:ring-1 focus:ring-red-500' : 'border-[#1e3a8a] focus:ring-1 focus:ring-[#1e3a8a]'
+          error ? 'border-red-500 bg-red-50/40 focus:ring-1 focus:ring-red-500' : 'border-[#1e3a8a] focus:ring-1 focus:ring-[#1e3a8a]'
         }`}
       >
         <option value="" disabled className="text-gray-400">{placeholder}</option>
         {options.map((opt: string) => <option key={opt} value={opt} className="text-gray-800">{opt}</option>)}
       </select>
       <div className="absolute right-3 top-2.5 pointer-events-none">
-        <ChevronDown className="w-4 h-4 text-[#1e3a8a]" />
+        <ChevronDown className={`w-4 h-4 ${error ? 'text-red-500' : 'text-[#1e3a8a]'}`} />
       </div>
     </div>
-    {error && <span className="text-[10px] text-red-600 font-semibold mt-0.5">{error}</span>}
+    {error && <span className="text-xs text-red-600 font-semibold mt-1">{error}</span>}
   </div>
 );
+
+interface RadioOption {
+  label: string;
+  value: string;
+}
+
+interface RadioGroupProps {
+  label: string;
+  name: string;
+  value: string;
+  options: (RadioOption | string)[];
+  onChange: (value: string) => void;
+  required?: boolean;
+  error?: string;
+  id?: string;
+}
+
+const RadioGroup = ({ label, name, value, options, onChange, required, error, id }: RadioGroupProps) => {
+  const normalizedOptions: RadioOption[] = options.map(opt => 
+    typeof opt === 'string' ? { label: opt, value: opt } : opt
+  );
+
+  return (
+    <div className="flex flex-col relative w-full" id={id || `field-${name}`}>
+      <label className="text-[11px] font-bold text-[#0f2e60] mb-1 flex items-center gap-1">
+        {label}
+        {required && <span className="text-red-500 font-bold">*</span>}
+      </label>
+      <div className={`flex flex-wrap items-center gap-6 px-3 py-2 rounded-lg transition-colors ${
+        error 
+          ? 'border border-red-500 bg-red-50/40 ring-1 ring-red-400/20' 
+          : 'border border-[#1e3a8a]/20 bg-gray-50/20'
+      }`}>
+        {normalizedOptions.map(opt => (
+          <label key={opt.value} className="flex items-center gap-2 text-xs font-semibold text-[#0f2e60] cursor-pointer">
+            <input 
+              type="radio" 
+              name={name} 
+              value={opt.value} 
+              checked={value === opt.value} 
+              onChange={() => onChange(opt.value)} 
+              className="w-3.5 h-3.5 text-blue-600 focus:ring-blue-500" 
+            />
+            <span>{opt.label}</span>
+          </label>
+        ))}
+      </div>
+      {error && <span className="text-xs text-red-600 font-semibold mt-1">{error}</span>}
+    </div>
+  );
+};
 
 const SectionHeader = ({ title, className }: { title: string; className?: string }) => (
   <div className={cn("bg-[#1846b0] text-white text-center py-2.5 rounded-lg font-bold tracking-wider mb-6 text-sm mt-8", className)}>{title}</div>
@@ -1292,6 +1343,7 @@ export function StudentSubmissionForm() {
   const [showSignaturePad, setShowSignaturePad] = useState(false);
   const [files, setFiles] = useState<any[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [docErrors, setDocErrors] = useState<Record<string, boolean>>({});
   const [signatureError, setSignatureError] = useState<string | null>(null);
   const [validationWarning, setValidationWarning] = useState<{ title: string; details: string[] } | null>(null);
   const [submittedSuccess, setSubmittedSuccess] = useState(false);
@@ -1527,6 +1579,24 @@ export function StudentSubmissionForm() {
           updated.province = 'Capiz';
         }
       }
+      if (name === 'birthdate' && value) {
+        const parts = value.split('-');
+        if (parts.length === 3) {
+          const birthYear = parseInt(parts[0], 10);
+          const birthMonth = parseInt(parts[1], 10) - 1;
+          const birthDay = parseInt(parts[2], 10);
+          const birthDateObj = new Date(birthYear, birthMonth, birthDay);
+          const today = new Date();
+          let calculatedAge = today.getFullYear() - birthDateObj.getFullYear();
+          const monthDiff = today.getMonth() - birthDateObj.getMonth();
+          if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDateObj.getDate())) {
+            calculatedAge--;
+          }
+          if (calculatedAge >= 10 && calculatedAge <= 100) {
+            updated.age = String(calculatedAge);
+          }
+        }
+      }
       // Maintain existing special logic for externalCategory if needed
       if (name === 'externalCategory') {
         if (['VIC', 'Capizeño Circle', 'DOST', 'GRF'].includes(value)) {
@@ -1542,13 +1612,16 @@ export function StudentSubmissionForm() {
       }
       return updated;
     });
-    if (errors[name]) {
-      setErrors(prev => {
-        const next = { ...prev };
-        delete next[name];
-        return next;
-      });
-    }
+
+    setErrors(prev => {
+      const next = { ...prev };
+      delete next[name];
+      if (name === 'birthdate') delete next.age;
+      if (name === 'street' || name === 'municipality' || name === 'barangay' || name === 'postalCode' || name === 'province' || name === 'outsideCapizAddress') {
+        delete next.permanentAddress;
+      }
+      return next;
+    });
   };
 
   const handleRadioChange = (name: string, value: string) => {
@@ -1569,13 +1642,12 @@ export function StudentSubmissionForm() {
       }
       return updated;
     });
-    if (errors[name]) {
-      setErrors(prev => {
-        const next = { ...prev };
-        delete next[name];
-        return next;
-      });
-    }
+
+    setErrors(prev => {
+      const next = { ...prev };
+      delete next[name];
+      return next;
+    });
   };
 
   const handleFundTypeChange = (fundType: 'Internal' | 'External') => {
@@ -1683,8 +1755,13 @@ export function StudentSubmissionForm() {
   const handleCheckboxChange = (field: string, value: string) => {
     setFormData((prev: any) => {
       const current = prev[field] as string[];
-      if (current.includes(value)) return { ...prev, [field]: current.filter(v => v !== value) };
+      if (current.includes(value)) return { ...prev, [field]: current.filter((v: string) => v !== value) };
       return { ...prev, [field]: [...current, value] };
+    });
+    setErrors(prev => {
+      const next = { ...prev };
+      delete next[field];
+      return next;
     });
   };
 
@@ -1755,6 +1832,11 @@ export function StudentSubmissionForm() {
       try {
         const { dataUrl } = await compressImageFile(file, 800, 800, 0.85);
         setFormData(prev => ({ ...prev, photo2x2: dataUrl }));
+        setErrors(prev => {
+          const next = { ...prev };
+          delete next.photo2x2;
+          return next;
+        });
 
         if (isSupabaseConfigured()) {
           const userStr = localStorage.getItem('studentUser');
@@ -1776,6 +1858,11 @@ export function StudentSubmissionForm() {
     const newErrors: Record<string, string> = {};
     const missingLabels: string[] = [];
 
+    // Personal Information
+    if (!formData.photo2x2) {
+      newErrors.photo2x2 = 'This field is required';
+      missingLabels.push('2 × 2 Picture');
+    }
     if (!formData.familyName || !formData.familyName.trim()) {
       newErrors.familyName = 'This field is required';
       missingLabels.push('Last Name');
@@ -1788,17 +1875,25 @@ export function StudentSubmissionForm() {
       newErrors.middleName = 'This field is required';
       missingLabels.push('Middle Name');
     }
-    if (!formData.age || !formData.age.trim()) {
-      newErrors.age = 'This field is required';
-      missingLabels.push('Age');
+    if (!formData.suffix || !formData.suffix.trim()) {
+      newErrors.suffix = 'This field is required';
+      missingLabels.push('Suffix (e.g. Jr. or N/A)');
     }
     if (!formData.birthdate) {
       newErrors.birthdate = 'This field is required';
       missingLabels.push('Birthdate');
     }
+    if (!formData.age || !formData.age.trim()) {
+      newErrors.age = 'This field is required';
+      missingLabels.push('Age');
+    }
     if (!formData.sex) {
       newErrors.sex = 'This field is required';
-      missingLabels.push('Sex (Male / Female)');
+      missingLabels.push('Sex');
+    }
+    if (!formData.civilStatus) {
+      newErrors.civilStatus = 'This field is required';
+      missingLabels.push('Civil Status');
     }
     if (!formData.yearLevel) {
       newErrors.yearLevel = 'This field is required';
@@ -1808,6 +1903,10 @@ export function StudentSubmissionForm() {
       newErrors.course = 'This field is required';
       missingLabels.push('Course');
     }
+    if (!formData.section) {
+      newErrors.section = 'This field is required';
+      missingLabels.push('Section');
+    }
     if (!formData.contactNo || !formData.contactNo.trim()) {
       newErrors.contactNo = 'This field is required';
       missingLabels.push('Contact No.');
@@ -1816,41 +1915,165 @@ export function StudentSubmissionForm() {
       newErrors.email = 'This field is required';
       missingLabels.push('Email');
     }
-    if (!formData.street || !formData.street.trim() || !formData.municipality || !formData.postalCode || (formData.municipality !== 'Others' && !formData.barangay) || (formData.municipality === 'Others' && (!formData.outsideCapizAddress || !formData.province))) {
-      newErrors.permanentAddress = 'This field is required';
-      missingLabels.push('Permanent Address');
+
+    // Address
+    if (!formData.street || !formData.street.trim()) {
+      newErrors.street = 'This field is required';
+      missingLabels.push('Street Address');
     }
-    if (!formData.signature) {
-      newErrors.signature = 'Your signature is required';
-      missingLabels.push("Your Signature (Click signature box at the bottom to sign)");
-      setSignatureError('Your signature is required');
-    } else {
-      setSignatureError(null);
+    if (!formData.municipality) {
+      newErrors.municipality = 'This field is required';
+      missingLabels.push('Municipality');
+    }
+    if (formData.municipality !== 'Others' && !formData.barangay) {
+      newErrors.barangay = 'This field is required';
+      missingLabels.push('Barangay');
+    }
+    if (!formData.province || !formData.province.trim()) {
+      newErrors.province = 'This field is required';
+      missingLabels.push('Province');
+    }
+    if (!formData.postalCode || !formData.postalCode.trim()) {
+      newErrors.postalCode = 'This field is required';
+      missingLabels.push('Postal Code');
+    }
+    if (formData.municipality === 'Others' && (!formData.outsideCapizAddress || !formData.outsideCapizAddress.trim())) {
+      newErrors.outsideCapizAddress = 'This field is required';
+      missingLabels.push('Address (Outside Capiz)');
     }
 
+    // Family Background
+    if (!formData.fatherName || !formData.fatherName.trim()) {
+      newErrors.fatherName = 'This field is required';
+      missingLabels.push("Father's Name");
+    }
+    if (!formData.fatherOccupation || !formData.fatherOccupation.trim()) {
+      newErrors.fatherOccupation = 'This field is required';
+      missingLabels.push("Father's Occupation");
+    }
+    if (!formData.fatherContact || !formData.fatherContact.trim()) {
+      newErrors.fatherContact = 'This field is required';
+      missingLabels.push("Father's Contact");
+    }
+
+    if (!formData.motherName || !formData.motherName.trim()) {
+      newErrors.motherName = 'This field is required';
+      missingLabels.push("Mother's Name");
+    }
+    if (!formData.motherOccupation || !formData.motherOccupation.trim()) {
+      newErrors.motherOccupation = 'This field is required';
+      missingLabels.push("Mother's Occupation");
+    }
+    if (!formData.motherContact || !formData.motherContact.trim()) {
+      newErrors.motherContact = 'This field is required';
+      missingLabels.push("Mother's Contact");
+    }
+
+    if (!formData.guardianName || !formData.guardianName.trim()) {
+      newErrors.guardianName = 'This field is required';
+      missingLabels.push("Guardian's Name");
+    }
+    if (!formData.guardianOccupation || !formData.guardianOccupation.trim()) {
+      newErrors.guardianOccupation = 'This field is required';
+      missingLabels.push("Guardian's Occupation");
+    }
+    if (!formData.guardianContact || !formData.guardianContact.trim()) {
+      newErrors.guardianContact = 'This field is required';
+      missingLabels.push("Guardian's Contact");
+    }
+
+    // Socioeconomic & Living
+    if (!formData.parentEduAttainment) {
+      newErrors.parentEduAttainment = 'This field is required';
+      missingLabels.push("Parent/Guardian's Highest Educational Attainment");
+    }
+    if (!formData.monthlyIncome) {
+      newErrors.monthlyIncome = 'This field is required';
+      missingLabels.push('Family Monthly Income');
+    }
+    if (!formData.firstInFamily) {
+      newErrors.firstInFamily = 'This field is required';
+      missingLabels.push('First in family to attend college');
+    }
+
+    if (!formData.livingWith) {
+      newErrors.livingWith = 'This field is required';
+      missingLabels.push('With whom do you currently live?');
+    }
+    if (formData.livingWith === 'Others' && (!formData.livingWithOthers || !formData.livingWithOthers.trim())) {
+      newErrors.livingWithOthers = 'This field is required';
+      missingLabels.push('Living with (Others specified)');
+    }
+    if (!formData.housingType) {
+      newErrors.housingType = 'This field is required';
+      missingLabels.push('Type of Housing');
+    }
+    if (formData.housingType === 'Others' && (!formData.housingTypeOthers || !formData.housingTypeOthers.trim())) {
+      newErrors.housingTypeOthers = 'This field is required';
+      missingLabels.push('Type of Housing (Others specified)');
+    }
+
+    // Working Student & Classification & Resources
+    if (!formData.accessToResources || formData.accessToResources.length === 0) {
+      newErrors.accessToResources = 'This field is required';
+      missingLabels.push('Access to Resources at home');
+    }
+    if (!formData.workingStudent) {
+      newErrors.workingStudent = 'This field is required';
+      missingLabels.push('Do you work while studying?');
+    }
+    if ((formData.workingStudent === 'Yes, full-time' || formData.workingStudent === 'Yes, part-time') && (!formData.workTypeIncome || !formData.workTypeIncome.trim())) {
+      newErrors.workTypeIncome = 'This field is required';
+      missingLabels.push('Type of work or source of income');
+    }
+    if (!formData.studentClassification || formData.studentClassification.length === 0) {
+      newErrors.studentClassification = 'This field is required';
+      missingLabels.push('Student Classification');
+    }
+    if (formData.studentClassification?.includes('Others') && (!formData.studentClassificationOthers || !formData.studentClassificationOthers.trim())) {
+      newErrors.studentClassificationOthers = 'This field is required';
+      missingLabels.push('Other classification specified');
+    }
+
+    // Scholarship Program
     const selectedScholarshipsCount = (formData.selectedScholarships && formData.selectedScholarships.length) || (formData.internalCategory || formData.externalCategory ? 1 : 0);
-    if (selectedScholarshipsCount === 0) {
-      newErrors.scholarship = 'Please select at least one scholarship program';
-      missingLabels.push('Scholarship Program Category (Select 1 or up to 2 distinct scholarships under the same category)');
+    if (!formData.scholarshipFundType || selectedScholarshipsCount === 0) {
+      newErrors.scholarship = 'This field is required. Please select at least one scholarship program.';
+      missingLabels.push('Scholarship Program Category');
     } else if (selectedScholarshipsCount > 2) {
       newErrors.scholarship = 'You may select a maximum of 2 scholarships';
-      missingLabels.push('Scholarship Program Category (Maximum 2 scholarships allowed under the same category)');
+      missingLabels.push('Scholarship Program Category (Maximum 2 scholarships allowed)');
+    }
+
+    // Signature
+    if (!formData.signature) {
+      newErrors.signature = 'This field is required';
+      missingLabels.push("Applicant Signature (Click signature box at the bottom to sign)");
+      setSignatureError('This field is required');
+    } else {
+      setSignatureError(null);
     }
 
     setErrors(newErrors);
 
     if (missingLabels.length > 0) {
       setValidationWarning({
-        title: `Please complete the following ${missingLabels.length} required item${missingLabels.length > 1 ? 's' : ''}:`,
+        title: `Please complete the following ${missingLabels.length} required field${missingLabels.length > 1 ? 's' : ''}:`,
         details: missingLabels
       });
 
       // Scroll smoothly to the first missing element
       const firstErrorKey = Object.keys(newErrors)[0];
-      const targetId = firstErrorKey === 'signature' ? 'signature-box' : firstErrorKey === 'scholarship' ? 'scholarship-category-section' : `field-${firstErrorKey}`;
+      const targetId = firstErrorKey === 'signature' 
+        ? 'signature-box' 
+        : firstErrorKey === 'scholarship' 
+        ? 'scholarship-category-section' 
+        : `field-${firstErrorKey}`;
       const elem = document.getElementById(targetId);
       if (elem) {
         elem.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        const focusable = elem.querySelector('input, select, textarea, button') as HTMLElement | null;
+        if (focusable) focusable.focus();
       }
       return false;
     }
@@ -1866,12 +2089,28 @@ export function StudentSubmissionForm() {
       { key: 'ID', label: 'Student ID' }
     ];
 
-    const missing = requiredDocs.filter(d => !files.find((f: any) => f.category === d.key));
+    const newDocErrors: Record<string, boolean> = {};
+    const missing: { key: string; label: string }[] = [];
+
+    requiredDocs.forEach(d => {
+      if (!files.find((f: any) => f.category === d.key)) {
+        newDocErrors[d.key] = true;
+        missing.push(d);
+      }
+    });
+
+    setDocErrors(newDocErrors);
+
     if (missing.length > 0) {
       setValidationWarning({
         title: `Please upload the following ${missing.length} required document${missing.length > 1 ? 's' : ''}:`,
         details: missing.map(m => m.label)
       });
+      const firstMissing = missing[0];
+      const elem = document.getElementById(firstMissing.key);
+      if (elem) {
+        elem.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
       return false;
     }
     setValidationWarning(null);
@@ -1961,9 +2200,16 @@ export function StudentSubmissionForm() {
   };
 
   const handleSubmit = async () => {
-    const isStep1Valid = validateStep1();
-    const isStep2Valid = validateStep2();
-    if (!isStep1Valid || !isStep2Valid) return;
+    if (!validateStep1()) {
+      setStep(1);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+    if (!validateStep2()) {
+      setStep(2);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
     setIsSubmitting(true);
     try {
       const sessionStr = localStorage.getItem('studentUser');
@@ -2089,6 +2335,11 @@ export function StudentSubmissionForm() {
           uploadedAt: new Date().toISOString() 
         };
         setFiles(prev => [...prev.filter(f => f.category !== category), newFileObj]);
+        setDocErrors(prev => {
+          const next = { ...prev };
+          delete next[category];
+          return next;
+        });
         setValidationWarning(null);
 
         if (isSupabaseConfigured()) {
@@ -2109,17 +2360,17 @@ export function StudentSubmissionForm() {
 
   const renderFileUpload = (label: string, id: string) => {
     const existingFile = files.find((f: any) => f.category === id);
-    const isMissing = validationWarning && validationWarning.details.some(d => d.toLowerCase().includes(label.toLowerCase()) || d.includes(id));
+    const isMissing = !!docErrors[id];
 
     return (
-      <div className={`border-2 ${
+      <div id={id} className={`border-2 ${
         existingFile 
           ? 'border-green-400 bg-green-50/30' 
           : isMissing 
-          ? 'border-red-400 bg-red-50/30' 
+          ? 'border-red-500 bg-red-50/40 ring-1 ring-red-400/20' 
           : 'border-dashed border-gray-300 bg-white hover:bg-gray-50'
       } p-6 rounded-xl text-center relative overflow-hidden transition-all shadow-sm`}>
-        <input type="file" id={id} accept="image/*" className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-0" onChange={(e) => handleCategoryFileUpload(id, e)} />
+        <input type="file" id={`input-${id}`} accept="image/*" className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-0" onChange={(e) => handleCategoryFileUpload(id, e)} />
         {existingFile ? (
           <div className="flex flex-col items-center gap-2 relative z-10">
             <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
@@ -2147,15 +2398,20 @@ export function StudentSubmissionForm() {
           </div>
         ) : (
           <div className="flex flex-col items-center gap-2">
-            <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center">
+            <div className={`w-10 h-10 rounded-full flex items-center justify-center ${isMissing ? 'bg-red-100' : 'bg-gray-100'}`}>
               <Upload className={`w-6 h-6 ${isMissing ? 'text-red-500' : 'text-gray-400'}`} />
             </div>
-            <div className="inline-flex items-center gap-1.5 px-3.5 py-1 bg-blue-50 border border-blue-200 text-[#0f2e60] rounded-full text-xs font-bold uppercase tracking-wider">
+            <div className={`inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${
+              isMissing ? 'bg-red-100 border border-red-300 text-red-900' : 'bg-blue-50 border border-blue-200 text-[#0f2e60]'
+            }`}>
               {label} <span className="text-red-500 font-extrabold">*</span>
             </div>
             <p className={`${isMissing ? 'text-red-600 font-bold' : 'text-[#d97706] font-semibold'} text-xs mt-1`}>
               {isMissing ? 'Document Required — Click to upload' : 'Click or drag file to upload (PNG, JPG)'}
             </p>
+            {isMissing && (
+              <span className="text-xs text-red-600 font-semibold mt-0.5">This field is required</span>
+            )}
           </div>
         )}
       </div>
@@ -2297,22 +2553,25 @@ export function StudentSubmissionForm() {
               <h3 className="font-bold text-[#1e3a8a] text-[13px]">Personal Information</h3>
             </div>
             <div className="p-3 sm:p-4 flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6">
-              <div className="w-[120px] flex-shrink-0 flex flex-col items-center">
-                <label className="w-[110px] h-[110px] border-2 border-dashed border-[#1e3a8a] mb-2 flex flex-col items-center justify-center overflow-hidden bg-white cursor-pointer hover:bg-blue-50/50 transition-colors group relative rounded">
+              <div className="w-[120px] flex-shrink-0 flex flex-col items-center" id="field-photo2x2">
+                <label className={`w-[110px] h-[110px] border-2 border-dashed mb-2 flex flex-col items-center justify-center overflow-hidden cursor-pointer transition-colors group relative rounded ${
+                  errors.photo2x2 ? 'border-red-500 bg-red-50/40 ring-1 ring-red-400/20' : 'border-[#1e3a8a] bg-white hover:bg-blue-50/50'
+                }`}>
                   {formData.photo2x2 ? (
                     <img src={formData.photo2x2} alt="2x2" className="w-full h-full object-cover" />
                   ) : (
                     <div className="flex flex-col items-center justify-center p-2 text-center">
-                      <User className="w-8 h-8 text-gray-300 group-hover:text-[#1e3a8a] transition-colors" />
-                      <span className="text-[9px] text-gray-500 group-hover:text-[#1e3a8a] mt-1 font-semibold">Upload Photo</span>
+                      <User className={`w-8 h-8 ${errors.photo2x2 ? 'text-red-500' : 'text-gray-300 group-hover:text-[#1e3a8a]'} transition-colors`} />
+                      <span className={`text-[9px] ${errors.photo2x2 ? 'text-red-600 font-bold' : 'text-gray-500 group-hover:text-[#1e3a8a]'} mt-1 font-semibold`}>Upload Photo</span>
                     </div>
                   )}
                   <input type="file" accept="image/*" className="hidden" onChange={handlePhotoUpload} />
                 </label>
-                <label className="text-[11px] font-bold text-[#1e3a8a] underline underline-offset-2 cursor-pointer hover:text-blue-700">
-                  2 × 2 Picture
+                <label className="text-[11px] font-bold text-[#1e3a8a] underline underline-offset-2 cursor-pointer hover:text-blue-700 flex items-center gap-1">
+                  2 × 2 Picture <span className="text-red-500 font-bold">*</span>
                   <input type="file" accept="image/*" className="hidden" onChange={handlePhotoUpload} />
                 </label>
+                {errors.photo2x2 && <span className="text-xs text-red-600 font-semibold mt-1 text-center">This field is required</span>}
               </div>
               <div className="flex-1 w-full space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 sm:gap-4">
@@ -2339,14 +2598,18 @@ export function StudentSubmissionForm() {
                     name="middleName" 
                     value={formData.middleName} 
                     onChange={handleChange} 
+                    required
                     placeholder="e.g. Santos"
+                    error={errors.middleName}
                   />
                   <InputGroup 
                     label="Suffix" 
                     name="suffix" 
                     value={formData.suffix} 
                     onChange={handleChange} 
-                    placeholder="e.g. Jr."
+                    required
+                    placeholder="e.g. Jr. or N/A"
+                    error={errors.suffix}
                   />
                 </div>
                 {/* Row 1: Birthdate | Age */}
@@ -2362,11 +2625,11 @@ export function StudentSubmissionForm() {
                         value={formData.birthdate} 
                         onChange={handleChange} 
                         className={`w-full border rounded px-3 py-1.5 text-sm outline-none transition-colors ${
-                          errors.birthdate ? 'border-red-500 bg-red-50/30 focus:ring-1 focus:ring-red-500' : 'border-[#1e3a8a] focus:ring-1 focus:ring-[#1e3a8a]'
+                          errors.birthdate ? 'border-red-500 bg-red-50/40 focus:ring-1 focus:ring-red-500' : 'border-[#1e3a8a] bg-white focus:ring-1 focus:ring-[#1e3a8a]'
                         }`} 
                       />
                     </div>
-                    {errors.birthdate && <span className="text-[10px] text-red-600 font-semibold mt-0.5">{errors.birthdate}</span>}
+                    {errors.birthdate && <span className="text-xs text-red-600 font-semibold mt-1">{errors.birthdate}</span>}
                   </div>
                   <InputGroup 
                     label="Age" 
@@ -2374,38 +2637,30 @@ export function StudentSubmissionForm() {
                     value={formData.age} 
                     onChange={handleChange} 
                     placeholder="e.g. 18"
+                    required
                     error={errors.age} 
                   />
                 </div>
                 {/* Row 2: Sex | Civil Status */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mt-1">
-                  <div className="flex flex-col" id="field-sex">
-                    <label className="text-[11px] font-bold text-[#0f2e60] mb-1 flex items-center gap-1">
-                      Sex <span className="text-red-500 font-bold">*</span>
-                    </label>
-                    <div className={`flex flex-wrap items-center gap-4 p-1 rounded h-[34px] ${errors.sex ? 'bg-red-50 border border-red-300' : 'border border-transparent'}`}>
-                      <label className="flex items-center gap-1.5 text-xs font-semibold text-[#0f2e60] cursor-pointer">
-                        <input type="radio" name="sex" value="Male" checked={formData.sex === 'Male'} onChange={() => handleRadioChange('sex', 'Male')} className="w-3.5 h-3.5" /> Male
-                      </label>
-                      <label className="flex items-center gap-1.5 text-xs font-semibold text-[#0f2e60] cursor-pointer">
-                        <input type="radio" name="sex" value="Female" checked={formData.sex === 'Female'} onChange={() => handleRadioChange('sex', 'Female')} className="w-3.5 h-3.5" /> Female
-                      </label>
-                    </div>
-                    {errors.sex && <span className="text-[10px] text-red-600 font-semibold mt-0.5">{errors.sex}</span>}
-                  </div>
-                  <div className="flex flex-col">
-                    <label className="text-[11px] font-bold text-[#0f2e60] mb-1 flex items-center gap-1">
-                      Civil Status
-                    </label>
-                    <div className="flex flex-wrap items-center gap-4 p-1 h-[34px]">
-                      <label className="flex items-center gap-1.5 text-xs font-semibold text-[#0f2e60] cursor-pointer">
-                        <input type="radio" name="civilStatus" value="Single" checked={formData.civilStatus === 'Single'} onChange={() => handleRadioChange('civilStatus', 'Single')} className="w-3.5 h-3.5" /> Single
-                      </label>
-                      <label className="flex items-center gap-1.5 text-xs font-semibold text-[#0f2e60] cursor-pointer">
-                        <input type="radio" name="civilStatus" value="Married" checked={formData.civilStatus === 'Married'} onChange={() => handleRadioChange('civilStatus', 'Married')} className="w-3.5 h-3.5" /> Married
-                      </label>
-                    </div>
-                  </div>
+                  <RadioGroup
+                    label="Sex"
+                    name="sex"
+                    value={formData.sex}
+                    options={['Male', 'Female']}
+                    onChange={(val) => handleRadioChange('sex', val)}
+                    required
+                    error={errors.sex}
+                  />
+                  <RadioGroup
+                    label="Civil Status"
+                    name="civilStatus"
+                    value={formData.civilStatus}
+                    options={['Single', 'Married']}
+                    onChange={(val) => handleRadioChange('civilStatus', val)}
+                    required
+                    error={errors.civilStatus}
+                  />
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
                   <SelectGroup 
@@ -2426,7 +2681,15 @@ export function StudentSubmissionForm() {
                     required 
                     error={errors.course} 
                   />
-                  <SelectGroup label="Section" name="section" value={formData.section} onChange={handleChange} options={['A', 'B', 'C']} />
+                  <SelectGroup 
+                    label="Section" 
+                    name="section" 
+                    value={formData.section} 
+                    onChange={handleChange} 
+                    options={['A', 'B', 'C']} 
+                    required
+                    error={errors.section}
+                  />
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                   <InputGroup 
@@ -2435,6 +2698,7 @@ export function StudentSubmissionForm() {
                     value={formData.contactNo} 
                     onChange={handleChange} 
                     required 
+                    placeholder="09xxxxxxxxxxxx"
                     error={errors.contactNo} 
                   />
                   <InputGroup 
@@ -2443,6 +2707,7 @@ export function StudentSubmissionForm() {
                     value={formData.email} 
                     onChange={handleChange} 
                     required 
+                    placeholder="student@capsu.edu"
                     error={errors.email} 
                   />
                 </div>
@@ -2456,6 +2721,8 @@ export function StudentSubmissionForm() {
                       value={formData.street} 
                       onChange={handleChange} 
                       required 
+                      placeholder="Street / Sitio / Purok"
+                      error={errors.street}
                     />
                     <SelectGroup 
                       label="Municipality" 
@@ -2464,6 +2731,7 @@ export function StudentSubmissionForm() {
                       onChange={handleChange} 
                       options={[...Object.keys(capizMunicipalities), 'Others']}
                       required 
+                      error={errors.municipality}
                     />
                   </div>
                   
@@ -2476,6 +2744,7 @@ export function StudentSubmissionForm() {
                       options={formData.municipality && formData.municipality !== 'Others' ? capizMunicipalities[formData.municipality as keyof typeof capizMunicipalities] : []}
                       required={formData.municipality !== 'Others'}
                       disabled={!formData.municipality || formData.municipality === 'Others'}
+                      error={errors.barangay}
                     />
                     <InputGroup 
                       label="Province" 
@@ -2484,13 +2753,16 @@ export function StudentSubmissionForm() {
                       onChange={handleChange} 
                       required 
                       disabled={formData.municipality !== 'Others'}
+                      error={errors.province}
                     />
                     <InputGroup 
                       label="Postal Code" 
                       name="postalCode" 
                       value={formData.postalCode} 
                       onChange={handleChange} 
+                      placeholder="e.g. 5800"
                       required 
+                      error={errors.postalCode}
                     />
                   </div>
                   {formData.municipality === 'Others' && (
@@ -2502,10 +2774,11 @@ export function StudentSubmissionForm() {
                         onChange={handleChange} 
                         placeholder="Please specify your complete address outside of Capiz"
                         required 
+                        error={errors.outsideCapizAddress}
                       />
                     </div>
                   )}
-                  {errors.permanentAddress && <p className="text-[11px] text-red-500 mt-0.5">{errors.permanentAddress}</p>}
+                  {errors.permanentAddress && <p className="text-xs text-red-600 font-semibold mt-1">{errors.permanentAddress}</p>}
                 </div>
               </div>
             </div>
@@ -2521,25 +2794,25 @@ export function StudentSubmissionForm() {
               <div>
                 <div className="inline-block bg-[#e0e7ff] border border-[#1e3a8a] text-[#1e3a8a] text-[11px] font-bold px-4 py-0.5 rounded-sm mb-3">Father Information</div>
                 <div className="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-[2fr_1.5fr_1.5fr] gap-3 sm:gap-4">
-                  <InputGroup label="Name" name="fatherName" value={formData.fatherName} onChange={handleChange} placeholder="e.g. Rafael Tuvera" />
-                  <InputGroup label="Occupation" name="fatherOccupation" value={formData.fatherOccupation} onChange={handleChange} placeholder="e.g. work" />
-                  <InputGroup label="Contact No." name="fatherContact" value={formData.fatherContact} onChange={handleChange} placeholder="09xxxxxxxxxxxx" />
+                  <InputGroup label="Name" name="fatherName" value={formData.fatherName} onChange={handleChange} placeholder="e.g. Rafael Tuvera" required error={errors.fatherName} />
+                  <InputGroup label="Occupation" name="fatherOccupation" value={formData.fatherOccupation} onChange={handleChange} placeholder="e.g. Farmer / Deceased / N/A" required error={errors.fatherOccupation} />
+                  <InputGroup label="Contact No." name="fatherContact" value={formData.fatherContact} onChange={handleChange} placeholder="09xxxxxxxxxxxx / N/A" required error={errors.fatherContact} />
                 </div>
               </div>
               <div>
                 <div className="inline-block bg-[#e0e7ff] border border-[#1e3a8a] text-[#1e3a8a] text-[11px] font-bold px-4 py-0.5 rounded-sm mb-3">Mother Information</div>
                 <div className="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-[2fr_1.5fr_1.5fr] gap-3 sm:gap-4">
-                  <InputGroup label="Name (Maiden Name)" name="motherName" value={formData.motherName} onChange={handleChange} placeholder="e.g. Maria A. Sermon" />
-                  <InputGroup label="Occupation" name="motherOccupation" value={formData.motherOccupation} onChange={handleChange} placeholder="e.g. work" />
-                  <InputGroup label="Contact No." name="motherContact" value={formData.motherContact} onChange={handleChange} placeholder="09xxxxxxxxxxxx" />
+                  <InputGroup label="Name (Maiden Name)" name="motherName" value={formData.motherName} onChange={handleChange} placeholder="e.g. Maria A. Sermon" required error={errors.motherName} />
+                  <InputGroup label="Occupation" name="motherOccupation" value={formData.motherOccupation} onChange={handleChange} placeholder="e.g. Housewife / Deceased / N/A" required error={errors.motherOccupation} />
+                  <InputGroup label="Contact No." name="motherContact" value={formData.motherContact} onChange={handleChange} placeholder="09xxxxxxxxxxxx / N/A" required error={errors.motherContact} />
                 </div>
               </div>
               <div>
                 <div className="inline-block bg-[#e0e7ff] border border-[#1e3a8a] text-[#1e3a8a] text-[11px] font-bold px-4 py-0.5 rounded-sm mb-3">Guardian Information</div>
                 <div className="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-[2fr_1.5fr_1.5fr] gap-3 sm:gap-4">
-                  <InputGroup label="Name" name="guardianName" value={formData.guardianName} onChange={handleChange} placeholder="e.g. Martin L. Dela Cruz" />
-                  <InputGroup label="Occupation" name="guardianOccupation" value={formData.guardianOccupation} onChange={handleChange} placeholder="e.g. work" />
-                  <InputGroup label="Contact No." name="guardianContact" value={formData.guardianContact} onChange={handleChange} placeholder="09xxxxxxxxxxxx" />
+                  <InputGroup label="Name" name="guardianName" value={formData.guardianName} onChange={handleChange} placeholder="e.g. Martin L. Dela Cruz / N/A" required error={errors.guardianName} />
+                  <InputGroup label="Occupation" name="guardianOccupation" value={formData.guardianOccupation} onChange={handleChange} placeholder="e.g. Employee / N/A" required error={errors.guardianOccupation} />
+                  <InputGroup label="Contact No." name="guardianContact" value={formData.guardianContact} onChange={handleChange} placeholder="09xxxxxxxxxxxx / N/A" required error={errors.guardianContact} />
                 </div>
               </div>
               
@@ -2552,6 +2825,8 @@ export function StudentSubmissionForm() {
                   onChange={handleChange}
                   placeholder="Select"
                   options={['Elementary Level', 'Elementary Graduate', 'High school Graduate', 'College Graduate', 'High School Level', 'College Level', 'post Graduate level/degree']}
+                  required
+                  error={errors.parentEduAttainment}
                 />
                 <SelectGroup 
                   label="Family Monthly Income"
@@ -2560,20 +2835,18 @@ export function StudentSubmissionForm() {
                   onChange={handleChange}
                   placeholder="Select"
                   options={['below ₱ 10,000', '₱ 10,001 - ₱ 20,000', '₱ 20,001 - ₱ 30,000', 'Above ₱ 30,000']}
+                  required
+                  error={errors.monthlyIncome}
                 />
-                <div className="flex flex-col">
-                  <label className="text-[11px] font-bold text-[#0f2e60] mb-1 flex items-center gap-1">
-                    Are you the first in family to attend college?
-                  </label>
-                  <div className="flex items-center gap-6 h-[34px] mt-1">
-                    <label className="flex items-center gap-2 text-xs font-semibold text-[#0f2e60] cursor-pointer">
-                      <input type="radio" name="firstInFamily" value="Yes" checked={formData.firstInFamily === 'Yes'} onChange={() => handleRadioChange('firstInFamily', 'Yes')} className="w-3.5 h-3.5 text-[#0f2e60]" /> Yes
-                    </label>
-                    <label className="flex items-center gap-2 text-xs font-semibold text-[#0f2e60] cursor-pointer">
-                      <input type="radio" name="firstInFamily" value="No" checked={formData.firstInFamily === 'No'} onChange={() => handleRadioChange('firstInFamily', 'No')} className="w-3.5 h-3.5 text-[#0f2e60]" /> No
-                    </label>
-                  </div>
-                </div>
+                <RadioGroup
+                  label="Are you the first in family to attend college?"
+                  name="firstInFamily"
+                  value={formData.firstInFamily}
+                  options={['Yes', 'No']}
+                  onChange={(val) => handleRadioChange('firstInFamily', val)}
+                  required
+                  error={errors.firstInFamily}
+                />
               </div>
             </div>
           </div>
@@ -2585,32 +2858,56 @@ export function StudentSubmissionForm() {
             </div>
             <div className="p-3 sm:p-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-              <div>
-                <SelectGroup 
-                  label="With whom do you currently live?"
-                  name="livingWith"
-                  value={formData.livingWith}
-                  onChange={handleChange}
-                  options={['Parents/Guardians', 'Relatives', 'Alone', 'Boarding house', 'Others']}
-                />
-                {formData.livingWith === 'Others' && (
-                  <input type="text" name="livingWithOthers" value={formData.livingWithOthers} onChange={handleChange} placeholder="Please specify" className="border-b border-[#1e3a8a] outline-none text-xs ml-6 mt-1 w-full max-w-[200px]" />
-                )}
-              </div>
-              <div>
-                <SelectGroup 
-                  label="Type of Housing"
-                  name="housingType"
-                  value={formData.housingType}
-                  onChange={handleChange}
-                  options={['Own house', 'Rented house or apartment', 'Boarding house', 'Others']}
-                />
-                {formData.housingType === 'Others' && (
-                  <input type="text" name="housingTypeOthers" value={formData.housingTypeOthers} onChange={handleChange} placeholder="Please specify" className="border-b border-[#1e3a8a] outline-none text-xs ml-6 mt-1 w-full max-w-[200px]" />
-                )}
+                <div>
+                  <SelectGroup 
+                    label="With whom do you currently live?"
+                    name="livingWith"
+                    value={formData.livingWith}
+                    onChange={handleChange}
+                    options={['Parents/Guardians', 'Relatives', 'Alone', 'Boarding house', 'Others']}
+                    required
+                    error={errors.livingWith}
+                  />
+                  {formData.livingWith === 'Others' && (
+                    <div className="mt-2 ml-1">
+                      <InputGroup
+                        label="Please specify living arrangement"
+                        name="livingWithOthers"
+                        value={formData.livingWithOthers}
+                        onChange={handleChange}
+                        placeholder="Please specify"
+                        required
+                        error={errors.livingWithOthers}
+                      />
+                    </div>
+                  )}
+                </div>
+                <div>
+                  <SelectGroup 
+                    label="Type of Housing"
+                    name="housingType"
+                    value={formData.housingType}
+                    onChange={handleChange}
+                    options={['Own house', 'Rented house or apartment', 'Boarding house', 'Others']}
+                    required
+                    error={errors.housingType}
+                  />
+                  {formData.housingType === 'Others' && (
+                    <div className="mt-2 ml-1">
+                      <InputGroup
+                        label="Please specify housing type"
+                        name="housingTypeOthers"
+                        value={formData.housingTypeOthers}
+                        onChange={handleChange}
+                        placeholder="Please specify"
+                        required
+                        error={errors.housingTypeOthers}
+                      />
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
-          </div>
           </div>
 
           <div className="border border-[#93c5fd] rounded-lg mb-6 bg-white overflow-hidden shadow-sm">
@@ -2620,25 +2917,57 @@ export function StudentSubmissionForm() {
             </div>
             <div className="p-3 sm:p-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-              <div>
-                <label className="block text-[12px] font-bold text-[#0f2e60] mb-3">Do you have access of the following at home?</label>
-                <div className="space-y-2">
-                  {['Personal Computer/Laptop', 'Internet Connection', 'Study space', 'Textbooks and learning materials'].map(opt => (
-                    <label key={opt} className="flex items-center gap-2 text-xs font-semibold text-[#0f2e60] cursor-pointer">
-                      <input type="checkbox" checked={formData.accessToResources.includes(opt)} onChange={() => handleCheckboxChange('accessToResources', opt)} className="w-3.5 h-3.5 rounded-sm text-blue-600 focus:ring-blue-500" /> {opt}
-                    </label>
-                  ))}
+                <div id="field-accessToResources" className={`rounded-xl p-2.5 transition-colors ${
+                  errors.accessToResources ? 'border border-red-500 bg-red-50/40 ring-1 ring-red-400/20' : 'border border-transparent'
+                }`}>
+                  <label className="block text-[12px] font-bold text-[#0f2e60] mb-3 flex items-center gap-1">
+                    Do you have access of the following at home? <span className="text-red-500 font-bold">*</span>
+                  </label>
+                  <div className="space-y-2">
+                    {['Personal Computer/Laptop', 'Internet Connection', 'Study space', 'Textbooks and learning materials', 'None of the above'].map(opt => (
+                      <label key={opt} className="flex items-center gap-2 text-xs font-semibold text-[#0f2e60] cursor-pointer">
+                        <input 
+                          type="checkbox" 
+                          checked={formData.accessToResources.includes(opt)} 
+                          onChange={() => {
+                            if (opt === 'None of the above') {
+                              setFormData((prev: any) => ({
+                                ...prev,
+                                accessToResources: prev.accessToResources.includes('None of the above') ? [] : ['None of the above']
+                              }));
+                            } else {
+                              setFormData((prev: any) => ({
+                                ...prev,
+                                accessToResources: prev.accessToResources.filter((i: string) => i !== 'None of the above').includes(opt)
+                                  ? prev.accessToResources.filter((i: string) => i !== opt && i !== 'None of the above')
+                                  : [...prev.accessToResources.filter((i: string) => i !== 'None of the above'), opt]
+                              }));
+                            }
+                            setErrors(prev => {
+                              const next = { ...prev };
+                              delete next.accessToResources;
+                              return next;
+                            });
+                          }} 
+                          className="w-3.5 h-3.5 rounded-sm text-blue-600 focus:ring-blue-500" 
+                        /> {opt}
+                      </label>
+                    ))}
+                  </div>
+                  {errors.accessToResources && <span className="text-xs text-red-600 font-semibold mt-2 block">{errors.accessToResources}</span>}
+                </div>
+                <div>
+                  <RadioGroup
+                    label="Do you work while studying?"
+                    name="workingStudent"
+                    value={formData.workingStudent}
+                    options={['Yes, full-time', 'Yes, part-time', 'No']}
+                    onChange={(val) => handleRadioChange('workingStudent', val)}
+                    required
+                    error={errors.workingStudent}
+                  />
                 </div>
               </div>
-              <div>
-                <label className="block text-[12px] font-bold text-[#0f2e60] mb-3">Do you work while studying?</label>
-                <div className="flex flex-wrap gap-3 sm:gap-4">
-                  <label className="flex items-center gap-2 text-xs font-semibold text-[#0f2e60] cursor-pointer"><input type="radio" name="workingStudent" value="Yes, full-time" checked={formData.workingStudent === 'Yes, full-time'} onChange={() => handleRadioChange('workingStudent', 'Yes, full-time')} className="w-3.5 h-3.5" /> Yes, full-time</label>
-                  <label className="flex items-center gap-2 text-xs font-semibold text-[#0f2e60] cursor-pointer"><input type="radio" name="workingStudent" value="Yes, part-time" checked={formData.workingStudent === 'Yes, part-time'} onChange={() => handleRadioChange('workingStudent', 'Yes, part-time')} className="w-3.5 h-3.5" /> Yes, part-time</label>
-                  <label className="flex items-center gap-2 text-xs font-semibold text-[#0f2e60] cursor-pointer"><input type="radio" name="workingStudent" value="No" checked={formData.workingStudent === 'No'} onChange={() => handleRadioChange('workingStudent', 'No')} className="w-3.5 h-3.5" /> No</label>
-                </div>
-              </div>
-            </div>
             </div>
           </div>
           
@@ -2648,56 +2977,118 @@ export function StudentSubmissionForm() {
               <h3 className="font-bold text-[#1e3a8a] text-[13px]">Study Classification</h3>
             </div>
             <div className="p-3 sm:p-4">
-              <label className="block text-[12px] font-bold text-[#0f2e60] mb-3">Which of the following classification best describe your current status? (Multiple responses)</label>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2">
-              {[
-                'Indigenous Peoples (IPs)', 'Solo Parent', 'Child of a solo parent', 'Persons with disabilities (PWDs)', 'Child of Person with Disabilities (PWD)',
-                'Drop out or learner who returned to school', 'Child of drop out or learner who returned to school', 'Rebel returnees', 'Child of a rebel returnees',
-                'Dependent or child of OFW', 'Member of 4Ps', 'Member of Calamity or Disaster Affected Family', 'Orphan/Child in need of special protection',
-                'Working Student', 'From geographically isolated & disadvantaged area (GIDA)', 'Muslim Student', 'Low income family/ Economically disadvantaged student',
-                'Senior Citizen student', 'First Generation student (Parents did not complete a college degree, first in the immediate family to seek college admission)',
-                'LGBTQ+ Community', 'Regular student (I do not belong to any of this group classification)'
-              ].map(opt => (
-                <label key={opt} className="flex items-start gap-2 text-xs font-semibold text-[#0f2e60] cursor-pointer">
-                  <input type="checkbox" checked={formData.studentClassification.includes(opt)} onChange={() => handleCheckboxChange('studentClassification', opt)} className="w-3.5 h-3.5 mt-0.5 rounded-sm text-blue-600 focus:ring-blue-500 shrink-0" />
-                  <span className="leading-snug">{opt}</span>
+              <div id="field-studentClassification" className={`rounded-xl p-3 transition-colors ${
+                errors.studentClassification ? 'border border-red-500 bg-red-50/40 ring-1 ring-red-400/20' : 'border border-transparent'
+              }`}>
+                <label className="block text-[12px] font-bold text-[#0f2e60] mb-3 flex items-center gap-1">
+                  Which of the following classification best describe your current status? (Multiple responses) <span className="text-red-500 font-bold">*</span>
                 </label>
-              ))}
-              <div className="col-span-1 sm:col-span-2 mt-2">
-                <label className="flex items-center gap-2 text-xs font-semibold text-[#0f2e60] cursor-pointer">
-                  <input type="checkbox" checked={formData.studentClassification.includes('Others')} onChange={() => handleCheckboxChange('studentClassification', 'Others')} className="w-3.5 h-3.5 rounded-sm text-blue-600 focus:ring-blue-500 shrink-0" /> others (Please specify)
-                </label>
-                {formData.studentClassification.includes('Others') && (
-                  <input type="text" name="studentClassificationOthers" value={formData.studentClassificationOthers} onChange={handleChange} className="border-b border-[#1e3a8a] outline-none text-xs ml-6 mt-1 w-full max-w-lg" />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2">
+                  {[
+                    'Indigenous Peoples (IPs)', 'Solo Parent', 'Child of a solo parent', 'Persons with disabilities (PWDs)', 'Child of Person with Disabilities (PWD)',
+                    'Drop out or learner who returned to school', 'Child of drop out or learner who returned to school', 'Rebel returnees', 'Child of a rebel returnees',
+                    'Dependent or child of OFW', 'Member of 4Ps', 'Member of Calamity or Disaster Affected Family', 'Orphan/Child in need of special protection',
+                    'Working Student', 'From geographically isolated & disadvantaged area (GIDA)', 'Muslim Student', 'Low income family/ Economically disadvantaged student',
+                    'Senior Citizen student', 'First Generation student (Parents did not complete a college degree, first in the immediate family to seek college admission)',
+                    'LGBTQ+ Community', 'Regular student (I do not belong to any of this group classification)'
+                  ].map(opt => (
+                    <label key={opt} className="flex items-start gap-2 text-xs font-semibold text-[#0f2e60] cursor-pointer">
+                      <input 
+                        type="checkbox" 
+                        checked={formData.studentClassification.includes(opt)} 
+                        onChange={() => handleCheckboxChange('studentClassification', opt)} 
+                        className="w-3.5 h-3.5 mt-0.5 rounded-sm text-blue-600 focus:ring-blue-500 shrink-0" 
+                      />
+                      <span className="leading-snug">{opt}</span>
+                    </label>
+                  ))}
+                  <div className="col-span-1 sm:col-span-2 mt-2">
+                    <label className="flex items-center gap-2 text-xs font-semibold text-[#0f2e60] cursor-pointer">
+                      <input 
+                        type="checkbox" 
+                        checked={formData.studentClassification.includes('Others')} 
+                        onChange={() => handleCheckboxChange('studentClassification', 'Others')} 
+                        className="w-3.5 h-3.5 rounded-sm text-blue-600 focus:ring-blue-500 shrink-0" 
+                      /> 
+                      <span>others (Please specify)</span>
+                    </label>
+                    {formData.studentClassification.includes('Others') && (
+                      <div className="mt-2 ml-6 max-w-lg">
+                        <InputGroup
+                          label="Please specify classification"
+                          name="studentClassificationOthers"
+                          value={formData.studentClassificationOthers}
+                          onChange={handleChange}
+                          placeholder="Please specify"
+                          required
+                          error={errors.studentClassificationOthers}
+                        />
+                      </div>
+                    )}
+                  </div>
+                </div>
+                {errors.studentClassification && <span className="text-xs text-red-600 font-semibold mt-2 block">{errors.studentClassification}</span>}
+              </div>
+              
+              <div className="mt-8 space-y-6">
+                {(formData.workingStudent === 'Yes, full-time' || formData.workingStudent === 'Yes, part-time') && (
+                  <div id="field-workTypeIncome">
+                    <InputGroup
+                      label="If you are working student, please indicate your type of work or source of income"
+                      name="workTypeIncome"
+                      value={formData.workTypeIncome}
+                      onChange={handleChange}
+                      placeholder="e.g. Service Crew / Online Seller"
+                      required
+                      error={errors.workTypeIncome}
+                    />
+                  </div>
+                )}
+                {(formData.studentClassification.includes('Persons with disabilities (PWDs)') || formData.studentClassification.includes('Child of Person with Disabilities (PWD)')) && (
+                  <div id="field-specialNeedsCondition">
+                    <InputGroup
+                      label="If you are a student with special needs/Person with disability (PWD), please specify your condition or disability"
+                      name="specialNeedsCondition"
+                      value={formData.specialNeedsCondition}
+                      onChange={handleChange}
+                      placeholder="Please specify your condition or disability"
+                      required
+                      error={errors.specialNeedsCondition}
+                    />
+                  </div>
+                )}
+                {(formData.studentClassification.includes('Drop out or learner who returned to school') || formData.studentClassification.includes('Child of drop out or learner who returned to school')) && (
+                  <div id="field-pdlReason">
+                    <InputGroup
+                      label="If you are a PDL (Drop out, or learner with interrupted schooling), please state the reason why your schooling was previously interrupted"
+                      name="pdlReason"
+                      value={formData.pdlReason}
+                      onChange={handleChange}
+                      placeholder="Please state the reason"
+                      required
+                      error={errors.pdlReason}
+                    />
+                  </div>
                 )}
               </div>
             </div>
-            
-            <div className="mt-8 space-y-6">
-              <div>
-                <label className="block text-[12px] font-bold text-[#0f2e60] mb-2">If you are working student, please indicate your type of work or source of income</label>
-                <input type="text" name="workTypeIncome" value={formData.workTypeIncome} onChange={handleChange} className="border-b border-gray-400 focus:border-[#1e3a8a] outline-none w-full pb-1 text-sm text-gray-700" />
-              </div>
-              <div>
-                <label className="block text-[12px] font-bold text-[#0f2e60] mb-2">If you are a student with special needs/Person with disability (PWD), please specify your condition or disability</label>
-                <input type="text" name="specialNeedsCondition" value={formData.specialNeedsCondition} onChange={handleChange} className="border-b border-gray-400 focus:border-[#1e3a8a] outline-none w-full pb-1 text-sm text-gray-700" />
-              </div>
-              <div>
-                <label className="block text-[12px] font-bold text-[#0f2e60] mb-2">If you are a PDL (Drop out, or learner with interrupted schooling), please state the reason why your schooling was previously interrupted.</label>
-                <input type="text" name="pdlReason" value={formData.pdlReason} onChange={handleChange} className="border-b border-gray-400 focus:border-[#1e3a8a] outline-none w-full pb-1 text-sm text-gray-700" />
-              </div>
-            </div>
-          </div>
           </div>
 
           <SectionHeader title="SCHOLARSHIP CATEGORY" />
           
           {/* SCHOLARSHIP CATEGORY BODY */}
-          <div id="scholarship-category-section" className="bg-[#f8faff] sm:bg-[#fcfdff] p-4 sm:p-6 rounded-xl border border-[#93c5fd] shadow-sm mb-6 scroll-mt-20">
+          <div 
+            id="scholarship-category-section" 
+            className={`p-4 sm:p-6 rounded-xl border shadow-sm mb-6 scroll-mt-20 transition-all ${
+              errors.scholarship 
+                ? 'border-red-500 bg-red-50/20 ring-1 ring-red-400' 
+                : 'bg-[#f8faff] sm:bg-[#fcfdff] border-[#93c5fd]'
+            }`}
+          >
             
             {errors.scholarship && (
-              <div className="p-3 mb-5 bg-red-50 border border-red-200 rounded-lg text-red-700 text-xs flex items-center gap-2">
-                <AlertCircle className="w-4 h-4 shrink-0" />
+              <div className="p-3 mb-5 bg-red-50 border border-red-500 rounded-lg text-red-700 text-xs font-semibold flex items-center gap-2 animate-in fade-in duration-200">
+                <AlertCircle className="w-4 h-4 shrink-0 text-red-600" />
                 <span>{errors.scholarship}</span>
               </div>
             )}
@@ -2993,7 +3384,7 @@ export function StudentSubmissionForm() {
               <div 
                 className={`mx-auto w-64 sm:w-[320px] h-24 border border-dashed rounded-[10px] mb-1 flex items-center justify-center cursor-pointer transition-all bg-white relative overflow-hidden group ${
                   (errors.signature || signatureError)
-                    ? 'border-red-500 bg-red-50/20 ring-2 ring-red-300' 
+                    ? 'border-2 border-red-500 bg-red-50/40 ring-2 ring-red-300' 
                     : formData.signature 
                     ? 'border-green-400 bg-green-50/10' 
                     : 'border-gray-400 hover:bg-gray-50'
@@ -3013,11 +3404,11 @@ export function StudentSubmissionForm() {
               </div>
               
               <div className="inline-block border-t-[1.5px] border-black w-64 sm:w-[320px] pt-1.5 mt-1.5 text-[15px] font-bold text-[#0f2e60]">
-                Enter your signature here <span className="text-red-600">*</span>
+                Enter your signature here <span className="text-red-600 font-bold">*</span>
               </div>
               
               {(errors.signature || signatureError) && (
-                <p className="text-red-600 text-[12.5px] font-semibold mt-2">
+                <p className="text-xs text-red-600 font-semibold mt-1">
                   {errors.signature || signatureError}
                 </p>
               )}
