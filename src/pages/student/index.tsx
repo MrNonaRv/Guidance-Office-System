@@ -1860,7 +1860,7 @@ export function StudentSubmissionForm() {
 
     // Personal Information
     if (!formData.photo2x2) {
-      newErrors.photo2x2 = 'This field is required';
+      newErrors.photo2x2 = 'Please attach your image';
       missingLabels.push('2 × 2 Picture');
     }
     if (!formData.familyName || !formData.familyName.trim()) {
@@ -1880,7 +1880,7 @@ export function StudentSubmissionForm() {
       missingLabels.push('Suffix (e.g. Jr. or N/A)');
     }
     if (!formData.birthdate) {
-      newErrors.birthdate = 'This field is required';
+      newErrors.birthdate = 'Please select a date';
       missingLabels.push('Birthdate');
     }
     if (!formData.age || !formData.age.trim()) {
@@ -1888,23 +1888,23 @@ export function StudentSubmissionForm() {
       missingLabels.push('Age');
     }
     if (!formData.sex) {
-      newErrors.sex = 'This field is required';
+      newErrors.sex = 'Please select an option';
       missingLabels.push('Sex');
     }
     if (!formData.civilStatus) {
-      newErrors.civilStatus = 'This field is required';
+      newErrors.civilStatus = 'Please select an option';
       missingLabels.push('Civil Status');
     }
     if (!formData.yearLevel) {
-      newErrors.yearLevel = 'This field is required';
+      newErrors.yearLevel = 'Please select an option';
       missingLabels.push('Year Level');
     }
     if (!formData.course) {
-      newErrors.course = 'This field is required';
+      newErrors.course = 'Please select an option';
       missingLabels.push('Course');
     }
     if (!formData.section) {
-      newErrors.section = 'This field is required';
+      newErrors.section = 'Please select an option';
       missingLabels.push('Section');
     }
     if (!formData.contactNo || !formData.contactNo.trim()) {
@@ -1922,11 +1922,11 @@ export function StudentSubmissionForm() {
       missingLabels.push('Street Address');
     }
     if (!formData.municipality) {
-      newErrors.municipality = 'This field is required';
+      newErrors.municipality = 'Please select an option';
       missingLabels.push('Municipality');
     }
     if (formData.municipality !== 'Others' && !formData.barangay) {
-      newErrors.barangay = 'This field is required';
+      newErrors.barangay = 'Please select an option';
       missingLabels.push('Barangay');
     }
     if (!formData.province || !formData.province.trim()) {
@@ -1984,20 +1984,20 @@ export function StudentSubmissionForm() {
 
     // Socioeconomic & Living
     if (!formData.parentEduAttainment) {
-      newErrors.parentEduAttainment = 'This field is required';
+      newErrors.parentEduAttainment = 'Please select an option';
       missingLabels.push("Parent/Guardian's Highest Educational Attainment");
     }
     if (!formData.monthlyIncome) {
-      newErrors.monthlyIncome = 'This field is required';
+      newErrors.monthlyIncome = 'Please select an option';
       missingLabels.push('Family Monthly Income');
     }
     if (!formData.firstInFamily) {
-      newErrors.firstInFamily = 'This field is required';
+      newErrors.firstInFamily = 'Please select an option';
       missingLabels.push('First in family to attend college');
     }
 
     if (!formData.livingWith) {
-      newErrors.livingWith = 'This field is required';
+      newErrors.livingWith = 'Please select an option';
       missingLabels.push('With whom do you currently live?');
     }
     if (formData.livingWith === 'Others' && (!formData.livingWithOthers || !formData.livingWithOthers.trim())) {
@@ -2005,7 +2005,7 @@ export function StudentSubmissionForm() {
       missingLabels.push('Living with (Others specified)');
     }
     if (!formData.housingType) {
-      newErrors.housingType = 'This field is required';
+      newErrors.housingType = 'Please select an option';
       missingLabels.push('Type of Housing');
     }
     if (formData.housingType === 'Others' && (!formData.housingTypeOthers || !formData.housingTypeOthers.trim())) {
@@ -2015,11 +2015,11 @@ export function StudentSubmissionForm() {
 
     // Working Student & Classification & Resources
     if (!formData.accessToResources || formData.accessToResources.length === 0) {
-      newErrors.accessToResources = 'This field is required';
+      newErrors.accessToResources = 'Please select at least one option';
       missingLabels.push('Access to Resources at home');
     }
     if (!formData.workingStudent) {
-      newErrors.workingStudent = 'This field is required';
+      newErrors.workingStudent = 'Please select an option';
       missingLabels.push('Do you work while studying?');
     }
     if ((formData.workingStudent === 'Yes, full-time' || formData.workingStudent === 'Yes, part-time') && (!formData.workTypeIncome || !formData.workTypeIncome.trim())) {
@@ -2027,7 +2027,7 @@ export function StudentSubmissionForm() {
       missingLabels.push('Type of work or source of income');
     }
     if (!formData.studentClassification || formData.studentClassification.length === 0) {
-      newErrors.studentClassification = 'This field is required';
+      newErrors.studentClassification = 'Please select at least one option';
       missingLabels.push('Student Classification');
     }
     if (formData.studentClassification?.includes('Others') && (!formData.studentClassificationOthers || !formData.studentClassificationOthers.trim())) {
@@ -2047,9 +2047,9 @@ export function StudentSubmissionForm() {
 
     // Signature
     if (!formData.signature) {
-      newErrors.signature = 'This field is required';
+      newErrors.signature = 'Signature is required';
       missingLabels.push("Applicant Signature (Click signature box at the bottom to sign)");
-      setSignatureError('This field is required');
+      setSignatureError('Signature is required');
     } else {
       setSignatureError(null);
     }
@@ -3031,45 +3031,44 @@ export function StudentSubmissionForm() {
               </div>
               
               <div className="mt-8 space-y-6">
-                {(formData.workingStudent === 'Yes, full-time' || formData.workingStudent === 'Yes, part-time') && (
-                  <div id="field-workTypeIncome">
-                    <InputGroup
-                      label="If you are working student, please indicate your type of work or source of income"
-                      name="workTypeIncome"
-                      value={formData.workTypeIncome}
-                      onChange={handleChange}
-                      placeholder="e.g. Service Crew / Online Seller"
-                      required
-                      error={errors.workTypeIncome}
-                    />
-                  </div>
-                )}
-                {(formData.studentClassification.includes('Persons with disabilities (PWDs)') || formData.studentClassification.includes('Child of Person with Disabilities (PWD)')) && (
-                  <div id="field-specialNeedsCondition">
-                    <InputGroup
-                      label="If you are a student with special needs/Person with disability (PWD), please specify your condition or disability"
-                      name="specialNeedsCondition"
-                      value={formData.specialNeedsCondition}
-                      onChange={handleChange}
-                      placeholder="Please specify your condition or disability"
-                      required
-                      error={errors.specialNeedsCondition}
-                    />
-                  </div>
-                )}
-                {(formData.studentClassification.includes('Drop out or learner who returned to school') || formData.studentClassification.includes('Child of drop out or learner who returned to school')) && (
-                  <div id="field-pdlReason">
-                    <InputGroup
-                      label="If you are a PDL (Drop out, or learner with interrupted schooling), please state the reason why your schooling was previously interrupted"
-                      name="pdlReason"
-                      value={formData.pdlReason}
-                      onChange={handleChange}
-                      placeholder="Please state the reason"
-                      required
-                      error={errors.pdlReason}
-                    />
-                  </div>
-                )}
+                <div id="field-workTypeIncome">
+                  <InputGroup
+                    label="If you are working student, please indicate your type of work or source of income"
+                    name="workTypeIncome"
+                    value={formData.workTypeIncome}
+                    onChange={handleChange}
+                    placeholder="e.g. Service Crew / Online Seller"
+                    required={formData.workingStudent !== 'No'}
+                    disabled={formData.workingStudent === 'No'}
+                    error={errors.workTypeIncome}
+                  />
+                </div>
+                
+                <div id="field-specialNeedsCondition">
+                  <InputGroup
+                    label="If you are a student with special needs/Person with disability (PWD), please specify your condition or disability"
+                    name="specialNeedsCondition"
+                    value={formData.specialNeedsCondition}
+                    onChange={handleChange}
+                    placeholder="Please specify your condition or disability"
+                    required={formData.studentClassification.includes('Persons with disabilities (PWDs)') || formData.studentClassification.includes('Child of Person with Disabilities (PWD)')}
+                    disabled={!(formData.studentClassification.includes('Persons with disabilities (PWDs)') || formData.studentClassification.includes('Child of Person with Disabilities (PWD)'))}
+                    error={errors.specialNeedsCondition}
+                  />
+                </div>
+                
+                <div id="field-pdlReason">
+                  <InputGroup
+                    label="If you are a PDL (Drop out, or learner with interrupted schooling), please state the reason why your schooling was previously interrupted"
+                    name="pdlReason"
+                    value={formData.pdlReason}
+                    onChange={handleChange}
+                    placeholder="Please state the reason"
+                    required={formData.studentClassification.includes('Drop out or learner who returned to school') || formData.studentClassification.includes('Child of drop out or learner who returned to school')}
+                    disabled={!(formData.studentClassification.includes('Drop out or learner who returned to school') || formData.studentClassification.includes('Child of drop out or learner who returned to school'))}
+                    error={errors.pdlReason}
+                  />
+                </div>
               </div>
             </div>
           </div>
