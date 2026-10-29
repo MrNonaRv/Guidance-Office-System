@@ -1864,19 +1864,19 @@ export function StudentSubmissionForm() {
       missingLabels.push('2 × 2 Picture');
     }
     if (!formData.familyName || !formData.familyName.trim()) {
-      newErrors.familyName = 'This field is required';
+      newErrors.familyName = 'This field is required. Write N/A if not applicable';
       missingLabels.push('Last Name');
     }
     if (!formData.firstName || !formData.firstName.trim()) {
-      newErrors.firstName = 'This field is required';
+      newErrors.firstName = 'This field is required. Write N/A if not applicable';
       missingLabels.push('First Name');
     }
     if (!formData.middleName || !formData.middleName.trim()) {
-      newErrors.middleName = 'This field is required';
+      newErrors.middleName = 'This field is required. Write N/A if not applicable';
       missingLabels.push('Middle Name');
     }
     if (!formData.suffix || !formData.suffix.trim()) {
-      newErrors.suffix = 'This field is required';
+      newErrors.suffix = 'This field is required. Write N/A if not applicable';
       missingLabels.push('Suffix (e.g. Jr. or N/A)');
     }
     if (!formData.birthdate) {
@@ -1884,7 +1884,7 @@ export function StudentSubmissionForm() {
       missingLabels.push('Birthdate');
     }
     if (!formData.age || !formData.age.trim()) {
-      newErrors.age = 'This field is required';
+      newErrors.age = 'This field is required. Write N/A if not applicable';
       missingLabels.push('Age');
     }
     if (!formData.sex) {
@@ -1908,17 +1908,17 @@ export function StudentSubmissionForm() {
       missingLabels.push('Section');
     }
     if (!formData.contactNo || !formData.contactNo.trim()) {
-      newErrors.contactNo = 'This field is required';
+      newErrors.contactNo = 'This field is required. Write N/A if not applicable';
       missingLabels.push('Contact No.');
     }
     if (!formData.email || !formData.email.trim()) {
-      newErrors.email = 'This field is required';
+      newErrors.email = 'This field is required. Write N/A if not applicable';
       missingLabels.push('Email');
     }
 
     // Address
     if (!formData.street || !formData.street.trim()) {
-      newErrors.street = 'This field is required';
+      newErrors.street = 'This field is required. Write N/A if not applicable';
       missingLabels.push('Street Address');
     }
     if (!formData.municipality) {
@@ -1930,55 +1930,55 @@ export function StudentSubmissionForm() {
       missingLabels.push('Barangay');
     }
     if (!formData.province || !formData.province.trim()) {
-      newErrors.province = 'This field is required';
+      newErrors.province = 'This field is required. Write N/A if not applicable';
       missingLabels.push('Province');
     }
     if (!formData.postalCode || !formData.postalCode.trim()) {
-      newErrors.postalCode = 'This field is required';
+      newErrors.postalCode = 'This field is required. Write N/A if not applicable';
       missingLabels.push('Postal Code');
     }
     if (formData.municipality === 'Others' && (!formData.outsideCapizAddress || !formData.outsideCapizAddress.trim())) {
-      newErrors.outsideCapizAddress = 'This field is required';
+      newErrors.outsideCapizAddress = 'This field is required. Write N/A if not applicable';
       missingLabels.push('Address (Outside Capiz)');
     }
 
     // Family Background
     if (!formData.fatherName || !formData.fatherName.trim()) {
-      newErrors.fatherName = 'This field is required';
+      newErrors.fatherName = 'This field is required. Write N/A if not applicable';
       missingLabels.push("Father's Name");
     }
     if (!formData.fatherOccupation || !formData.fatherOccupation.trim()) {
-      newErrors.fatherOccupation = 'This field is required';
+      newErrors.fatherOccupation = 'This field is required. Write N/A if not applicable';
       missingLabels.push("Father's Occupation");
     }
     if (!formData.fatherContact || !formData.fatherContact.trim()) {
-      newErrors.fatherContact = 'This field is required';
+      newErrors.fatherContact = 'This field is required. Write N/A if not applicable';
       missingLabels.push("Father's Contact");
     }
 
     if (!formData.motherName || !formData.motherName.trim()) {
-      newErrors.motherName = 'This field is required';
+      newErrors.motherName = 'This field is required. Write N/A if not applicable';
       missingLabels.push("Mother's Name");
     }
     if (!formData.motherOccupation || !formData.motherOccupation.trim()) {
-      newErrors.motherOccupation = 'This field is required';
+      newErrors.motherOccupation = 'This field is required. Write N/A if not applicable';
       missingLabels.push("Mother's Occupation");
     }
     if (!formData.motherContact || !formData.motherContact.trim()) {
-      newErrors.motherContact = 'This field is required';
+      newErrors.motherContact = 'This field is required. Write N/A if not applicable';
       missingLabels.push("Mother's Contact");
     }
 
     if (!formData.guardianName || !formData.guardianName.trim()) {
-      newErrors.guardianName = 'This field is required';
+      newErrors.guardianName = 'This field is required. Write N/A if not applicable';
       missingLabels.push("Guardian's Name");
     }
     if (!formData.guardianOccupation || !formData.guardianOccupation.trim()) {
-      newErrors.guardianOccupation = 'This field is required';
+      newErrors.guardianOccupation = 'This field is required. Write N/A if not applicable';
       missingLabels.push("Guardian's Occupation");
     }
     if (!formData.guardianContact || !formData.guardianContact.trim()) {
-      newErrors.guardianContact = 'This field is required';
+      newErrors.guardianContact = 'This field is required. Write N/A if not applicable';
       missingLabels.push("Guardian's Contact");
     }
 
@@ -2001,7 +2001,7 @@ export function StudentSubmissionForm() {
       missingLabels.push('With whom do you currently live?');
     }
     if (formData.livingWith === 'Others' && (!formData.livingWithOthers || !formData.livingWithOthers.trim())) {
-      newErrors.livingWithOthers = 'This field is required';
+      newErrors.livingWithOthers = 'This field is required. Write N/A if not applicable';
       missingLabels.push('Living with (Others specified)');
     }
     if (!formData.housingType) {
@@ -2009,7 +2009,7 @@ export function StudentSubmissionForm() {
       missingLabels.push('Type of Housing');
     }
     if (formData.housingType === 'Others' && (!formData.housingTypeOthers || !formData.housingTypeOthers.trim())) {
-      newErrors.housingTypeOthers = 'This field is required';
+      newErrors.housingTypeOthers = 'This field is required. Write N/A if not applicable';
       missingLabels.push('Type of Housing (Others specified)');
     }
 
@@ -2023,7 +2023,7 @@ export function StudentSubmissionForm() {
       missingLabels.push('Do you work while studying?');
     }
     if ((formData.workingStudent === 'Yes, full-time' || formData.workingStudent === 'Yes, part-time') && (!formData.workTypeIncome || !formData.workTypeIncome.trim())) {
-      newErrors.workTypeIncome = 'This field is required';
+      newErrors.workTypeIncome = 'This field is required. Write N/A if not applicable';
       missingLabels.push('Type of work or source of income');
     }
     if (!formData.studentClassification || formData.studentClassification.length === 0) {
@@ -2031,14 +2031,26 @@ export function StudentSubmissionForm() {
       missingLabels.push('Student Classification');
     }
     if (formData.studentClassification?.includes('Others') && (!formData.studentClassificationOthers || !formData.studentClassificationOthers.trim())) {
-      newErrors.studentClassificationOthers = 'This field is required';
+      newErrors.studentClassificationOthers = 'This field is required. Write N/A if not applicable';
       missingLabels.push('Other classification specified');
+    }
+
+    // Additional Specify Fields
+    const isPWD = formData.studentClassification.includes('Persons with disabilities (PWDs)') || formData.studentClassification.includes('Child of Person with Disabilities (PWD)');
+    if (isPWD && (!formData.specialNeedsCondition || !formData.specialNeedsCondition.trim())) {
+      newErrors.specialNeedsCondition = 'This field is required. Write N/A if not applicable';
+      missingLabels.push('Special Needs / PWD Condition');
+    }
+    const isPDL = formData.studentClassification.includes('Drop out or learner who returned to school') || formData.studentClassification.includes('Child of drop out or learner who returned to school');
+    if (isPDL && (!formData.pdlReason || !formData.pdlReason.trim())) {
+      newErrors.pdlReason = 'This field is required. Write N/A if not applicable';
+      missingLabels.push('Reason for interrupted schooling');
     }
 
     // Scholarship Program
     const selectedScholarshipsCount = (formData.selectedScholarships && formData.selectedScholarships.length) || (formData.internalCategory || formData.externalCategory ? 1 : 0);
     if (!formData.scholarshipFundType || selectedScholarshipsCount === 0) {
-      newErrors.scholarship = 'This field is required. Please select at least one scholarship program.';
+      newErrors.scholarship = 'This field is required. Write N/A if not applicable';
       missingLabels.push('Scholarship Program Category');
     } else if (selectedScholarshipsCount > 2) {
       newErrors.scholarship = 'You may select a maximum of 2 scholarships';
@@ -3037,7 +3049,7 @@ export function StudentSubmissionForm() {
                     name="workTypeIncome"
                     value={formData.workTypeIncome}
                     onChange={handleChange}
-                    placeholder="e.g. Service Crew / Online Seller"
+                    placeholder="This field is required. Write N/A if not applicable"
                     required={formData.workingStudent !== 'No'}
                     disabled={formData.workingStudent === 'No'}
                     error={errors.workTypeIncome}
@@ -3050,7 +3062,7 @@ export function StudentSubmissionForm() {
                     name="specialNeedsCondition"
                     value={formData.specialNeedsCondition}
                     onChange={handleChange}
-                    placeholder="Please specify your condition or disability"
+                    placeholder="This field is required. Write N/A if not applicable"
                     required={formData.studentClassification.includes('Persons with disabilities (PWDs)') || formData.studentClassification.includes('Child of Person with Disabilities (PWD)')}
                     disabled={!(formData.studentClassification.includes('Persons with disabilities (PWDs)') || formData.studentClassification.includes('Child of Person with Disabilities (PWD)'))}
                     error={errors.specialNeedsCondition}
@@ -3063,7 +3075,7 @@ export function StudentSubmissionForm() {
                     name="pdlReason"
                     value={formData.pdlReason}
                     onChange={handleChange}
-                    placeholder="Please state the reason"
+                    placeholder="This field is required. Write N/A if not applicable"
                     required={formData.studentClassification.includes('Drop out or learner who returned to school') || formData.studentClassification.includes('Child of drop out or learner who returned to school')}
                     disabled={!(formData.studentClassification.includes('Drop out or learner who returned to school') || formData.studentClassification.includes('Child of drop out or learner who returned to school'))}
                     error={errors.pdlReason}
