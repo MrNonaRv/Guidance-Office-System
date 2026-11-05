@@ -7,6 +7,19 @@
 
 ---
 
+## [November 5, 2026 - Update 7] — Header Logout Button Alignment & Stepper Scroll Fix
+
+### 1. Header Logout Button Alignment Fix
+- **Issue**: The header used `flex-wrap`, causing the logout button on smaller screens/phones to wrap below the logo and title.
+- **Fix**: Updated the header navbar to `flex-row flex-nowrap` so that the logo/title on the left and logout button/user email on the right remain perfectly aligned on a single row across all screen sizes.
+
+### 2. Progress Stepper Horizontal Scrollbar Removal
+- **Issue**: The progress stepper tabs (*Student Info*, *Upload Files*, *Review*) had fixed widths and `overflow-x-auto`, causing an unwanted left-to-right horizontal scrollbar on mobile viewports.
+- **Fix**: Removed `overflow-x-auto` and configured the stepper steps and connecting lines to be fully responsive (`flex-1 min-w-0`), fitting naturally without horizontal scrolling.
+- **Verification**: Verified clean build compilation and linting with 0 errors.
+
+---
+
 ## [November 5, 2026 - Update 6] — Restore Compact Multi-Column Phone Layout
 
 ### 1. Restored Compact Phone Grid Layout

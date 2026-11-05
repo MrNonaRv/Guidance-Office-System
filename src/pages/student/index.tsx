@@ -737,7 +737,7 @@ export function StudentLayout() {
   return (
     <div className="min-h-screen bg-[#f4f7fb] font-sans">
       {/* Top Navbar */}
-      <header className="bg-[#2b64b1] text-white py-2.5 sm:py-3 px-3 sm:px-6 md:px-8 shadow-sm flex flex-wrap justify-between items-center sticky top-0 z-50 gap-2 sm:gap-4">
+      <header className="bg-[#2b64b1] text-white py-2.5 sm:py-3 px-3 sm:px-6 md:px-8 shadow-sm flex flex-row flex-nowrap justify-between items-center sticky top-0 z-50 gap-2 sm:gap-4">
         <div className="flex items-center gap-2.5 sm:gap-4 min-w-0">
           <div className="w-9 h-9 sm:w-11 sm:h-11 bg-white rounded-full flex items-center justify-center overflow-hidden shrink-0 shadow-xs">
             <img src="/capsu-logo.png" alt="CAPSU Logo" className="w-7 h-7 sm:w-9 sm:h-9 object-contain" />
@@ -2264,10 +2264,10 @@ clearErrors('photo2x2');
   return (
     <div className="max-w-4xl mx-auto py-8 px-4">
       {/* Progress Stepper */}
-      <div className="bg-white rounded-2xl md:rounded-[2rem] shadow-sm py-4 sm:py-8 px-4 sm:px-12 mb-6 sm:mb-8 flex items-center justify-center gap-1 sm:gap-2 overflow-x-auto">
+      <div className="bg-white rounded-2xl md:rounded-[2rem] shadow-sm py-4 sm:py-8 px-2 sm:px-12 mb-6 sm:mb-8 flex items-center justify-between w-full">
         
         {/* Step 1 */}
-        <div className="flex flex-col items-center shrink-0 w-[100px] sm:w-[140px]">
+        <div className="flex flex-col items-center flex-1 min-w-0 px-1">
           <div className={`w-10 h-10 sm:w-16 sm:h-16 rounded-xl sm:rounded-[18px] flex items-center justify-center shadow-md mb-2 sm:mb-3 z-10 relative transition-all ${
             step === 1 ? 'bg-[#1864db] shadow-blue-500/20 scale-105' : 
             step > 1 ? 'bg-[#16a34a] shadow-green-500/20' : 'bg-gray-200'
@@ -2278,16 +2278,16 @@ clearErrors('photo2x2');
               <FileEdit className={`w-5 h-5 sm:w-7 sm:h-7 ${step === 1 ? 'text-white' : 'text-gray-500'}`} />
             )}
           </div>
-          <span className={`font-bold uppercase text-center transition-all ${
-            step === 1 ? 'text-[10px] sm:text-[13px] text-[#1e3a8a]' : 
-            step > 1 ? 'text-[9px] sm:text-[11px] text-[#16a34a]' : 'text-[9px] sm:text-[11px] text-gray-400'
-          }`}>Student Information</span>
+          <span className={`font-bold uppercase text-center transition-all truncate w-full ${
+            step === 1 ? 'text-[9px] sm:text-[13px] text-[#1e3a8a]' : 
+            step > 1 ? 'text-[8px] sm:text-[11px] text-[#16a34a]' : 'text-[8px] sm:text-[11px] text-gray-400'
+          }`}>Student Info</span>
         </div>
 
-        <div className="w-6 sm:w-16 md:w-24 h-[2px] -mt-5 sm:-mt-8 shrink-0 bg-gray-300"></div>
+        <div className="flex-1 h-[2px] -mt-5 sm:-mt-8 bg-gray-300 min-w-[4px] sm:min-w-[16px]"></div>
         
         {/* Step 2 */}
-        <div className="flex flex-col items-center shrink-0 w-[100px] sm:w-[140px]">
+        <div className="flex flex-col items-center flex-1 min-w-0 px-1">
           <div className={`w-10 h-10 sm:w-16 sm:h-16 rounded-xl sm:rounded-[18px] flex items-center justify-center shadow-md mb-2 sm:mb-3 z-10 relative transition-all ${
             step === 2 ? 'bg-[#1864db] shadow-blue-500/20 scale-105' : 
             step > 2 ? 'bg-[#16a34a] shadow-green-500/20' : 'bg-gray-200'
@@ -2298,16 +2298,16 @@ clearErrors('photo2x2');
               <FileText className={`w-5 h-5 sm:w-7 sm:h-7 ${step === 2 ? 'text-white' : 'text-gray-500'}`} />
             )}
           </div>
-          <span className={`font-bold uppercase text-center transition-all ${
-            step === 2 ? 'text-[10px] sm:text-[13px] text-[#1e3a8a]' : 
-            step > 2 ? 'text-[9px] sm:text-[11px] text-[#16a34a]' : 'text-[9px] sm:text-[11px] text-gray-400'
+          <span className={`font-bold uppercase text-center transition-all truncate w-full ${
+            step === 2 ? 'text-[9px] sm:text-[13px] text-[#1e3a8a]' : 
+            step > 2 ? 'text-[8px] sm:text-[11px] text-[#16a34a]' : 'text-[8px] sm:text-[11px] text-gray-400'
           }`}>Upload Files</span>
         </div>
 
-        <div className="w-6 sm:w-16 md:w-24 h-[2px] -mt-5 sm:-mt-8 shrink-0 bg-gray-300"></div>
+        <div className="flex-1 h-[2px] -mt-5 sm:-mt-8 bg-gray-300 min-w-[4px] sm:min-w-[16px]"></div>
         
         {/* Step 3 */}
-        <div className="flex flex-col items-center shrink-0 w-[100px] sm:w-[140px]">
+        <div className="flex flex-col items-center flex-1 min-w-0 px-1">
           <div className={`w-10 h-10 sm:w-16 sm:h-16 rounded-xl sm:rounded-[18px] flex items-center justify-center shadow-md mb-2 sm:mb-3 z-10 relative transition-all ${
             step === 3 ? 'bg-[#1864db] shadow-blue-500/20 scale-105' : 
             step > 3 ? 'bg-[#16a34a] shadow-green-500/20' : 'bg-gray-200'
@@ -2318,9 +2318,9 @@ clearErrors('photo2x2');
               <ClipboardCheck className={`w-5 h-5 sm:w-7 sm:h-7 ${step === 3 ? 'text-white' : 'text-gray-500'}`} />
             )}
           </div>
-          <span className={`font-bold uppercase text-center transition-all ${
-            step === 3 ? 'text-[10px] sm:text-[13px] text-[#1e3a8a]' : 
-            step > 3 ? 'text-[9px] sm:text-[11px] text-[#16a34a]' : 'text-[9px] sm:text-[11px] text-gray-400'
+          <span className={`font-bold uppercase text-center transition-all truncate w-full ${
+            step === 3 ? 'text-[9px] sm:text-[13px] text-[#1e3a8a]' : 
+            step > 3 ? 'text-[8px] sm:text-[11px] text-[#16a34a]' : 'text-[8px] sm:text-[11px] text-gray-400'
           }`}>Review</span>
         </div>
 
