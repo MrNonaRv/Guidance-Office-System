@@ -1,9 +1,27 @@
 # System Edit & Update History Log
 
-**Last Updated:** November 4, 2026  
+**Last Updated:** November 5, 2026  
 **System:** Web-Based Scholarship Submission Alert System (CAPSU Mambusao Satellite College)
 
 > **Maintenance Note:** Whenever updates, refactorings, new features, or bug fixes are made to the system in the future, please record them in this file under a new dated entry.
+
+---
+
+## [November 5, 2026 - Update 5] — Living Condition "Others" Specify Text Inputs Fix
+
+### 1. Fixed Living Condition "Others" Specify Inputs
+- **Issue**: When selecting `"Others"` for *With whom do you currently live?* or *Type of Housing*, the specify text input box did not appear because `livingWith` and `housingType` were not correctly extracted from `formData` in `LivingConditionSection.tsx`.
+- **Fix**: Updated `LivingConditionSection.tsx` to properly read `livingWith` and `housingType` from `formData` so that selecting `"Others"` immediately reveals the respective specify text input box where students can type their custom arrangement/housing type.
+- **Verification**: Verified clean build compilation and linting with 0 errors.
+
+---
+
+## [November 5, 2026 - Update 4] — Fix Duplicate Scholarship Category Section Render
+
+### 1. Fixed Duplicate Scholarship Category Section Render
+- **Issue**: The Scholarship Category section appeared twice on Step 1 of the student application form (once via `<ScholarshipCategorySection />` component and once via duplicated inline code in `src/pages/student/index.tsx`).
+- **Fix**: Fully implemented `ScholarshipCategorySection.tsx` to handle the funding source tabs, selection options, and specify fields, and removed the duplicate inline render block from `src/pages/student/index.tsx`.
+- **Verification**: Verified clean build compilation and linting with 0 errors.
 
 ---
 

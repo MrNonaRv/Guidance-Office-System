@@ -4,7 +4,9 @@ import { Controller } from 'react-hook-form';
 import { InputGroup } from './InputGroup';
 import { SelectGroup } from './SelectGroup';
 
-export const LivingConditionSection = ({ control, errors, livingWith, housingType }: any) => {
+export const LivingConditionSection = ({ control, errors, formData }: any) => {
+  const livingWith = formData?.livingWith;
+  const housingType = formData?.housingType;
   return (
     <div className="border border-[#93c5fd] rounded-lg mb-6 bg-white overflow-hidden shadow-sm">
       <div className="bg-[#e0e7ff] px-4 py-2 flex items-center gap-2 border-b border-[#93c5fd]">
