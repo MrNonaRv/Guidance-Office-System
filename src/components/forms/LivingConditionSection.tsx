@@ -20,7 +20,7 @@ export const LivingConditionSection = ({ control, errors, livingWith, housingTyp
                 {...field}
                 options={['Parents/Guardians', 'Relatives', 'Alone', 'Boarding house', 'Others']}
                 required
-                error={errors.livingWith?.message}
+                error={errors.livingWith?.message || errors.livingWith}
               />
             )} />
             {livingWith === 'Others' && (
@@ -31,7 +31,7 @@ export const LivingConditionSection = ({ control, errors, livingWith, housingTyp
                     {...field}
                     placeholder="Please specify"
                     required
-                    error={errors.livingWithOthers?.message}
+                    error={errors.livingWithOthers?.message || errors.livingWithOthers}
                   />
                 )} />
               </div>
@@ -44,7 +44,7 @@ export const LivingConditionSection = ({ control, errors, livingWith, housingTyp
                 {...field}
                 options={['Own house', 'Rented house or apartment', 'Boarding house', 'Others']}
                 required
-                error={errors.housingType?.message}
+                error={errors.housingType?.message || errors.housingType}
               />
             )} />
             {housingType === 'Others' && (
@@ -55,7 +55,7 @@ export const LivingConditionSection = ({ control, errors, livingWith, housingTyp
                     {...field}
                     placeholder="Please specify"
                     required
-                    error={errors.housingTypeOthers?.message}
+                    error={errors.housingTypeOthers?.message || errors.housingTypeOthers}
                   />
                 )} />
               </div>

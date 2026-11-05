@@ -69,8 +69,9 @@ export const StudyClassificationSection = ({ control, errors, formData, handleCh
             <InputGroup
               label="If you are working student, please indicate your type of work or source of income"
               {...field}
+              placeholder=""
               required
-              error={errors.workTypeIncome?.message}
+              error={errors.workTypeIncome?.message || errors.workTypeIncome}
             />
           )} />
           
@@ -78,8 +79,9 @@ export const StudyClassificationSection = ({ control, errors, formData, handleCh
             <InputGroup
               label="If you are a student with special needs/Person with disability (PWD), please specify your condition or disability"
               {...field}
+              placeholder=""
               required
-              error={errors.specialNeedsCondition?.message}
+              error={errors.specialNeedsCondition?.message || errors.specialNeedsCondition}
             />
           )} />
           
@@ -87,8 +89,9 @@ export const StudyClassificationSection = ({ control, errors, formData, handleCh
             <InputGroup
               label="If you are a PDL (Drop out, or learner with interrupted schooling), please state the reason why your schooling was previously interrupted"
               {...field}
+              placeholder=""
               required
-              error={errors.pdlReason?.message}
+              error={errors.pdlReason?.message || errors.pdlReason}
             />
           )} />
         </div>

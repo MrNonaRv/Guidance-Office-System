@@ -15,7 +15,7 @@ export const scholarshipFormSchema = z.object({
   course: z.string().min(1, 'Please select an option'),
   section: z.string().min(1, 'Please select an option'),
   contactNo: z.string().min(1, 'This field is required'),
-  email: z.string().email('Invalid email').min(1, 'This field is required'),
+  email: z.string().min(1, 'This field is required').email('Invalid email'),
   street: z.string().min(1, 'This field is required'),
   municipality: z.string().min(1, 'Please select an option'),
   barangay: z.string().optional(),
@@ -44,7 +44,7 @@ export const scholarshipFormSchema = z.object({
   housingTypeOthers: z.string().optional(),
 
   // Resources
-  accessToResources: z.array(z.string()).min(1, 'Please select at least one option'),
+  accessToResources: z.array(z.string()).min(1, 'Please select an option'),
   workingStudent: z.string().min(1, 'Please select an option'),
 
   // Study Classification

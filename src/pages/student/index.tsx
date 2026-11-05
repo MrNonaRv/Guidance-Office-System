@@ -18,6 +18,10 @@ import { LivingConditionSection } from '../../components/forms/LivingConditionSe
 import { AccessToResourcesSection } from '../../components/forms/AccessToResourcesSection';
 import { StudyClassificationSection } from '../../components/forms/StudyClassificationSection';
 import { ScholarshipCategorySection } from '../../components/forms/ScholarshipCategorySection';
+import { SignaturePad } from '../../components/SignaturePad';
+import { SubmissionReviewSummary } from '../../components/SubmissionReviewSummary';
+import { SubmissionSuccessModal } from '../../components/SubmissionSuccessModal';
+import { DocumentPreviewModal } from '../../components/DocumentPreviewModal';
 import { isRFDocument, isGWADocument, isImageFile, formatDocumentTitle } from '../../lib/imageUtils';
 import { capizMunicipalities } from '../../lib/capiz';
 
@@ -1213,11 +1217,6 @@ const SectionHeader = ({ title, className }: { title: string; className?: string
   <div className={cn("bg-[#1846b0] text-white text-center py-2.5 rounded-lg font-bold tracking-wider mb-6 text-sm mt-8", className)}>{title}</div>
 );
 
-const SignaturePad = () => null;
-const SubmissionReviewSummary = () => null;
-const SubmissionSuccessModal = () => null;
-const DocumentPreviewModal = () => null;
-
 export function StudentSubmissionForm() {
   const navigate = useNavigate();
   const initialUser = (() => {
@@ -1845,7 +1844,7 @@ clearErrors('photo2x2');
 
     // Working Student & Classification & Resources
     if (!formData.accessToResources || formData.accessToResources.length === 0) {
-      newErrors.accessToResources = 'Please select at least one option';
+      newErrors.accessToResources = 'Please select an option';
       missingLabels.push('Access to Resources at home');
     }
     if (!formData.workingStudent) {
@@ -2387,9 +2386,14 @@ clearErrors('photo2x2');
       </div>
 
       {step === 1 && (() => {
+        const activeManualErrors = Object.entries(manualErrors).filter(([k]) => {
+          const val = (formData as any)[k];
+          if (Array.isArray(val)) return val.length === 0;
+          return !val || (typeof val === 'string' && !val.trim());
+        });
         const combinedErrors = {
           ...errors,
-          ...Object.fromEntries(Object.entries(manualErrors).map(([k, v]) => [k, { message: v }]))
+          ...Object.fromEntries(activeManualErrors.map(([k, v]) => [k, { message: v }]))
         };
         return (
           <>

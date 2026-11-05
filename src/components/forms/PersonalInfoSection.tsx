@@ -32,37 +32,160 @@ export const PersonalInfoSection = ({ control, errors, handlePhotoUpload, formDa
             2 × 2 Picture <span className="text-red-500 font-bold">*</span>
             <input type="file" accept="image/*" className="hidden" onChange={handlePhotoUpload} />
           </label>
-          {errors.photo2x2 && <span className="text-xs text-red-600 font-semibold mt-1 text-center">This field is required</span>}
+          {errors.photo2x2 && <span className="text-xs text-red-600 font-semibold mt-1 text-center">{errors.photo2x2?.message || 'Please attach your image'}</span>}
         </div>
         <div className="flex-1 w-full space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 sm:gap-4">
-            <Controller name="familyName" control={control} render={({ field }) => <InputGroup label="Last Name" {...field} required placeholder="e.g. Dela Cruz" error={errors.familyName?.message} />} />
-            <Controller name="firstName" control={control} render={({ field }) => <InputGroup label="First Name" {...field} required placeholder="e.g. Juan" error={errors.firstName?.message} />} />
-            <Controller name="middleName" control={control} render={({ field }) => <InputGroup label="Middle Name" {...field} required placeholder="e.g. Santos" error={errors.middleName?.message} />} />
-            <Controller name="suffix" control={control} render={({ field }) => <InputGroup label="Suffix" {...field} required placeholder="e.g. Jr. or N/A" error={errors.suffix?.message} />} />
+            <Controller name="familyName" control={control} render={({ field }) => <InputGroup label="Last Name" {...field} required placeholder="e.g. Dela Cruz" error={errors.familyName?.message || errors.familyName} />} />
+            <Controller name="firstName" control={control} render={({ field }) => <InputGroup label="First Name" {...field} required placeholder="e.g. Juan" error={errors.firstName?.message || errors.firstName} />} />
+            <Controller name="middleName" control={control} render={({ field }) => <InputGroup label="Middle Name" {...field} required placeholder="e.g. Santos" error={errors.middleName?.message || errors.middleName} />} />
+            <Controller name="suffix" control={control} render={({ field }) => <InputGroup label="Suffix" {...field} required placeholder="e.g. Jr. or N/A" error={errors.suffix?.message || errors.suffix} />} />
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             <Controller name="birthdate" control={control} render={({ field }) => (
               <div className="flex flex-col relative" id="field-birthdate">
                 <label className="text-[11px] font-bold text-[#0f2e60] mb-1 flex items-center gap-1">Birthdate <span className="text-red-500 font-bold">*</span></label>
                 <input type="date" {...field} className={`w-full border rounded px-3 py-1.5 text-sm outline-none transition-colors ${errors.birthdate ? 'border-red-500 bg-red-50/40' : 'border-[#1e3a8a] bg-white'}`} />
-                {errors.birthdate && <span className="text-xs text-red-600 font-semibold mt-1">{errors.birthdate.message}</span>}
+                {errors.birthdate && <span className="text-xs text-red-600 font-semibold mt-1">{errors.birthdate?.message || errors.birthdate}</span>}
               </div>
             )} />
-            <Controller name="age" control={control} render={({ field }) => <InputGroup label="Age" {...field} required placeholder="e.g. 18" error={errors.age?.message} />} />
+            <Controller name="age" control={control} render={({ field }) => <InputGroup label="Age" {...field} required placeholder="e.g. 18" error={errors.age?.message || errors.age} />} />
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mt-1">
-            <Controller name="sex" control={control} render={({ field }) => <RadioGroup label="Sex" {...field} options={['Male', 'Female']} onChange={field.onChange} required error={errors.sex?.message} />} />
-            <Controller name="civilStatus" control={control} render={({ field }) => <RadioGroup label="Civil Status" {...field} options={['Single', 'Married']} onChange={field.onChange} required error={errors.civilStatus?.message} />} />
+            <Controller name="sex" control={control} render={({ field }) => <RadioGroup label="Sex" {...field} options={['Male', 'Female']} onChange={field.onChange} required error={errors.sex?.message || errors.sex} />} />
+            <Controller name="civilStatus" control={control} render={({ field }) => <RadioGroup label="Civil Status" {...field} options={['Single', 'Married']} onChange={field.onChange} required error={errors.civilStatus?.message || errors.civilStatus} />} />
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
-            <Controller name="yearLevel" control={control} render={({ field }) => <SelectGroup label="Year Level" {...field} options={['1st Year', '2nd Year', '3rd Year', '4th Year']} required error={errors.yearLevel?.message} />} />
-            <Controller name="course" control={control} render={({ field }) => <SelectGroup label="Course" {...field} options={['BSCS', 'BSOA', 'BSFT', 'BAEL']} required error={errors.course?.message} />} />
-            <Controller name="section" control={control} render={({ field }) => <SelectGroup label="Section" {...field} options={['A', 'B', 'C']} required error={errors.section?.message} />} />
+            <Controller name="yearLevel" control={control} render={({ field }) => <SelectGroup label="Year Level" {...field} options={['1st Year', '2nd Year', '3rd Year', '4th Year']} required error={errors.yearLevel?.message || errors.yearLevel} />} />
+            <Controller name="course" control={control} render={({ field }) => <SelectGroup label="Course" {...field} options={['BSCS', 'BSOA', 'BSFT', 'BAEL']} required error={errors.course?.message || errors.course} />} />
+            <Controller name="section" control={control} render={({ field }) => <SelectGroup label="Section" {...field} options={['A', 'B', 'C']} required error={errors.section?.message || errors.section} />} />
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-            <Controller name="contactNo" control={control} render={({ field }) => <InputGroup label="Contact No." {...field} required placeholder="09xxxxxxxxxxxx" error={errors.contactNo?.message} />} />
-            <Controller name="email" control={control} render={({ field }) => <InputGroup label="Email" {...field} required placeholder="student@capsu.edu" error={errors.email?.message} />} />
+            <Controller name="contactNo" control={control} render={({ field }) => <InputGroup label="Contact No." {...field} required placeholder="09xxxxxxxxxxxx" error={errors.contactNo?.message || errors.contactNo} />} />
+            <Controller name="email" control={control} render={({ field }) => <InputGroup label="Email" {...field} required placeholder="student@capsu.edu" error={errors.email?.message || errors.email} />} />
+          </div>
+
+          {/* Address Section */}
+          <div className="pt-2 border-t border-blue-100" id="field-address">
+            <label className="text-[11px] font-bold text-[#0f2e60] mb-2 block">
+              Address <span className="text-red-500 font-bold">*</span>
+            </label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-3">
+              <Controller
+                name="street"
+                control={control}
+                render={({ field }) => (
+                  <InputGroup
+                    label="Street"
+                    {...field}
+                    required
+                    placeholder="Street / Sitio / Purok"
+                    error={errors.street?.message || errors.street}
+                  />
+                )}
+              />
+              <Controller
+                name="municipality"
+                control={control}
+                render={({ field }) => (
+                  <SelectGroup
+                    label="Municipality"
+                    {...field}
+                    options={[...Object.keys(capizMunicipalities), 'Others']}
+                    required
+                    error={errors.municipality?.message || errors.municipality}
+                  />
+                )}
+              />
+            </div>
+
+            {formData?.municipality === 'Others' ? (
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+                <Controller
+                  name="outsideCapizAddress"
+                  control={control}
+                  render={({ field }) => (
+                    <InputGroup
+                      label="Address (if not from Capiz)"
+                      {...field}
+                      required
+                      placeholder="Full address outside Capiz"
+                      error={errors.outsideCapizAddress?.message || errors.outsideCapizAddress}
+                    />
+                  )}
+                />
+                <Controller
+                  name="province"
+                  control={control}
+                  render={({ field }) => (
+                    <InputGroup
+                      label="Province"
+                      {...field}
+                      required
+                      placeholder="e.g. Iloilo"
+                      error={errors.province?.message || errors.province}
+                    />
+                  )}
+                />
+                <Controller
+                  name="postalCode"
+                  control={control}
+                  render={({ field }) => (
+                    <InputGroup
+                      label="Postal Code"
+                      {...field}
+                      required
+                      placeholder="e.g. 5800"
+                      error={errors.postalCode?.message || errors.postalCode}
+                    />
+                  )}
+                />
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+                <Controller
+                  name="barangay"
+                  control={control}
+                  render={({ field }) => (
+                    <SelectGroup
+                      label="Barangay"
+                      {...field}
+                      options={formData?.municipality ? (capizMunicipalities[formData.municipality as keyof typeof capizMunicipalities] || []) : []}
+                      required
+                      error={errors.barangay?.message || errors.barangay}
+                    />
+                  )}
+                />
+                <Controller
+                  name="province"
+                  control={control}
+                  render={({ field }) => (
+                    <InputGroup
+                      label="Province"
+                      {...field}
+                      value={field.value || 'Capiz'}
+                      required
+                      disabled
+                      placeholder="Capiz"
+                      error={errors.province?.message || errors.province}
+                    />
+                  )}
+                />
+                <Controller
+                  name="postalCode"
+                  control={control}
+                  render={({ field }) => (
+                    <InputGroup
+                      label="Postal Code"
+                      {...field}
+                      required
+                      placeholder="e.g. 5800"
+                      error={errors.postalCode?.message || errors.postalCode}
+                    />
+                  )}
+                />
+              </div>
+            )}
           </div>
         </div>
       </div>

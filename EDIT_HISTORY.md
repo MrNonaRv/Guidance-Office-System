@@ -7,6 +7,82 @@
 
 ---
 
+## [November 4, 2026 - Update 3] — Form Validation Error Messages & Text Boxes Update
+
+### 1. Updated Validation Error Messages
+- **Personal Information**:
+  - Changed error message to `"This field is required"` for:
+    - Last Name (`familyName`)
+    - First Name (`firstName`)
+    - Middle Name (`middleName`)
+    - Age (`age`)
+    - Contact No. (`contactNo`)
+    - Email (`email`)
+    - Street (`street`)
+    - Postal Code (`postalCode`)
+    - Address (if not from Capiz) (`outsideCapizAddress`)
+  - Suffix (`suffix`): `"This field is required. Write N/A if not applicable"`
+  - 2 × 2 Picture (`photo2x2`): `"Please attach your image"`
+  - Kept unchanged:
+    - Birthdate (`birthdate`): `"Please select a date"`
+    - Sex, Civil Status, Year Level, Course, Section, Municipality, Barangay: `"Please select an option"`
+- **Family Background**:
+  - Changed error message to `"This field is required"` for Name, Occupation, and Contact No. across all 3 sections:
+    - Father Information (`fatherName`, `fatherOccupation`, `fatherContact`)
+    - Mother Information (`motherName`, `motherOccupation`, `motherContact`)
+    - Guardian Information (`guardianName`, `guardianOccupation`, `guardianContact`)
+  - Kept unchanged `"Please select an option"` for:
+    - Highest Educational Attainment of Parent/Guardian (`parentEduAttainment`)
+    - Family Monthly Income (`monthlyIncome`)
+    - First in family to attend college (`firstInFamily`)
+- **Living Condition**:
+  - Kept error message `"Please select an option"` for:
+    - With whom do you currently live? (`livingWith`)
+    - Type of Housing (`housingType`)
+- **Access to Resources**:
+  - Kept error message `"Please select an option"` for:
+    - Do you have access to the following at home? (`accessToResources`)
+    - Do you work while studying? (`workingStudent`)
+- **Study Classification**:
+  - "Which of the following classifications best describes your current status? (Multiple responses)": `"Please select at least one option"`
+
+### 2. Follow-Up Text Boxes Fixes (Study Classification)
+- Applied to all 3 follow-up text boxes:
+  1. *If you are a working student, please indicate your type of work or source of income* (`workTypeIncome`)
+  2. *If you are a student with special needs/Person with disability (PWD), please specify your condition or disability* (`specialNeedsCondition`)
+  3. *If you are a PDL (dropout, or learner with interrupted schooling), please state the reason why your schooling was previously interrupted* (`pdlReason`)
+- **Validation**: Shows `"This field is required. Write N/A if not applicable"` when left empty.
+- **Placeholder**: Removed internal placeholder text `"This field is required. Write N/A if not applicable"`.
+- **Typing Bug Resolved**: Fixed text boxes 2 and 3 so students can smoothly type in them just like text box 1.
+- **Dynamic Error Clearing**: Configured input error states to clear immediately as soon as the user enters valid text.
+
+---
+
+## [November 4, 2026 - Update 2] — Restoration of Review Step, Address Fields & Modals
+
+### 1. Restored Submission Review Step & Form Modals
+- **Connected Active Components**: Removed dummy stub placeholders in `src/pages/student/index.tsx` that were suppressing the review step and modals (`SignaturePad`, `SubmissionReviewSummary`, `SubmissionSuccessModal`, `DocumentPreviewModal`).
+- **Complete Review Summary Restored**: Re-imported the real `SubmissionReviewSummary` component so students can review all completed demographics, family information, socioeconomic conditions, classification details, uploaded document previews, and signatures with direct "Edit" jump controls.
+- **Modals Restored**:
+  - `SubmissionSuccessModal`: Post-submission confirmation modal with reference number and guidance office notice.
+  - `DocumentPreviewModal`: Interactive in-app viewer for uploaded Registration Forms (RF), General Weighted Average (GWA), and Student ID files.
+  - `SignaturePad`: Full canvas signing interface with clear, undo, and redraw controls.
+
+### 2. Restored Address Information in Demographics
+- **Added Full Address Block to `PersonalInfoSection.tsx`**:
+  - **Street**: Text input for Street / Sitio / Purok with error highlight and validation.
+  - **Municipality**: Dropdown selector with all Capiz municipalities + "Others".
+  - **Barangay**: Dynamically populated dropdown list matching the selected municipality from `capizMunicipalities`.
+  - **Province**: Displays "Capiz" (or editable when "Others" is selected) with validation.
+  - **Postal Code**: Text input (e.g. `5800`) with validation.
+  - **Address (Outside Capiz)**: Dynamically rendered when the user selects "Others" under Municipality, allowing non-Capiz students to input their home address.
+- **Updated Validation Error Messages**:
+  - 2x2 Picture: `"Please attach your image"`
+  - Street, Postal Code, Address (Outside Capiz): `"This field is required"`
+  - Municipality, Barangay: `"Please select an option"`
+
+---
+
 ## [November 4, 2026] — Major System Upgrades & Refactoring
 
 ### 1. Architectural Refactoring (Form-as-Components)

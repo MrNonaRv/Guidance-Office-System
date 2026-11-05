@@ -30,7 +30,7 @@ export const AccessToResourcesSection = ({ control, errors, formData, handleChec
                 </label>
               ))}
             </div>
-            {errors.accessToResources && <span className="text-xs text-red-600 font-semibold mt-2 block">{errors.accessToResources.message}</span>}
+            {errors.accessToResources && <span className="text-xs text-red-600 font-semibold mt-2 block">{errors.accessToResources?.message || errors.accessToResources}</span>}
           </div>
           <div>
             <Controller name="workingStudent" control={control} render={({ field }) => (
@@ -40,7 +40,7 @@ export const AccessToResourcesSection = ({ control, errors, formData, handleChec
                 options={['Yes, full-time', 'Yes, part-time', 'No']}
                 onChange={field.onChange}
                 required
-                error={errors.workingStudent?.message}
+                error={errors.workingStudent?.message || errors.workingStudent}
               />
             )} />
           </div>

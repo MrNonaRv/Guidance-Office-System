@@ -16,25 +16,25 @@ export const FamilyBackgroundSection = ({ control, errors }: any) => {
         <div>
           <div className="inline-block bg-[#e0e7ff] border border-[#1e3a8a] text-[#1e3a8a] text-[11px] font-bold px-4 py-0.5 rounded-sm mb-3">Father Information</div>
           <div className="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-[2fr_1.5fr_1.5fr] gap-3 sm:gap-4">
-            <Controller name="fatherName" control={control} render={({ field }) => <InputGroup label="Name" {...field} required placeholder="e.g. Rafael Tuvera" error={errors.fatherName?.message} />} />
-            <Controller name="fatherOccupation" control={control} render={({ field }) => <InputGroup label="Occupation" {...field} required placeholder="e.g. Farmer / Deceased / N/A" error={errors.fatherOccupation?.message} />} />
-            <Controller name="fatherContact" control={control} render={({ field }) => <InputGroup label="Contact No." {...field} required placeholder="09xxxxxxxxxxxx / N/A" error={errors.fatherContact?.message} />} />
+            <Controller name="fatherName" control={control} render={({ field }) => <InputGroup label="Name" {...field} required placeholder="e.g. Rafael Tuvera" error={errors.fatherName?.message || errors.fatherName} />} />
+            <Controller name="fatherOccupation" control={control} render={({ field }) => <InputGroup label="Occupation" {...field} required placeholder="e.g. Farmer / Deceased / N/A" error={errors.fatherOccupation?.message || errors.fatherOccupation} />} />
+            <Controller name="fatherContact" control={control} render={({ field }) => <InputGroup label="Contact No." {...field} required placeholder="09xxxxxxxxxxxx / N/A" error={errors.fatherContact?.message || errors.fatherContact} />} />
           </div>
         </div>
         <div>
           <div className="inline-block bg-[#e0e7ff] border border-[#1e3a8a] text-[#1e3a8a] text-[11px] font-bold px-4 py-0.5 rounded-sm mb-3">Mother Information</div>
           <div className="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-[2fr_1.5fr_1.5fr] gap-3 sm:gap-4">
-            <Controller name="motherName" control={control} render={({ field }) => <InputGroup label="Name (Maiden Name)" {...field} required placeholder="e.g. Maria A. Sermon" error={errors.motherName?.message} />} />
-            <Controller name="motherOccupation" control={control} render={({ field }) => <InputGroup label="Occupation" {...field} required placeholder="e.g. Housewife / Deceased / N/A" error={errors.motherOccupation?.message} />} />
-            <Controller name="motherContact" control={control} render={({ field }) => <InputGroup label="Contact No." {...field} required placeholder="09xxxxxxxxxxxx / N/A" error={errors.motherContact?.message} />} />
+            <Controller name="motherName" control={control} render={({ field }) => <InputGroup label="Name (Maiden Name)" {...field} required placeholder="e.g. Maria A. Sermon" error={errors.motherName?.message || errors.motherName} />} />
+            <Controller name="motherOccupation" control={control} render={({ field }) => <InputGroup label="Occupation" {...field} required placeholder="e.g. Housewife / Deceased / N/A" error={errors.motherOccupation?.message || errors.motherOccupation} />} />
+            <Controller name="motherContact" control={control} render={({ field }) => <InputGroup label="Contact No." {...field} required placeholder="09xxxxxxxxxxxx / N/A" error={errors.motherContact?.message || errors.motherContact} />} />
           </div>
         </div>
         <div>
           <div className="inline-block bg-[#e0e7ff] border border-[#1e3a8a] text-[#1e3a8a] text-[11px] font-bold px-4 py-0.5 rounded-sm mb-3">Guardian Information</div>
           <div className="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-[2fr_1.5fr_1.5fr] gap-3 sm:gap-4">
-            <Controller name="guardianName" control={control} render={({ field }) => <InputGroup label="Name" {...field} required placeholder="e.g. Martin L. Dela Cruz / N/A" error={errors.guardianName?.message} />} />
-            <Controller name="guardianOccupation" control={control} render={({ field }) => <InputGroup label="Occupation" {...field} required placeholder="e.g. Employee / N/A" error={errors.guardianOccupation?.message} />} />
-            <Controller name="guardianContact" control={control} render={({ field }) => <InputGroup label="Contact No." {...field} required placeholder="09xxxxxxxxxxxx / N/A" error={errors.guardianContact?.message} />} />
+            <Controller name="guardianName" control={control} render={({ field }) => <InputGroup label="Name" {...field} required placeholder="e.g. Martin L. Dela Cruz / N/A" error={errors.guardianName?.message || errors.guardianName} />} />
+            <Controller name="guardianOccupation" control={control} render={({ field }) => <InputGroup label="Occupation" {...field} required placeholder="e.g. Employee / N/A" error={errors.guardianOccupation?.message || errors.guardianOccupation} />} />
+            <Controller name="guardianContact" control={control} render={({ field }) => <InputGroup label="Contact No." {...field} required placeholder="09xxxxxxxxxxxx / N/A" error={errors.guardianContact?.message || errors.guardianContact} />} />
           </div>
         </div>
         
@@ -45,7 +45,7 @@ export const FamilyBackgroundSection = ({ control, errors }: any) => {
               {...field}
               options={['Elementary Level', 'Elementary Graduate', 'High school Graduate', 'College Graduate', 'High School Level', 'College Level', 'post Graduate level/degree']}
               required
-              error={errors.parentEduAttainment?.message}
+              error={errors.parentEduAttainment?.message || errors.parentEduAttainment}
             />
           )} />
           <Controller name="monthlyIncome" control={control} render={({ field }) => (
@@ -54,7 +54,7 @@ export const FamilyBackgroundSection = ({ control, errors }: any) => {
               {...field}
               options={['below ₱ 10,000', '₱ 10,001 - ₱ 20,000', '₱ 20,001 - ₱ 30,000', 'Above ₱ 30,000']}
               required
-              error={errors.monthlyIncome?.message}
+              error={errors.monthlyIncome?.message || errors.monthlyIncome}
             />
           )} />
           <Controller name="firstInFamily" control={control} render={({ field }) => (
@@ -64,7 +64,7 @@ export const FamilyBackgroundSection = ({ control, errors }: any) => {
               options={['Yes', 'No']}
               onChange={field.onChange}
               required
-              error={errors.firstInFamily?.message}
+              error={errors.firstInFamily?.message || errors.firstInFamily}
             />
           )} />
         </div>
