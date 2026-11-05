@@ -7,6 +7,15 @@
 
 ---
 
+## [November 5, 2026 - Update 6] — Restore Compact Multi-Column Phone Layout
+
+### 1. Restored Compact Phone Grid Layout
+- **Issue**: Form input fields stacked vertically (1 column per row) on mobile phone viewports.
+- **Fix**: Updated grid layouts in `PersonalInfoSection.tsx` from `grid-cols-1` to compact multi-column responsive grids (`grid-cols-2` and `grid-cols-3`), restoring the previous side-by-side layout for mobile phones.
+- **Verification**: Verified clean build compilation and linting with 0 errors.
+
+---
+
 ## [November 5, 2026 - Update 5] — Living Condition "Others" Specify Text Inputs Fix
 
 ### 1. Fixed Living Condition "Others" Specify Inputs

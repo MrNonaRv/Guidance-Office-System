@@ -35,13 +35,13 @@ export const PersonalInfoSection = ({ control, errors, handlePhotoUpload, formDa
           {errors.photo2x2 && <span className="text-xs text-red-600 font-semibold mt-1 text-center">{errors.photo2x2?.message || 'Please attach your image'}</span>}
         </div>
         <div className="flex-1 w-full space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 sm:gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4">
             <Controller name="familyName" control={control} render={({ field }) => <InputGroup label="Last Name" {...field} required placeholder="e.g. Dela Cruz" error={errors.familyName?.message || errors.familyName} />} />
             <Controller name="firstName" control={control} render={({ field }) => <InputGroup label="First Name" {...field} required placeholder="e.g. Juan" error={errors.firstName?.message || errors.firstName} />} />
             <Controller name="middleName" control={control} render={({ field }) => <InputGroup label="Middle Name" {...field} required placeholder="e.g. Santos" error={errors.middleName?.message || errors.middleName} />} />
             <Controller name="suffix" control={control} render={({ field }) => <InputGroup label="Suffix" {...field} required placeholder="e.g. Jr. or N/A" error={errors.suffix?.message || errors.suffix} />} />
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-2 gap-2 sm:gap-4">
             <Controller name="birthdate" control={control} render={({ field }) => (
               <div className="flex flex-col relative" id="field-birthdate">
                 <label className="text-[11px] font-bold text-[#0f2e60] mb-1 flex items-center gap-1">Birthdate <span className="text-red-500 font-bold">*</span></label>
@@ -51,16 +51,16 @@ export const PersonalInfoSection = ({ control, errors, handlePhotoUpload, formDa
             )} />
             <Controller name="age" control={control} render={({ field }) => <InputGroup label="Age" {...field} required placeholder="e.g. 18" error={errors.age?.message || errors.age} />} />
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mt-1">
+          <div className="grid grid-cols-2 sm:grid-cols-2 gap-2 sm:gap-4 mt-1">
             <Controller name="sex" control={control} render={({ field }) => <RadioGroup label="Sex" {...field} options={['Male', 'Female']} onChange={field.onChange} required error={errors.sex?.message || errors.sex} />} />
             <Controller name="civilStatus" control={control} render={({ field }) => <RadioGroup label="Civil Status" {...field} options={['Single', 'Married']} onChange={field.onChange} required error={errors.civilStatus?.message || errors.civilStatus} />} />
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+          <div className="grid grid-cols-3 sm:grid-cols-3 gap-2 sm:gap-4">
             <Controller name="yearLevel" control={control} render={({ field }) => <SelectGroup label="Year Level" {...field} options={['1st Year', '2nd Year', '3rd Year', '4th Year']} required error={errors.yearLevel?.message || errors.yearLevel} />} />
             <Controller name="course" control={control} render={({ field }) => <SelectGroup label="Course" {...field} options={['BSCS', 'BSOA', 'BSFT', 'BAEL']} required error={errors.course?.message || errors.course} />} />
             <Controller name="section" control={control} render={({ field }) => <SelectGroup label="Section" {...field} options={['A', 'B', 'C']} required error={errors.section?.message || errors.section} />} />
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-2 gap-2 sm:gap-4">
             <Controller name="contactNo" control={control} render={({ field }) => <InputGroup label="Contact No." {...field} required placeholder="09xxxxxxxxxxxx" error={errors.contactNo?.message || errors.contactNo} />} />
             <Controller name="email" control={control} render={({ field }) => <InputGroup label="Email" {...field} required placeholder="student@capsu.edu" error={errors.email?.message || errors.email} />} />
           </div>
@@ -70,7 +70,7 @@ export const PersonalInfoSection = ({ control, errors, handlePhotoUpload, formDa
             <label className="text-[11px] font-bold text-[#0f2e60] mb-2 block">
               Address <span className="text-red-500 font-bold">*</span>
             </label>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-3">
+            <div className="grid grid-cols-2 sm:grid-cols-2 gap-2 sm:gap-4 mb-3">
               <Controller
                 name="street"
                 control={control}
@@ -100,7 +100,7 @@ export const PersonalInfoSection = ({ control, errors, handlePhotoUpload, formDa
             </div>
 
             {formData?.municipality === 'Others' ? (
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+              <div className="grid grid-cols-3 sm:grid-cols-3 gap-2 sm:gap-4">
                 <Controller
                   name="outsideCapizAddress"
                   control={control}
@@ -142,7 +142,7 @@ export const PersonalInfoSection = ({ control, errors, handlePhotoUpload, formDa
                 />
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+              <div className="grid grid-cols-3 sm:grid-cols-3 gap-2 sm:gap-4">
                 <Controller
                   name="barangay"
                   control={control}
