@@ -1,9 +1,17 @@
 # System Edit & Update History Log
 
-**Last Updated:** November 5, 2026  
+**Last Updated:** November 10, 2026  
 **System:** Web-Based Scholarship Submission Alert System (CAPSU Mambusao Satellite College)
 
 > **Maintenance Note:** Whenever updates, refactorings, new features, or bug fixes are made to the system in the future, please record them in this file under a new dated entry.
+
+---
+
+## [November 10, 2026 - Update 9] — Address (if not from Capiz) Error Message Restoration
+
+### 1. Reverted Conditional Address Error Message
+- **Fix**: Reverted the error message for `"Address (if not from Capiz)"` (`outsideCapizAddress`) back to `"This field is required"`, matching the original requirement specifications.
+- **Verification**: Verified clean build compilation and linting with 0 errors.
 
 ---
 
