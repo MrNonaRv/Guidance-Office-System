@@ -2,6 +2,7 @@ export interface ScholarshipAllocationItem {
   id: string;
   name: string;
   description?: string;
+  hasSpecifyField?: string;
 }
 
 export interface ScholarshipSubtypeItem {
@@ -187,21 +188,23 @@ export function getDynamicScholarshipStructure(): ScholarshipStructure {
       options: (sub.allocations || []).map(alloc => {
         const lowerName = alloc.name.toLowerCase();
         const subName = sub.name.toLowerCase();
-        let specifyField: ScholarshipOption['hasSpecifyField'] = undefined;
+        let specifyField: ScholarshipOption['hasSpecifyField'] = (alloc.hasSpecifyField && alloc.hasSpecifyField !== 'none') ? alloc.hasSpecifyField as any : undefined;
 
-        if (subName === 'lgu' || lowerName.includes('lgu')) {
-          specifyField = 'lguContact';
-        } else if (subName === 'dswd' || lowerName.includes('dswd')) {
-          specifyField = 'dswdFields';
-        } else if (subName === 'ched') {
-          if (lowerName.includes('congressional')) specifyField = 'chedCongressionalDistrict';
-          else if (lowerName.includes('one town')) specifyField = 'chedOneTown';
-          else if (lowerName.includes('tulong dunong')) specifyField = 'chedTulongDunong';
-          else if (lowerName.includes('others')) specifyField = 'chedOthers';
-        } else if (subName === 'merit') {
-          if (lowerName.includes('others')) specifyField = 'meritChedAndOthers';
-        } else if (lowerName.includes('others')) {
-          specifyField = 'internalCategoryOthers';
+        if (!specifyField) {
+          if (subName === 'lgu' || lowerName.includes('lgu')) {
+            specifyField = 'lguContact';
+          } else if (subName === 'dswd' || lowerName.includes('dswd')) {
+            specifyField = 'dswdFields';
+          } else if (subName === 'ched') {
+            if (lowerName.includes('congressional')) specifyField = 'chedCongressionalDistrict';
+            else if (lowerName.includes('one town')) specifyField = 'chedOneTown';
+            else if (lowerName.includes('tulong dunong')) specifyField = 'chedTulongDunong';
+            else if (lowerName.includes('others')) specifyField = 'chedOthers';
+          } else if (subName === 'merit') {
+            if (lowerName.includes('others')) specifyField = 'meritChedAndOthers';
+          } else if (lowerName.includes('others')) {
+            specifyField = 'internalCategoryOthers';
+          }
         }
 
         return {

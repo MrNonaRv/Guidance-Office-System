@@ -1243,6 +1243,7 @@ export interface ScholarshipAllocationItem {
   id: string;
   name: string;
   description?: string;
+  hasSpecifyField?: string;
 }
 
 export interface ScholarshipSubtypeItem {
@@ -1383,7 +1384,7 @@ export function GuidanceSettings() {
 
   const [showAllocationModal, setShowAllocationModal] = useState(false);
   const [editingAllocation, setEditingAllocation] = useState<ScholarshipAllocationItem | null>(null);
-  const [allocationForm, setAllocationForm] = useState({ name: '' });
+  const [allocationForm, setAllocationForm] = useState({ name: '', hasSpecifyField: 'none' });
 
   // Files Tab State
   const [filesList, setFilesList] = useState([
@@ -1522,13 +1523,13 @@ export function GuidanceSettings() {
   // Allocation Actions
   const handleOpenAddAllocation = () => {
     setEditingAllocation(null);
-    setAllocationForm({ name: '' });
+    setAllocationForm({ name: '', hasSpecifyField: 'none' });
     setShowAllocationModal(true);
   };
 
   const handleEditAllocation = (alloc: ScholarshipAllocationItem) => {
     setEditingAllocation(alloc);
-    setAllocationForm({ name: alloc.name });
+    setAllocationForm({ name: alloc.name, hasSpecifyField: alloc.hasSpecifyField || 'none' });
     setShowAllocationModal(true);
   };
 
@@ -1538,6 +1539,7 @@ export function GuidanceSettings() {
       return;
     }
     const name = allocationForm.name.trim();
+    const hasSpecifyField = allocationForm.hasSpecifyField;
 
     if (editingAllocation) {
       const updated = categories.map(c => {
@@ -1548,7 +1550,7 @@ export function GuidanceSettings() {
               if (s.id === selectedSubtypeId) {
                 return {
                   ...s,
-                  allocations: s.allocations.map(a => a.id === editingAllocation.id ? { ...a, name } : a)
+                  allocations: s.allocations.map(a => a.id === editingAllocation.id ? { ...a, name, hasSpecifyField } : a)
                 };
               }
               return s;
@@ -1561,7 +1563,8 @@ export function GuidanceSettings() {
     } else {
       const newAlloc: ScholarshipAllocationItem = {
         id: `alloc-${Date.now()}`,
-        name
+        name,
+        hasSpecifyField
       };
       const updated = categories.map(c => {
         if (c.id === selectedCategoryId) {
@@ -2802,6 +2805,24 @@ export function GuidanceSettings() {
                   className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#1864db] text-sm"
                   placeholder="e.g. Full (1.00 - 1.25) or Tertiary Education Subsidy (TES)"
                 />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1">Input Box / Specify Field Type</label>
+                <select
+                  value={allocationForm.hasSpecifyField}
+                  onChange={e => setAllocationForm({ ...allocationForm, hasSpecifyField: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#1864db] text-sm bg-white"
+                >
+                  <option value="none">None (No input box)</option>
+                  <option value="internalCategoryOthers">General Specify (e.g. Campus Grant Name)</option>
+                  <option value="chedCongressionalDistrict">Specify District (e.g. 1st District / 2nd District)</option>
+                  <option value="chedOneTown">Specify Town / Municipality (e.g. Roxas City)</option>
+                  <option value="chedTulongDunong">Specify Details / Batch (e.g. TDP-TES Batch)</option>
+                  <option value="chedOthers">Specify CHED Program Name</option>
+                  <option value="meritChedAndOthers">Specify Merit / Program Name</option>
+                  <option value="lguContact">LGU Contact Person / Issuing Office</option>
+                  <option value="dswdFields">DSWD Fields (Municipality, Contact Person, Designation)</option>
+                </select>
               </div>
             </div>
             <div className="px-6 py-4 border-t border-gray-100 bg-gray-50 flex justify-end gap-3">
