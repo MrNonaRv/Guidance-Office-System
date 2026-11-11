@@ -289,27 +289,37 @@ export function StudentLogin() {
           return;
         }
 
-        const fullName = `${firstName.trim()} ${middleName.trim() ? middleName.trim() + ' ' : ''}${lastName.trim()}`.trim();
+        if (!firstName.trim() || !lastName.trim()) {
+          setError('First name and last name are required.');
+          return;
+        }
+
+        const cleanEmail = email.trim().toLowerCase();
+
+        // Check if user already exists
+        const existingUser = await db.users.findByEmail(cleanEmail);
+        if (existingUser) {
+          setError('This email is already registered. Please log in.');
+          return;
+        }
+
         let fbUser = null;
         try {
+          const fullName = `${firstName.trim()} ${middleName.trim() ? middleName.trim() + ' ' : ''}${lastName.trim()}`.trim();
           fbUser = await signUpWithEmail(cleanEmail, password, fullName);
         } catch (authErr: any) {
-          if (authErr?.code === 'auth/email-already-in-use') {
+          const code = authErr?.code || '';
+          if (code === 'auth/email-already-in-use') {
             setError('This email is already registered. Please switch to the "Log In" tab.');
             return;
-          } else if (authErr?.code === 'auth/weak-password') {
-            setError('Password is too weak. Please use at least 6 characters.');
+          } else if (code === 'auth/weak-password') {
+            setError('Password must be at least 6 characters.');
             return;
-          } else if (authErr?.code === 'auth/invalid-email') {
+          } else if (code === 'auth/invalid-email') {
             setError('Please enter a valid email address.');
             return;
           } else {
-            console.warn("Firebase email signup notice:", authErr);
-            const existing = await db.users.findByEmail(cleanEmail);
-            if (existing) {
-              setError('This email is already registered. Please log in.');
-              return;
-            }
+            console.warn("Firebase signup notice (proceeding with robust registration):", authErr);
           }
         }
 
@@ -324,6 +334,7 @@ export function StudentLogin() {
           role: 'student' as const
         };
         await db.users.set(newUser.id, newUser);
+        localStorage.setItem('student_custom_password_' + cleanEmail, password);
         localStorage.setItem('studentAuth', 'true');
         localStorage.setItem('studentUser', JSON.stringify(newUser));
         navigate('/student/dashboard');
