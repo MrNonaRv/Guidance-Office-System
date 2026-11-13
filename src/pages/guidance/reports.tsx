@@ -14,7 +14,8 @@ import {
   RotateCcw,
   HardDrive,
   Download,
-  Eye
+  Eye,
+  ChevronLeft
 } from 'lucide-react';
 import { DocumentPreviewModal } from '../../components/DocumentPreviewModal';
 import { formatDocumentTitle, isImageFile } from '../../lib/imageUtils';
@@ -432,6 +433,16 @@ export function GuidanceReports() {
         {/* Top Header */}
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
           <div className="flex items-center gap-4">
+            {currentPage === 2 && (
+              <button
+                onClick={() => setCurrentPage(1)}
+                className="flex items-center gap-1.5 px-4 py-2 bg-white hover:bg-gray-100 text-[#0c2340] border border-gray-300 rounded-xl text-xs sm:text-sm font-bold shadow-xs transition-all cursor-pointer"
+                title="Back to Reports & Analytics"
+              >
+                <ChevronLeft className="w-4 h-4 stroke-[2.5]" />
+                <span>Back</span>
+              </button>
+            )}
             <h1 className="text-2xl sm:text-3xl md:text-4xl font-serif font-bold text-[#0c2340] tracking-tight">
               {currentPage === 1 ? 'Reports & Analytics' : 'Scholarship Breakdown'}
             </h1>
