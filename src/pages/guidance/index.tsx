@@ -1333,10 +1333,10 @@ const INITIAL_SCHOLARSHIP_CATEGORIES: ScholarshipCategoryItem[] = [
         ]
       },
       {
-        id: 'private-ngo',
-        name: 'Private/NGO',
+        id: 'dswd',
+        name: 'DSWD',
         allocations: [
-          { id: 'ngo-grant', name: 'Corporate & Civic Foundations' }
+          { id: 'dswd-grant', name: 'DSWD Educational Assistance', hasSpecifyField: 'dswdFields' }
         ]
       }
     ]

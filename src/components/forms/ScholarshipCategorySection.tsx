@@ -13,8 +13,6 @@ export const ScholarshipCategorySection = ({
 
   return (
     <>
-      <div className="bg-[#1846b0] text-white text-center py-2.5 rounded-lg font-bold tracking-wider mb-6 text-sm mt-8">SCHOLARSHIP CATEGORY</div>
-      
       <div 
         id="scholarship-category-section" 
         className={`p-4 sm:p-6 rounded-xl border shadow-sm mb-6 scroll-mt-20 transition-all ${
@@ -241,56 +239,21 @@ export const ScholarshipCategorySection = ({
                                 </div>
                               )}
 
-                              {isSelected && opt.hasSpecifyField === 'lguContact' && (
-                                <div className="mt-2 space-y-2 pt-1">
-                                  <div>
-                                    <label className="block text-[10px] font-semibold text-gray-600">Barangay:</label>
-                                    <input
-                                      type="text"
-                                      name="lguBarangay"
-                                      value={formData.lguBarangay || ''}
-                                      onChange={handleChange}
-                                      placeholder="Barangay"
-                                      className="w-full text-xs p-1.5 bg-white border border-gray-300 rounded-md focus:border-blue-600 outline-none"
-                                    />
-                                  </div>
-                                  <div>
-                                    <label className="block text-[10px] font-semibold text-gray-600">Municipality:</label>
-                                    <input
-                                      type="text"
-                                      name="lguMunicipality"
-                                      value={formData.lguMunicipality || ''}
-                                      onChange={handleChange}
-                                      placeholder="Municipality"
-                                      className="w-full text-xs p-1.5 bg-white border border-gray-300 rounded-md focus:border-blue-600 outline-none"
-                                    />
-                                  </div>
-                                  <div>
-                                    <label className="block text-[10px] font-semibold text-gray-600">Province:</label>
-                                    <input
-                                      type="text"
-                                      name="lguProvince"
-                                      value={formData.lguProvince || ''}
-                                      onChange={handleChange}
-                                      placeholder="Province"
-                                      className="w-full text-xs p-1.5 bg-white border border-gray-300 rounded-md focus:border-blue-600 outline-none"
-                                    />
-                                  </div>
-                                  <div>
-                                    <label className="block text-[10px] font-semibold text-gray-600">Contact Person / Issuing Office:</label>
-                                    <input
-                                      type="text"
-                                      name="lguContact"
-                                      value={formData.lguContact || ''}
-                                      onChange={handleChange}
-                                      placeholder="e.g., Mayor's Office / Landline No."
-                                      className="w-full text-xs p-1.5 bg-white border border-gray-300 rounded-md focus:border-blue-600 outline-none"
-                                    />
-                                  </div>
+                                                            {isSelected && opt.hasSpecifyField === 'lguContact' && (
+                                <div className="mt-2">
+                                  <label className="block text-[11px] font-semibold text-gray-600 mb-1">Barangay, Municipality, Province (Landline) Contact person or issuing office:</label>
+                                  <input
+                                    type="text"
+                                    name="lguContact"
+                                    value={formData.lguContact || ''}
+                                    onChange={handleChange}
+                                    placeholder="e.g., Barangay, Municipality, Province / Contact person / Landline"
+                                    className="w-full text-xs p-1.5 bg-white border border-gray-300 rounded-md focus:border-blue-600 outline-none"
+                                  />
                                 </div>
                               )}
 
-                              {isSelected && opt.hasSpecifyField === 'dswdFields' && (
+{isSelected && opt.hasSpecifyField === 'dswdFields' && (
                                 <div className="mt-2 space-y-2 pt-1">
                                   <div>
                                     <label className="block text-[10px] font-semibold text-gray-600">Municipality:</label>

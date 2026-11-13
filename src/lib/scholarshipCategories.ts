@@ -119,6 +119,20 @@ export function getStoredScholarshipCategories(): ScholarshipCategoryItem[] {
     if (saved) {
       const parsed = JSON.parse(saved);
       if (Array.isArray(parsed) && parsed.length > 0) {
+        let hasNgo = false;
+        parsed.forEach(cat => {
+          if (cat.subtypes) {
+            cat.subtypes.forEach((sub: any) => {
+              if (sub.id === 'private-ngo' || sub.name === 'Private/NGO' || sub.name === 'Private / NGO' || sub.name?.includes('NGO') || sub.name?.includes('Private')) {
+                hasNgo = true;
+              }
+            });
+          }
+        });
+        if (hasNgo) {
+          localStorage.removeItem('capsu_scholarship_categories');
+          return INITIAL_SCHOLARSHIP_CATEGORIES;
+        }
         return parsed;
       }
     }
