@@ -1,4 +1,4 @@
-import { LayoutGrid, FileText, Bell, Mail, BarChart2, Settings, User, LogOut, Users, TrendingUp, BookOpen, Filter, Calendar, Award, GraduationCap, ImageIcon, Plus, Pen, Trash2, Paperclip, View, Eye, EyeOff, Menu, X, ChevronRight, Loader2, Cloud, CheckCircle2, AlertCircle, RefreshCw, Package, PackageOpen, FileSpreadsheet, Folder, Check } from 'lucide-react';
+import { LayoutGrid, FileText, Bell, Mail, BarChart2, Settings, User, LogOut, Users, TrendingUp, BookOpen, Filter, Calendar, Award, GraduationCap, ImageIcon, Plus, Pen, Trash2, Paperclip, View, Eye, EyeOff, Menu, X, ChevronRight, Loader2, Cloud, CheckCircle2, AlertCircle, RefreshCw, Package, PackageOpen, FileSpreadsheet, Folder, Check, Sparkles } from 'lucide-react';
 import { cn, formatTimeAgo } from '../../lib/utils';
 import React, { useState, useEffect} from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
@@ -512,6 +512,8 @@ const navItems = [
   { icon: Bell, label: 'Notifications', path: '/admin/notifications' },
   { icon: Mail, label: 'Responses', path: '/admin/responses' },
   { icon: BarChart2, label: 'Reports', path: '/admin/reports' },
+  { icon: Sparkles, label: 'System Auditor', path: '/admin/auditor' },
+  { icon: BookOpen, label: 'Process Documenter', path: '/admin/documenter' },
   { icon: Settings, label: 'Settings', path: '/admin/settings' },
 ];
 
