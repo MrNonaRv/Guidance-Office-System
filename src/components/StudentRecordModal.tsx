@@ -523,12 +523,17 @@ export function StudentRecordModal({
                   <span className="text-[12px] xl:text-[13px]">View Filled Form</span>
                 </button>
                 <button
-                  onClick={() => navigate('/admin/communications', { 
-                    state: { 
-                      prefillStudentId: localSubmission.studentId || formData.studentId,
-                      prefillTemplate: currentStatus === 'Approved' || currentStatus === 'Complete' ? 'verified' : currentStatus === 'Incomplete' ? 'missing-docs' : 'blank'
-                    }
-                  })}
+                  onClick={() => {
+                    const studentEmail = localSubmission.data?.email || submission.data?.email || localSubmission.studentId || '';
+                    const studentRecordId = localSubmission.studentId || submission.studentId || localSubmission.id || '';
+                    navigate('/admin/responses', { 
+                      state: { 
+                        prefillStudentId: studentRecordId,
+                        prefillEmail: studentEmail,
+                        prefillTemplate: currentStatus === 'Approved' || currentStatus === 'Complete' ? 'verified' : currentStatus === 'Incomplete' ? 'missing-docs' : 'blank'
+                      }
+                    });
+                  }}
                   className="w-full bg-[#fce7f3] hover:bg-[#fbcfe8] text-[#be185d] font-bold py-2 rounded-xl flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
                 >
                   <Mail className="w-4 h-4 stroke-[2]" />

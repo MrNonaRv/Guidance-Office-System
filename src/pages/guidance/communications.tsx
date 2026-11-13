@@ -136,7 +136,7 @@ export function GuidanceResponses() {
                 derivedEmail = `${first}.${last}@gmail.com`;
               }
             }
-            const realEmail = usersMap.get(authId) || usersMap.get(s.studentId) || s.data?.email || derivedEmail;
+            const realEmail = s.data?.email || (s.studentId?.includes('@') ? s.studentId : null) || usersMap.get(authId) || usersMap.get(s.studentId) || derivedEmail;
 
             const scholarshipParts = (s.scholarshipType || '').split('(');
             const rawCategory = scholarshipParts[0]?.trim() || (s.data?.fundingType === 'Internally-Funded' ? 'Internally-Funded' : 'Externally-Funded');
@@ -313,8 +313,8 @@ Capiz State University – Mambusao Satellite College`
   const [templates, setTemplates] = useState<EmailTemplate[]>(defaultTemplates);
 
   // Selection state
-  const [selectedStudentIds, setSelectedStudentIds] = useState<string[]>(location.state?.prefillStudentId ? [location.state.prefillStudentId] : []);
-  const [isSelectMode, setIsSelectMode] = useState<boolean>(location.state?.prefillStudentId ? true : false);
+  const [selectedStudentIds, setSelectedStudentIds] = useState<string[]>([]);
+  const [isSelectMode, setIsSelectMode] = useState<boolean>(location.state?.prefillStudentId || location.state?.prefillEmail ? true : false);
 
   // Filters state
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -330,16 +330,40 @@ Capiz State University – Mambusao Satellite College`
   const hasPrefilled = useRef(false);
 
   React.useEffect(() => {
+    if ((location.state?.prefillStudentId || location.state?.prefillEmail) && studentList.length > 0) {
+      const pId = location.state.prefillStudentId;
+      const pEmail = location.state.prefillEmail;
+      const matched = studentList.find(s => 
+        s.id === pId || 
+        s.studentId === pId || 
+        s.email?.toLowerCase() === (pEmail || '').toLowerCase() ||
+        s.email?.toLowerCase() === (pId || '').toLowerCase()
+      );
+      if (matched) {
+        setSelectedStudentIds([matched.id]);
+        setIsSelectMode(true);
+      }
+    }
+  }, [location.state?.prefillStudentId, location.state?.prefillEmail, studentList]);
+
+  React.useEffect(() => {
     if (location.state?.prefillTemplate && studentList.length > 0 && !hasPrefilled.current) {
       const template = templates.find(t => t.id === location.state.prefillTemplate);
       if (template) {
         setSubject(template.subject);
-        const firstSelected = studentList.find(s => s.id === location.state.prefillStudentId);
+        const pId = location.state.prefillStudentId;
+        const pEmail = location.state.prefillEmail;
+        const firstSelected = studentList.find(s => 
+          s.id === pId || 
+          s.studentId === pId || 
+          s.email?.toLowerCase() === (pEmail || '').toLowerCase() ||
+          s.email?.toLowerCase() === (pId || '').toLowerCase()
+        ) || studentList[0];
         setEmailBody(template.body(firstSelected ? firstSelected.name : 'Student', firstSelected ? firstSelected.allocation : ''));
         hasPrefilled.current = true;
       }
     }
-  }, [location.state?.prefillTemplate, location.state?.prefillStudentId, studentList, templates]);
+  }, [location.state?.prefillTemplate, location.state?.prefillStudentId, location.state?.prefillEmail, studentList, templates]);
 
   const [showCcBcc, setShowCcBcc] = useState<{ cc: boolean; bcc: boolean }>({ cc: false, bcc: false });
   const [ccValue, setCcValue] = useState<string>('');

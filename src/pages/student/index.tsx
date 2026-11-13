@@ -3370,6 +3370,17 @@ export function StudentSubmissionForm() {
                                           className="w-full text-xs p-1.5 bg-white border border-gray-300 rounded-md focus:border-blue-600 outline-none"
                                         />
                                       </div>
+                                      <div>
+                                        <label className="block text-[10px] font-semibold text-gray-600">Others (specify):</label>
+                                        <input
+                                          type="text"
+                                          name="dswdOthers"
+                                          value={formData.dswdOthers || ''}
+                                          onChange={handleChange}
+                                          placeholder="Others (specify)"
+                                          className="w-full text-xs p-1.5 bg-white border border-gray-300 rounded-md focus:border-blue-600 outline-none"
+                                        />
+                                      </div>
                                     </div>
                                   )}
                                 </div>

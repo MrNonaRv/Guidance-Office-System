@@ -345,7 +345,8 @@ export function formatScholarshipAllocations(data: {
       const dswdParts = [
         data.dswdMunicipality ? `Mun: ${data.dswdMunicipality}` : '',
         data.dswdContact ? `Contact: ${data.dswdContact}` : '',
-        data.dswdDesignation ? `Desig: ${data.dswdDesignation}` : ''
+        data.dswdDesignation ? `Desig: ${data.dswdDesignation}` : '',
+        data.dswdOthers ? `Others: ${data.dswdOthers}` : ''
       ].filter(Boolean);
       return dswdParts.length > 0 ? `DSWD (${dswdParts.join(', ')})` : 'DSWD Educational Assistance';
     }
