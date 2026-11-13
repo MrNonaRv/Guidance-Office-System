@@ -33,6 +33,7 @@ import {
 import { cn } from '../../lib/utils';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { db } from '../../lib/db';
+import { formatScholarshipAllocations } from '../../lib/scholarshipCategories';
 import { getCachedGmailToken, requestGmailToken, sendGmailMessage } from '../../lib/gmailService';
 import { firestoreDb } from '../../lib/firebase';
 import { collection, getDocs } from 'firebase/firestore';
@@ -138,20 +139,11 @@ export function GuidanceResponses() {
             }
             const realEmail = s.data?.email || (s.studentId?.includes('@') ? s.studentId : null) || usersMap.get(authId) || usersMap.get(s.studentId) || derivedEmail;
 
-            const scholarshipParts = (s.scholarshipType || '').split('(');
-            const rawCategory = scholarshipParts[0]?.trim() || (s.data?.fundingType === 'Internally-Funded' ? 'Internally-Funded' : 'Externally-Funded');
-            const category = rawCategory.includes('Internal') ? 'Internally-Funded' : 'Externally-Funded';
-            
-            const subTypeRaw = (s.data?.scholarshipCategory || s.data?.scholarshipSubCategory || s.scholarshipType || 'CHED').replace(/[()]/g, '');
-            const subType = subTypeRaw.includes('Institutional') ? 'Institutional' : subTypeRaw.includes('Socio') ? 'Socio-cultural' : subTypeRaw.includes('Academic') ? 'Academic' : subTypeRaw.includes('Entrance') ? 'Entrance' : subTypeRaw.includes('Merit') ? 'Merit' : 'CHED';
-
-            let allocation = s.data?.scholarshipProgram || (s.data?.selectedScholarships?.join(' - ')) || s.scholarshipType || 'Scholarship';
-            if (allocation.includes('(')) {
-              const match = allocation.match(/\(([^)]+)\)/);
-              if (match) {
-                allocation = match[1];
-              }
-            }
+            const formData = s.data || {};
+            const formatted = formatScholarshipAllocations(formData);
+            const category = formatted.fundType;
+            const subType = formatted.category;
+            let allocation = formatted.displayItems[0] || s.data?.scholarshipProgram || (s.data?.selectedScholarships?.join(' - ')) || s.scholarshipType || 'Scholarship';
 
             return [
               s.studentId || s.id, 

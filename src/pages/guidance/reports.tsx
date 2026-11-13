@@ -25,7 +25,7 @@ import {
   scholarshipDataMapping, 
   initialBreakdownData 
 } from './reportsData';
-import { getDynamicScholarshipHierarchy } from '../../lib/scholarshipCategories';
+import { getDynamicScholarshipHierarchy, formatScholarshipAllocations } from '../../lib/scholarshipCategories';
 
 export function GuidanceReports() {
   const [selectedCourse, setSelectedCourse] = useState<string>('All courses');
@@ -70,9 +70,7 @@ export function GuidanceReports() {
           // setSubmissions(subs);
           const dynamicStudents: StudentBreakdownItem[] = subs.map((s, idx) => {
             const formData = s.data || {};
-            const scholarshipParts = (s.scholarshipType || '').split('(');
-            const category = scholarshipParts[0]?.trim() || (formData.fundingType === 'Internally-Funded' ? 'Internally-Funded' : 'Externally-Funded');
-            const subType = (formData.scholarshipCategory || s.scholarshipType || 'CHED').replace(/[()]/g, '');
+            const formatted = formatScholarshipAllocations(formData);
             const courseCode = formData.course || s.answers?.course || 'BSCS';
             
             return {
@@ -82,9 +80,9 @@ export function GuidanceReports() {
               yearLevel: formData.yearLevel || '1st year',
               course: courseCode,
               courseFull: courseCode === 'BSCS' ? 'Bachelor of Science in Computer Science' : courseCode === 'BAEL' ? 'Bachelor of Arts in English Language' : courseCode === 'BSFT' ? 'Bachelor of Science in Food Technology' : 'Bachelor of Science in Office Administration',
-              category: category.includes('Internal') ? 'Internally-Funded' : 'Externally-Funded',
-              subType: subType.includes('Institutional') ? 'Institutional' : subType.includes('Socio') ? 'Socio-cultural' : subType.includes('Academic') ? 'Academic' : subType.includes('Merit') ? 'Merit' : 'CHED',
-              allocation: formData.scholarshipCategory || s.scholarshipType || 'Pag-Ulikid',
+              category: (formatted.fundType === 'Internally-Funded' ? 'Internally-Funded' : 'Externally-Funded') as 'Internally-Funded' | 'Externally-Funded',
+              subType: formatted.category,
+              allocation: formatted.displayItems[0] || formData.scholarshipCategory || s.scholarshipType || 'Pag-Ulikid',
               gender: (formData.sex === 'Male' || formData.gender === 'Male') ? 'Male' : 'Female',
               email: formData.email || `${formData.firstName?.toLowerCase() || 'student'}@capsu.edu.ph`,
               phone: formData.contactNo || '+63 912 345 6789',

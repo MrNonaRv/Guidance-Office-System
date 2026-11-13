@@ -70,42 +70,40 @@ export const INITIAL_SCHOLARSHIP_CATEGORIES: ScholarshipCategoryItem[] = [
         id: 'ched',
         name: 'CHED',
         allocations: [
-          { id: 'tes', name: 'Tertiary Education Subsidy (TES)' },
-          { id: 'pag-ulikid', name: 'Pag-ulikid' },
-          { id: 'tulong-dunong', name: 'Tulong Dunong' },
-          { id: 'anac-ip', name: 'ANAC - IP' },
+          { id: 'anac-ip', name: 'ANAC – IP' },
+          { id: 'pag-ulikid', name: 'Pag – ulikid' },
           { id: 'brgy-officials', name: 'Barangay (Legal dependents of Brgy. Officials)' },
-          { id: 'esgp-pa', name: 'ESGP - PA' },
+          { id: 'esgp-pa', name: 'ESGP – PA' },
           { id: 'unifast', name: 'UniFast' },
-          { id: 'congressional-district', name: 'Congressional District' },
-          { id: 'one-town', name: 'One Town One Scholar' },
-          { id: 'ched-others', name: 'Others' }
+          { id: 'tes', name: 'Tertiary Education Subsidy (TES)' },
+          { id: 'congressional-district', name: 'Congressional District (specify)', hasSpecifyField: 'chedCongressionalDistrict' },
+          { id: 'one-town', name: 'One Town One Scholar (specify)', hasSpecifyField: 'chedOneTown' },
+          { id: 'tulong-dunong', name: 'Tulong Dunong (specify)', hasSpecifyField: 'chedTulongDunong' },
+          { id: 'ched-others', name: 'Others (specify)', hasSpecifyField: 'chedOthers' }
         ]
       },
       {
         id: 'merit',
         name: 'Merit',
         allocations: [
-          { id: 'dost', name: 'DOST' },
           { id: 'vic', name: 'VIC' },
           { id: 'capizeno-circle', name: 'Capizeño Circle' },
-          { id: 'grf', name: 'GRF' },
-          { id: 'ched', name: 'CHED' },
-          { id: 'merit-others', name: 'Others' }
+          { id: 'dost', name: 'DOST' },
+          { id: 'grf', name: 'GRF' }
         ]
       },
       {
         id: 'lgu',
         name: 'LGU',
         allocations: [
-          { id: 'lgu-grant', name: 'LGU: Barangay, Municipality, Province', hasSpecifyField: 'lguContact' }
+          { id: 'lgu-grant', name: 'LGU: Barangay, Municipality, Province (Landline) Contact person or issuing office:', hasSpecifyField: 'lguContact' }
         ]
       },
       {
         id: 'dswd',
         name: 'DSWD',
         allocations: [
-          { id: 'dswd-grant', name: 'DSWD Educational Assistance', hasSpecifyField: 'dswdFields' }
+          { id: 'dswd-grant', name: 'DSWD', hasSpecifyField: 'dswdFields' }
         ]
       }
     ]
@@ -120,16 +118,22 @@ export function getStoredScholarshipCategories(): ScholarshipCategoryItem[] {
       const parsed = JSON.parse(saved);
       if (Array.isArray(parsed) && parsed.length > 0) {
         let hasNgo = false;
+        let hasAnac = false;
         parsed.forEach(cat => {
           if (cat.subtypes) {
             cat.subtypes.forEach((sub: any) => {
               if (sub.id === 'private-ngo' || sub.name === 'Private/NGO' || sub.name === 'Private / NGO' || sub.name?.includes('NGO') || sub.name?.includes('Private')) {
                 hasNgo = true;
               }
+              if (sub.id === 'ched' && sub.allocations) {
+                if (sub.allocations.some((a: any) => a.name?.includes('ANAC'))) {
+                  hasAnac = true;
+                }
+              }
             });
           }
         });
-        if (hasNgo) {
+        if (hasNgo || !hasAnac) {
           localStorage.removeItem('capsu_scholarship_categories');
           return INITIAL_SCHOLARSHIP_CATEGORIES;
         }
