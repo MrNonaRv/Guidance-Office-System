@@ -512,8 +512,6 @@ const navItems = [
   { icon: Bell, label: 'Notifications', path: '/admin/notifications' },
   { icon: Mail, label: 'Responses', path: '/admin/responses' },
   { icon: BarChart2, label: 'Reports', path: '/admin/reports' },
-  { icon: Sparkles, label: 'System Auditor', path: '/admin/auditor' },
-  { icon: BookOpen, label: 'Process Documenter', path: '/admin/documenter' },
   { icon: Settings, label: 'Settings', path: '/admin/settings' },
 ];
 
