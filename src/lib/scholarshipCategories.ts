@@ -98,14 +98,14 @@ export const INITIAL_SCHOLARSHIP_CATEGORIES: ScholarshipCategoryItem[] = [
         id: 'lgu',
         name: 'LGU',
         allocations: [
-          { id: 'lgu-grant', name: 'LGU: Barangay, Municipality, Province' }
+          { id: 'lgu-grant', name: 'LGU: Barangay, Municipality, Province', hasSpecifyField: 'lguContact' }
         ]
       },
       {
         id: 'dswd',
         name: 'DSWD',
         allocations: [
-          { id: 'dswd-grant', name: 'DSWD Educational Assistance' }
+          { id: 'dswd-grant', name: 'DSWD Educational Assistance', hasSpecifyField: 'dswdFields' }
         ]
       }
     ]
@@ -188,23 +188,23 @@ export function getDynamicScholarshipStructure(): ScholarshipStructure {
       options: (sub.allocations || []).map(alloc => {
         const lowerName = alloc.name.toLowerCase();
         const subName = sub.name.toLowerCase();
-        let specifyField: ScholarshipOption['hasSpecifyField'] = (alloc.hasSpecifyField && alloc.hasSpecifyField !== 'none') ? alloc.hasSpecifyField as any : undefined;
+        let specifyField: ScholarshipOption['hasSpecifyField'] = undefined;
 
-        if (!specifyField) {
-          if (subName === 'lgu' || lowerName.includes('lgu')) {
-            specifyField = 'lguContact';
-          } else if (subName === 'dswd' || lowerName.includes('dswd')) {
-            specifyField = 'dswdFields';
-          } else if (subName === 'ched') {
-            if (lowerName.includes('congressional')) specifyField = 'chedCongressionalDistrict';
-            else if (lowerName.includes('one town')) specifyField = 'chedOneTown';
-            else if (lowerName.includes('tulong dunong')) specifyField = 'chedTulongDunong';
-            else if (lowerName.includes('others')) specifyField = 'chedOthers';
-          } else if (subName === 'merit') {
-            if (lowerName.includes('others')) specifyField = 'meritChedAndOthers';
-          } else if (lowerName.includes('others')) {
-            specifyField = 'internalCategoryOthers';
-          }
+        if (subName === 'lgu' || lowerName.includes('lgu')) {
+          specifyField = 'lguContact';
+        } else if (subName === 'dswd' || lowerName.includes('dswd')) {
+          specifyField = 'dswdFields';
+        } else if (alloc.hasSpecifyField && alloc.hasSpecifyField !== 'none') {
+          specifyField = alloc.hasSpecifyField as any;
+        } else if (subName === 'ched') {
+          if (lowerName.includes('congressional')) specifyField = 'chedCongressionalDistrict';
+          else if (lowerName.includes('one town')) specifyField = 'chedOneTown';
+          else if (lowerName.includes('tulong dunong')) specifyField = 'chedTulongDunong';
+          else if (lowerName.includes('others')) specifyField = 'chedOthers';
+        } else if (subName === 'merit') {
+          if (lowerName.includes('others')) specifyField = 'meritChedAndOthers';
+        } else if (lowerName.includes('others')) {
+          specifyField = 'internalCategoryOthers';
         }
 
         return {
@@ -338,8 +338,14 @@ export function formatScholarshipAllocations(data: {
     if (item === 'Others' && data.meritChedAndOthers) {
       return `Others (${data.meritChedAndOthers})`;
     }
-    if (item === 'LGU' && data.lguContact) {
-      return `LGU (Contact: ${data.lguContact})`;
+    if (item === 'LGU' || item === 'LGU: Barangay, Municipality, Province') {
+      const lguParts = [
+        data.lguBarangay ? `Brgy: ${data.lguBarangay}` : '',
+        data.lguMunicipality ? `Mun: ${data.lguMunicipality}` : '',
+        data.lguProvince ? `Prov: ${data.lguProvince}` : '',
+        data.lguContact ? `Contact: ${data.lguContact}` : ''
+      ].filter(Boolean);
+      return lguParts.length > 0 ? `LGU (${lguParts.join(', ')})` : 'LGU: Barangay, Municipality, Province';
     }
     if (item === 'DSWD') {
       const dswdParts = [

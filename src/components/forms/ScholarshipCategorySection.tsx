@@ -242,16 +242,51 @@ export const ScholarshipCategorySection = ({
                               )}
 
                               {isSelected && opt.hasSpecifyField === 'lguContact' && (
-                                <div className="mt-2">
-                                  <label className="block text-[11px] font-semibold text-gray-600 mb-1">Contact Person / Issuing Office:</label>
-                                  <input
-                                    type="text"
-                                    name="lguContact"
-                                    value={formData.lguContact || ''}
-                                    onChange={handleChange}
-                                    placeholder="e.g., Mayor's Office / Landline No."
-                                    className="w-full text-xs p-1.5 bg-white border border-gray-300 rounded-md focus:border-blue-600 outline-none"
-                                  />
+                                <div className="mt-2 space-y-2 pt-1">
+                                  <div>
+                                    <label className="block text-[10px] font-semibold text-gray-600">Barangay:</label>
+                                    <input
+                                      type="text"
+                                      name="lguBarangay"
+                                      value={formData.lguBarangay || ''}
+                                      onChange={handleChange}
+                                      placeholder="Barangay"
+                                      className="w-full text-xs p-1.5 bg-white border border-gray-300 rounded-md focus:border-blue-600 outline-none"
+                                    />
+                                  </div>
+                                  <div>
+                                    <label className="block text-[10px] font-semibold text-gray-600">Municipality:</label>
+                                    <input
+                                      type="text"
+                                      name="lguMunicipality"
+                                      value={formData.lguMunicipality || ''}
+                                      onChange={handleChange}
+                                      placeholder="Municipality"
+                                      className="w-full text-xs p-1.5 bg-white border border-gray-300 rounded-md focus:border-blue-600 outline-none"
+                                    />
+                                  </div>
+                                  <div>
+                                    <label className="block text-[10px] font-semibold text-gray-600">Province:</label>
+                                    <input
+                                      type="text"
+                                      name="lguProvince"
+                                      value={formData.lguProvince || ''}
+                                      onChange={handleChange}
+                                      placeholder="Province"
+                                      className="w-full text-xs p-1.5 bg-white border border-gray-300 rounded-md focus:border-blue-600 outline-none"
+                                    />
+                                  </div>
+                                  <div>
+                                    <label className="block text-[10px] font-semibold text-gray-600">Contact Person / Issuing Office:</label>
+                                    <input
+                                      type="text"
+                                      name="lguContact"
+                                      value={formData.lguContact || ''}
+                                      onChange={handleChange}
+                                      placeholder="e.g., Mayor's Office / Landline No."
+                                      className="w-full text-xs p-1.5 bg-white border border-gray-300 rounded-md focus:border-blue-600 outline-none"
+                                    />
+                                  </div>
                                 </div>
                               )}
 

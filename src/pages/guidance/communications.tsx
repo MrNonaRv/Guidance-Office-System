@@ -200,6 +200,49 @@ Capiz State University`
       body: (_studentName, _allocation) => ``
     },
     {
+      id: 'verified',
+      name: 'Status Update: Complete (Verified)',
+      subject: 'Scholarship Submission : APPROVED & VERIFIED',
+      body: (_studentName, _allocation) => 
+`Dear Student,
+
+Greetings!
+
+We are pleased to inform you that your scholarship submission and documents have been officially verified and approved.
+
+Please keep your contact information active and regularly check your email for updates regarding your scholarship release.
+
+
+Sincerely,
+Guidance Office
+Capiz State University – Mambusao Satellite College`
+    },
+    {
+      id: 'missing-docs',
+      name: 'Status Update: Missing / Incomplete Documents',
+      subject: 'Scholarship Submission : INCOMPLETE REQUIREMENTS',
+      body: (_studentName, _allocation) =>
+`Dear Student,
+
+Greetings!
+
+We regret to inform you that your scholarship submission requires attention due to missing or unverified documents.
+
+The following concerns were identified during the review process:
+- Missing or blurred Registration Form (RF)
+- Missing or blurred General Weighted Average (GWA) / Grades
+- Unverified Student ID or incorrect file format
+
+Please resubmit your updated requirements through the student portal.
+For further assistance, you may visit the Guidance Office.
+
+Thank you.
+
+Sincerely,
+Guidance Office
+Capiz State University – Mambusao Satellite College`
+    },
+    {
       id: 'complete',
       name: 'Status Update: Complete',
       subject: 'Scholarship Submission : APPROVED',
