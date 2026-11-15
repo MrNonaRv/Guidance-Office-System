@@ -228,11 +228,11 @@ function cleanForFirestore(obj: any, currentDepth = 0): any {
 // High-Performance In-Memory Cache & Event Notification Layer
 // -------------------------------------------------------------
 let memorySubmissions: Submission[] = [...defaultSubmissions];
-let memoryScholarships: Scholarship[] = [...defaultScholarships];
-let memoryCourses: Course[] = [...defaultCourses];
-let memoryAcademicYears: AcademicYear[] = [...defaultAcademicYears];
-let memorySections: Section[] = [...defaultSections];
-let memoryFormRequirements: FormRequirement[] = [...defaultFormRequirements];
+let memoryScholarships: Scholarship[] = [];
+let memoryCourses: Course[] = [];
+let memoryAcademicYears: AcademicYear[] = [];
+let memorySections: Section[] = [];
+let memoryFormRequirements: FormRequirement[] = [];
 let memoryFiles: SystemFile[] = [...defaultSystemFiles];
 let memoryNotifications: NotificationItem[] = [...defaultNotifications];
 let memoryCommunications: CommunicationItem[] = [];
@@ -509,7 +509,7 @@ export const db = {
         memoryScholarships.push(s);
       }
       notifyScholarshipListeners();
-      scholarshipsDb.setItem(id, s).catch(() => {});
+      await scholarshipsDb.setItem(id, s);
       if (firestoreDb) {
         setDoc(doc(firestoreDb, 'scholarships', id), cleanForFirestore(s), { merge: true })
           .catch(e => handleFirestoreError(e, OperationType.WRITE, `scholarships/${id}`));
@@ -830,7 +830,7 @@ export const db = {
       } else {
         memoryCourses.push(course);
       }
-      coursesDb.setItem(id, course).catch(() => {});
+      await coursesDb.setItem(id, course);
       if (firestoreDb) {
         setDoc(doc(firestoreDb, 'courses', id), cleanForFirestore(course), { merge: true })
           .catch(e => handleFirestoreError(e, OperationType.WRITE, `courses/${id}`));
@@ -902,7 +902,7 @@ export const db = {
       } else {
         memoryAcademicYears.push(ay);
       }
-      academicYearsDb.setItem(id, ay).catch(() => {});
+      await academicYearsDb.setItem(id, ay);
       if (firestoreDb) {
         setDoc(doc(firestoreDb, 'academicYears', id), cleanForFirestore(ay), { merge: true })
           .catch(e => handleFirestoreError(e, OperationType.WRITE, `academicYears/${id}`));
@@ -992,7 +992,7 @@ export const db = {
       } else {
         memorySections.push(section);
       }
-      sectionsDb.setItem(id, section).catch(() => {});
+      await sectionsDb.setItem(id, section);
       if (firestoreDb) {
         setDoc(doc(firestoreDb, 'sections', id), cleanForFirestore(section), { merge: true })
           .catch(e => handleFirestoreError(e, OperationType.WRITE, `sections/${id}`));
@@ -1060,7 +1060,7 @@ export const db = {
       } else {
         memoryFormRequirements.push(req);
       }
-      formReqsDb.setItem(id, req).catch(() => {});
+      await formReqsDb.setItem(id, req);
       if (firestoreDb) {
         setDoc(doc(firestoreDb, 'formRequirements', id), cleanForFirestore(req), { merge: true })
           .catch(e => handleFirestoreError(e, OperationType.WRITE, `formRequirements/${id}`));
