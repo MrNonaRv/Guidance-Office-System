@@ -1764,16 +1764,21 @@ export function GuidanceSettings() {
 
   useEffect(() => {
     let isMounted = true;
-    db.courses.listAll().then(list => {
-      if (isMounted && list && list.length > 0) {
-        setCourses(list);
-      }
-    });
-    db.scholarships.listAll().then(schs => {
-      if (isMounted && schs) {
-        setScholarships(schs);
-      }
-    });
+    Promise.all([
+      db.courses.listAll(),
+      db.academicYears.listAll(),
+      db.sections.listAll(),
+      db.scholarships.listAll(),
+      db.formRequirements.listAll()
+    ]).then(([coursesList, ayList, sectionsList, schs, reqs]) => {
+      if (!isMounted) return;
+      if (coursesList && coursesList.length > 0) setCourses(coursesList);
+      if (ayList && ayList.length > 0) setAcademicYears(ayList);
+      if (sectionsList && sectionsList.length > 0) setSections(sectionsList);
+      if (schs && schs.length > 0) setScholarships(schs);
+      if (reqs && reqs.length > 0) setFormFields(reqs);
+    }).catch(e => console.warn("Failed to load settings list:", e));
+
     return () => { isMounted = false; };
   }, []);
 
@@ -1827,6 +1832,7 @@ export function GuidanceSettings() {
       const newCourse = await db.courses.create(courseForm);
       setCourses([...courses, newCourse || { id: Date.now().toString(), ...courseForm }]);
     }
+    window.dispatchEvent(new Event('courses_updated'));
     setShowCourseModal(false);
   };
 
@@ -1845,6 +1851,7 @@ export function GuidanceSettings() {
     if (confirm("Are you sure you want to delete this course?")) {
       await db.courses.delete(id);
       setCourses(courses.filter(c => c.id !== id));
+      window.dispatchEvent(new Event('courses_updated'));
     }
   };
 
@@ -1861,6 +1868,7 @@ export function GuidanceSettings() {
       const newSection = await db.sections.create(sectionForm);
       setSections([...sections, newSection]);
     }
+    window.dispatchEvent(new Event('sections_updated'));
     setShowSectionModal(false);
   };
 
@@ -1879,6 +1887,7 @@ export function GuidanceSettings() {
     if (confirm("Are you sure you want to delete this section?")) {
       await db.sections.delete(id);
       setSections(sections.filter(s => s.id !== id));
+      window.dispatchEvent(new Event('sections_updated'));
     }
   };
 

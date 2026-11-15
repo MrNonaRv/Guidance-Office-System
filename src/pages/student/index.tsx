@@ -1382,6 +1382,41 @@ export function StudentSubmissionForm() {
     return () => window.removeEventListener('scholarship_categories_updated', handleUpdate);
   }, []);
 
+  const [coursesList, setCoursesList] = useState<string[]>(() => {
+    const cached = db.courses.getCached?.() || [];
+    return cached.length > 0 ? cached.map(c => c.code || c.name) : ['BSCS', 'BSOA', 'BSFT', 'BAEL'];
+  });
+  const [sectionsList, setSectionsList] = useState<string[]>(() => {
+    const cached = db.sections.getCached?.() || [];
+    return cached.length > 0 ? cached.map(s => s.name) : ['A', 'B', 'C'];
+  });
+
+  useEffect(() => {
+    const fetchCoursesAndSections = () => {
+      db.courses.listAll().then(list => {
+        if (list && list.length > 0) {
+          setCoursesList(list.map(c => c.code || c.name));
+        }
+      }).catch(() => {});
+
+      db.sections.listAll().then(list => {
+        if (list && list.length > 0) {
+          setSectionsList(Array.from(new Set(list.map(s => s.name))));
+        }
+      }).catch(() => {});
+    };
+
+    fetchCoursesAndSections();
+
+    window.addEventListener('courses_updated', fetchCoursesAndSections);
+    window.addEventListener('sections_updated', fetchCoursesAndSections);
+
+    return () => {
+      window.removeEventListener('courses_updated', fetchCoursesAndSections);
+      window.removeEventListener('sections_updated', fetchCoursesAndSections);
+    };
+  }, []);
+
   const [formData, setFormData] = useState(() => {
     let initialUser: any = {};
     if (typeof window !== 'undefined') {
@@ -2716,7 +2751,7 @@ export function StudentSubmissionForm() {
                     name="course" 
                     value={formData.course} 
                     onChange={handleChange} 
-                    options={['BSCS', 'BSOA', 'BSFT', 'BAEL']} 
+                    options={coursesList} 
                     required 
                     error={errors.course} 
                   />
@@ -2725,7 +2760,7 @@ export function StudentSubmissionForm() {
                     name="section" 
                     value={formData.section} 
                     onChange={handleChange} 
-                    options={['A', 'B', 'C']} 
+                    options={sectionsList} 
                     required
                     error={errors.section}
                   />

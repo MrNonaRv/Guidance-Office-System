@@ -850,7 +850,27 @@ export const db = {
       return updated;
     },
     async listAll(): Promise<Course[]> {
-      return [...memoryCourses];
+      if (memoryCourses.length > 0) {
+        return [...memoryCourses];
+      }
+      try {
+        const keys = await coursesDb.keys();
+        if (keys.length > 0) {
+          const items: Course[] = [];
+          for (const key of keys) {
+            const item = await coursesDb.getItem(key);
+            if (item) items.push(item);
+          }
+          if (items.length > 0) {
+            memoryCourses = items;
+            return [...items];
+          }
+        }
+      } catch (e) {
+        console.warn("Courses list fetch notice:", e);
+      }
+      memoryCourses = [...defaultCourses];
+      return [...defaultCourses];
     },
     async delete(id: string): Promise<void> {
       memoryCourses = memoryCourses.filter(c => c.id !== id);
@@ -921,6 +941,26 @@ export const db = {
       }
     },
     async listAll(): Promise<AcademicYear[]> {
+      if (memoryAcademicYears.length > 0) {
+        return [...memoryAcademicYears].sort((a, b) => b.year.localeCompare(a.year) || (a.semester || '').localeCompare(b.semester || ''));
+      }
+      try {
+        const keys = await academicYearsDb.keys();
+        if (keys.length > 0) {
+          const items: AcademicYear[] = [];
+          for (const key of keys) {
+            const item = await academicYearsDb.getItem(key);
+            if (item) items.push(item);
+          }
+          if (items.length > 0) {
+            memoryAcademicYears = items;
+            return [...items].sort((a, b) => b.year.localeCompare(a.year) || (a.semester || '').localeCompare(b.semester || ''));
+          }
+        }
+      } catch (e) {
+        console.warn("AcademicYears list fetch notice:", e);
+      }
+      memoryAcademicYears = [...defaultAcademicYears];
       return [...memoryAcademicYears].sort((a, b) => b.year.localeCompare(a.year) || (a.semester || '').localeCompare(b.semester || ''));
     },
     async getDefault(): Promise<AcademicYear | null> {
@@ -972,7 +1012,27 @@ export const db = {
       return updated;
     },
     async listAll(): Promise<Section[]> {
-      return [...memorySections];
+      if (memorySections.length > 0) {
+        return [...memorySections];
+      }
+      try {
+        const keys = await sectionsDb.keys();
+        if (keys.length > 0) {
+          const items: Section[] = [];
+          for (const key of keys) {
+            const item = await sectionsDb.getItem(key);
+            if (item) items.push(item);
+          }
+          if (items.length > 0) {
+            memorySections = items;
+            return [...items];
+          }
+        }
+      } catch (e) {
+        console.warn("Sections list fetch notice:", e);
+      }
+      memorySections = [...defaultSections];
+      return [...defaultSections];
     },
     async delete(id: string): Promise<void> {
       memorySections = memorySections.filter(s => s.id !== id);
@@ -1020,7 +1080,27 @@ export const db = {
       return updated;
     },
     async listAll(): Promise<FormRequirement[]> {
-      return [...memoryFormRequirements];
+      if (memoryFormRequirements.length > 0) {
+        return [...memoryFormRequirements];
+      }
+      try {
+        const keys = await formReqsDb.keys();
+        if (keys.length > 0) {
+          const items: FormRequirement[] = [];
+          for (const key of keys) {
+            const item = await formReqsDb.getItem(key);
+            if (item) items.push(item);
+          }
+          if (items.length > 0) {
+            memoryFormRequirements = items;
+            return [...items];
+          }
+        }
+      } catch (e) {
+        console.warn("FormRequirements list fetch notice:", e);
+      }
+      memoryFormRequirements = [...defaultFormRequirements];
+      return [...defaultFormRequirements];
     },
     async delete(id: string): Promise<void> {
       memoryFormRequirements = memoryFormRequirements.filter(r => r.id !== id);
