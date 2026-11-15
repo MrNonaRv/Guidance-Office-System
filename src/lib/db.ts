@@ -245,6 +245,7 @@ let memoryCommunications: CommunicationItem[] = [];
 const submissionListeners = new Set<(subs: Submission[]) => void>();
 const notificationListeners = new Set<(notifs: NotificationItem[]) => void>();
 const scholarshipListeners = new Set<(items: Scholarship[]) => void>();
+const academicYearListeners = new Set<(ays: AcademicYear[]) => void>();
 
 // Browser cross-tab synchronization channel
 const syncChannel = typeof window !== 'undefined' && 'BroadcastChannel' in window
@@ -269,11 +270,28 @@ if (syncChannel) {
       } else if (type === 'SCHOLARSHIPS_SYNC' && Array.isArray(data)) {
         memoryScholarships = data;
         scholarshipListeners.forEach(cb => { try { cb([...memoryScholarships]); } catch (e) { console.error(e); } });
+      } else if (type === 'ACADEMIC_YEARS_SYNC' && Array.isArray(data)) {
+        memoryAcademicYears = data;
+        academicYearListeners.forEach(cb => { try { cb([...memoryAcademicYears]); } catch (e) { console.error(e); } });
       }
     } catch (err) {
       console.warn("Cross-tab sync handling error:", err);
     }
   };
+}
+
+function notifyAcademicYearListeners() {
+  academicYearListeners.forEach(cb => {
+    try { cb([...memoryAcademicYears]); } catch (e) { console.error(e); }
+  });
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new Event('academic_years_updated'));
+  }
+  if (syncChannel) {
+    try {
+      syncChannel.postMessage({ type: 'ACADEMIC_YEARS_SYNC', data: memoryAcademicYears });
+    } catch (e) {}
+  }
 }
 
 function notifySubmissionListeners() {
@@ -1040,8 +1058,9 @@ export const db = {
       return [...memoryAcademicYears];
     },
     subscribe(callback: (ays: AcademicYear[]) => void): () => void {
+      academicYearListeners.add(callback);
       callback([...memoryAcademicYears]);
-      return () => {};
+      return () => { academicYearListeners.delete(callback); };
     },
     async get(id: string): Promise<AcademicYear | null> {
       const mem = memoryAcademicYears.find(a => a.id === id);
@@ -1062,6 +1081,7 @@ export const db = {
         memoryAcademicYears.push(ay);
       }
       await academicYearsDb.setItem(id, ay);
+      notifyAcademicYearListeners();
       if (firestoreDb) {
         setDoc(doc(firestoreDb, 'academicYears', id), cleanForFirestore(ay), { merge: true })
           .catch(e => handleFirestoreError(e, OperationType.WRITE, `academicYears/${id}`));
