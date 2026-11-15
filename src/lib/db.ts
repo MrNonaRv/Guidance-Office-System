@@ -372,6 +372,9 @@ function notifyScholarshipListeners() {
 let unsubscribeSubmissions: (() => void) | null = null;
 let unsubscribeNotifications: (() => void) | null = null;
 let unsubscribeScholarships: (() => void) | null = null;
+let unsubscribeCourses: (() => void) | null = null;
+let unsubscribeAcademicYears: (() => void) | null = null;
+let unsubscribeSections: (() => void) | null = null;
 
 function setupRealtimeListeners() {
   if (!firestoreDb) return;
@@ -380,6 +383,9 @@ function setupRealtimeListeners() {
   if (unsubscribeSubmissions) { try { unsubscribeSubmissions(); } catch (e) { /* ignore */ } unsubscribeSubmissions = null; }
   if (unsubscribeNotifications) { try { unsubscribeNotifications(); } catch (e) { /* ignore */ } unsubscribeNotifications = null; }
   if (unsubscribeScholarships) { try { unsubscribeScholarships(); } catch (e) { /* ignore */ } unsubscribeScholarships = null; }
+  if (unsubscribeCourses) { try { unsubscribeCourses(); } catch (e) { /* ignore */ } unsubscribeCourses = null; }
+  if (unsubscribeAcademicYears) { try { unsubscribeAcademicYears(); } catch (e) { /* ignore */ } unsubscribeAcademicYears = null; }
+  if (unsubscribeSections) { try { unsubscribeSections(); } catch (e) { /* ignore */ } unsubscribeSections = null; }
 
   try {
     unsubscribeSubmissions = onSnapshot(collection(firestoreDb, 'submissions'), (snap) => {
@@ -457,6 +463,54 @@ function setupRealtimeListeners() {
     }, (err) => {
       handleFirestoreError(err, OperationType.GET, 'scholarships');
     });
+
+    unsubscribeCourses = onSnapshot(collection(firestoreDb, 'courses'), (snap) => {
+      if (!snap.empty) {
+        const remoteCourses: Course[] = [];
+        snap.forEach(d => remoteCourses.push(d.data() as Course));
+        if (remoteCourses.length > 0) {
+          const map = new Map<string, Course>();
+          memoryCourses.forEach(c => map.set(c.id, c));
+          remoteCourses.forEach(c => map.set(c.id, c));
+          memoryCourses = Array.from(map.values());
+          Promise.all(remoteCourses.map(c => coursesDb.setItem(c.id, c))).catch(() => {});
+        }
+      }
+    }, (err) => {
+      handleFirestoreError(err, OperationType.GET, 'courses');
+    });
+
+    unsubscribeAcademicYears = onSnapshot(collection(firestoreDb, 'academicYears'), (snap) => {
+      if (!snap.empty) {
+        const remoteAys: AcademicYear[] = [];
+        snap.forEach(d => remoteAys.push(d.data() as AcademicYear));
+        if (remoteAys.length > 0) {
+          const map = new Map<string, AcademicYear>();
+          memoryAcademicYears.forEach(ay => map.set(ay.id, ay));
+          remoteAys.forEach(ay => map.set(ay.id, ay));
+          memoryAcademicYears = Array.from(map.values());
+          Promise.all(remoteAys.map(ay => academicYearsDb.setItem(ay.id, ay))).catch(() => {});
+        }
+      }
+    }, (err) => {
+      handleFirestoreError(err, OperationType.GET, 'academicYears');
+    });
+
+    unsubscribeSections = onSnapshot(collection(firestoreDb, 'sections'), (snap) => {
+      if (!snap.empty) {
+        const remoteSections: Section[] = [];
+        snap.forEach(d => remoteSections.push(d.data() as Section));
+        if (remoteSections.length > 0) {
+          const map = new Map<string, Section>();
+          memorySections.forEach(s => map.set(s.id, s));
+          remoteSections.forEach(s => map.set(s.id, s));
+          memorySections = Array.from(map.values());
+          Promise.all(remoteSections.map(s => sectionsDb.setItem(s.id, s))).catch(() => {});
+        }
+      }
+    }, (err) => {
+      handleFirestoreError(err, OperationType.GET, 'sections');
+    });
   } catch (err) {
     console.warn("Realtime Firestore setup notice:", err);
   }
@@ -467,7 +521,7 @@ setupRealtimeListeners();
 
 // Re-verify listeners if auth state changes without disconnecting public Firestore listeners
 onAuthStateChanged(auth, () => {
-  if (!unsubscribeSubmissions || !unsubscribeNotifications || !unsubscribeScholarships) {
+  if (!unsubscribeSubmissions || !unsubscribeNotifications || !unsubscribeScholarships || !unsubscribeCourses || !unsubscribeAcademicYears || !unsubscribeSections) {
     setupRealtimeListeners();
   }
 });
@@ -858,6 +912,25 @@ export const db = {
     },
     async listAll(): Promise<Course[]> {
       try {
+        if (firestoreDb) {
+          try {
+            const snap = await getDocs(collection(firestoreDb, 'courses'));
+            if (!snap.empty) {
+              const remote: Course[] = [];
+              snap.forEach(d => remote.push(d.data() as Course));
+              if (remote.length > 0) {
+                const map = new Map<string, Course>();
+                memoryCourses.forEach(c => map.set(c.id, c));
+                remote.forEach(c => map.set(c.id, c));
+                memoryCourses = Array.from(map.values());
+                await Promise.all(memoryCourses.map(c => coursesDb.setItem(c.id, c)));
+                return [...memoryCourses];
+              }
+            }
+          } catch (e) {
+            // ignore
+          }
+        }
         const keys = await coursesDb.keys();
         if (keys.length > 0) {
           const items: Course[] = [];
@@ -951,6 +1024,25 @@ export const db = {
     },
     async listAll(): Promise<AcademicYear[]> {
       try {
+        if (firestoreDb) {
+          try {
+            const snap = await getDocs(collection(firestoreDb, 'academicYears'));
+            if (!snap.empty) {
+              const remote: AcademicYear[] = [];
+              snap.forEach(d => remote.push(d.data() as AcademicYear));
+              if (remote.length > 0) {
+                const map = new Map<string, AcademicYear>();
+                memoryAcademicYears.forEach(ay => map.set(ay.id, ay));
+                remote.forEach(ay => map.set(ay.id, ay));
+                memoryAcademicYears = Array.from(map.values());
+                await Promise.all(memoryAcademicYears.map(ay => academicYearsDb.setItem(ay.id, ay)));
+                return [...memoryAcademicYears].sort((a, b) => b.year.localeCompare(a.year) || (a.semester || '').localeCompare(b.semester || ''));
+              }
+            }
+          } catch (e) {
+            // ignore
+          }
+        }
         const keys = await academicYearsDb.keys();
         if (keys.length > 0) {
           const items: AcademicYear[] = [];
@@ -1024,6 +1116,25 @@ export const db = {
     },
     async listAll(): Promise<Section[]> {
       try {
+        if (firestoreDb) {
+          try {
+            const snap = await getDocs(collection(firestoreDb, 'sections'));
+            if (!snap.empty) {
+              const remote: Section[] = [];
+              snap.forEach(d => remote.push(d.data() as Section));
+              if (remote.length > 0) {
+                const map = new Map<string, Section>();
+                memorySections.forEach(s => map.set(s.id, s));
+                remote.forEach(s => map.set(s.id, s));
+                memorySections = Array.from(map.values());
+                await Promise.all(memorySections.map(s => sectionsDb.setItem(s.id, s)));
+                return [...memorySections];
+              }
+            }
+          } catch (e) {
+            // ignore
+          }
+        }
         const keys = await sectionsDb.keys();
         if (keys.length > 0) {
           const items: Section[] = [];
