@@ -32,8 +32,13 @@ export interface FirestoreErrorInfo {
   };
 }
 
+export let isFirestoreQuotaExceeded = false;
+
 export function handleFirestoreError(error: unknown, operationType: OperationType, path: string | null) {
   const errorMessage = error instanceof Error ? error.message : String(error);
+  if (errorMessage.includes('Quota limit exceeded') || errorMessage.includes('RESOURCE_EXHAUSTED') || errorMessage.includes('quota') || errorMessage.includes('429')) {
+    isFirestoreQuotaExceeded = true;
+  }
   const errInfo: FirestoreErrorInfo = {
     error: errorMessage,
     authInfo: {
@@ -51,8 +56,8 @@ export function handleFirestoreError(error: unknown, operationType: OperationTyp
     path
   };
   
-  if (errorMessage.includes('offline')) {
-    console.warn('Firestore Warning (Offline): ', JSON.stringify(errInfo));
+  if (errorMessage.includes('offline') || isFirestoreQuotaExceeded) {
+    console.warn('Firestore Warning (Offline/Quota): ', path);
   } else {
     console.error('Firestore Error: ', JSON.stringify(errInfo));
   }
@@ -376,7 +381,7 @@ let unsubscribeAcademicYears: (() => void) | null = null;
 let unsubscribeSections: (() => void) | null = null;
 
 function setupRealtimeListeners() {
-  if (!firestoreDb) return;
+  if (!firestoreDb || isFirestoreQuotaExceeded) return;
 
   // Clean up any existing listeners
   if (unsubscribeSubmissions) { try { unsubscribeSubmissions(); } catch (e) { /* ignore */ } unsubscribeSubmissions = null; }
@@ -581,6 +586,13 @@ export const db = {
         memoryScholarships.push(targetRecord);
       }
       notifyScholarshipListeners();
+      if (typeof window !== 'undefined') {
+        (window as any).__db_scholarships_cache__ = memoryScholarships;
+        try {
+          localStorage.setItem('capsu_db_scholarships_cache', JSON.stringify(memoryScholarships));
+        } catch (e) {}
+        window.dispatchEvent(new Event('scholarship_categories_updated'));
+      }
       await scholarshipsDb.setItem(id, targetRecord);
       if (firestoreDb) {
         setDoc(doc(firestoreDb, 'scholarships', id), cleanForFirestore(targetRecord), { merge: true })
@@ -651,6 +663,13 @@ export const db = {
     async delete(id: string): Promise<void> {
       memoryScholarships = memoryScholarships.filter(s => s.id !== id);
       notifyScholarshipListeners();
+      if (typeof window !== 'undefined') {
+        (window as any).__db_scholarships_cache__ = memoryScholarships;
+        try {
+          localStorage.setItem('capsu_db_scholarships_cache', JSON.stringify(memoryScholarships));
+        } catch (e) {}
+        window.dispatchEvent(new Event('scholarship_categories_updated'));
+      }
       scholarshipsDb.removeItem(id).catch(() => {});
       if (firestoreDb) {
         deleteDoc(doc(firestoreDb, 'scholarships', id))

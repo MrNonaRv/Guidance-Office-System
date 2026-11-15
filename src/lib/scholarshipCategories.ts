@@ -174,6 +174,73 @@ export interface ScholarshipStructure {
 }
 
 export function getDynamicScholarshipStructure(): ScholarshipStructure {
+  let scholarshipsList: any[] = [];
+  if (typeof window !== 'undefined') {
+    try {
+      const cacheStr = localStorage.getItem('capsu_db_scholarships_cache');
+      if (cacheStr) {
+        const parsed = JSON.parse(cacheStr);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          scholarshipsList = parsed;
+        }
+      }
+    } catch (e) {}
+  }
+
+  if (scholarshipsList.length > 0) {
+    const internalGroupsMap = new Map<string, ScholarshipOption[]>();
+    const externalGroupsMap = new Map<string, ScholarshipOption[]>();
+
+    scholarshipsList.forEach(s => {
+      if (s.status === 'Inactive') return;
+      const typeStr = (s.type || '').toLowerCase();
+      const isInternal = typeStr.includes('internal') || typeStr.includes('internally');
+      const subCat = s.category || (isInternal ? 'Institutional' : 'CHED');
+
+      const option: ScholarshipOption = {
+        id: s.name,
+        name: s.name,
+        label: s.name,
+        hasSpecifyField: undefined
+      };
+
+      const lowerName = s.name.toLowerCase();
+      if (lowerName.includes('congressional')) option.hasSpecifyField = 'chedCongressionalDistrict';
+      else if (lowerName.includes('one town')) option.hasSpecifyField = 'chedOneTown';
+      else if (lowerName.includes('tulong dunong')) option.hasSpecifyField = 'chedTulongDunong';
+      else if (lowerName.includes('lgu')) option.hasSpecifyField = 'lguContact';
+      else if (lowerName.includes('dswd')) option.hasSpecifyField = 'dswdFields';
+      else if (lowerName.includes('others')) option.hasSpecifyField = 'internalCategoryOthers';
+
+      if (isInternal) {
+        if (!internalGroupsMap.has(subCat)) internalGroupsMap.set(subCat, []);
+        internalGroupsMap.get(subCat)!.push(option);
+      } else {
+        if (!externalGroupsMap.has(subCat)) externalGroupsMap.set(subCat, []);
+        externalGroupsMap.get(subCat)!.push(option);
+      }
+    });
+
+    const Internal: ScholarshipSubCategoryGroup[] = Array.from(internalGroupsMap.entries()).map(([subCategory, options]) => ({
+      subCategory,
+      title: subCategory,
+      options
+    }));
+
+    const External: ScholarshipSubCategoryGroup[] = Array.from(externalGroupsMap.entries()).map(([subCategory, options]) => ({
+      subCategory,
+      title: subCategory,
+      options
+    }));
+
+    if (Internal.length > 0 || External.length > 0) {
+      return {
+        Internal: Internal.length > 0 ? Internal : [{ subCategory: 'Institutional', title: 'Institutional', options: [] }],
+        External: External.length > 0 ? External : [{ subCategory: 'CHED', title: 'CHED', options: [] }]
+      };
+    }
+  }
+
   const cats = getStoredScholarshipCategories();
   const internalCat = cats.find(c => c.id === 'internally-funded' || c.name === 'Internally-Funded') || cats[0];
   const externalCat = cats.find(c => c.id === 'externally-funded' || c.name === 'Externally-Funded') || cats[1];
