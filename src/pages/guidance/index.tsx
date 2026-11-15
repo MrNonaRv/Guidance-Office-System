@@ -1778,7 +1778,22 @@ export function GuidanceSettings() {
       if (reqs && reqs.length > 0) setFormFields(reqs);
     }).catch(e => console.warn("Failed to load settings list:", e));
 
-    return () => { isMounted = false; };
+    const unsubAY = db.academicYears.subscribe(ayList => {
+      if (isMounted && ayList && ayList.length > 0) setAcademicYears(ayList);
+    });
+    const unsubCourses = db.courses.subscribe(cList => {
+      if (isMounted && cList && cList.length > 0) setCourses(cList);
+    });
+    const unsubSch = db.scholarships.subscribe(sList => {
+      if (isMounted && sList && sList.length > 0) setScholarships(sList);
+    });
+
+    return () => {
+      isMounted = false;
+      unsubAY();
+      unsubCourses();
+      unsubSch();
+    };
   }, []);
 
   const handleSaveAcademicYear = async () => {

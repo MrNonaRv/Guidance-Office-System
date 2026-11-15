@@ -280,6 +280,78 @@ if (syncChannel) {
   };
 }
 
+// Multi-Device Server-Sent Events (SSE) synchronization channel
+if (typeof window !== 'undefined' && 'EventSource' in window) {
+  let sseSource: EventSource | null = null;
+  const initSSE = () => {
+    try {
+      if (sseSource) sseSource.close();
+      sseSource = new EventSource('/api/sync/events');
+      sseSource.onmessage = (event) => {
+        try {
+          const { type, data } = JSON.parse(event.data);
+          if (type === 'INIT') {
+            if (Array.isArray(data?.academicYears) && data.academicYears.length > 0) {
+              memoryAcademicYears = data.academicYears;
+              data.academicYears.forEach((ay: AcademicYear) => academicYearsDb.setItem(ay.id, ay).catch(() => {}));
+              notifyAcademicYearListeners();
+            }
+            if (Array.isArray(data?.courses) && data.courses.length > 0) {
+              memoryCourses = data.courses;
+              data.courses.forEach((c: Course) => coursesDb.setItem(c.id, c).catch(() => {}));
+              if (typeof window !== 'undefined') window.dispatchEvent(new Event('courses_updated'));
+            }
+            if (Array.isArray(data?.sections) && data.sections.length > 0) {
+              memorySections = data.sections;
+              data.sections.forEach((s: Section) => sectionsDb.setItem(s.id, s).catch(() => {}));
+              if (typeof window !== 'undefined') window.dispatchEvent(new Event('sections_updated'));
+            }
+            if (Array.isArray(data?.scholarships) && data.scholarships.length > 0) {
+              memoryScholarships = data.scholarships;
+              data.scholarships.forEach((s: Scholarship) => scholarshipsDb.setItem(s.id, s).catch(() => {}));
+              notifyScholarshipListeners();
+            }
+          } else if (type === 'ACADEMIC_YEARS_SYNC' && Array.isArray(data)) {
+            memoryAcademicYears = data;
+            data.forEach((ay: AcademicYear) => academicYearsDb.setItem(ay.id, ay).catch(() => {}));
+            notifyAcademicYearListeners();
+          } else if (type === 'COURSES_SYNC' && Array.isArray(data)) {
+            memoryCourses = data;
+            data.forEach((c: Course) => coursesDb.setItem(c.id, c).catch(() => {}));
+            if (typeof window !== 'undefined') window.dispatchEvent(new Event('courses_updated'));
+          } else if (type === 'SECTIONS_SYNC' && Array.isArray(data)) {
+            memorySections = data;
+            data.forEach((s: Section) => sectionsDb.setItem(s.id, s).catch(() => {}));
+            if (typeof window !== 'undefined') window.dispatchEvent(new Event('sections_updated'));
+          } else if (type === 'SCHOLARSHIPS_SYNC' && Array.isArray(data)) {
+            memoryScholarships = data;
+            data.forEach((s: Scholarship) => scholarshipsDb.setItem(s.id, s).catch(() => {}));
+            notifyScholarshipListeners();
+          } else if (type === 'SUBMISSIONS_SYNC' && Array.isArray(data)) {
+            const subMap = new Map<string, Submission>();
+            memorySubmissions.forEach(s => subMap.set(s.id, s));
+            data.forEach((s: Submission) => subMap.set(s.id, s));
+            memorySubmissions = Array.from(subMap.values()).sort(
+              (a, b) => new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime()
+            );
+            notifySubmissionListeners();
+          }
+        } catch (err) {
+          console.warn("SSE parse error:", err);
+        }
+      };
+      sseSource.onerror = () => {
+        if (sseSource?.readyState === EventSource.CLOSED) {
+          setTimeout(initSSE, 5000);
+        }
+      };
+    } catch (e) {
+      console.warn("SSE init notice:", e);
+    }
+  };
+  initSSE();
+}
+
 function notifyAcademicYearListeners() {
   academicYearListeners.forEach(cb => {
     try { cb([...memoryAcademicYears]); } catch (e) { console.error(e); }
@@ -518,6 +590,7 @@ function setupRealtimeListeners() {
           remoteAys.forEach(ay => map.set(ay.id, ay));
           memoryAcademicYears = Array.from(map.values());
           Promise.all(remoteAys.map(ay => academicYearsDb.setItem(ay.id, ay))).catch(() => {});
+          notifyAcademicYearListeners();
           if (typeof window !== 'undefined') {
             window.dispatchEvent(new Event('academic_years_updated'));
           }
@@ -1071,17 +1144,40 @@ export const db = {
       const trimmedYear = (ay.year || '').trim();
       const duplicate = memoryAcademicYears.find(a => a.id !== id && (a.year || '').trim() === trimmedYear);
       if (duplicate) {
-        throw new Error("This Academic Year already exists.");
+        id = duplicate.id;
       }
+      ay.id = id;
       ay.year = trimmedYear;
+      ay.updatedAt = ay.updatedAt || new Date().toISOString();
+      if (!ay.label) {
+        ay.label = `A.Y. ${trimmedYear}`;
+      }
+
+      if (ay.overallStatus === 'Active') {
+        memoryAcademicYears = memoryAcademicYears.map(item => {
+          if (item.id !== id && (item.year || '').trim() !== trimmedYear) {
+            return { ...item, overallStatus: 'Inactive' as const };
+          }
+          return item;
+        });
+      }
+
       const idx = memoryAcademicYears.findIndex(a => a.id === id);
       if (idx >= 0) {
-        memoryAcademicYears[idx] = ay;
+        memoryAcademicYears[idx] = { ...memoryAcademicYears[idx], ...ay };
       } else {
-        memoryAcademicYears.push(ay);
+        memoryAcademicYears.unshift(ay);
       }
       await academicYearsDb.setItem(id, ay);
       notifyAcademicYearListeners();
+
+      // Multi-device backend sync
+      fetch('/api/academic-years', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(ay)
+      }).catch(e => console.warn("Backend sync notice:", e));
+
       if (firestoreDb) {
         setDoc(doc(firestoreDb, 'academicYears', id), cleanForFirestore(ay), { merge: true })
           .catch(e => handleFirestoreError(e, OperationType.WRITE, `academicYears/${id}`));
@@ -1089,11 +1185,11 @@ export const db = {
     },
     async create(ay: Omit<AcademicYear, 'id'> & { id?: string }): Promise<AcademicYear> {
       const id = ay.id || `ay-${Date.now()}`;
-      const newAy: AcademicYear = { ...ay, id };
-      if (newAy.isDefault) {
+      const newAy: AcademicYear = { ...ay, id, updatedAt: new Date().toISOString() };
+      if (newAy.isDefault || newAy.overallStatus === 'Active') {
         for (const item of memoryAcademicYears) {
-          if (item.isDefault) {
-            await this.set(item.id, { ...item, isDefault: false });
+          if (item.id !== id && item.overallStatus === 'Active') {
+            await this.update(item.id, { overallStatus: 'Inactive' });
           }
         }
       }
@@ -1103,14 +1199,14 @@ export const db = {
     async update(id: string, ay: Partial<AcademicYear>): Promise<AcademicYear | null> {
       const existing = await this.get(id);
       if (!existing) return null;
-      if (ay.isDefault) {
+      if (ay.isDefault || ay.overallStatus === 'Active') {
         for (const item of memoryAcademicYears) {
-          if (item.id !== id && item.isDefault) {
-            await this.set(item.id, { ...item, isDefault: false });
+          if (item.id !== id && item.overallStatus === 'Active') {
+            await this.set(item.id, { ...item, overallStatus: 'Inactive' });
           }
         }
       }
-      const updated = { ...existing, ...ay, id };
+      const updated: AcademicYear = { ...existing, ...ay, id, updatedAt: new Date().toISOString() };
       await this.set(id, updated);
       return updated;
     },
@@ -1121,18 +1217,36 @@ export const db = {
     },
     async listAll(): Promise<AcademicYear[]> {
       try {
+        // Multi-device sync: query backend server first
+        try {
+          const res = await fetch('/api/academic-years');
+          if (res.ok) {
+            const serverList = await res.json();
+            if (Array.isArray(serverList) && serverList.length > 0) {
+              memoryAcademicYears = serverList;
+              for (const item of serverList) {
+                await academicYearsDb.setItem(item.id, item).catch(() => {});
+              }
+              notifyAcademicYearListeners();
+              return [...memoryAcademicYears].sort((a, b) => b.year.localeCompare(a.year));
+            }
+          }
+        } catch {}
+
         let allItems: AcademicYear[] = [];
-        if (firestoreDb) {
+        if (firestoreDb && !isFirestoreQuotaExceeded) {
           try {
             const snap = await getDocs(collection(firestoreDb, 'academicYears'));
             if (!snap.empty) {
               snap.forEach(d => allItems.push(d.data() as AcademicYear));
             }
-          } catch (e) {}
+          } catch (e) {
+            handleFirestoreError(e, OperationType.GET, 'academicYears');
+          }
         }
         const keys = await academicYearsDb.keys();
         for (const key of keys) {
-          const item = await academicYearsDb.getItem(key);
+          const item = await academicYearsDb.getItem(key) as AcademicYear | null;
           if (item) allItems.push(item);
         }
         if (allItems.length === 0) {
@@ -1147,57 +1261,69 @@ export const db = {
             map.set(yearKey, ay);
           } else {
             const existing = map.get(yearKey)!;
-            const isAyActive = ay.overallStatus === 'Active' || ay.status === 'Active' || ay.firstSemester === 'Active' || ay.secondSemester === 'Active';
-            const isExistingActive = existing.overallStatus === 'Active' || existing.status === 'Active' || existing.firstSemester === 'Active' || existing.secondSemester === 'Active';
-            if (isAyActive && !isExistingActive) {
+            const ayTime = ay.updatedAt ? new Date(ay.updatedAt).getTime() : 0;
+            const existingTime = existing.updatedAt ? new Date(existing.updatedAt).getTime() : 0;
+            if (ayTime >= existingTime) {
               map.set(yearKey, ay);
-            }
-            if (ay.id !== existing.id) {
-              academicYearsDb.removeItem(ay.id).catch(() => {});
-              if (firestoreDb) {
-                deleteDoc(doc(firestoreDb, 'academicYears', ay.id)).catch(() => {});
-              }
             }
           }
         }
         memoryAcademicYears = Array.from(map.values());
         for (const ay of memoryAcademicYears) {
-          await academicYearsDb.setItem(ay.id, ay);
+          await academicYearsDb.setItem(ay.id, ay).catch(() => {});
         }
-        return [...memoryAcademicYears].sort((a, b) => b.year.localeCompare(a.year) || (a.semester || '').localeCompare(b.semester || ''));
+        return [...memoryAcademicYears].sort((a, b) => b.year.localeCompare(a.year));
       } catch (e) {
         console.warn("AcademicYears list fetch notice:", e);
       }
-      return [...memoryAcademicYears].sort((a, b) => b.year.localeCompare(a.year) || (a.semester || '').localeCompare(b.semester || ''));
+      return [...memoryAcademicYears].sort((a, b) => b.year.localeCompare(a.year));
     },
     async getDefault(): Promise<AcademicYear | null> {
       return memoryAcademicYears.find(a => a.isDefault) || memoryAcademicYears.find(a => a.status === 'Active') || memoryAcademicYears[0] || null;
     },
     async getActiveTerm(): Promise<{ year: string; label: string; firstActive: boolean; secondActive: boolean; hasActive: boolean }> {
       try {
-        const list = await this.listAll();
-        for (const ay of list) {
-          const firstActive = ay.firstSemester === 'Active';
-          const secondActive = ay.secondSemester === 'Active';
-          const overallActive = ay.overallStatus === 'Active' || ay.status === 'Active';
-
-          if (overallActive || firstActive || secondActive) {
-            let label = `A.Y. ${ay.year}`;
-            if (firstActive && secondActive) {
-              label = `A.Y. ${ay.year} | 1st & 2nd Semester`;
-            } else if (firstActive) {
-              label = `A.Y. ${ay.year} | 1st Semester`;
-            } else if (secondActive) {
-              label = `A.Y. ${ay.year} | 2nd Semester`;
+        try {
+          const res = await fetch('/api/academic-years/active');
+          if (res.ok) {
+            const active = await res.json();
+            if (active && active.year) {
+              return active;
             }
-            return {
-              year: ay.year,
-              label,
-              firstActive,
-              secondActive,
-              hasActive: true
-            };
           }
+        } catch {}
+
+        const list = await this.listAll();
+        let target = list.find(ay => ay.overallStatus === 'Active');
+        if (!target) {
+          target = list.find(ay => ay.firstSemester === 'Active' || ay.secondSemester === 'Active');
+        }
+        if (!target && list.length > 0) {
+          target = list[0];
+        }
+
+        if (target) {
+          const isOverallActive = target.overallStatus === 'Active' || target.status === 'Active';
+          const firstActive = isOverallActive && target.firstSemester === 'Active';
+          const secondActive = isOverallActive && target.secondSemester === 'Active';
+          const hasActive = isOverallActive && (firstActive || secondActive);
+          let label = `A.Y. ${target.year}`;
+          if (isOverallActive) {
+            if (firstActive && secondActive) {
+              label = `A.Y. ${target.year} | 1st & 2nd Semester`;
+            } else if (firstActive) {
+              label = `A.Y. ${target.year} | 1st Semester`;
+            } else if (secondActive) {
+              label = `A.Y. ${target.year} | 2nd Semester`;
+            }
+          }
+          return {
+            year: target.year,
+            label,
+            firstActive,
+            secondActive,
+            hasActive
+          };
         }
       } catch (e) {
         console.warn("Error getting active term:", e);
@@ -1212,7 +1338,12 @@ export const db = {
     },
     async delete(id: string): Promise<void> {
       memoryAcademicYears = memoryAcademicYears.filter(a => a.id !== id);
-      academicYearsDb.removeItem(id).catch(() => {});
+      await academicYearsDb.removeItem(id).catch(() => {});
+      notifyAcademicYearListeners();
+
+      fetch(`/api/academic-years/${id}`, { method: 'DELETE' })
+        .catch(e => console.warn("Backend delete notice:", e));
+
       if (firestoreDb) {
         deleteDoc(doc(firestoreDb, 'academicYears', id))
           .catch(e => handleFirestoreError(e, OperationType.DELETE, `academicYears/${id}`));

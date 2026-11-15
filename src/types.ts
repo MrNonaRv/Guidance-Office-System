@@ -27,6 +27,7 @@ export interface AcademicYear {
   isDefault?: boolean;
   startDate?: string;
   endDate?: string;
+  updatedAt?: string;
 }
 
 export interface ScholarshipItem {
@@ -96,10 +97,8 @@ export const defaultCourses: Course[] = [
 ];
 
 export const defaultAcademicYears: AcademicYear[] = [
-  { id: 'ay-1', year: '2025-2026', overallStatus: 'Active', firstSemester: 'Active', secondSemester: 'Inactive', label: 'A.Y. 2025-2026' },
-  { id: 'ay-2', year: '2025-2026', overallStatus: 'Inactive', firstSemester: 'Inactive', secondSemester: 'Inactive', label: 'A.Y. 2025-2026' },
-  { id: 'ay-3', year: '2024-2025', overallStatus: 'Inactive', firstSemester: 'Inactive', secondSemester: 'Inactive', label: 'A.Y. 2024-2025' },
-  { id: 'ay-4', year: '2024-2025', overallStatus: 'Inactive', firstSemester: 'Inactive', secondSemester: 'Inactive', label: 'A.Y. 2024-2025' }
+  { id: 'ay-2025-2026', year: '2025-2026', overallStatus: 'Active', firstSemester: 'Active', secondSemester: 'Inactive', label: 'A.Y. 2025-2026', updatedAt: '2026-01-01T00:00:00.000Z' },
+  { id: 'ay-2024-2025', year: '2024-2025', overallStatus: 'Inactive', firstSemester: 'Inactive', secondSemester: 'Inactive', label: 'A.Y. 2024-2025', updatedAt: '2025-01-01T00:00:00.000Z' }
 ];
 
 export const mockStudents: Student[] = [
