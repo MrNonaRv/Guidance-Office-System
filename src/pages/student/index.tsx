@@ -1033,24 +1033,6 @@ export function StudentDashboard() {
         </h2>
       </div>
 
-      {/* Active Academic Term Banner */}
-      <div className="bg-white rounded-2xl px-6 py-4 shadow-sm border border-gray-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
-        <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center text-[#1864db]">
-            <Calendar className="w-4 h-4" />
-          </div>
-          <div>
-            <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider block">Active Academic Term</span>
-            <span className="text-sm font-bold text-gray-900">{activeTermInfo.label}</span>
-          </div>
-        </div>
-        <span className={cn(
-          "px-3 py-1 text-xs font-bold rounded-full",
-          activeTermInfo.hasActive ? "bg-green-100 text-green-800" : "bg-amber-100 text-amber-800"
-        )}>
-          {activeTermInfo.hasActive ? 'Active Term' : 'No Active Term'}
-        </span>
-      </div>
 
       <div className="space-y-4 sm:space-y-6">
         {/* Card 1: Scholarship Requirements */}
