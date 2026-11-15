@@ -457,6 +457,9 @@ function setupRealtimeListeners() {
           memoryScholarships = remoteScholarships;
           Promise.all(remoteScholarships.map(s => scholarshipsDb.setItem(s.id, s))).catch(() => {});
           notifyScholarshipListeners();
+          if (typeof window !== 'undefined') {
+            window.dispatchEvent(new Event('scholarships_updated'));
+          }
         }
       }
     }, (err) => {
@@ -473,6 +476,9 @@ function setupRealtimeListeners() {
           remoteCourses.forEach(c => map.set(c.id, c));
           memoryCourses = Array.from(map.values());
           Promise.all(remoteCourses.map(c => coursesDb.setItem(c.id, c))).catch(() => {});
+          if (typeof window !== 'undefined') {
+            window.dispatchEvent(new Event('courses_updated'));
+          }
         }
       }
     }, (err) => {
@@ -489,6 +495,9 @@ function setupRealtimeListeners() {
           remoteAys.forEach(ay => map.set(ay.id, ay));
           memoryAcademicYears = Array.from(map.values());
           Promise.all(remoteAys.map(ay => academicYearsDb.setItem(ay.id, ay))).catch(() => {});
+          if (typeof window !== 'undefined') {
+            window.dispatchEvent(new Event('academic_years_updated'));
+          }
         }
       }
     }, (err) => {
@@ -505,6 +514,9 @@ function setupRealtimeListeners() {
           remoteSections.forEach(s => map.set(s.id, s));
           memorySections = Array.from(map.values());
           Promise.all(remoteSections.map(s => sectionsDb.setItem(s.id, s))).catch(() => {});
+          if (typeof window !== 'undefined') {
+            window.dispatchEvent(new Event('sections_updated'));
+          }
         }
       }
     }, (err) => {
@@ -558,19 +570,20 @@ export const db = {
       const trimmedName = (s.name || '').trim();
       const duplicate = memoryScholarships.find(item => item.id !== id && (item.name || '').trim().toLowerCase() === trimmedName.toLowerCase());
       if (duplicate) {
-        throw new Error("This Scholarship already exists.");
+        id = duplicate.id;
       }
       s.name = trimmedName;
       const idx = memoryScholarships.findIndex(item => item.id === id);
+      const targetRecord = idx >= 0 ? { ...memoryScholarships[idx], ...s, id } : { ...s, id };
       if (idx >= 0) {
-        memoryScholarships[idx] = s;
+        memoryScholarships[idx] = targetRecord;
       } else {
-        memoryScholarships.push(s);
+        memoryScholarships.push(targetRecord);
       }
       notifyScholarshipListeners();
-      await scholarshipsDb.setItem(id, s);
+      await scholarshipsDb.setItem(id, targetRecord);
       if (firestoreDb) {
-        setDoc(doc(firestoreDb, 'scholarships', id), cleanForFirestore(s), { merge: true })
+        setDoc(doc(firestoreDb, 'scholarships', id), cleanForFirestore(targetRecord), { merge: true })
           .catch(e => handleFirestoreError(e, OperationType.WRITE, `scholarships/${id}`));
       }
     },
