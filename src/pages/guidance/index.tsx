@@ -1646,46 +1646,50 @@ export function GuidanceSettings() {
     const targetCatName = isInternal ? 'Internally-Funded' : 'Externally-Funded';
     const targetSubTypeName = isInternal ? 'Institutional' : 'CHED';
 
-    if (editingScholarship) {
-      const oldName = editingScholarship.name;
-      await db.scholarships.update(editingScholarship.id, scholarshipForm);
-      setScholarships(scholarships.map(s => s.id === editingScholarship.id ? { ...s, ...scholarshipForm } : s));
+    try {
+      if (editingScholarship) {
+        const oldName = editingScholarship.name;
+        await db.scholarships.update(editingScholarship.id, scholarshipForm);
+        setScholarships(scholarships.map(s => s.id === editingScholarship.id ? { ...s, ...scholarshipForm } : s));
 
-      const updatedCategories = categories.map(cat => ({
-        ...cat,
-        subtypes: (cat.subtypes || []).map(sub => ({
-          ...sub,
-          allocations: (sub.allocations || []).map(a => a.name === oldName ? { ...a, name: sName } : a)
-        }))
-      }));
-      saveCategoriesState(updatedCategories);
-    } else {
-      const newScholarship = await db.scholarships.create(scholarshipForm);
-      setScholarships([...scholarships, newScholarship || { id: `sch-${Date.now()}`, ...scholarshipForm }]);
+        const updatedCategories = categories.map(cat => ({
+          ...cat,
+          subtypes: (cat.subtypes || []).map(sub => ({
+            ...sub,
+            allocations: (sub.allocations || []).map(a => a.name === oldName ? { ...a, name: sName } : a)
+          }))
+        }));
+        saveCategoriesState(updatedCategories);
+      } else {
+        const newScholarship = await db.scholarships.create(scholarshipForm);
+        setScholarships([...scholarships, newScholarship || { id: `sch-${Date.now()}`, ...scholarshipForm }]);
 
-      // Also add to capsu_scholarship_categories hierarchy so it appears in student form & reports!
-      const updatedCategories = categories.map(cat => {
-        if (cat.name === targetCatName) {
-          return {
-            ...cat,
-            subtypes: cat.subtypes.map(sub => {
-              if (sub.name === targetSubTypeName || (sub.allocations && sub.allocations.length === 0)) {
-                const exists = sub.allocations.some(a => a.name === sName);
-                if (exists) return sub;
-                return {
-                  ...sub,
-                  allocations: [...sub.allocations, { id: `alloc-${Date.now()}`, name: sName }]
-                };
-              }
-              return sub;
-            })
-          };
-        }
-        return cat;
-      });
-      saveCategoriesState(updatedCategories);
+        // Also add to capsu_scholarship_categories hierarchy so it appears in student form & reports!
+        const updatedCategories = categories.map(cat => {
+          if (cat.name === targetCatName) {
+            return {
+              ...cat,
+              subtypes: cat.subtypes.map(sub => {
+                if (sub.name === targetSubTypeName || (sub.allocations && sub.allocations.length === 0)) {
+                  const exists = sub.allocations.some(a => a.name === sName);
+                  if (exists) return sub;
+                  return {
+                    ...sub,
+                    allocations: [...sub.allocations, { id: `alloc-${Date.now()}`, name: sName }]
+                  };
+                }
+                return sub;
+              })
+            };
+          }
+          return cat;
+        });
+        saveCategoriesState(updatedCategories);
+      }
+      setShowScholarshipModal(false);
+    } catch (err: any) {
+      alert(err.message || "This Scholarship already exists.");
     }
-    setShowScholarshipModal(false);
   };
 
   const handleEditScholarship = (s: any) => {
@@ -1718,16 +1722,11 @@ export function GuidanceSettings() {
     }
   };
 
-  const [academicYears, setAcademicYears] = useState<any[]>([
-    { id: '1', year: '2026-2027', overallStatus: 'Active', firstSemester: 'Active', secondSemester: 'Inactive' },
-    { id: '2', year: '2026-2025', overallStatus: 'Inactive', firstSemester: 'Inactive', secondSemester: 'Inactive' },
-    { id: '3', year: '2025-2024', overallStatus: 'Inactive', firstSemester: 'Inactive', secondSemester: 'Inactive' },
-    { id: '4', year: '2024-2023', overallStatus: 'Inactive', firstSemester: 'Inactive', secondSemester: 'Inactive' },
-  ]);
+  const [academicYears, setAcademicYears] = useState<any[]>(() => db.academicYears.getCached());
   const [showAcademicYearModal, setShowAcademicYearModal] = useState(false);
   const [editingAcademicYear, setEditingAcademicYear] = useState<any>(null);
   const [academicYearForm, setAcademicYearForm] = useState({
-    year: '2026-2027',
+    year: '2025-2026',
     overallStatus: 'Active' as 'Active' | 'Inactive',
     firstSemester: 'Active' as 'Active' | 'Inactive',
     secondSemester: 'Inactive' as 'Active' | 'Inactive'
@@ -1751,7 +1750,7 @@ export function GuidanceSettings() {
   const [showSectionModal, setShowSectionModal] = useState(false);
   const [editingSection, setEditingSection] = useState<any>(null);
   const [sectionForm, setSectionForm] = useState({
-    name: '', course: 'BSCS', yearLevel: '1st Year', status: 'Active' as 'Active' | 'Inactive'
+    name: ''
   });
 
   // Form Fields & Requirements state
@@ -1782,26 +1781,33 @@ export function GuidanceSettings() {
     return () => { isMounted = false; };
   }, []);
 
-  // Academic Year Handlers
   const handleSaveAcademicYear = async () => {
     if (!academicYearForm.year.trim()) {
-      alert("Please specify the academic year (e.g. 2026-2027).");
+      alert("Please specify the academic year (e.g. 2025-2026).");
       return;
     }
-    if (editingAcademicYear) {
-      await db.academicYears.update(editingAcademicYear.id, academicYearForm);
-      setAcademicYears(academicYears.map(ay => ay.id === editingAcademicYear.id ? { ...ay, ...academicYearForm } : ay));
-    } else {
-      const newAY = await db.academicYears.create(academicYearForm);
-      setAcademicYears([newAY, ...academicYears]);
+    const payload = {
+      ...academicYearForm,
+      label: `A.Y. ${academicYearForm.year}`
+    };
+    try {
+      if (editingAcademicYear) {
+        await db.academicYears.update(editingAcademicYear.id, payload);
+        setAcademicYears(academicYears.map(ay => ay.id === editingAcademicYear.id ? { ...ay, ...payload } : ay));
+      } else {
+        const newAY = await db.academicYears.create(payload);
+        setAcademicYears([newAY, ...academicYears]);
+      }
+      setShowAcademicYearModal(false);
+    } catch (err: any) {
+      alert(err.message || "This Academic Year already exists.");
     }
-    setShowAcademicYearModal(false);
   };
 
   const handleEditAcademicYear = (ay: any) => {
     setEditingAcademicYear(ay);
     setAcademicYearForm({
-      year: ay.year || '2026-2027',
+      year: ay.year || '2025-2026',
       overallStatus: ay.overallStatus || 'Active',
       firstSemester: ay.firstSemester || 'Active',
       secondSemester: ay.secondSemester || 'Inactive',
@@ -1825,15 +1831,19 @@ export function GuidanceSettings() {
       alert("Please enter both Course Code (e.g. BSCS) and Degree Title.");
       return;
     }
-    if (editingCourse) {
-      await db.courses.update(editingCourse.id, courseForm);
-      setCourses(courses.map(c => c.id === editingCourse.id ? { ...c, ...courseForm } : c));
-    } else {
-      const newCourse = await db.courses.create(courseForm);
-      setCourses([...courses, newCourse || { id: Date.now().toString(), ...courseForm }]);
+    try {
+      if (editingCourse) {
+        await db.courses.update(editingCourse.id, courseForm);
+        setCourses(courses.map(c => c.id === editingCourse.id ? { ...c, ...courseForm } : c));
+      } else {
+        const newCourse = await db.courses.create(courseForm);
+        setCourses([...courses, newCourse || { id: Date.now().toString(), ...courseForm }]);
+      }
+      window.dispatchEvent(new Event('courses_updated'));
+      setShowCourseModal(false);
+    } catch (err: any) {
+      alert(err.message || "This Course already exists.");
     }
-    window.dispatchEvent(new Event('courses_updated'));
-    setShowCourseModal(false);
   };
 
   const handleEditCourse = (c: any) => {
@@ -1857,28 +1867,37 @@ export function GuidanceSettings() {
 
   // Section Handlers
   const handleSaveSection = async () => {
-    if (!sectionForm.name.trim()) {
-      alert("Please specify the section name (e.g. BSCS 4A).");
+    const cleanName = sectionForm.name.trim().toUpperCase();
+    if (!cleanName) {
+      alert("Please specify the section letter (e.g. A, B, C, D).");
       return;
     }
-    if (editingSection) {
-      await db.sections.update(editingSection.id, sectionForm);
-      setSections(sections.map(s => s.id === editingSection.id ? { ...s, ...sectionForm } : s));
-    } else {
-      const newSection = await db.sections.create(sectionForm);
-      setSections([...sections, newSection]);
+    if (!/^[A-Za-z]+$/.test(cleanName)) {
+      alert("Invalid section name! Please input only alphabetical letters (e.g. A, B, C).");
+      return;
     }
-    window.dispatchEvent(new Event('sections_updated'));
-    setShowSectionModal(false);
+    const payload = {
+      name: cleanName
+    };
+    try {
+      if (editingSection) {
+        await db.sections.update(editingSection.id, payload);
+        setSections(sections.map(s => s.id === editingSection.id ? { ...s, ...payload } : s));
+      } else {
+        const newSection = await db.sections.create(payload);
+        setSections([...sections, newSection]);
+      }
+      window.dispatchEvent(new Event('sections_updated'));
+      setShowSectionModal(false);
+    } catch (err: any) {
+      alert(err.message || "This Section already exists.");
+    }
   };
 
   const handleEditSection = (s: any) => {
     setEditingSection(s);
     setSectionForm({
-      name: s.name,
-      course: s.course || 'BSCS',
-      yearLevel: s.yearLevel || '1st Year',
-      status: s.status || 'Active'
+      name: s.name || 'A'
     });
     setShowSectionModal(true);
   };
@@ -1931,7 +1950,7 @@ export function GuidanceSettings() {
   const handleOpenAddModal = () => {
     if (activeTab === 'academic-year') {
       setEditingAcademicYear(null);
-      setAcademicYearForm({ year: '2027-2028', overallStatus: 'Active', firstSemester: 'Active', secondSemester: 'Inactive' });
+      setAcademicYearForm({ year: '2026-2027', overallStatus: 'Active', firstSemester: 'Active', secondSemester: 'Inactive' });
       setShowAcademicYearModal(true);
     } else if (activeTab === 'scholarships') {
       setEditingScholarship(null);
@@ -1943,7 +1962,7 @@ export function GuidanceSettings() {
       setShowCourseModal(true);
     } else if (activeTab === 'sections') {
       setEditingSection(null);
-      setSectionForm({ name: '', course: 'BSCS', yearLevel: '1st Year', status: 'Active' });
+      setSectionForm({ name: '' });
       setShowSectionModal(true);
     } else if (activeTab === 'form' || activeTab === 'scholarships') {
       handleOpenAddAllocation();
@@ -2220,7 +2239,7 @@ export function GuidanceSettings() {
             </button>
           </div>
 
-        {/* TAB 1: ACADEMIC YEAR (Matching screenshot exactly) */}
+        {/* TAB 1: ACADEMIC YEAR */}
         {activeTab === 'academic-year' && (
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
@@ -2240,31 +2259,31 @@ export function GuidanceSettings() {
                     <td className="py-4 px-6 text-center">
                       <span className={cn(
                         "inline-block w-28 py-1 rounded-full text-xs font-semibold text-center",
-                        ay.overallStatus === 'Active'
+                        (ay.overallStatus || 'Active') === 'Active'
                           ? "bg-[#bbf7d0] text-[#15803d]"
                           : "bg-[#fecaca] text-[#dc2626]"
                       )}>
-                        {ay.overallStatus}
+                        {ay.overallStatus || 'Active'}
                       </span>
                     </td>
                     <td className="py-4 px-6 text-center">
                       <span className={cn(
                         "inline-block w-28 py-1 rounded-full text-xs font-semibold text-center",
-                        ay.firstSemester === 'Active'
+                        (ay.firstSemester || 'Active') === 'Active'
                           ? "bg-[#bbf7d0] text-[#15803d]"
                           : "bg-[#fecaca] text-[#dc2626]"
                       )}>
-                        {ay.firstSemester}
+                        {ay.firstSemester || 'Active'}
                       </span>
                     </td>
                     <td className="py-4 px-6 text-center">
                       <span className={cn(
                         "inline-block w-28 py-1 rounded-full text-xs font-semibold text-center",
-                        ay.secondSemester === 'Active'
+                        (ay.secondSemester || 'Inactive') === 'Active'
                           ? "bg-[#bbf7d0] text-[#15803d]"
                           : "bg-[#fecaca] text-[#dc2626]"
                       )}>
-                        {ay.secondSemester}
+                        {ay.secondSemester || 'Inactive'}
                       </span>
                     </td>
                     <td className="py-4 px-8 text-right space-x-3">
@@ -2342,21 +2361,21 @@ export function GuidanceSettings() {
               <tbody className="divide-y divide-gray-100 text-sm">
                 {sections.map((s, idx) => (
                   <tr key={s.id || idx} className="hover:bg-blue-50/20 transition-colors">
-                    <td className="py-4 px-8 text-gray-700">{s.name.replace(/^(BSCS|BAEL|BSFT|BSOA)\s+/, '') || s.name}</td>
+                    <td className="py-4 px-8 font-bold text-gray-900">{s.name}</td>
                     <td className="py-4 px-8 text-right space-x-3">
                       <button
                         onClick={() => handleEditSection(s)}
-                        className="text-gray-300 hover:text-gray-700 transition-colors p-1"
+                        className="text-gray-400 hover:text-gray-700 transition-colors p-1"
                         title="Edit"
                       >
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
+                        <Pen className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => handleDeleteSection(s.id)}
-                        className="text-gray-300 hover:text-gray-700 transition-colors p-1"
+                        className="text-gray-400 hover:text-red-600 transition-colors p-1"
                         title="Delete"
                       >
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
+                        <Trash2 className="w-4 h-4" />
                       </button>
                     </td>
                   </tr>
@@ -2498,12 +2517,12 @@ export function GuidanceSettings() {
                   value={academicYearForm.year} 
                   onChange={e => setAcademicYearForm({...academicYearForm, year: e.target.value})} 
                   className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#1864db] text-sm" 
-                  placeholder="e.g. 2026-2027" 
+                  placeholder="e.g. 2025-2026" 
                 />
               </div>
               <div className="grid grid-cols-3 gap-3">
                 <div>
-                  <label className="block text-[11px] font-bold text-gray-600 uppercase mb-1">Overall</label>
+                  <label className="block text-[11px] font-bold text-gray-600 uppercase mb-1">Overall Status</label>
                   <select 
                     value={academicYearForm.overallStatus} 
                     onChange={e => setAcademicYearForm({...academicYearForm, overallStatus: e.target.value as any})} 
@@ -2614,53 +2633,19 @@ export function GuidanceSettings() {
             </div>
             <div className="p-6 space-y-4">
               <div>
-                <label className="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1">Section Name</label>
+                <label className="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1">Section Letter (e.g. A, B, C)</label>
                 <input 
                   type="text" 
                   value={sectionForm.name} 
-                  onChange={e => setSectionForm({...sectionForm, name: e.target.value.toUpperCase()})} 
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#1864db] text-sm" 
-                  placeholder="e.g. BSCS 4A" 
+                  onChange={e => {
+                    const val = e.target.value.replace(/[^A-Za-z]/g, '').toUpperCase();
+                    setSectionForm({...sectionForm, name: val});
+                  }} 
+                  maxLength={3}
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#1864db] text-sm uppercase" 
+                  placeholder="e.g. A" 
                 />
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1">Course</label>
-                  <select 
-                    value={sectionForm.course} 
-                    onChange={e => setSectionForm({...sectionForm, course: e.target.value})} 
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none text-sm"
-                  >
-                    <option value="BSCS">BSCS</option>
-                    <option value="BAEL">BAEL</option>
-                    <option value="BSFT">BSFT</option>
-                    <option value="BSOA">BSOA</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1">Year Level</label>
-                  <select 
-                    value={sectionForm.yearLevel} 
-                    onChange={e => setSectionForm({...sectionForm, yearLevel: e.target.value})} 
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none text-sm"
-                  >
-                    <option value="1st Year">1st Year</option>
-                    <option value="2nd Year">2nd Year</option>
-                    <option value="3rd Year">3rd Year</option>
-                    <option value="4th Year">4th Year</option>
-                  </select>
-                </div>
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1">Status</label>
-                <select 
-                  value={sectionForm.status} 
-                  onChange={e => setSectionForm({...sectionForm, status: e.target.value as any})} 
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none text-sm"
-                >
-                  <option value="Active">Active</option>
-                  <option value="Inactive">Inactive</option>
-                </select>
+                <p className="text-[11px] text-gray-500 mt-1">Enter alphabetical letter only (e.g. A, B, C, D). This will automatically sync to the student application form.</p>
               </div>
             </div>
             <div className="px-6 py-4 border-t border-gray-100 bg-gray-50 flex justify-end gap-3">

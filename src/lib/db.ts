@@ -112,9 +112,9 @@ export interface Submission {
 export interface Section {
   id: string;
   name: string;
-  course: string;
-  yearLevel: string;
-  status: 'Active' | 'Inactive';
+  course?: string;
+  yearLevel?: string;
+  status?: 'Active' | 'Inactive';
 }
 
 export interface FormRequirement {
@@ -184,11 +184,10 @@ const communicationsDb = getDb('scholarship-app-communications');
 
 // Default records
 export const defaultSections: Section[] = [
-  { id: 'sec-1', name: 'BSCS 4A', course: 'BSCS', yearLevel: '4th Year', status: 'Active' },
-  { id: 'sec-2', name: 'BSCS 4B', course: 'BSCS', yearLevel: '4th Year', status: 'Active' },
-  { id: 'sec-3', name: 'BAEL 3A', course: 'BAEL', yearLevel: '3rd Year', status: 'Active' },
-  { id: 'sec-4', name: 'BSFT 2A', course: 'BSFT', yearLevel: '2nd Year', status: 'Active' },
-  { id: 'sec-5', name: 'BSOA 1A', course: 'BSOA', yearLevel: '1st Year', status: 'Active' },
+  { id: 'sec-1', name: 'A' },
+  { id: 'sec-2', name: 'B' },
+  { id: 'sec-3', name: 'C' },
+  { id: 'sec-4', name: 'D' },
 ];
 
 export const defaultFormRequirements: FormRequirement[] = [
@@ -556,6 +555,12 @@ export const db = {
       return null;
     },
     async set(id: string, s: Scholarship): Promise<void> {
+      const trimmedName = (s.name || '').trim();
+      const duplicate = memoryScholarships.find(item => item.id !== id && (item.name || '').trim().toLowerCase() === trimmedName.toLowerCase());
+      if (duplicate) {
+        throw new Error("This Scholarship already exists.");
+      }
+      s.name = trimmedName;
       const idx = memoryScholarships.findIndex(item => item.id === id);
       if (idx >= 0) {
         memoryScholarships[idx] = s;
@@ -585,24 +590,46 @@ export const db = {
     },
     async listAll(): Promise<Scholarship[]> {
       try {
-        const keys = await scholarshipsDb.keys();
-        if (keys.length > 0) {
-          const items: Scholarship[] = [];
-          for (const key of keys) {
-            const item = await scholarshipsDb.getItem(key);
-            if (item) items.push(item);
-          }
-          if (items.length > 0) {
-            memoryScholarships = items;
-            return [...items];
-          }
-        } else {
-          for (const s of defaultScholarships) {
-            await scholarshipsDb.setItem(s.id, s);
-          }
-          memoryScholarships = [...defaultScholarships];
-          return [...defaultScholarships];
+        let allItems: Scholarship[] = [];
+        if (firestoreDb) {
+          try {
+            const snap = await getDocs(collection(firestoreDb, 'scholarships'));
+            if (!snap.empty) {
+              snap.forEach(d => allItems.push(d.data() as Scholarship));
+            }
+          } catch (e) {}
         }
+        const keys = await scholarshipsDb.keys();
+        for (const key of keys) {
+          const item = await scholarshipsDb.getItem(key);
+          if (item) allItems.push(item);
+        }
+        if (allItems.length === 0) {
+          allItems = [...defaultScholarships];
+        }
+
+        const map = new Map<string, Scholarship>();
+        for (const s of allItems) {
+          const nameKey = (s.name || '').trim().toLowerCase();
+          if (!nameKey) continue;
+          if (!map.has(nameKey)) {
+            map.set(nameKey, s);
+          } else {
+            const existing = map.get(nameKey)!;
+            if (s.id !== existing.id) {
+              scholarshipsDb.removeItem(s.id).catch(() => {});
+              if (firestoreDb) {
+                deleteDoc(doc(firestoreDb, 'scholarships', s.id)).catch(() => {});
+              }
+            }
+          }
+        }
+        memoryScholarships = Array.from(map.values());
+        for (const s of memoryScholarships) {
+          await scholarshipsDb.setItem(s.id, s);
+        }
+        notifyScholarshipListeners();
+        return [...memoryScholarships];
       } catch (e) {
         console.warn("Scholarships list fetch notice:", e);
       }
@@ -885,6 +912,13 @@ export const db = {
       return await coursesDb.getItem(id);
     },
     async set(id: string, course: Course): Promise<void> {
+      const trimmedCode = (course.code || '').trim().toUpperCase();
+      const duplicate = memoryCourses.find(c => c.id !== id && (c.code || '').trim().toUpperCase() === trimmedCode);
+      if (duplicate) {
+        throw new Error("This Course already exists.");
+      }
+      course.code = trimmedCode;
+      course.name = (course.name || '').trim();
       const idx = memoryCourses.findIndex(c => c.id === id);
       if (idx >= 0) {
         memoryCourses[idx] = course;
@@ -912,43 +946,48 @@ export const db = {
     },
     async listAll(): Promise<Course[]> {
       try {
+        let allItems: Course[] = [];
         if (firestoreDb) {
           try {
             const snap = await getDocs(collection(firestoreDb, 'courses'));
             if (!snap.empty) {
-              const remote: Course[] = [];
-              snap.forEach(d => remote.push(d.data() as Course));
-              if (remote.length > 0) {
-                const map = new Map<string, Course>();
-                memoryCourses.forEach(c => map.set(c.id, c));
-                remote.forEach(c => map.set(c.id, c));
-                memoryCourses = Array.from(map.values());
-                await Promise.all(memoryCourses.map(c => coursesDb.setItem(c.id, c)));
-                return [...memoryCourses];
-              }
+              snap.forEach(d => allItems.push(d.data() as Course));
             }
-          } catch (e) {
-            // ignore
-          }
+          } catch (e) {}
         }
         const keys = await coursesDb.keys();
-        if (keys.length > 0) {
-          const items: Course[] = [];
-          for (const key of keys) {
-            const item = await coursesDb.getItem(key);
-            if (item) items.push(item);
-          }
-          if (items.length > 0) {
-            memoryCourses = items;
-            return [...items];
-          }
-        } else {
-          for (const c of defaultCourses) {
-            await coursesDb.setItem(c.id, c);
-          }
-          memoryCourses = [...defaultCourses];
-          return [...defaultCourses];
+        for (const key of keys) {
+          const item = await coursesDb.getItem(key);
+          if (item) allItems.push(item);
         }
+        if (allItems.length === 0) {
+          allItems = [...defaultCourses];
+        }
+
+        const map = new Map<string, Course>();
+        for (const c of allItems) {
+          const codeKey = (c.code || '').trim().toUpperCase();
+          if (!codeKey) continue;
+          if (!map.has(codeKey)) {
+            map.set(codeKey, c);
+          } else {
+            const existing = map.get(codeKey)!;
+            if ((c.name || '').length > (existing.name || '').length) {
+              map.set(codeKey, c);
+            }
+            if (c.id !== existing.id) {
+              coursesDb.removeItem(c.id).catch(() => {});
+              if (firestoreDb) {
+                deleteDoc(doc(firestoreDb, 'courses', c.id)).catch(() => {});
+              }
+            }
+          }
+        }
+        memoryCourses = Array.from(map.values());
+        for (const c of memoryCourses) {
+          await coursesDb.setItem(c.id, c);
+        }
+        return [...memoryCourses];
       } catch (e) {
         console.warn("Courses list fetch notice:", e);
       }
@@ -978,6 +1017,12 @@ export const db = {
       return await academicYearsDb.getItem(id);
     },
     async set(id: string, ay: AcademicYear): Promise<void> {
+      const trimmedYear = (ay.year || '').trim();
+      const duplicate = memoryAcademicYears.find(a => a.id !== id && (a.year || '').trim() === trimmedYear);
+      if (duplicate) {
+        throw new Error("This Academic Year already exists.");
+      }
+      ay.year = trimmedYear;
       const idx = memoryAcademicYears.findIndex(a => a.id === id);
       if (idx >= 0) {
         memoryAcademicYears[idx] = ay;
@@ -1024,43 +1069,50 @@ export const db = {
     },
     async listAll(): Promise<AcademicYear[]> {
       try {
+        let allItems: AcademicYear[] = [];
         if (firestoreDb) {
           try {
             const snap = await getDocs(collection(firestoreDb, 'academicYears'));
             if (!snap.empty) {
-              const remote: AcademicYear[] = [];
-              snap.forEach(d => remote.push(d.data() as AcademicYear));
-              if (remote.length > 0) {
-                const map = new Map<string, AcademicYear>();
-                memoryAcademicYears.forEach(ay => map.set(ay.id, ay));
-                remote.forEach(ay => map.set(ay.id, ay));
-                memoryAcademicYears = Array.from(map.values());
-                await Promise.all(memoryAcademicYears.map(ay => academicYearsDb.setItem(ay.id, ay)));
-                return [...memoryAcademicYears].sort((a, b) => b.year.localeCompare(a.year) || (a.semester || '').localeCompare(b.semester || ''));
-              }
+              snap.forEach(d => allItems.push(d.data() as AcademicYear));
             }
-          } catch (e) {
-            // ignore
-          }
+          } catch (e) {}
         }
         const keys = await academicYearsDb.keys();
-        if (keys.length > 0) {
-          const items: AcademicYear[] = [];
-          for (const key of keys) {
-            const item = await academicYearsDb.getItem(key);
-            if (item) items.push(item);
-          }
-          if (items.length > 0) {
-            memoryAcademicYears = items;
-            return [...items].sort((a, b) => b.year.localeCompare(a.year) || (a.semester || '').localeCompare(b.semester || ''));
-          }
-        } else {
-          for (const ay of defaultAcademicYears) {
-            await academicYearsDb.setItem(ay.id, ay);
-          }
-          memoryAcademicYears = [...defaultAcademicYears];
-          return [...memoryAcademicYears].sort((a, b) => b.year.localeCompare(a.year) || (a.semester || '').localeCompare(b.semester || ''));
+        for (const key of keys) {
+          const item = await academicYearsDb.getItem(key);
+          if (item) allItems.push(item);
         }
+        if (allItems.length === 0) {
+          allItems = [...defaultAcademicYears];
+        }
+
+        const map = new Map<string, AcademicYear>();
+        for (const ay of allItems) {
+          const yearKey = (ay.year || '').trim();
+          if (!yearKey) continue;
+          if (!map.has(yearKey)) {
+            map.set(yearKey, ay);
+          } else {
+            const existing = map.get(yearKey)!;
+            const isAyActive = ay.overallStatus === 'Active' || ay.status === 'Active' || ay.firstSemester === 'Active' || ay.secondSemester === 'Active';
+            const isExistingActive = existing.overallStatus === 'Active' || existing.status === 'Active' || existing.firstSemester === 'Active' || existing.secondSemester === 'Active';
+            if (isAyActive && !isExistingActive) {
+              map.set(yearKey, ay);
+            }
+            if (ay.id !== existing.id) {
+              academicYearsDb.removeItem(ay.id).catch(() => {});
+              if (firestoreDb) {
+                deleteDoc(doc(firestoreDb, 'academicYears', ay.id)).catch(() => {});
+              }
+            }
+          }
+        }
+        memoryAcademicYears = Array.from(map.values());
+        for (const ay of memoryAcademicYears) {
+          await academicYearsDb.setItem(ay.id, ay);
+        }
+        return [...memoryAcademicYears].sort((a, b) => b.year.localeCompare(a.year) || (a.semester || '').localeCompare(b.semester || ''));
       } catch (e) {
         console.warn("AcademicYears list fetch notice:", e);
       }
@@ -1068,6 +1120,43 @@ export const db = {
     },
     async getDefault(): Promise<AcademicYear | null> {
       return memoryAcademicYears.find(a => a.isDefault) || memoryAcademicYears.find(a => a.status === 'Active') || memoryAcademicYears[0] || null;
+    },
+    async getActiveTerm(): Promise<{ year: string; label: string; firstActive: boolean; secondActive: boolean; hasActive: boolean }> {
+      try {
+        const list = await this.listAll();
+        for (const ay of list) {
+          const firstActive = ay.firstSemester === 'Active';
+          const secondActive = ay.secondSemester === 'Active';
+          const overallActive = ay.overallStatus === 'Active' || ay.status === 'Active';
+
+          if (overallActive || firstActive || secondActive) {
+            let label = `A.Y. ${ay.year}`;
+            if (firstActive && secondActive) {
+              label = `A.Y. ${ay.year} | 1st & 2nd Semester`;
+            } else if (firstActive) {
+              label = `A.Y. ${ay.year} | 1st Semester`;
+            } else if (secondActive) {
+              label = `A.Y. ${ay.year} | 2nd Semester`;
+            }
+            return {
+              year: ay.year,
+              label,
+              firstActive,
+              secondActive,
+              hasActive: true
+            };
+          }
+        }
+      } catch (e) {
+        console.warn("Error getting active term:", e);
+      }
+      return {
+        year: '2025-2026',
+        label: 'No Active Term/Semester',
+        firstActive: false,
+        secondActive: false,
+        hasActive: false
+      };
     },
     async delete(id: string): Promise<void> {
       memoryAcademicYears = memoryAcademicYears.filter(a => a.id !== id);
@@ -1089,6 +1178,12 @@ export const db = {
       return await sectionsDb.getItem(id);
     },
     async set(id: string, section: Section): Promise<void> {
+      const trimmedName = (section.name || '').trim().toUpperCase();
+      const duplicate = memorySections.find(s => s.id !== id && (s.name || '').trim().toUpperCase() === trimmedName);
+      if (duplicate) {
+        throw new Error("This Section already exists.");
+      }
+      section.name = trimmedName;
       const idx = memorySections.findIndex(s => s.id === id);
       if (idx >= 0) {
         memorySections[idx] = section;
@@ -1116,43 +1211,45 @@ export const db = {
     },
     async listAll(): Promise<Section[]> {
       try {
+        let allItems: Section[] = [];
         if (firestoreDb) {
           try {
             const snap = await getDocs(collection(firestoreDb, 'sections'));
             if (!snap.empty) {
-              const remote: Section[] = [];
-              snap.forEach(d => remote.push(d.data() as Section));
-              if (remote.length > 0) {
-                const map = new Map<string, Section>();
-                memorySections.forEach(s => map.set(s.id, s));
-                remote.forEach(s => map.set(s.id, s));
-                memorySections = Array.from(map.values());
-                await Promise.all(memorySections.map(s => sectionsDb.setItem(s.id, s)));
-                return [...memorySections];
-              }
+              snap.forEach(d => allItems.push(d.data() as Section));
             }
-          } catch (e) {
-            // ignore
-          }
+          } catch (e) {}
         }
         const keys = await sectionsDb.keys();
-        if (keys.length > 0) {
-          const items: Section[] = [];
-          for (const key of keys) {
-            const item = await sectionsDb.getItem(key);
-            if (item) items.push(item);
-          }
-          if (items.length > 0) {
-            memorySections = items;
-            return [...items];
-          }
-        } else {
-          for (const s of defaultSections) {
-            await sectionsDb.setItem(s.id, s);
-          }
-          memorySections = [...defaultSections];
-          return [...defaultSections];
+        for (const key of keys) {
+          const item = await sectionsDb.getItem(key);
+          if (item) allItems.push(item);
         }
+        if (allItems.length === 0) {
+          allItems = [...defaultSections];
+        }
+
+        const map = new Map<string, Section>();
+        for (const s of allItems) {
+          const nameKey = (s.name || '').trim().toUpperCase();
+          if (!nameKey) continue;
+          if (!map.has(nameKey)) {
+            map.set(nameKey, s);
+          } else {
+            const existing = map.get(nameKey)!;
+            if (s.id !== existing.id) {
+              sectionsDb.removeItem(s.id).catch(() => {});
+              if (firestoreDb) {
+                deleteDoc(doc(firestoreDb, 'sections', s.id)).catch(() => {});
+              }
+            }
+          }
+        }
+        memorySections = Array.from(map.values());
+        for (const s of memorySections) {
+          await sectionsDb.setItem(s.id, s);
+        }
+        return [...memorySections];
       } catch (e) {
         console.warn("Sections list fetch notice:", e);
       }

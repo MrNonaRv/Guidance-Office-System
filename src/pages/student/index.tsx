@@ -790,9 +790,36 @@ export function StudentDashboard() {
   const [showToast, setShowToast] = useState(false);
   const [existingSubmission, setExistingSubmission] = useState<any>(null);
   const [previewDoc, setPreviewDoc] = useState<any>(null);
-          
-  // Hardcode available semesters for demonstration (1st is available, 2nd is not)
-  const availableSemesters = ['1st'];
+
+  const [activeTermInfo, setActiveTermInfo] = useState<any>({
+    year: '2025-2026',
+    label: 'No Active Term/Semester',
+    firstActive: false,
+    secondActive: false,
+    hasActive: false
+  });
+
+  useEffect(() => {
+    const fetchActiveTerm = async () => {
+      const active = await db.academicYears.getActiveTerm();
+      if (active) setActiveTermInfo(active);
+    };
+
+    fetchActiveTerm();
+    const unsubscribe = db.academicYears.subscribe(() => {
+      fetchActiveTerm();
+    });
+    window.addEventListener('academic_years_updated', fetchActiveTerm);
+    return () => {
+      unsubscribe();
+      window.removeEventListener('academic_years_updated', fetchActiveTerm);
+    };
+  }, []);
+
+  const availableSemesters = [
+    ...(activeTermInfo.firstActive ? ['1st'] : []),
+    ...(activeTermInfo.secondActive ? ['2nd'] : [])
+  ];
 
   useEffect(() => {
     const unsubAuth = onAuthStateChanged(auth, async (fbUser) => {
@@ -1006,6 +1033,25 @@ export function StudentDashboard() {
         </h2>
       </div>
 
+      {/* Active Academic Term Banner */}
+      <div className="bg-white rounded-2xl px-6 py-4 shadow-sm border border-gray-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center text-[#1864db]">
+            <Calendar className="w-4 h-4" />
+          </div>
+          <div>
+            <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider block">Active Academic Term</span>
+            <span className="text-sm font-bold text-gray-900">{activeTermInfo.label}</span>
+          </div>
+        </div>
+        <span className={cn(
+          "px-3 py-1 text-xs font-bold rounded-full",
+          activeTermInfo.hasActive ? "bg-green-100 text-green-800" : "bg-amber-100 text-amber-800"
+        )}>
+          {activeTermInfo.hasActive ? 'Active Term' : 'No Active Term'}
+        </span>
+      </div>
+
       <div className="space-y-4 sm:space-y-6">
         {/* Card 1: Scholarship Requirements */}
         <div className="bg-white rounded-2xl md:rounded-full p-5 sm:p-6 md:px-12 shadow-[0_4px_20px_rgb(0,0,0,0.06)] flex flex-col sm:flex-row justify-between items-start sm:items-center border border-gray-200 gap-4 min-h-[100px]">
@@ -1200,6 +1246,14 @@ export function StudentDashboard() {
         </div>
       </div>
       
+      {/* In-App Document Preview Modal */}
+      {previewDoc && (
+        <DocumentPreviewModal
+          file={previewDoc}
+          onClose={() => setPreviewDoc(null)}
+        />
+      )}
+
       {/* Toast Notification */}
       {showToast && (
         <div className="fixed bottom-10 left-1/2 -translate-x-1/2 sm:left-10 sm:translate-x-0 bg-[#bbf7d0] border border-[#86efac] px-6 py-3.5 rounded-full shadow-lg flex items-center gap-3 z-50 animate-in slide-in-from-bottom-5 fade-in duration-300">
