@@ -1231,8 +1231,15 @@ export const db = {
 
         const map = new Map<string, Section>();
         for (const s of allItems) {
-          const nameKey = (s.name || '').trim().toUpperCase();
-          if (!nameKey) continue;
+          const rawName = (s.name || '').trim();
+          const nameKey = rawName.toUpperCase();
+          if (!nameKey || /\d/.test(nameKey) || !/^[A-Z]+$/.test(nameKey)) {
+            sectionsDb.removeItem(s.id).catch(() => {});
+            if (firestoreDb) {
+              deleteDoc(doc(firestoreDb, 'sections', s.id)).catch(() => {});
+            }
+            continue;
+          }
           if (!map.has(nameKey)) {
             map.set(nameKey, s);
           } else {
