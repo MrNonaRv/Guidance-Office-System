@@ -228,11 +228,11 @@ function cleanForFirestore(obj: any, currentDepth = 0): any {
 // High-Performance In-Memory Cache & Event Notification Layer
 // -------------------------------------------------------------
 let memorySubmissions: Submission[] = [...defaultSubmissions];
-let memoryScholarships: Scholarship[] = [];
-let memoryCourses: Course[] = [];
-let memoryAcademicYears: AcademicYear[] = [];
-let memorySections: Section[] = [];
-let memoryFormRequirements: FormRequirement[] = [];
+let memoryScholarships: Scholarship[] = [...defaultScholarships];
+let memoryCourses: Course[] = [...defaultCourses];
+let memoryAcademicYears: AcademicYear[] = [...defaultAcademicYears];
+let memorySections: Section[] = [...defaultSections];
+let memoryFormRequirements: FormRequirement[] = [...defaultFormRequirements];
 let memoryFiles: SystemFile[] = [...defaultSystemFiles];
 let memoryNotifications: NotificationItem[] = [...defaultNotifications];
 let memoryCommunications: CommunicationItem[] = [];
@@ -530,22 +530,29 @@ export const db = {
       return updated;
     },
     async listAll(): Promise<Scholarship[]> {
-      // Instant return from memory cache
-      if (memoryScholarships.length > 0) {
-        return [...memoryScholarships];
-      }
-      const keys = await scholarshipsDb.keys();
-      if (keys.length > 0) {
-        const items: Scholarship[] = [];
-        for (const key of keys) {
-          const item = await scholarshipsDb.getItem(key);
-          if (item) items.push(item);
+      try {
+        const keys = await scholarshipsDb.keys();
+        if (keys.length > 0) {
+          const items: Scholarship[] = [];
+          for (const key of keys) {
+            const item = await scholarshipsDb.getItem(key);
+            if (item) items.push(item);
+          }
+          if (items.length > 0) {
+            memoryScholarships = items;
+            return [...items];
+          }
+        } else {
+          for (const s of defaultScholarships) {
+            await scholarshipsDb.setItem(s.id, s);
+          }
+          memoryScholarships = [...defaultScholarships];
+          return [...defaultScholarships];
         }
-        memoryScholarships = items;
-        return [...items];
+      } catch (e) {
+        console.warn("Scholarships list fetch notice:", e);
       }
-      memoryScholarships = [...defaultScholarships];
-      return [...defaultScholarships];
+      return [...memoryScholarships];
     },
     async delete(id: string): Promise<void> {
       memoryScholarships = memoryScholarships.filter(s => s.id !== id);
@@ -850,9 +857,6 @@ export const db = {
       return updated;
     },
     async listAll(): Promise<Course[]> {
-      if (memoryCourses.length > 0) {
-        return [...memoryCourses];
-      }
       try {
         const keys = await coursesDb.keys();
         if (keys.length > 0) {
@@ -865,12 +869,17 @@ export const db = {
             memoryCourses = items;
             return [...items];
           }
+        } else {
+          for (const c of defaultCourses) {
+            await coursesDb.setItem(c.id, c);
+          }
+          memoryCourses = [...defaultCourses];
+          return [...defaultCourses];
         }
       } catch (e) {
         console.warn("Courses list fetch notice:", e);
       }
-      memoryCourses = [...defaultCourses];
-      return [...defaultCourses];
+      return [...memoryCourses];
     },
     async delete(id: string): Promise<void> {
       memoryCourses = memoryCourses.filter(c => c.id !== id);
@@ -941,9 +950,6 @@ export const db = {
       }
     },
     async listAll(): Promise<AcademicYear[]> {
-      if (memoryAcademicYears.length > 0) {
-        return [...memoryAcademicYears].sort((a, b) => b.year.localeCompare(a.year) || (a.semester || '').localeCompare(b.semester || ''));
-      }
       try {
         const keys = await academicYearsDb.keys();
         if (keys.length > 0) {
@@ -956,11 +962,16 @@ export const db = {
             memoryAcademicYears = items;
             return [...items].sort((a, b) => b.year.localeCompare(a.year) || (a.semester || '').localeCompare(b.semester || ''));
           }
+        } else {
+          for (const ay of defaultAcademicYears) {
+            await academicYearsDb.setItem(ay.id, ay);
+          }
+          memoryAcademicYears = [...defaultAcademicYears];
+          return [...memoryAcademicYears].sort((a, b) => b.year.localeCompare(a.year) || (a.semester || '').localeCompare(b.semester || ''));
         }
       } catch (e) {
         console.warn("AcademicYears list fetch notice:", e);
       }
-      memoryAcademicYears = [...defaultAcademicYears];
       return [...memoryAcademicYears].sort((a, b) => b.year.localeCompare(a.year) || (a.semester || '').localeCompare(b.semester || ''));
     },
     async getDefault(): Promise<AcademicYear | null> {
@@ -1012,9 +1023,6 @@ export const db = {
       return updated;
     },
     async listAll(): Promise<Section[]> {
-      if (memorySections.length > 0) {
-        return [...memorySections];
-      }
       try {
         const keys = await sectionsDb.keys();
         if (keys.length > 0) {
@@ -1027,12 +1035,17 @@ export const db = {
             memorySections = items;
             return [...items];
           }
+        } else {
+          for (const s of defaultSections) {
+            await sectionsDb.setItem(s.id, s);
+          }
+          memorySections = [...defaultSections];
+          return [...defaultSections];
         }
       } catch (e) {
         console.warn("Sections list fetch notice:", e);
       }
-      memorySections = [...defaultSections];
-      return [...defaultSections];
+      return [...memorySections];
     },
     async delete(id: string): Promise<void> {
       memorySections = memorySections.filter(s => s.id !== id);
@@ -1080,9 +1093,6 @@ export const db = {
       return updated;
     },
     async listAll(): Promise<FormRequirement[]> {
-      if (memoryFormRequirements.length > 0) {
-        return [...memoryFormRequirements];
-      }
       try {
         const keys = await formReqsDb.keys();
         if (keys.length > 0) {
@@ -1095,12 +1105,17 @@ export const db = {
             memoryFormRequirements = items;
             return [...items];
           }
+        } else {
+          for (const r of defaultFormRequirements) {
+            await formReqsDb.setItem(r.id, r);
+          }
+          memoryFormRequirements = [...defaultFormRequirements];
+          return [...defaultFormRequirements];
         }
       } catch (e) {
         console.warn("FormRequirements list fetch notice:", e);
       }
-      memoryFormRequirements = [...defaultFormRequirements];
-      return [...defaultFormRequirements];
+      return [...memoryFormRequirements];
     },
     async delete(id: string): Promise<void> {
       memoryFormRequirements = memoryFormRequirements.filter(r => r.id !== id);
