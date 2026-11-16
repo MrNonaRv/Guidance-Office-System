@@ -5,6 +5,7 @@ import { firestoreDb, auth } from './firebase';
 import { Course, AcademicYear, defaultCourses, defaultAcademicYears, defaultScholarships, ScholarshipItem } from '../types';
 import { defaultSubmissions, defaultNotifications, dummyBase64Pdf, dummyBase64Photo2x2, dummyBase64StudentId, dummyBase64Signature } from './defaultData';
 import { parseNotificationDate } from './utils';
+import { getSupabase, subscribeToSyncChannel, broadcastSyncEvent } from './supabase';
 
 export enum OperationType {
   CREATE = 'create',
@@ -382,6 +383,57 @@ if (syncChannel) {
       console.warn("Cross-tab sync handling error:", err);
     }
   };
+}
+
+// Multi-Device Supabase Realtime synchronization channel (Cross-device WebSocket)
+if (typeof window !== 'undefined') {
+  try {
+    subscribeToSyncChannel((type: string, data: any) => {
+      try {
+        if (type === 'ACADEMIC_YEARS_SYNC' && Array.isArray(data)) {
+          const deduped = deduplicateAcademicYears(data);
+          memoryAcademicYears = deduped;
+          deduped.forEach((ay: AcademicYear) => academicYearsDb.setItem(ay.id, ay).catch(() => {}));
+          notifyAcademicYearListeners();
+          window.dispatchEvent(new Event('academic_years_updated'));
+        } else if (type === 'COURSES_SYNC' && Array.isArray(data)) {
+          const deduped = deduplicateCourses(data);
+          memoryCourses = deduped;
+          deduped.forEach((c: Course) => coursesDb.setItem(c.id, c).catch(() => {}));
+          notifyCourseListeners();
+          window.dispatchEvent(new Event('courses_updated'));
+        } else if (type === 'SECTIONS_SYNC' && Array.isArray(data)) {
+          const deduped = deduplicateSections(data);
+          memorySections = deduped;
+          deduped.forEach((s: Section) => sectionsDb.setItem(s.id, s).catch(() => {}));
+          notifySectionListeners();
+          window.dispatchEvent(new Event('sections_updated'));
+        } else if (type === 'SCHOLARSHIPS_SYNC' && Array.isArray(data)) {
+          memoryScholarships = data;
+          data.forEach((s: Scholarship) => scholarshipsDb.setItem(s.id, s).catch(() => {}));
+          notifyScholarshipListeners();
+          window.dispatchEvent(new Event('scholarships_updated'));
+        } else if (type === 'CATEGORIES_SYNC' && Array.isArray(data)) {
+          memoryCategories = data;
+          notifyCategoryListeners(data);
+          window.dispatchEvent(new Event('scholarship_categories_updated'));
+        } else if (type === 'SUBMISSIONS_SYNC' && Array.isArray(data)) {
+          const subMap = new Map<string, Submission>();
+          memorySubmissions.forEach(s => subMap.set(s.id, s));
+          data.forEach((s: Submission) => subMap.set(s.id, s));
+          memorySubmissions = Array.from(subMap.values()).sort(
+            (a, b) => new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime()
+          );
+          notifySubmissionListeners();
+          window.dispatchEvent(new Event('submissions_updated'));
+        }
+      } catch (err) {
+        console.warn("Supabase Realtime event processing error:", err);
+      }
+    });
+  } catch (err) {
+    console.warn("Supabase Realtime sync init error:", err);
+  }
 }
 
 // Multi-Device Server-Sent Events (SSE) synchronization channel
@@ -1204,6 +1256,20 @@ export const db = {
         await coursesDb.removeItem(id).catch(() => {});
       }
 
+      // Direct Supabase upsert
+      const supabase = getSupabase();
+      if (supabase) {
+        supabase.from('courses').upsert({
+          id: course.id,
+          code: course.code,
+          name: course.name,
+          department: course.department || '',
+          status: course.status || 'Active'
+        }, { onConflict: 'id' }).catch(() => {});
+      }
+
+      broadcastSyncEvent('COURSES_SYNC', memoryCourses).catch(() => {});
+
       // Multi-device backend sync (persists to Supabase & broadcasts)
       fetch('/api/courses', {
         method: 'POST',
@@ -1236,7 +1302,36 @@ export const db = {
     },
     async listAll(): Promise<Course[]> {
       try {
-        // Multi-device sync: query backend server first
+        // 1. Direct Supabase Query
+        const supabase = getSupabase();
+        if (supabase) {
+          const { data, error } = await supabase.from('courses').select('*');
+          if (!error && Array.isArray(data) && data.length > 0) {
+            const mapped = data.map((c: any) => ({
+              id: c.id,
+              code: c.code,
+              name: c.name,
+              department: c.department || '',
+              status: c.status || 'Active'
+            }));
+            const deduped = deduplicateCourses(mapped);
+            memoryCourses = deduped;
+            const existingKeys = await coursesDb.keys();
+            const validIds = new Set(deduped.map(c => c.id));
+            for (const k of existingKeys) {
+              if (!validIds.has(k)) {
+                await coursesDb.removeItem(k).catch(() => {});
+              }
+            }
+            for (const item of deduped) {
+              await coursesDb.setItem(item.id, item).catch(() => {});
+            }
+            notifyCourseListeners();
+            return [...memoryCourses];
+          }
+        }
+
+        // 2. Fallback to backend server API
         try {
           const res = await fetch('/api/courses');
           if (res.ok) {
@@ -1282,6 +1377,12 @@ export const db = {
       memoryCourses = deduplicateCourses(memoryCourses.filter(c => c.id !== id && (c.code || '').toUpperCase() !== targetCode));
       notifyCourseListeners();
       await coursesDb.removeItem(id).catch(() => {});
+
+      const supabase = getSupabase();
+      if (supabase) {
+        supabase.from('courses').delete().or(`id.eq.${id},code.eq.${targetCode}`).catch(() => {});
+      }
+      broadcastSyncEvent('COURSES_SYNC', memoryCourses).catch(() => {});
 
       fetch(`/api/courses/${id}`, { method: 'DELETE' })
         .catch(e => console.warn("Backend delete notice:", e));
@@ -1331,6 +1432,27 @@ export const db = {
         await academicYearsDb.removeItem(id).catch(() => {});
       }
 
+      // Direct Supabase Write (Central Realtime Database)
+      const supabase = getSupabase();
+      if (supabase) {
+        if (isCurrentActive) {
+          supabase.from('academic_years').update({ overall_status: 'Inactive' }).neq('id', canonicalId).catch(() => {});
+        }
+        supabase.from('academic_years').upsert({
+          id: record.id,
+          year: record.year,
+          overall_status: record.overallStatus,
+          first_semester: record.firstSemester,
+          second_semester: record.secondSemester,
+          label: record.label,
+          updated_at: record.updatedAt
+        }, { onConflict: 'id' }).catch(() => {});
+      }
+
+      // Multi-device realtime broadcast over Supabase
+      broadcastSyncEvent('ACADEMIC_YEARS_SYNC', memoryAcademicYears).catch(() => {});
+
+      // Backend sync
       fetch('/api/academic-years', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -1373,6 +1495,38 @@ export const db = {
     },
     async listAll(): Promise<AcademicYear[]> {
       try {
+        // 1. Direct Supabase Query (Real-time single source of truth across all devices)
+        const supabase = getSupabase();
+        if (supabase) {
+          const { data, error } = await supabase.from('academic_years').select('*').order('year', { ascending: false });
+          if (!error && Array.isArray(data) && data.length > 0) {
+            const mapped: AcademicYear[] = data.map((row: any) => ({
+              id: row.id,
+              year: row.year,
+              overallStatus: row.overall_status || 'Inactive',
+              firstSemester: row.first_semester || 'Inactive',
+              secondSemester: row.second_semester || 'Inactive',
+              label: row.label || `A.Y. ${row.year}`,
+              updatedAt: row.updated_at
+            }));
+            const deduped = deduplicateAcademicYears(mapped);
+            memoryAcademicYears = deduped;
+            const existingKeys = await academicYearsDb.keys();
+            const validIds = new Set(deduped.map(item => item.id));
+            for (const k of existingKeys) {
+              if (!validIds.has(k)) {
+                await academicYearsDb.removeItem(k).catch(() => {});
+              }
+            }
+            for (const item of deduped) {
+              await academicYearsDb.setItem(item.id, item).catch(() => {});
+            }
+            notifyAcademicYearListeners();
+            return [...memoryAcademicYears];
+          }
+        }
+
+        // 2. Fallback to backend server API
         try {
           const res = await fetch('/api/academic-years');
           if (res.ok) {
@@ -1380,7 +1534,6 @@ export const db = {
             if (Array.isArray(serverList) && serverList.length > 0) {
               const deduped = deduplicateAcademicYears(serverList);
               memoryAcademicYears = deduped;
-              // Clean out localforage keys that don't match the canonical list
               const existingKeys = await academicYearsDb.keys();
               const validIds = new Set(deduped.map(item => item.id));
               for (const k of existingKeys) {
@@ -1397,6 +1550,7 @@ export const db = {
           }
         } catch {}
 
+        // 3. Fallback to local storage
         const keys = await academicYearsDb.keys();
         let allItems: AcademicYear[] = [];
         for (const key of keys) {
@@ -1420,16 +1574,6 @@ export const db = {
     },
     async getActiveTerm(): Promise<{ year: string; label: string; firstActive: boolean; secondActive: boolean; hasActive: boolean }> {
       try {
-        try {
-          const res = await fetch('/api/academic-years/active');
-          if (res.ok) {
-            const active = await res.json();
-            if (active && active.year) {
-              return active;
-            }
-          }
-        } catch {}
-
         const list = await this.listAll();
         let target = list.find(ay => ay.overallStatus === 'Active');
         if (!target) {
@@ -1481,6 +1625,12 @@ export const db = {
         await academicYearsDb.removeItem(`ay-${targetYear}`).catch(() => {});
       }
       notifyAcademicYearListeners();
+
+      const supabase = getSupabase();
+      if (supabase) {
+        supabase.from('academic_years').delete().or(`id.eq.${id},year.eq.${targetYear}`).catch(() => {});
+      }
+      broadcastSyncEvent('ACADEMIC_YEARS_SYNC', memoryAcademicYears).catch(() => {});
 
       fetch(`/api/academic-years/${id}`, { method: 'DELETE' })
         .catch(e => console.warn("Backend delete notice:", e));

@@ -193,3 +193,65 @@ export async function uploadBase64ToSupabase(
     return null;
   }
 }
+
+let realtimeSyncChannel: any = null;
+const syncEventListeners = new Set<(event: string, payload: any) => void>();
+
+/**
+ * Gets or initializes the shared Supabase Realtime channel across all client devices.
+ */
+export function getSupabaseSyncChannel() {
+  const supabase = getSupabase();
+  if (!supabase) return null;
+  if (!realtimeSyncChannel) {
+    realtimeSyncChannel = supabase.channel('capsu_sync', {
+      config: {
+        broadcast: { ack: true }
+      }
+    });
+
+    realtimeSyncChannel.on('broadcast', { event: '*' }, (data: any) => {
+      const eventName = data.event;
+      const payload = data.payload?.data !== undefined ? data.payload.data : (data.payload || data);
+      syncEventListeners.forEach(listener => {
+        try {
+          listener(eventName, payload);
+        } catch (e) {
+          console.warn('Sync event listener error:', e);
+        }
+      });
+    });
+
+    realtimeSyncChannel.subscribe();
+  }
+  return realtimeSyncChannel;
+}
+
+/**
+ * Subscribes to real-time events broadcast over Supabase across all devices.
+ */
+export function subscribeToSyncChannel(listener: (event: string, payload: any) => void): () => void {
+  syncEventListeners.add(listener);
+  getSupabaseSyncChannel();
+  return () => {
+    syncEventListeners.delete(listener);
+  };
+}
+
+/**
+ * Broadcasts an event and payload over Supabase Realtime to all other devices.
+ */
+export async function broadcastSyncEvent(event: string, payload: any): Promise<void> {
+  try {
+    const channel = getSupabaseSyncChannel();
+    if (channel) {
+      await channel.send({
+        type: 'broadcast',
+        event,
+        payload: { data: payload }
+      });
+    }
+  } catch (err) {
+    console.warn('Failed to broadcast sync event over Supabase:', err);
+  }
+}
