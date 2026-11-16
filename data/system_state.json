@@ -138,5 +138,981 @@
       "deadline": "2026-10-31"
     }
   ],
-  "submissions": []
+  "submissions": [
+    {
+      "id": "sub-seed-1",
+      "studentId": "2024-CAPSU-0182",
+      "studentName": "Anna Marie A. Santos",
+      "studentAuthId": null,
+      "scholarshipType": "Externally-Funded (Pag-ulikid)",
+      "status": "Complete",
+      "submittedAt": "2026-03-11T10:00:00+00:00",
+      "data": {
+        "sex": "Female",
+        "course": "BAEL",
+        "status": "Complete",
+        "section": "BAEL 2A",
+        "photo2x2": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240' viewBox='0 0 240 240'><rect width='240' height='240' fill='%23e2e8f0'/><rect x='8' y='8' width='224' height='224' fill='%23003884' rx='6'/><circle cx='120' cy='90' r='42' fill='%23fde047'/><circle cx='120' cy='85' r='38' fill='%23cbd5e1'/><path d='M45 205 C 45 145, 195 145, 195 205 Z' fill='%23ffffff'/><rect x='16' y='195' width='208' height='25' fill='%230a192f' rx='4'/><text x='120' y='212' fill='%23ffffff' font-family='Arial, sans-serif' font-size='11' font-weight='bold' text-anchor='middle' letter-spacing='1'>CAPSU OFFICIAL 2x2 ID</text></svg>",
+        "signedAt": "2026-03-11T10:00:00Z",
+        "firstName": "Anna Marie",
+        "signature": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='100' viewBox='0 0 300 100'><path d='M25 65 Q 45 10, 65 55 T 105 45 Q 125 15, 145 60 T 185 50 Q 215 10, 235 55 T 275 40' fill='none' stroke='%23003884' stroke-width='3' stroke-linecap='round'/><path d='M35 78 Q 145 88, 275 72' fill='none' stroke='%23003884' stroke-width='2' stroke-linecap='round'/></svg>",
+        "studentId": "2024-CAPSU-0182",
+        "yearLevel": "Second year",
+        "courseFull": "Bachelor of Arts in English Language",
+        "familyName": "Santos",
+        "fatherName": "Roberto Santos",
+        "livingWith": "Parents/Guardians",
+        "middleName": "A.",
+        "motherName": "Elena Santos",
+        "civilStatus": "Single",
+        "fundingType": "Externally-Funded",
+        "housingType": "Own house",
+        "submittedAt": "2026-03-11T10:00:00Z",
+        "academicYear": "A.Y. 2025-2026 - 2nd Semester",
+        "requirements": [
+          {
+            "name": "2x2 Recent Formal ID Photo",
+            "status": "Verified"
+          },
+          {
+            "name": "Valid Student ID",
+            "status": "Verified"
+          },
+          {
+            "name": "Certificate of Grades (COG)",
+            "status": "Verified"
+          },
+          {
+            "name": "Certificate of Registration (COR)",
+            "status": "Verified"
+          },
+          {
+            "name": "Proof of Income / Certificate of Indigency",
+            "status": "Verified"
+          },
+          {
+            "name": "Certificate of Good Moral Character",
+            "status": "Verified"
+          }
+        ],
+        "monthlyIncome": "below Php10,000",
+        "studentIdCard": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='360' height='220' viewBox='0 0 360 220'><rect width='360' height='220' rx='12' fill='%23ffffff' stroke='%23003884' stroke-width='4'/><rect width='360' height='45' fill='%23003884' rx='10 10 0 0'/><text x='180' y='23' fill='%23ffffff' font-family='Arial, sans-serif' font-size='12' font-weight='bold' text-anchor='middle'>CAPIZ STATE UNIVERSITY</text><text x='180' y='37' fill='%23fbbf24' font-family='Arial, sans-serif' font-size='9' font-weight='bold' text-anchor='middle'>STUDENT IDENTIFICATION CARD</text><rect x='20' y='60' width='80' height='95' fill='%23e2e8f0' stroke='%2394a3b8' rx='6'/><circle cx='60' cy='95' r='20' fill='%2394a3b8'/><path d='M35 145 C 35 125, 85 125, 85 145 Z' fill='%2364748b'/><text x='115' y='80' fill='%23003884' font-family='Arial, sans-serif' font-size='13' font-weight='bold'>STUDENT IDENTITY</text><text x='115' y='100' fill='%23334155' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>ID NO: 2024-CAPSU-0182</text><text x='115' y='118' fill='%23334155' font-family='Arial, sans-serif' font-size='10'>STATUS: ENROLLED REGULAR</text><text x='115' y='136' fill='%2316a34a' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>VALID: ACADEMIC YEAR 2025-2026</text><rect x='20' y='168' width='320' height='34' fill='%23f1f5f9' rx='4'/><text x='180' y='190' fill='%230f172a' font-family='Courier, monospace' font-size='14' font-weight='bold' text-anchor='middle' letter-spacing='4'>|||| | ||||| || |||||| | |||</text></svg>",
+        "workingStudent": "No",
+        "accessResources": [
+          "Study space",
+          "Textbooks and learning materials"
+        ],
+        "classifications": [
+          "Low income family/ Economically disadvantaged student",
+          "First Generation student (Parents did not complete a college degree)"
+        ],
+        "firstGenCollege": "Yes",
+        "scholarshipType": "Externally-Funded (Pag-ulikid)",
+        "fatherOccupation": "Farmer",
+        "motherOccupation": "Housewife",
+        "guardianOccupation": "None",
+        "scholarshipCategory": "Pag-ulikid",
+        "parentsEducationalAttainment": "High school Graduate"
+      },
+      "files": [
+        {
+          "id": "f-photo",
+          "data": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240' viewBox='0 0 240 240'><rect width='240' height='240' fill='%23e2e8f0'/><rect x='8' y='8' width='224' height='224' fill='%23003884' rx='6'/><circle cx='120' cy='90' r='42' fill='%23fde047'/><circle cx='120' cy='85' r='38' fill='%23cbd5e1'/><path d='M45 205 C 45 145, 195 145, 195 205 Z' fill='%23ffffff'/><rect x='16' y='195' width='208' height='25' fill='%230a192f' rx='4'/><text x='120' y='212' fill='%23ffffff' font-family='Arial, sans-serif' font-size='11' font-weight='bold' text-anchor='middle' letter-spacing='1'>CAPSU OFFICIAL 2x2 ID</text></svg>",
+          "name": "Santos_2x2_ID_Photo.png",
+          "size": "320 KB",
+          "type": "image/svg+xml",
+          "status": "Verified",
+          "category": "2x2 Recent Formal ID Photo",
+          "verified": true
+        },
+        {
+          "id": "f-id",
+          "data": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='360' height='220' viewBox='0 0 360 220'><rect width='360' height='220' rx='12' fill='%23ffffff' stroke='%23003884' stroke-width='4'/><rect width='360' height='45' fill='%23003884' rx='10 10 0 0'/><text x='180' y='23' fill='%23ffffff' font-family='Arial, sans-serif' font-size='12' font-weight='bold' text-anchor='middle'>CAPIZ STATE UNIVERSITY</text><text x='180' y='37' fill='%23fbbf24' font-family='Arial, sans-serif' font-size='9' font-weight='bold' text-anchor='middle'>STUDENT IDENTIFICATION CARD</text><rect x='20' y='60' width='80' height='95' fill='%23e2e8f0' stroke='%2394a3b8' rx='6'/><circle cx='60' cy='95' r='20' fill='%2394a3b8'/><path d='M35 145 C 35 125, 85 125, 85 145 Z' fill='%2364748b'/><text x='115' y='80' fill='%23003884' font-family='Arial, sans-serif' font-size='13' font-weight='bold'>STUDENT IDENTITY</text><text x='115' y='100' fill='%23334155' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>ID NO: 2024-CAPSU-0182</text><text x='115' y='118' fill='%23334155' font-family='Arial, sans-serif' font-size='10'>STATUS: ENROLLED REGULAR</text><text x='115' y='136' fill='%2316a34a' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>VALID: ACADEMIC YEAR 2025-2026</text><rect x='20' y='168' width='320' height='34' fill='%23f1f5f9' rx='4'/><text x='180' y='190' fill='%230f172a' font-family='Courier, monospace' font-size='14' font-weight='bold' text-anchor='middle' letter-spacing='4'>|||| | ||||| || |||||| | |||</text></svg>",
+          "name": "Santos_Valid_Student_ID.png",
+          "size": "450 KB",
+          "type": "image/svg+xml",
+          "status": "Verified",
+          "category": "Valid Student ID",
+          "verified": true
+        },
+        {
+          "id": "f-1",
+          "data": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='600' height='850' viewBox='0 0 600 850'><rect width='600' height='850' fill='%23ffffff'/><rect x='15' y='15' width='570' height='820' fill='none' stroke='%23003884' stroke-width='2'/><rect x='18' y='18' width='564' height='814' fill='none' stroke='%23cbd5e1' stroke-width='1'/><rect x='20' y='20' width='560' height='80' fill='%23003884'/><text x='300' y='50' fill='%23ffffff' font-family='Arial, sans-serif' font-size='15' font-weight='bold' text-anchor='middle'>CAPIZ STATE UNIVERSITY</text><text x='300' y='68' fill='%23fbbf24' font-family='Arial, sans-serif' font-size='12' font-weight='bold' text-anchor='middle'>OFFICIAL REPORT OF GRADES &amp; GWA</text><text x='300' y='86' fill='%23ffffff' font-family='Arial, sans-serif' font-size='10' text-anchor='middle'>Guidance Office &amp; Scholarship Evaluation Section</text><rect x='100' y='115' width='400' height='30' rx='6' fill='%23f0fdf4' stroke='%2322c55e'/><text x='300' y='135' fill='%2315803d' font-family='Arial, sans-serif' font-size='13' font-weight='bold' text-anchor='middle'>GENERAL WEIGHTED AVERAGE (GWA) CERTIFICATION</text><rect x='35' y='160' width='530' height='100' fill='%23f8fafc' stroke='%23cbd5e1' rx='4'/><text x='50' y='185' fill='%23475569' font-family='Arial, sans-serif' font-size='11' font-weight='bold'>APPLICANT NAME:</text><text x='170' y='185' fill='%230f172a' font-family='Arial, sans-serif' font-size='11' font-weight='bold'>SANTOS, ANNA MARIE A.</text><text x='50' y='210' fill='%23475569' font-family='Arial, sans-serif' font-size='11' font-weight='bold'>STUDENT NO.:</text><text x='170' y='210' fill='%23003884' font-family='Arial, sans-serif' font-size='11' font-weight='bold'>2024-CAPSU-0182</text><text x='330' y='185' fill='%23475569' font-family='Arial, sans-serif' font-size='11' font-weight='bold'>DEGREE PROGRAM:</text><text x='445' y='185' fill='%230f172a' font-family='Arial, sans-serif' font-size='11' font-weight='bold'>BAEL - 2A</text><text x='330' y='210' fill='%23475569' font-family='Arial, sans-serif' font-size='11' font-weight='bold'>EVALUATION PERIOD:</text><text x='445' y='210' fill='%230f172a' font-family='Arial, sans-serif' font-size='11' font-weight='bold'>1st Sem 2025-2026</text><text x='50' y='235' fill='%23475569' font-family='Arial, sans-serif' font-size='11' font-weight='bold'>SCHOLARSHIP STANDING:</text><text x='205' y='235' fill='%2316a34a' font-family='Arial, sans-serif' font-size='11' font-weight='bold'>EXCELLENT (ACADEMIC QUALIFIER)</text><rect x='35' y='280' width='530' height='26' fill='%23003884'/><text x='50' y='297' fill='%23ffffff' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>COURSE CODE</text><text x='160' y='297' fill='%23ffffff' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>COURSE TITLE</text><text x='380' y='297' fill='%23ffffff' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>UNITS</text><text x='440' y='297' fill='%23ffffff' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>FINAL GRADE</text><text x='515' y='297' fill='%23ffffff' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>REMARKS</text><rect x='35' y='306' width='530' height='26' fill='%23ffffff' stroke='%23f1f5f9'/><text x='50' y='323' fill='%231e293b' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>ENG 201</text><text x='160' y='323' fill='%23334155' font-family='Arial, sans-serif' font-size='10'>Advanced English Grammar</text><text x='390' y='323' fill='%231e293b' font-family='Arial, sans-serif' font-size='10'>3.0</text><text x='460' y='323' fill='%2316a34a' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>1.25</text><text x='515' y='323' fill='%2316a34a' font-family='Arial, sans-serif' font-size='10'>Passed</text><rect x='35' y='332' width='530' height='26' fill='%23f8fafc' stroke='%23f1f5f9'/><text x='50' y='349' fill='%231e293b' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>ENG 202</text><text x='160' y='349' fill='%23334155' font-family='Arial, sans-serif' font-size='10'>Introduction to Linguistics</text><text x='390' y='349' fill='%231e293b' font-family='Arial, sans-serif' font-size='10'>3.0</text><text x='460' y='349' fill='%2316a34a' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>1.50</text><text x='515' y='349' fill='%2316a34a' font-family='Arial, sans-serif' font-size='10'>Passed</text><rect x='35' y='358' width='530' height='26' fill='%23ffffff' stroke='%23f1f5f9'/><text x='50' y='375' fill='%231e293b' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>LIT 101</text><text x='160' y='375' fill='%23334155' font-family='Arial, sans-serif' font-size='10'>Philippine Literature</text><text x='390' y='375' fill='%231e293b' font-family='Arial, sans-serif' font-size='10'>3.0</text><text x='460' y='375' fill='%2316a34a' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>1.25</text><text x='515' y='375' fill='%2316a34a' font-family='Arial, sans-serif' font-size='10'>Passed</text><rect x='35' y='384' width='530' height='26' fill='%23f8fafc' stroke='%23f1f5f9'/><text x='50' y='401' fill='%231e293b' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>COMM 205</text><text x='160' y='401' fill='%23334155' font-family='Arial, sans-serif' font-size='10'>Speech &amp; Oral Communication</text><text x='390' y='401' fill='%231e293b' font-family='Arial, sans-serif' font-size='10'>3.0</text><text x='460' y='401' fill='%2316a34a' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>1.25</text><text x='515' y='401' fill='%2316a34a' font-family='Arial, sans-serif' font-size='10'>Passed</text><rect x='35' y='410' width='530' height='26' fill='%23ffffff' stroke='%23f1f5f9'/><text x='50' y='427' fill='%231e293b' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>GE 104</text><text x='160' y='427' fill='%23334155' font-family='Arial, sans-serif' font-size='10'>Readings in Philippine History</text><text x='390' y='427' fill='%231e293b' font-family='Arial, sans-serif' font-size='10'>3.0</text><text x='460' y='427' fill='%2316a34a' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>1.50</text><text x='515' y='427' fill='%2316a34a' font-family='Arial, sans-serif' font-size='10'>Passed</text><rect x='35' y='436' width='530' height='26' fill='%23f8fafc' stroke='%23f1f5f9'/><text x='50' y='453' fill='%231e293b' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>PE 3</text><text x='160' y='453' fill='%23334155' font-family='Arial, sans-serif' font-size='10'>Physical Education / Dance</text><text x='390' y='453' fill='%231e293b' font-family='Arial, sans-serif' font-size='10'>2.0</text><text x='460' y='453' fill='%2316a34a' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>1.00</text><text x='515' y='453' fill='%2316a34a' font-family='Arial, sans-serif' font-size='10'>Passed</text><rect x='35' y='480' width='530' height='60' rx='8' fill='%23ecfdf5' stroke='%2310b981' stroke-width='2'/><text x='50' y='505' fill='%23065f46' font-family='Arial, sans-serif' font-size='11' font-weight='bold'>COMPUTED GENERAL WEIGHTED AVERAGE (GWA):</text><text x='50' y='525' fill='%23047857' font-family='Arial, sans-serif' font-size='10'>Total Academic Units Credited: 20.0 Units</text><rect x='420' y='488' width='130' height='44' rx='6' fill='%2310b981'/><text x='485' y='518' fill='%23ffffff' font-family='Arial, sans-serif' font-size='22' font-weight='bold' text-anchor='middle'>1.35</text><g transform='translate(360, 570)'><circle cx='80' cy='60' r='55' fill='none' stroke='%23003884' stroke-width='2' stroke-dasharray='4,2'/><circle cx='80' cy='60' r='48' fill='none' stroke='%23003884' stroke-width='1'/><text x='80' y='48' fill='%23003884' font-family='Arial, sans-serif' font-size='8' font-weight='bold' text-anchor='middle'>CAPIZ STATE UNIVERSITY</text><text x='80' y='62' fill='%23003884' font-family='Arial, sans-serif' font-size='9' font-weight='bold' text-anchor='middle'>ACADEMIC RECORD</text><text x='80' y='74' fill='%23003884' font-family='Arial, sans-serif' font-size='10' font-weight='bold' text-anchor='middle'>VERIFIED</text><text x='80' y='86' fill='%23003884' font-family='Arial, sans-serif' font-size='7' font-weight='bold' text-anchor='middle'>DEAN OF INSTRUCTION</text></g><line x1='50' y1='650' x2='220' y2='650' stroke='%23334155' stroke-width='1'/><text x='135' y='665' fill='%23334155' font-family='Arial, sans-serif' font-size='10' font-weight='bold' text-anchor='middle'>College Dean Signature</text><rect x='35' y='720' width='530' height='40' fill='%23f1f5f9' rx='4'/><text x='50' y='736' fill='%2364748b' font-family='Arial, sans-serif' font-size='9'>Certification Code: CAPSU-GWA-2026-09281745-HONORS</text><text x='50' y='750' fill='%2364748b' font-family='Arial, sans-serif' font-size='9'>Official document for Guidance &amp; Counseling Scholarship Verification.</text></svg>",
+          "name": "Santos_General_Weighted_Average_GWA.png",
+          "size": "152 KB",
+          "type": "image/svg+xml",
+          "status": "Verified",
+          "category": "GWA",
+          "verified": true
+        },
+        {
+          "id": "f-2",
+          "data": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='600' height='850' viewBox='0 0 600 850'><rect width='600' height='850' fill='%23ffffff'/><rect x='15' y='15' width='570' height='820' fill='none' stroke='%23003884' stroke-width='2'/><rect x='18' y='18' width='564' height='814' fill='none' stroke='%23cbd5e1' stroke-width='1'/><rect x='20' y='20' width='560' height='80' fill='%23003884'/><text x='300' y='50' fill='%23ffffff' font-family='Arial, sans-serif' font-size='15' font-weight='bold' text-anchor='middle'>CAPIZ STATE UNIVERSITY</text><text x='300' y='68' fill='%23fbbf24' font-family='Arial, sans-serif' font-size='12' font-weight='bold' text-anchor='middle'>OFFICE OF THE UNIVERSITY REGISTRAR</text><text x='300' y='86' fill='%23ffffff' font-family='Arial, sans-serif' font-size='10' text-anchor='middle'>Roxas City Main Campus, Capiz, Philippines</text><rect x='120' y='115' width='360' height='30' rx='6' fill='%23eff6ff' stroke='%233b82f6'/><text x='300' y='135' fill='%231e3a8a' font-family='Arial, sans-serif' font-size='13' font-weight='bold' text-anchor='middle'>CERTIFICATE OF REGISTRATION (RF)</text><rect x='35' y='160' width='530' height='100' fill='%23f8fafc' stroke='%23cbd5e1' rx='4'/><text x='50' y='185' fill='%23475569' font-family='Arial, sans-serif' font-size='11' font-weight='bold'>STUDENT NAME:</text><text x='160' y='185' fill='%230f172a' font-family='Arial, sans-serif' font-size='11' font-weight='bold'>SANTOS, ANNA MARIE A.</text><text x='50' y='210' fill='%23475569' font-family='Arial, sans-serif' font-size='11' font-weight='bold'>STUDENT NO.:</text><text x='160' y='210' fill='%23003884' font-family='Arial, sans-serif' font-size='11' font-weight='bold'>2024-CAPSU-0182</text><text x='330' y='185' fill='%23475569' font-family='Arial, sans-serif' font-size='11' font-weight='bold'>COURSE / YEAR:</text><text x='435' y='185' fill='%230f172a' font-family='Arial, sans-serif' font-size='11' font-weight='bold'>BAEL - 2A</text><text x='330' y='210' fill='%23475569' font-family='Arial, sans-serif' font-size='11' font-weight='bold'>ACADEMIC YEAR:</text><text x='435' y='210' fill='%230f172a' font-family='Arial, sans-serif' font-size='11' font-weight='bold'>2025-2026 (1st Sem)</text><text x='50' y='235' fill='%23475569' font-family='Arial, sans-serif' font-size='11' font-weight='bold'>ENROLLMENT STATUS:</text><text x='180' y='235' fill='%2316a34a' font-family='Arial, sans-serif' font-size='11' font-weight='bold'>OFFICIALLY ENROLLED (REGULAR)</text><rect x='35' y='280' width='530' height='26' fill='%23003884'/><text x='50' y='297' fill='%23ffffff' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>COURSE CODE</text><text x='160' y='297' fill='%23ffffff' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>DESCRIPTIVE TITLE</text><text x='420' y='297' fill='%23ffffff' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>UNITS</text><text x='490' y='297' fill='%23ffffff' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>SECTION</text><rect x='35' y='306' width='530' height='26' fill='%23ffffff' stroke='%23f1f5f9'/><text x='50' y='323' fill='%231e293b' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>ENG 201</text><text x='160' y='323' fill='%23334155' font-family='Arial, sans-serif' font-size='10'>Advanced English Grammar</text><text x='430' y='323' fill='%231e293b' font-family='Arial, sans-serif' font-size='10'>3.0</text><text x='500' y='323' fill='%231e293b' font-family='Arial, sans-serif' font-size='10'>BAEL 2A</text><rect x='35' y='332' width='530' height='26' fill='%23f8fafc' stroke='%23f1f5f9'/><text x='50' y='349' fill='%231e293b' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>ENG 202</text><text x='160' y='349' fill='%23334155' font-family='Arial, sans-serif' font-size='10'>Introduction to Linguistics</text><text x='430' y='349' fill='%231e293b' font-family='Arial, sans-serif' font-size='10'>3.0</text><text x='500' y='349' fill='%231e293b' font-family='Arial, sans-serif' font-size='10'>BAEL 2A</text><rect x='35' y='358' width='530' height='26' fill='%23ffffff' stroke='%23f1f5f9'/><text x='50' y='375' fill='%231e293b' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>LIT 101</text><text x='160' y='375' fill='%23334155' font-family='Arial, sans-serif' font-size='10'>Philippine Literature</text><text x='430' y='375' fill='%231e293b' font-family='Arial, sans-serif' font-size='10'>3.0</text><text x='500' y='375' fill='%231e293b' font-family='Arial, sans-serif' font-size='10'>BAEL 2A</text><rect x='35' y='384' width='530' height='26' fill='%23f8fafc' stroke='%23f1f5f9'/><text x='50' y='401' fill='%231e293b' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>COMM 205</text><text x='160' y='401' fill='%23334155' font-family='Arial, sans-serif' font-size='10'>Speech &amp; Oral Communication</text><text x='430' y='401' fill='%231e293b' font-family='Arial, sans-serif' font-size='10'>3.0</text><text x='500' y='401' fill='%231e293b' font-family='Arial, sans-serif' font-size='10'>BAEL 2A</text><rect x='35' y='410' width='530' height='26' fill='%23ffffff' stroke='%23f1f5f9'/><text x='50' y='427' fill='%231e293b' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>GE 104</text><text x='160' y='427' fill='%23334155' font-family='Arial, sans-serif' font-size='10'>Readings in Philippine History</text><text x='430' y='427' fill='%231e293b' font-family='Arial, sans-serif' font-size='10'>3.0</text><text x='500' y='427' fill='%231e293b' font-family='Arial, sans-serif' font-size='10'>BAEL 2A</text><rect x='35' y='436' width='530' height='26' fill='%23f8fafc' stroke='%23f1f5f9'/><text x='50' y='453' fill='%231e293b' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>PE 3</text><text x='160' y='453' fill='%23334155' font-family='Arial, sans-serif' font-size='10'>Physical Education / Dance</text><text x='430' y='453' fill='%231e293b' font-family='Arial, sans-serif' font-size='10'>2.0</text><text x='500' y='453' fill='%231e293b' font-family='Arial, sans-serif' font-size='10'>BAEL 2A</text><rect x='35' y='462' width='530' height='26' fill='%23ffffff' stroke='%23f1f5f9'/><text x='50' y='479' fill='%231e293b' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>NSTP 2</text><text x='160' y='479' fill='%23334155' font-family='Arial, sans-serif' font-size='10'>Civic Welfare Training Service 2</text><text x='430' y='479' fill='%231e293b' font-family='Arial, sans-serif' font-size='10'>3.0</text><text x='500' y='479' fill='%231e293b' font-family='Arial, sans-serif' font-size='10'>BAEL 2A</text><rect x='35' y='495' width='530' height='30' fill='%23eff6ff' stroke='%23bfdbfe'/><text x='50' y='515' fill='%231e3a8a' font-family='Arial, sans-serif' font-size='11' font-weight='bold'>TOTAL ACADEMIC UNITS ENROLLED:</text><text x='430' y='515' fill='%231e3a8a' font-family='Arial, sans-serif' font-size='12' font-weight='bold'>20.0 Units</text><g transform='translate(360, 560)'><circle cx='80' cy='60' r='55' fill='none' stroke='%23dc2626' stroke-width='2' stroke-dasharray='4,2'/><circle cx='80' cy='60' r='48' fill='none' stroke='%23dc2626' stroke-width='1'/><text x='80' y='48' fill='%23dc2626' font-family='Arial, sans-serif' font-size='8' font-weight='bold' text-anchor='middle'>CAPIZ STATE UNIVERSITY</text><text x='80' y='62' fill='%23dc2626' font-family='Arial, sans-serif' font-size='10' font-weight='bold' text-anchor='middle'>OFFICIALLY</text><text x='80' y='74' fill='%23dc2626' font-family='Arial, sans-serif' font-size='10' font-weight='bold' text-anchor='middle'>VALIDATED</text><text x='80' y='86' fill='%23dc2626' font-family='Arial, sans-serif' font-size='7' font-weight='bold' text-anchor='middle'>UNIVERSITY REGISTRAR</text></g><line x1='50' y1='640' x2='220' y2='640' stroke='%23334155' stroke-width='1'/><text x='135' y='655' fill='%23334155' font-family='Arial, sans-serif' font-size='10' font-weight='bold' text-anchor='middle'>Registrar In-Charge Signature</text><rect x='35' y='710' width='530' height='40' fill='%23f1f5f9' rx='4'/><text x='50' y='726' fill='%2364748b' font-family='Arial, sans-serif' font-size='9'>System Verification Hash: CAPSU-RF-2026-09281745-ENR</text><text x='50' y='740' fill='%2364748b' font-family='Arial, sans-serif' font-size='9'>This document serves as the official Registration Form for scholarship compliance.</text></svg>",
+          "name": "Santos_Registration_Form_RF.png",
+          "size": "145 KB",
+          "type": "image/svg+xml",
+          "status": "Verified",
+          "category": "RF",
+          "verified": true
+        },
+        {
+          "id": "f-2nd-rf",
+          "data": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='600' height='850' viewBox='0 0 600 850'><rect width='600' height='850' fill='%23ffffff'/><rect x='15' y='15' width='570' height='820' fill='none' stroke='%23003884' stroke-width='2'/><rect x='18' y='18' width='564' height='814' fill='none' stroke='%23cbd5e1' stroke-width='1'/><rect x='20' y='20' width='560' height='80' fill='%23003884'/><text x='300' y='50' fill='%23ffffff' font-family='Arial, sans-serif' font-size='15' font-weight='bold' text-anchor='middle'>CAPIZ STATE UNIVERSITY</text><text x='300' y='68' fill='%23fbbf24' font-family='Arial, sans-serif' font-size='12' font-weight='bold' text-anchor='middle'>OFFICE OF THE UNIVERSITY REGISTRAR</text><text x='300' y='86' fill='%23ffffff' font-family='Arial, sans-serif' font-size='10' text-anchor='middle'>Roxas City Main Campus, Capiz, Philippines</text><rect x='120' y='115' width='360' height='30' rx='6' fill='%23eff6ff' stroke='%233b82f6'/><text x='300' y='135' fill='%231e3a8a' font-family='Arial, sans-serif' font-size='13' font-weight='bold' text-anchor='middle'>CERTIFICATE OF REGISTRATION (RF)</text><rect x='35' y='160' width='530' height='100' fill='%23f8fafc' stroke='%23cbd5e1' rx='4'/><text x='50' y='185' fill='%23475569' font-family='Arial, sans-serif' font-size='11' font-weight='bold'>STUDENT NAME:</text><text x='160' y='185' fill='%230f172a' font-family='Arial, sans-serif' font-size='11' font-weight='bold'>SANTOS, ANNA MARIE A.</text><text x='50' y='210' fill='%23475569' font-family='Arial, sans-serif' font-size='11' font-weight='bold'>STUDENT NO.:</text><text x='160' y='210' fill='%23003884' font-family='Arial, sans-serif' font-size='11' font-weight='bold'>2024-CAPSU-0182</text><text x='330' y='185' fill='%23475569' font-family='Arial, sans-serif' font-size='11' font-weight='bold'>COURSE / YEAR:</text><text x='435' y='185' fill='%230f172a' font-family='Arial, sans-serif' font-size='11' font-weight='bold'>BAEL - 2A</text><text x='330' y='210' fill='%23475569' font-family='Arial, sans-serif' font-size='11' font-weight='bold'>ACADEMIC YEAR:</text><text x='435' y='210' fill='%230f172a' font-family='Arial, sans-serif' font-size='11' font-weight='bold'>2025-2026 (1st Sem)</text><text x='50' y='235' fill='%23475569' font-family='Arial, sans-serif' font-size='11' font-weight='bold'>ENROLLMENT STATUS:</text><text x='180' y='235' fill='%2316a34a' font-family='Arial, sans-serif' font-size='11' font-weight='bold'>OFFICIALLY ENROLLED (REGULAR)</text><rect x='35' y='280' width='530' height='26' fill='%23003884'/><text x='50' y='297' fill='%23ffffff' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>COURSE CODE</text><text x='160' y='297' fill='%23ffffff' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>DESCRIPTIVE TITLE</text><text x='420' y='297' fill='%23ffffff' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>UNITS</text><text x='490' y='297' fill='%23ffffff' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>SECTION</text><rect x='35' y='306' width='530' height='26' fill='%23ffffff' stroke='%23f1f5f9'/><text x='50' y='323' fill='%231e293b' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>ENG 201</text><text x='160' y='323' fill='%23334155' font-family='Arial, sans-serif' font-size='10'>Advanced English Grammar</text><text x='430' y='323' fill='%231e293b' font-family='Arial, sans-serif' font-size='10'>3.0</text><text x='500' y='323' fill='%231e293b' font-family='Arial, sans-serif' font-size='10'>BAEL 2A</text><rect x='35' y='332' width='530' height='26' fill='%23f8fafc' stroke='%23f1f5f9'/><text x='50' y='349' fill='%231e293b' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>ENG 202</text><text x='160' y='349' fill='%23334155' font-family='Arial, sans-serif' font-size='10'>Introduction to Linguistics</text><text x='430' y='349' fill='%231e293b' font-family='Arial, sans-serif' font-size='10'>3.0</text><text x='500' y='349' fill='%231e293b' font-family='Arial, sans-serif' font-size='10'>BAEL 2A</text><rect x='35' y='358' width='530' height='26' fill='%23ffffff' stroke='%23f1f5f9'/><text x='50' y='375' fill='%231e293b' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>LIT 101</text><text x='160' y='375' fill='%23334155' font-family='Arial, sans-serif' font-size='10'>Philippine Literature</text><text x='430' y='375' fill='%231e293b' font-family='Arial, sans-serif' font-size='10'>3.0</text><text x='500' y='375' fill='%231e293b' font-family='Arial, sans-serif' font-size='10'>BAEL 2A</text><rect x='35' y='384' width='530' height='26' fill='%23f8fafc' stroke='%23f1f5f9'/><text x='50' y='401' fill='%231e293b' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>COMM 205</text><text x='160' y='401' fill='%23334155' font-family='Arial, sans-serif' font-size='10'>Speech &amp; Oral Communication</text><text x='430' y='401' fill='%231e293b' font-family='Arial, sans-serif' font-size='10'>3.0</text><text x='500' y='401' fill='%231e293b' font-family='Arial, sans-serif' font-size='10'>BAEL 2A</text><rect x='35' y='410' width='530' height='26' fill='%23ffffff' stroke='%23f1f5f9'/><text x='50' y='427' fill='%231e293b' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>GE 104</text><text x='160' y='427' fill='%23334155' font-family='Arial, sans-serif' font-size='10'>Readings in Philippine History</text><text x='430' y='427' fill='%231e293b' font-family='Arial, sans-serif' font-size='10'>3.0</text><text x='500' y='427' fill='%231e293b' font-family='Arial, sans-serif' font-size='10'>BAEL 2A</text><rect x='35' y='436' width='530' height='26' fill='%23f8fafc' stroke='%23f1f5f9'/><text x='50' y='453' fill='%231e293b' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>PE 3</text><text x='160' y='453' fill='%23334155' font-family='Arial, sans-serif' font-size='10'>Physical Education / Dance</text><text x='430' y='453' fill='%231e293b' font-family='Arial, sans-serif' font-size='10'>2.0</text><text x='500' y='453' fill='%231e293b' font-family='Arial, sans-serif' font-size='10'>BAEL 2A</text><rect x='35' y='462' width='530' height='26' fill='%23ffffff' stroke='%23f1f5f9'/><text x='50' y='479' fill='%231e293b' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>NSTP 2</text><text x='160' y='479' fill='%23334155' font-family='Arial, sans-serif' font-size='10'>Civic Welfare Training Service 2</text><text x='430' y='479' fill='%231e293b' font-family='Arial, sans-serif' font-size='10'>3.0</text><text x='500' y='479' fill='%231e293b' font-family='Arial, sans-serif' font-size='10'>BAEL 2A</text><rect x='35' y='495' width='530' height='30' fill='%23eff6ff' stroke='%23bfdbfe'/><text x='50' y='515' fill='%231e3a8a' font-family='Arial, sans-serif' font-size='11' font-weight='bold'>TOTAL ACADEMIC UNITS ENROLLED:</text><text x='430' y='515' fill='%231e3a8a' font-family='Arial, sans-serif' font-size='12' font-weight='bold'>20.0 Units</text><g transform='translate(360, 560)'><circle cx='80' cy='60' r='55' fill='none' stroke='%23dc2626' stroke-width='2' stroke-dasharray='4,2'/><circle cx='80' cy='60' r='48' fill='none' stroke='%23dc2626' stroke-width='1'/><text x='80' y='48' fill='%23dc2626' font-family='Arial, sans-serif' font-size='8' font-weight='bold' text-anchor='middle'>CAPIZ STATE UNIVERSITY</text><text x='80' y='62' fill='%23dc2626' font-family='Arial, sans-serif' font-size='10' font-weight='bold' text-anchor='middle'>OFFICIALLY</text><text x='80' y='74' fill='%23dc2626' font-family='Arial, sans-serif' font-size='10' font-weight='bold' text-anchor='middle'>VALIDATED</text><text x='80' y='86' fill='%23dc2626' font-family='Arial, sans-serif' font-size='7' font-weight='bold' text-anchor='middle'>UNIVERSITY REGISTRAR</text></g><line x1='50' y1='640' x2='220' y2='640' stroke='%23334155' stroke-width='1'/><text x='135' y='655' fill='%23334155' font-family='Arial, sans-serif' font-size='10' font-weight='bold' text-anchor='middle'>Registrar In-Charge Signature</text><rect x='35' y='710' width='530' height='40' fill='%23f1f5f9' rx='4'/><text x='50' y='726' fill='%2364748b' font-family='Arial, sans-serif' font-size='9'>System Verification Hash: CAPSU-RF-2026-09281745-ENR</text><text x='50' y='740' fill='%2364748b' font-family='Arial, sans-serif' font-size='9'>This document serves as the official Registration Form for scholarship compliance.</text></svg>",
+          "name": "Santos_Registration_Form_2ndSem_RF.png",
+          "size": "145 KB",
+          "type": "image/svg+xml",
+          "status": "Verified",
+          "category": "RF_2",
+          "verified": true
+        },
+        {
+          "id": "f-2nd-gwa",
+          "data": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='600' height='850' viewBox='0 0 600 850'><rect width='600' height='850' fill='%23ffffff'/><rect x='15' y='15' width='570' height='820' fill='none' stroke='%23003884' stroke-width='2'/><rect x='18' y='18' width='564' height='814' fill='none' stroke='%23cbd5e1' stroke-width='1'/><rect x='20' y='20' width='560' height='80' fill='%23003884'/><text x='300' y='50' fill='%23ffffff' font-family='Arial, sans-serif' font-size='15' font-weight='bold' text-anchor='middle'>CAPIZ STATE UNIVERSITY</text><text x='300' y='68' fill='%23fbbf24' font-family='Arial, sans-serif' font-size='12' font-weight='bold' text-anchor='middle'>OFFICIAL REPORT OF GRADES &amp; GWA</text><text x='300' y='86' fill='%23ffffff' font-family='Arial, sans-serif' font-size='10' text-anchor='middle'>Guidance Office &amp; Scholarship Evaluation Section</text><rect x='100' y='115' width='400' height='30' rx='6' fill='%23f0fdf4' stroke='%2322c55e'/><text x='300' y='135' fill='%2315803d' font-family='Arial, sans-serif' font-size='13' font-weight='bold' text-anchor='middle'>GENERAL WEIGHTED AVERAGE (GWA) CERTIFICATION</text><rect x='35' y='160' width='530' height='100' fill='%23f8fafc' stroke='%23cbd5e1' rx='4'/><text x='50' y='185' fill='%23475569' font-family='Arial, sans-serif' font-size='11' font-weight='bold'>APPLICANT NAME:</text><text x='170' y='185' fill='%230f172a' font-family='Arial, sans-serif' font-size='11' font-weight='bold'>SANTOS, ANNA MARIE A.</text><text x='50' y='210' fill='%23475569' font-family='Arial, sans-serif' font-size='11' font-weight='bold'>STUDENT NO.:</text><text x='170' y='210' fill='%23003884' font-family='Arial, sans-serif' font-size='11' font-weight='bold'>2024-CAPSU-0182</text><text x='330' y='185' fill='%23475569' font-family='Arial, sans-serif' font-size='11' font-weight='bold'>DEGREE PROGRAM:</text><text x='445' y='185' fill='%230f172a' font-family='Arial, sans-serif' font-size='11' font-weight='bold'>BAEL - 2A</text><text x='330' y='210' fill='%23475569' font-family='Arial, sans-serif' font-size='11' font-weight='bold'>EVALUATION PERIOD:</text><text x='445' y='210' fill='%230f172a' font-family='Arial, sans-serif' font-size='11' font-weight='bold'>1st Sem 2025-2026</text><text x='50' y='235' fill='%23475569' font-family='Arial, sans-serif' font-size='11' font-weight='bold'>SCHOLARSHIP STANDING:</text><text x='205' y='235' fill='%2316a34a' font-family='Arial, sans-serif' font-size='11' font-weight='bold'>EXCELLENT (ACADEMIC QUALIFIER)</text><rect x='35' y='280' width='530' height='26' fill='%23003884'/><text x='50' y='297' fill='%23ffffff' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>COURSE CODE</text><text x='160' y='297' fill='%23ffffff' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>COURSE TITLE</text><text x='380' y='297' fill='%23ffffff' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>UNITS</text><text x='440' y='297' fill='%23ffffff' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>FINAL GRADE</text><text x='515' y='297' fill='%23ffffff' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>REMARKS</text><rect x='35' y='306' width='530' height='26' fill='%23ffffff' stroke='%23f1f5f9'/><text x='50' y='323' fill='%231e293b' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>ENG 201</text><text x='160' y='323' fill='%23334155' font-family='Arial, sans-serif' font-size='10'>Advanced English Grammar</text><text x='390' y='323' fill='%231e293b' font-family='Arial, sans-serif' font-size='10'>3.0</text><text x='460' y='323' fill='%2316a34a' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>1.25</text><text x='515' y='323' fill='%2316a34a' font-family='Arial, sans-serif' font-size='10'>Passed</text><rect x='35' y='332' width='530' height='26' fill='%23f8fafc' stroke='%23f1f5f9'/><text x='50' y='349' fill='%231e293b' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>ENG 202</text><text x='160' y='349' fill='%23334155' font-family='Arial, sans-serif' font-size='10'>Introduction to Linguistics</text><text x='390' y='349' fill='%231e293b' font-family='Arial, sans-serif' font-size='10'>3.0</text><text x='460' y='349' fill='%2316a34a' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>1.50</text><text x='515' y='349' fill='%2316a34a' font-family='Arial, sans-serif' font-size='10'>Passed</text><rect x='35' y='358' width='530' height='26' fill='%23ffffff' stroke='%23f1f5f9'/><text x='50' y='375' fill='%231e293b' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>LIT 101</text><text x='160' y='375' fill='%23334155' font-family='Arial, sans-serif' font-size='10'>Philippine Literature</text><text x='390' y='375' fill='%231e293b' font-family='Arial, sans-serif' font-size='10'>3.0</text><text x='460' y='375' fill='%2316a34a' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>1.25</text><text x='515' y='375' fill='%2316a34a' font-family='Arial, sans-serif' font-size='10'>Passed</text><rect x='35' y='384' width='530' height='26' fill='%23f8fafc' stroke='%23f1f5f9'/><text x='50' y='401' fill='%231e293b' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>COMM 205</text><text x='160' y='401' fill='%23334155' font-family='Arial, sans-serif' font-size='10'>Speech &amp; Oral Communication</text><text x='390' y='401' fill='%231e293b' font-family='Arial, sans-serif' font-size='10'>3.0</text><text x='460' y='401' fill='%2316a34a' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>1.25</text><text x='515' y='401' fill='%2316a34a' font-family='Arial, sans-serif' font-size='10'>Passed</text><rect x='35' y='410' width='530' height='26' fill='%23ffffff' stroke='%23f1f5f9'/><text x='50' y='427' fill='%231e293b' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>GE 104</text><text x='160' y='427' fill='%23334155' font-family='Arial, sans-serif' font-size='10'>Readings in Philippine History</text><text x='390' y='427' fill='%231e293b' font-family='Arial, sans-serif' font-size='10'>3.0</text><text x='460' y='427' fill='%2316a34a' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>1.50</text><text x='515' y='427' fill='%2316a34a' font-family='Arial, sans-serif' font-size='10'>Passed</text><rect x='35' y='436' width='530' height='26' fill='%23f8fafc' stroke='%23f1f5f9'/><text x='50' y='453' fill='%231e293b' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>PE 3</text><text x='160' y='453' fill='%23334155' font-family='Arial, sans-serif' font-size='10'>Physical Education / Dance</text><text x='390' y='453' fill='%231e293b' font-family='Arial, sans-serif' font-size='10'>2.0</text><text x='460' y='453' fill='%2316a34a' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>1.00</text><text x='515' y='453' fill='%2316a34a' font-family='Arial, sans-serif' font-size='10'>Passed</text><rect x='35' y='480' width='530' height='60' rx='8' fill='%23ecfdf5' stroke='%2310b981' stroke-width='2'/><text x='50' y='505' fill='%23065f46' font-family='Arial, sans-serif' font-size='11' font-weight='bold'>COMPUTED GENERAL WEIGHTED AVERAGE (GWA):</text><text x='50' y='525' fill='%23047857' font-family='Arial, sans-serif' font-size='10'>Total Academic Units Credited: 20.0 Units</text><rect x='420' y='488' width='130' height='44' rx='6' fill='%2310b981'/><text x='485' y='518' fill='%23ffffff' font-family='Arial, sans-serif' font-size='22' font-weight='bold' text-anchor='middle'>1.35</text><g transform='translate(360, 570)'><circle cx='80' cy='60' r='55' fill='none' stroke='%23003884' stroke-width='2' stroke-dasharray='4,2'/><circle cx='80' cy='60' r='48' fill='none' stroke='%23003884' stroke-width='1'/><text x='80' y='48' fill='%23003884' font-family='Arial, sans-serif' font-size='8' font-weight='bold' text-anchor='middle'>CAPIZ STATE UNIVERSITY</text><text x='80' y='62' fill='%23003884' font-family='Arial, sans-serif' font-size='9' font-weight='bold' text-anchor='middle'>ACADEMIC RECORD</text><text x='80' y='74' fill='%23003884' font-family='Arial, sans-serif' font-size='10' font-weight='bold' text-anchor='middle'>VERIFIED</text><text x='80' y='86' fill='%23003884' font-family='Arial, sans-serif' font-size='7' font-weight='bold' text-anchor='middle'>DEAN OF INSTRUCTION</text></g><line x1='50' y1='650' x2='220' y2='650' stroke='%23334155' stroke-width='1'/><text x='135' y='665' fill='%23334155' font-family='Arial, sans-serif' font-size='10' font-weight='bold' text-anchor='middle'>College Dean Signature</text><rect x='35' y='720' width='530' height='40' fill='%23f1f5f9' rx='4'/><text x='50' y='736' fill='%2364748b' font-family='Arial, sans-serif' font-size='9'>Certification Code: CAPSU-GWA-2026-09281745-HONORS</text><text x='50' y='750' fill='%2364748b' font-family='Arial, sans-serif' font-size='9'>Official document for Guidance &amp; Counseling Scholarship Verification.</text></svg>",
+          "name": "Santos_GWA_2ndSem.png",
+          "size": "152 KB",
+          "type": "image/svg+xml",
+          "status": "Verified",
+          "category": "GWA_2",
+          "verified": true
+        },
+        {
+          "id": "f-3",
+          "data": "data:application/pdf;base64,JVBERi0xLjQKJcTl8uXrp/Og0MTGCjQgMCBvYmoKPDwgL0xlbmd0aCA1IDAgUiAvRmlsdGVyIC9GbGF0ZURlY29kZSA+PgpzdHJlYW0KeJzLSM3JyVcozy/KSVEEAELnBfUKZW5kc3RyZWFtCmVuZG9iago1IDAgb2JqCjE4CmVuZG9iagoxIDAgb2JqCjw8IC9UeXBlIC9DYXRhbG9nIC9QYWdlcyAyIDAgUiA+PgplbmRvYmoK",
+          "name": "Santos_Certificate_of_Indigency.pdf",
+          "size": "620 KB",
+          "type": "application/pdf",
+          "status": "Verified",
+          "category": "Proof of Income / Certificate of Indigency",
+          "verified": true
+        },
+        {
+          "id": "f-4",
+          "data": "data:application/pdf;base64,JVBERi0xLjQKJcTl8uXrp/Og0MTGCjQgMCBvYmoKPDwgL0xlbmd0aCA1IDAgUiAvRmlsdGVyIC9GbGF0ZURlY29kZSA+PgpzdHJlYW0KeJzLSM3JyVcozy/KSVEEAELnBfUKZW5kc3RyZWFtCmVuZG9iago1IDAgb2JqCjE4CmVuZG9iagoxIDAgb2JqCjw8IC9UeXBlIC9DYXRhbG9nIC9QYWdlcyAyIDAgUiA+PgplbmRvYmoK",
+          "name": "Santos_Good_Moral_Character.pdf",
+          "size": "540 KB",
+          "type": "application/pdf",
+          "status": "Verified",
+          "category": "Certificate of Good Moral Character",
+          "verified": true
+        }
+      ]
+    },
+    {
+      "id": "sub-seed-2",
+      "studentId": "2024-CAPSU-0195",
+      "studentName": "Patricia Jane K. Manalo",
+      "studentAuthId": null,
+      "scholarshipType": "Externally-Funded (CHED - Tulong Dunong)",
+      "status": "Incomplete",
+      "submittedAt": "2026-03-11T09:30:00+00:00",
+      "data": {
+        "sex": "Female",
+        "course": "BAEL",
+        "status": "Incomplete",
+        "section": "BAEL 2A",
+        "firstName": "Patricia Jane",
+        "studentId": "2024-CAPSU-0195",
+        "yearLevel": "Second year",
+        "courseFull": "Bachelor of Arts in English Language",
+        "familyName": "Manalo",
+        "fatherName": "Ricardo Manalo",
+        "livingWith": "Parents/Guardians",
+        "middleName": "K.",
+        "motherName": "Carmen Manalo",
+        "civilStatus": "Single",
+        "fundingType": "Externally-Funded",
+        "housingType": "Own house",
+        "submittedAt": "2026-03-11T09:30:00Z",
+        "academicYear": "A.Y. 2025-2026 - 2nd Semester",
+        "requirements": [
+          {
+            "name": "Certificate of Grades (COG)",
+            "status": "Verified"
+          },
+          {
+            "name": "Certificate of Registration (COR)",
+            "status": "Verified"
+          },
+          {
+            "name": "2x2 Recent Formal ID Photo",
+            "status": "Verified"
+          },
+          {
+            "name": "Proof of Income / Certificate of Indigency",
+            "status": "Pending"
+          }
+        ],
+        "monthlyIncome": "below Php10,000",
+        "workingStudent": "Yes, part-time",
+        "accessResources": [
+          "Study space"
+        ],
+        "classifications": [
+          "Low income family/ Economically disadvantaged student",
+          "Working Student"
+        ],
+        "firstGenCollege": "Yes",
+        "scholarshipType": "Externally-Funded (CHED - Tulong Dunong)",
+        "fatherOccupation": "Fisherman",
+        "motherOccupation": "Vendor",
+        "guardianOccupation": "None",
+        "scholarshipCategory": "Tulong Dunong",
+        "workingStudentTypeOfWork": "Store Assistant on weekends",
+        "parentsEducationalAttainment": "Elementary Graduate"
+      },
+      "files": [
+        {
+          "id": "f-6",
+          "data": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='600' height='850' viewBox='0 0 600 850'><rect width='600' height='850' fill='%23ffffff'/><rect x='15' y='15' width='570' height='820' fill='none' stroke='%23003884' stroke-width='2'/><rect x='18' y='18' width='564' height='814' fill='none' stroke='%23cbd5e1' stroke-width='1'/><rect x='20' y='20' width='560' height='80' fill='%23003884'/><text x='300' y='50' fill='%23ffffff' font-family='Arial, sans-serif' font-size='15' font-weight='bold' text-anchor='middle'>CAPIZ STATE UNIVERSITY</text><text x='300' y='68' fill='%23fbbf24' font-family='Arial, sans-serif' font-size='12' font-weight='bold' text-anchor='middle'>OFFICIAL REPORT OF GRADES &amp; GWA</text><text x='300' y='86' fill='%23ffffff' font-family='Arial, sans-serif' font-size='10' text-anchor='middle'>Guidance Office &amp; Scholarship Evaluation Section</text><rect x='100' y='115' width='400' height='30' rx='6' fill='%23f0fdf4' stroke='%2322c55e'/><text x='300' y='135' fill='%2315803d' font-family='Arial, sans-serif' font-size='13' font-weight='bold' text-anchor='middle'>GENERAL WEIGHTED AVERAGE (GWA) CERTIFICATION</text><rect x='35' y='160' width='530' height='100' fill='%23f8fafc' stroke='%23cbd5e1' rx='4'/><text x='50' y='185' fill='%23475569' font-family='Arial, sans-serif' font-size='11' font-weight='bold'>APPLICANT NAME:</text><text x='170' y='185' fill='%230f172a' font-family='Arial, sans-serif' font-size='11' font-weight='bold'>SANTOS, ANNA MARIE A.</text><text x='50' y='210' fill='%23475569' font-family='Arial, sans-serif' font-size='11' font-weight='bold'>STUDENT NO.:</text><text x='170' y='210' fill='%23003884' font-family='Arial, sans-serif' font-size='11' font-weight='bold'>2024-CAPSU-0182</text><text x='330' y='185' fill='%23475569' font-family='Arial, sans-serif' font-size='11' font-weight='bold'>DEGREE PROGRAM:</text><text x='445' y='185' fill='%230f172a' font-family='Arial, sans-serif' font-size='11' font-weight='bold'>BAEL - 2A</text><text x='330' y='210' fill='%23475569' font-family='Arial, sans-serif' font-size='11' font-weight='bold'>EVALUATION PERIOD:</text><text x='445' y='210' fill='%230f172a' font-family='Arial, sans-serif' font-size='11' font-weight='bold'>1st Sem 2025-2026</text><text x='50' y='235' fill='%23475569' font-family='Arial, sans-serif' font-size='11' font-weight='bold'>SCHOLARSHIP STANDING:</text><text x='205' y='235' fill='%2316a34a' font-family='Arial, sans-serif' font-size='11' font-weight='bold'>EXCELLENT (ACADEMIC QUALIFIER)</text><rect x='35' y='280' width='530' height='26' fill='%23003884'/><text x='50' y='297' fill='%23ffffff' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>COURSE CODE</text><text x='160' y='297' fill='%23ffffff' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>COURSE TITLE</text><text x='380' y='297' fill='%23ffffff' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>UNITS</text><text x='440' y='297' fill='%23ffffff' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>FINAL GRADE</text><text x='515' y='297' fill='%23ffffff' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>REMARKS</text><rect x='35' y='306' width='530' height='26' fill='%23ffffff' stroke='%23f1f5f9'/><text x='50' y='323' fill='%231e293b' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>ENG 201</text><text x='160' y='323' fill='%23334155' font-family='Arial, sans-serif' font-size='10'>Advanced English Grammar</text><text x='390' y='323' fill='%231e293b' font-family='Arial, sans-serif' font-size='10'>3.0</text><text x='460' y='323' fill='%2316a34a' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>1.25</text><text x='515' y='323' fill='%2316a34a' font-family='Arial, sans-serif' font-size='10'>Passed</text><rect x='35' y='332' width='530' height='26' fill='%23f8fafc' stroke='%23f1f5f9'/><text x='50' y='349' fill='%231e293b' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>ENG 202</text><text x='160' y='349' fill='%23334155' font-family='Arial, sans-serif' font-size='10'>Introduction to Linguistics</text><text x='390' y='349' fill='%231e293b' font-family='Arial, sans-serif' font-size='10'>3.0</text><text x='460' y='349' fill='%2316a34a' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>1.50</text><text x='515' y='349' fill='%2316a34a' font-family='Arial, sans-serif' font-size='10'>Passed</text><rect x='35' y='358' width='530' height='26' fill='%23ffffff' stroke='%23f1f5f9'/><text x='50' y='375' fill='%231e293b' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>LIT 101</text><text x='160' y='375' fill='%23334155' font-family='Arial, sans-serif' font-size='10'>Philippine Literature</text><text x='390' y='375' fill='%231e293b' font-family='Arial, sans-serif' font-size='10'>3.0</text><text x='460' y='375' fill='%2316a34a' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>1.25</text><text x='515' y='375' fill='%2316a34a' font-family='Arial, sans-serif' font-size='10'>Passed</text><rect x='35' y='384' width='530' height='26' fill='%23f8fafc' stroke='%23f1f5f9'/><text x='50' y='401' fill='%231e293b' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>COMM 205</text><text x='160' y='401' fill='%23334155' font-family='Arial, sans-serif' font-size='10'>Speech &amp; Oral Communication</text><text x='390' y='401' fill='%231e293b' font-family='Arial, sans-serif' font-size='10'>3.0</text><text x='460' y='401' fill='%2316a34a' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>1.25</text><text x='515' y='401' fill='%2316a34a' font-family='Arial, sans-serif' font-size='10'>Passed</text><rect x='35' y='410' width='530' height='26' fill='%23ffffff' stroke='%23f1f5f9'/><text x='50' y='427' fill='%231e293b' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>GE 104</text><text x='160' y='427' fill='%23334155' font-family='Arial, sans-serif' font-size='10'>Readings in Philippine History</text><text x='390' y='427' fill='%231e293b' font-family='Arial, sans-serif' font-size='10'>3.0</text><text x='460' y='427' fill='%2316a34a' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>1.50</text><text x='515' y='427' fill='%2316a34a' font-family='Arial, sans-serif' font-size='10'>Passed</text><rect x='35' y='436' width='530' height='26' fill='%23f8fafc' stroke='%23f1f5f9'/><text x='50' y='453' fill='%231e293b' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>PE 3</text><text x='160' y='453' fill='%23334155' font-family='Arial, sans-serif' font-size='10'>Physical Education / Dance</text><text x='390' y='453' fill='%231e293b' font-family='Arial, sans-serif' font-size='10'>2.0</text><text x='460' y='453' fill='%2316a34a' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>1.00</text><text x='515' y='453' fill='%2316a34a' font-family='Arial, sans-serif' font-size='10'>Passed</text><rect x='35' y='480' width='530' height='60' rx='8' fill='%23ecfdf5' stroke='%2310b981' stroke-width='2'/><text x='50' y='505' fill='%23065f46' font-family='Arial, sans-serif' font-size='11' font-weight='bold'>COMPUTED GENERAL WEIGHTED AVERAGE (GWA):</text><text x='50' y='525' fill='%23047857' font-family='Arial, sans-serif' font-size='10'>Total Academic Units Credited: 20.0 Units</text><rect x='420' y='488' width='130' height='44' rx='6' fill='%2310b981'/><text x='485' y='518' fill='%23ffffff' font-family='Arial, sans-serif' font-size='22' font-weight='bold' text-anchor='middle'>1.35</text><g transform='translate(360, 570)'><circle cx='80' cy='60' r='55' fill='none' stroke='%23003884' stroke-width='2' stroke-dasharray='4,2'/><circle cx='80' cy='60' r='48' fill='none' stroke='%23003884' stroke-width='1'/><text x='80' y='48' fill='%23003884' font-family='Arial, sans-serif' font-size='8' font-weight='bold' text-anchor='middle'>CAPIZ STATE UNIVERSITY</text><text x='80' y='62' fill='%23003884' font-family='Arial, sans-serif' font-size='9' font-weight='bold' text-anchor='middle'>ACADEMIC RECORD</text><text x='80' y='74' fill='%23003884' font-family='Arial, sans-serif' font-size='10' font-weight='bold' text-anchor='middle'>VERIFIED</text><text x='80' y='86' fill='%23003884' font-family='Arial, sans-serif' font-size='7' font-weight='bold' text-anchor='middle'>DEAN OF INSTRUCTION</text></g><line x1='50' y1='650' x2='220' y2='650' stroke='%23334155' stroke-width='1'/><text x='135' y='665' fill='%23334155' font-family='Arial, sans-serif' font-size='10' font-weight='bold' text-anchor='middle'>College Dean Signature</text><rect x='35' y='720' width='530' height='40' fill='%23f1f5f9' rx='4'/><text x='50' y='736' fill='%2364748b' font-family='Arial, sans-serif' font-size='9'>Certification Code: CAPSU-GWA-2026-09281745-HONORS</text><text x='50' y='750' fill='%2364748b' font-family='Arial, sans-serif' font-size='9'>Official document for Guidance &amp; Counseling Scholarship Verification.</text></svg>",
+          "name": "Manalo_General_Weighted_Average_GWA.png",
+          "size": "152 KB",
+          "type": "image/svg+xml",
+          "status": "Verified",
+          "category": "GWA",
+          "verified": true
+        },
+        {
+          "id": "f-7",
+          "data": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='600' height='850' viewBox='0 0 600 850'><rect width='600' height='850' fill='%23ffffff'/><rect x='15' y='15' width='570' height='820' fill='none' stroke='%23003884' stroke-width='2'/><rect x='18' y='18' width='564' height='814' fill='none' stroke='%23cbd5e1' stroke-width='1'/><rect x='20' y='20' width='560' height='80' fill='%23003884'/><text x='300' y='50' fill='%23ffffff' font-family='Arial, sans-serif' font-size='15' font-weight='bold' text-anchor='middle'>CAPIZ STATE UNIVERSITY</text><text x='300' y='68' fill='%23fbbf24' font-family='Arial, sans-serif' font-size='12' font-weight='bold' text-anchor='middle'>OFFICE OF THE UNIVERSITY REGISTRAR</text><text x='300' y='86' fill='%23ffffff' font-family='Arial, sans-serif' font-size='10' text-anchor='middle'>Roxas City Main Campus, Capiz, Philippines</text><rect x='120' y='115' width='360' height='30' rx='6' fill='%23eff6ff' stroke='%233b82f6'/><text x='300' y='135' fill='%231e3a8a' font-family='Arial, sans-serif' font-size='13' font-weight='bold' text-anchor='middle'>CERTIFICATE OF REGISTRATION (RF)</text><rect x='35' y='160' width='530' height='100' fill='%23f8fafc' stroke='%23cbd5e1' rx='4'/><text x='50' y='185' fill='%23475569' font-family='Arial, sans-serif' font-size='11' font-weight='bold'>STUDENT NAME:</text><text x='160' y='185' fill='%230f172a' font-family='Arial, sans-serif' font-size='11' font-weight='bold'>SANTOS, ANNA MARIE A.</text><text x='50' y='210' fill='%23475569' font-family='Arial, sans-serif' font-size='11' font-weight='bold'>STUDENT NO.:</text><text x='160' y='210' fill='%23003884' font-family='Arial, sans-serif' font-size='11' font-weight='bold'>2024-CAPSU-0182</text><text x='330' y='185' fill='%23475569' font-family='Arial, sans-serif' font-size='11' font-weight='bold'>COURSE / YEAR:</text><text x='435' y='185' fill='%230f172a' font-family='Arial, sans-serif' font-size='11' font-weight='bold'>BAEL - 2A</text><text x='330' y='210' fill='%23475569' font-family='Arial, sans-serif' font-size='11' font-weight='bold'>ACADEMIC YEAR:</text><text x='435' y='210' fill='%230f172a' font-family='Arial, sans-serif' font-size='11' font-weight='bold'>2025-2026 (1st Sem)</text><text x='50' y='235' fill='%23475569' font-family='Arial, sans-serif' font-size='11' font-weight='bold'>ENROLLMENT STATUS:</text><text x='180' y='235' fill='%2316a34a' font-family='Arial, sans-serif' font-size='11' font-weight='bold'>OFFICIALLY ENROLLED (REGULAR)</text><rect x='35' y='280' width='530' height='26' fill='%23003884'/><text x='50' y='297' fill='%23ffffff' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>COURSE CODE</text><text x='160' y='297' fill='%23ffffff' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>DESCRIPTIVE TITLE</text><text x='420' y='297' fill='%23ffffff' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>UNITS</text><text x='490' y='297' fill='%23ffffff' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>SECTION</text><rect x='35' y='306' width='530' height='26' fill='%23ffffff' stroke='%23f1f5f9'/><text x='50' y='323' fill='%231e293b' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>ENG 201</text><text x='160' y='323' fill='%23334155' font-family='Arial, sans-serif' font-size='10'>Advanced English Grammar</text><text x='430' y='323' fill='%231e293b' font-family='Arial, sans-serif' font-size='10'>3.0</text><text x='500' y='323' fill='%231e293b' font-family='Arial, sans-serif' font-size='10'>BAEL 2A</text><rect x='35' y='332' width='530' height='26' fill='%23f8fafc' stroke='%23f1f5f9'/><text x='50' y='349' fill='%231e293b' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>ENG 202</text><text x='160' y='349' fill='%23334155' font-family='Arial, sans-serif' font-size='10'>Introduction to Linguistics</text><text x='430' y='349' fill='%231e293b' font-family='Arial, sans-serif' font-size='10'>3.0</text><text x='500' y='349' fill='%231e293b' font-family='Arial, sans-serif' font-size='10'>BAEL 2A</text><rect x='35' y='358' width='530' height='26' fill='%23ffffff' stroke='%23f1f5f9'/><text x='50' y='375' fill='%231e293b' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>LIT 101</text><text x='160' y='375' fill='%23334155' font-family='Arial, sans-serif' font-size='10'>Philippine Literature</text><text x='430' y='375' fill='%231e293b' font-family='Arial, sans-serif' font-size='10'>3.0</text><text x='500' y='375' fill='%231e293b' font-family='Arial, sans-serif' font-size='10'>BAEL 2A</text><rect x='35' y='384' width='530' height='26' fill='%23f8fafc' stroke='%23f1f5f9'/><text x='50' y='401' fill='%231e293b' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>COMM 205</text><text x='160' y='401' fill='%23334155' font-family='Arial, sans-serif' font-size='10'>Speech &amp; Oral Communication</text><text x='430' y='401' fill='%231e293b' font-family='Arial, sans-serif' font-size='10'>3.0</text><text x='500' y='401' fill='%231e293b' font-family='Arial, sans-serif' font-size='10'>BAEL 2A</text><rect x='35' y='410' width='530' height='26' fill='%23ffffff' stroke='%23f1f5f9'/><text x='50' y='427' fill='%231e293b' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>GE 104</text><text x='160' y='427' fill='%23334155' font-family='Arial, sans-serif' font-size='10'>Readings in Philippine History</text><text x='430' y='427' fill='%231e293b' font-family='Arial, sans-serif' font-size='10'>3.0</text><text x='500' y='427' fill='%231e293b' font-family='Arial, sans-serif' font-size='10'>BAEL 2A</text><rect x='35' y='436' width='530' height='26' fill='%23f8fafc' stroke='%23f1f5f9'/><text x='50' y='453' fill='%231e293b' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>PE 3</text><text x='160' y='453' fill='%23334155' font-family='Arial, sans-serif' font-size='10'>Physical Education / Dance</text><text x='430' y='453' fill='%231e293b' font-family='Arial, sans-serif' font-size='10'>2.0</text><text x='500' y='453' fill='%231e293b' font-family='Arial, sans-serif' font-size='10'>BAEL 2A</text><rect x='35' y='462' width='530' height='26' fill='%23ffffff' stroke='%23f1f5f9'/><text x='50' y='479' fill='%231e293b' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>NSTP 2</text><text x='160' y='479' fill='%23334155' font-family='Arial, sans-serif' font-size='10'>Civic Welfare Training Service 2</text><text x='430' y='479' fill='%231e293b' font-family='Arial, sans-serif' font-size='10'>3.0</text><text x='500' y='479' fill='%231e293b' font-family='Arial, sans-serif' font-size='10'>BAEL 2A</text><rect x='35' y='495' width='530' height='30' fill='%23eff6ff' stroke='%23bfdbfe'/><text x='50' y='515' fill='%231e3a8a' font-family='Arial, sans-serif' font-size='11' font-weight='bold'>TOTAL ACADEMIC UNITS ENROLLED:</text><text x='430' y='515' fill='%231e3a8a' font-family='Arial, sans-serif' font-size='12' font-weight='bold'>20.0 Units</text><g transform='translate(360, 560)'><circle cx='80' cy='60' r='55' fill='none' stroke='%23dc2626' stroke-width='2' stroke-dasharray='4,2'/><circle cx='80' cy='60' r='48' fill='none' stroke='%23dc2626' stroke-width='1'/><text x='80' y='48' fill='%23dc2626' font-family='Arial, sans-serif' font-size='8' font-weight='bold' text-anchor='middle'>CAPIZ STATE UNIVERSITY</text><text x='80' y='62' fill='%23dc2626' font-family='Arial, sans-serif' font-size='10' font-weight='bold' text-anchor='middle'>OFFICIALLY</text><text x='80' y='74' fill='%23dc2626' font-family='Arial, sans-serif' font-size='10' font-weight='bold' text-anchor='middle'>VALIDATED</text><text x='80' y='86' fill='%23dc2626' font-family='Arial, sans-serif' font-size='7' font-weight='bold' text-anchor='middle'>UNIVERSITY REGISTRAR</text></g><line x1='50' y1='640' x2='220' y2='640' stroke='%23334155' stroke-width='1'/><text x='135' y='655' fill='%23334155' font-family='Arial, sans-serif' font-size='10' font-weight='bold' text-anchor='middle'>Registrar In-Charge Signature</text><rect x='35' y='710' width='530' height='40' fill='%23f1f5f9' rx='4'/><text x='50' y='726' fill='%2364748b' font-family='Arial, sans-serif' font-size='9'>System Verification Hash: CAPSU-RF-2026-09281745-ENR</text><text x='50' y='740' fill='%2364748b' font-family='Arial, sans-serif' font-size='9'>This document serves as the official Registration Form for scholarship compliance.</text></svg>",
+          "name": "Manalo_Registration_Form_RF.png",
+          "size": "145 KB",
+          "type": "image/svg+xml",
+          "status": "Verified",
+          "category": "RF",
+          "verified": true
+        },
+        {
+          "id": "f-8",
+          "data": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240' viewBox='0 0 240 240'><rect width='240' height='240' fill='%23e2e8f0'/><rect x='8' y='8' width='224' height='224' fill='%23003884' rx='6'/><circle cx='120' cy='90' r='42' fill='%23fde047'/><circle cx='120' cy='85' r='38' fill='%23cbd5e1'/><path d='M45 205 C 45 145, 195 145, 195 205 Z' fill='%23ffffff'/><rect x='16' y='195' width='208' height='25' fill='%230a192f' rx='4'/><text x='120' y='212' fill='%23ffffff' font-family='Arial, sans-serif' font-size='11' font-weight='bold' text-anchor='middle' letter-spacing='1'>CAPSU OFFICIAL 2x2 ID</text></svg>",
+          "name": "Manalo_2x2_ID_Photo.png",
+          "size": "310 KB",
+          "type": "image/svg+xml",
+          "status": "Verified",
+          "category": "2x2 Recent Formal ID Photo",
+          "verified": true
+        }
+      ]
+    },
+    {
+      "id": "sub-seed-3",
+      "studentId": "2022-CAPSU-0041",
+      "studentName": "Damian James O. Emilio",
+      "studentAuthId": null,
+      "scholarshipType": "Externally-Funded (CHED - ANAC-IP)",
+      "status": "Incomplete",
+      "submittedAt": "2026-03-11T08:15:00+00:00",
+      "data": {
+        "sex": "Male",
+        "course": "BSFT",
+        "status": "Incomplete",
+        "section": "BSFT 4A",
+        "firstName": "Damian James",
+        "studentId": "2022-CAPSU-0041",
+        "yearLevel": "Fourth year",
+        "courseFull": "Bachelor of Science in Food Technology",
+        "familyName": "Emilio",
+        "fatherName": "Nestor Emilio",
+        "livingWith": "Boarding house",
+        "middleName": "O.",
+        "motherName": "Leonora Emilio",
+        "civilStatus": "Single",
+        "fundingType": "Externally-Funded",
+        "housingType": "Boarding house",
+        "submittedAt": "2026-03-11T08:15:00Z",
+        "academicYear": "A.Y. 2025-2026 - 2nd Semester",
+        "requirements": [
+          {
+            "name": "Certificate of Grades (COG)",
+            "status": "Verified"
+          },
+          {
+            "name": "Certificate of Registration (COR)",
+            "status": "Verified"
+          },
+          {
+            "name": "Proof of Income / Certificate of Indigency",
+            "status": "Pending"
+          }
+        ],
+        "monthlyIncome": "below Php10,000",
+        "workingStudent": "No",
+        "accessResources": [
+          "Study space"
+        ],
+        "classifications": [
+          "Indigenous Peoples (IPs)",
+          "From geographically isolated & disadvantaged area (GIDA)"
+        ],
+        "firstGenCollege": "Yes",
+        "scholarshipType": "Externally-Funded (CHED - ANAC-IP)",
+        "fatherOccupation": "Indigenous Artisan / Farmer",
+        "motherOccupation": "Weaver",
+        "guardianOccupation": "None",
+        "scholarshipCategory": "ANAC - IP",
+        "parentsEducationalAttainment": "Elementary Level"
+      },
+      "files": [
+        {
+          "id": "f-9",
+          "data": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='600' height='850' viewBox='0 0 600 850'><rect width='600' height='850' fill='%23ffffff'/><rect x='15' y='15' width='570' height='820' fill='none' stroke='%23003884' stroke-width='2'/><rect x='18' y='18' width='564' height='814' fill='none' stroke='%23cbd5e1' stroke-width='1'/><rect x='20' y='20' width='560' height='80' fill='%23003884'/><text x='300' y='50' fill='%23ffffff' font-family='Arial, sans-serif' font-size='15' font-weight='bold' text-anchor='middle'>CAPIZ STATE UNIVERSITY</text><text x='300' y='68' fill='%23fbbf24' font-family='Arial, sans-serif' font-size='12' font-weight='bold' text-anchor='middle'>OFFICIAL REPORT OF GRADES &amp; GWA</text><text x='300' y='86' fill='%23ffffff' font-family='Arial, sans-serif' font-size='10' text-anchor='middle'>Guidance Office &amp; Scholarship Evaluation Section</text><rect x='100' y='115' width='400' height='30' rx='6' fill='%23f0fdf4' stroke='%2322c55e'/><text x='300' y='135' fill='%2315803d' font-family='Arial, sans-serif' font-size='13' font-weight='bold' text-anchor='middle'>GENERAL WEIGHTED AVERAGE (GWA) CERTIFICATION</text><rect x='35' y='160' width='530' height='100' fill='%23f8fafc' stroke='%23cbd5e1' rx='4'/><text x='50' y='185' fill='%23475569' font-family='Arial, sans-serif' font-size='11' font-weight='bold'>APPLICANT NAME:</text><text x='170' y='185' fill='%230f172a' font-family='Arial, sans-serif' font-size='11' font-weight='bold'>SANTOS, ANNA MARIE A.</text><text x='50' y='210' fill='%23475569' font-family='Arial, sans-serif' font-size='11' font-weight='bold'>STUDENT NO.:</text><text x='170' y='210' fill='%23003884' font-family='Arial, sans-serif' font-size='11' font-weight='bold'>2024-CAPSU-0182</text><text x='330' y='185' fill='%23475569' font-family='Arial, sans-serif' font-size='11' font-weight='bold'>DEGREE PROGRAM:</text><text x='445' y='185' fill='%230f172a' font-family='Arial, sans-serif' font-size='11' font-weight='bold'>BAEL - 2A</text><text x='330' y='210' fill='%23475569' font-family='Arial, sans-serif' font-size='11' font-weight='bold'>EVALUATION PERIOD:</text><text x='445' y='210' fill='%230f172a' font-family='Arial, sans-serif' font-size='11' font-weight='bold'>1st Sem 2025-2026</text><text x='50' y='235' fill='%23475569' font-family='Arial, sans-serif' font-size='11' font-weight='bold'>SCHOLARSHIP STANDING:</text><text x='205' y='235' fill='%2316a34a' font-family='Arial, sans-serif' font-size='11' font-weight='bold'>EXCELLENT (ACADEMIC QUALIFIER)</text><rect x='35' y='280' width='530' height='26' fill='%23003884'/><text x='50' y='297' fill='%23ffffff' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>COURSE CODE</text><text x='160' y='297' fill='%23ffffff' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>COURSE TITLE</text><text x='380' y='297' fill='%23ffffff' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>UNITS</text><text x='440' y='297' fill='%23ffffff' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>FINAL GRADE</text><text x='515' y='297' fill='%23ffffff' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>REMARKS</text><rect x='35' y='306' width='530' height='26' fill='%23ffffff' stroke='%23f1f5f9'/><text x='50' y='323' fill='%231e293b' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>ENG 201</text><text x='160' y='323' fill='%23334155' font-family='Arial, sans-serif' font-size='10'>Advanced English Grammar</text><text x='390' y='323' fill='%231e293b' font-family='Arial, sans-serif' font-size='10'>3.0</text><text x='460' y='323' fill='%2316a34a' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>1.25</text><text x='515' y='323' fill='%2316a34a' font-family='Arial, sans-serif' font-size='10'>Passed</text><rect x='35' y='332' width='530' height='26' fill='%23f8fafc' stroke='%23f1f5f9'/><text x='50' y='349' fill='%231e293b' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>ENG 202</text><text x='160' y='349' fill='%23334155' font-family='Arial, sans-serif' font-size='10'>Introduction to Linguistics</text><text x='390' y='349' fill='%231e293b' font-family='Arial, sans-serif' font-size='10'>3.0</text><text x='460' y='349' fill='%2316a34a' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>1.50</text><text x='515' y='349' fill='%2316a34a' font-family='Arial, sans-serif' font-size='10'>Passed</text><rect x='35' y='358' width='530' height='26' fill='%23ffffff' stroke='%23f1f5f9'/><text x='50' y='375' fill='%231e293b' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>LIT 101</text><text x='160' y='375' fill='%23334155' font-family='Arial, sans-serif' font-size='10'>Philippine Literature</text><text x='390' y='375' fill='%231e293b' font-family='Arial, sans-serif' font-size='10'>3.0</text><text x='460' y='375' fill='%2316a34a' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>1.25</text><text x='515' y='375' fill='%2316a34a' font-family='Arial, sans-serif' font-size='10'>Passed</text><rect x='35' y='384' width='530' height='26' fill='%23f8fafc' stroke='%23f1f5f9'/><text x='50' y='401' fill='%231e293b' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>COMM 205</text><text x='160' y='401' fill='%23334155' font-family='Arial, sans-serif' font-size='10'>Speech &amp; Oral Communication</text><text x='390' y='401' fill='%231e293b' font-family='Arial, sans-serif' font-size='10'>3.0</text><text x='460' y='401' fill='%2316a34a' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>1.25</text><text x='515' y='401' fill='%2316a34a' font-family='Arial, sans-serif' font-size='10'>Passed</text><rect x='35' y='410' width='530' height='26' fill='%23ffffff' stroke='%23f1f5f9'/><text x='50' y='427' fill='%231e293b' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>GE 104</text><text x='160' y='427' fill='%23334155' font-family='Arial, sans-serif' font-size='10'>Readings in Philippine History</text><text x='390' y='427' fill='%231e293b' font-family='Arial, sans-serif' font-size='10'>3.0</text><text x='460' y='427' fill='%2316a34a' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>1.50</text><text x='515' y='427' fill='%2316a34a' font-family='Arial, sans-serif' font-size='10'>Passed</text><rect x='35' y='436' width='530' height='26' fill='%23f8fafc' stroke='%23f1f5f9'/><text x='50' y='453' fill='%231e293b' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>PE 3</text><text x='160' y='453' fill='%23334155' font-family='Arial, sans-serif' font-size='10'>Physical Education / Dance</text><text x='390' y='453' fill='%231e293b' font-family='Arial, sans-serif' font-size='10'>2.0</text><text x='460' y='453' fill='%2316a34a' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>1.00</text><text x='515' y='453' fill='%2316a34a' font-family='Arial, sans-serif' font-size='10'>Passed</text><rect x='35' y='480' width='530' height='60' rx='8' fill='%23ecfdf5' stroke='%2310b981' stroke-width='2'/><text x='50' y='505' fill='%23065f46' font-family='Arial, sans-serif' font-size='11' font-weight='bold'>COMPUTED GENERAL WEIGHTED AVERAGE (GWA):</text><text x='50' y='525' fill='%23047857' font-family='Arial, sans-serif' font-size='10'>Total Academic Units Credited: 20.0 Units</text><rect x='420' y='488' width='130' height='44' rx='6' fill='%2310b981'/><text x='485' y='518' fill='%23ffffff' font-family='Arial, sans-serif' font-size='22' font-weight='bold' text-anchor='middle'>1.35</text><g transform='translate(360, 570)'><circle cx='80' cy='60' r='55' fill='none' stroke='%23003884' stroke-width='2' stroke-dasharray='4,2'/><circle cx='80' cy='60' r='48' fill='none' stroke='%23003884' stroke-width='1'/><text x='80' y='48' fill='%23003884' font-family='Arial, sans-serif' font-size='8' font-weight='bold' text-anchor='middle'>CAPIZ STATE UNIVERSITY</text><text x='80' y='62' fill='%23003884' font-family='Arial, sans-serif' font-size='9' font-weight='bold' text-anchor='middle'>ACADEMIC RECORD</text><text x='80' y='74' fill='%23003884' font-family='Arial, sans-serif' font-size='10' font-weight='bold' text-anchor='middle'>VERIFIED</text><text x='80' y='86' fill='%23003884' font-family='Arial, sans-serif' font-size='7' font-weight='bold' text-anchor='middle'>DEAN OF INSTRUCTION</text></g><line x1='50' y1='650' x2='220' y2='650' stroke='%23334155' stroke-width='1'/><text x='135' y='665' fill='%23334155' font-family='Arial, sans-serif' font-size='10' font-weight='bold' text-anchor='middle'>College Dean Signature</text><rect x='35' y='720' width='530' height='40' fill='%23f1f5f9' rx='4'/><text x='50' y='736' fill='%2364748b' font-family='Arial, sans-serif' font-size='9'>Certification Code: CAPSU-GWA-2026-09281745-HONORS</text><text x='50' y='750' fill='%2364748b' font-family='Arial, sans-serif' font-size='9'>Official document for Guidance &amp; Counseling Scholarship Verification.</text></svg>",
+          "name": "Emilio_General_Weighted_Average_GWA.png",
+          "size": "152 KB",
+          "type": "image/svg+xml",
+          "status": "Verified",
+          "category": "GWA",
+          "verified": true
+        },
+        {
+          "id": "f-10",
+          "data": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='600' height='850' viewBox='0 0 600 850'><rect width='600' height='850' fill='%23ffffff'/><rect x='15' y='15' width='570' height='820' fill='none' stroke='%23003884' stroke-width='2'/><rect x='18' y='18' width='564' height='814' fill='none' stroke='%23cbd5e1' stroke-width='1'/><rect x='20' y='20' width='560' height='80' fill='%23003884'/><text x='300' y='50' fill='%23ffffff' font-family='Arial, sans-serif' font-size='15' font-weight='bold' text-anchor='middle'>CAPIZ STATE UNIVERSITY</text><text x='300' y='68' fill='%23fbbf24' font-family='Arial, sans-serif' font-size='12' font-weight='bold' text-anchor='middle'>OFFICE OF THE UNIVERSITY REGISTRAR</text><text x='300' y='86' fill='%23ffffff' font-family='Arial, sans-serif' font-size='10' text-anchor='middle'>Roxas City Main Campus, Capiz, Philippines</text><rect x='120' y='115' width='360' height='30' rx='6' fill='%23eff6ff' stroke='%233b82f6'/><text x='300' y='135' fill='%231e3a8a' font-family='Arial, sans-serif' font-size='13' font-weight='bold' text-anchor='middle'>CERTIFICATE OF REGISTRATION (RF)</text><rect x='35' y='160' width='530' height='100' fill='%23f8fafc' stroke='%23cbd5e1' rx='4'/><text x='50' y='185' fill='%23475569' font-family='Arial, sans-serif' font-size='11' font-weight='bold'>STUDENT NAME:</text><text x='160' y='185' fill='%230f172a' font-family='Arial, sans-serif' font-size='11' font-weight='bold'>SANTOS, ANNA MARIE A.</text><text x='50' y='210' fill='%23475569' font-family='Arial, sans-serif' font-size='11' font-weight='bold'>STUDENT NO.:</text><text x='160' y='210' fill='%23003884' font-family='Arial, sans-serif' font-size='11' font-weight='bold'>2024-CAPSU-0182</text><text x='330' y='185' fill='%23475569' font-family='Arial, sans-serif' font-size='11' font-weight='bold'>COURSE / YEAR:</text><text x='435' y='185' fill='%230f172a' font-family='Arial, sans-serif' font-size='11' font-weight='bold'>BAEL - 2A</text><text x='330' y='210' fill='%23475569' font-family='Arial, sans-serif' font-size='11' font-weight='bold'>ACADEMIC YEAR:</text><text x='435' y='210' fill='%230f172a' font-family='Arial, sans-serif' font-size='11' font-weight='bold'>2025-2026 (1st Sem)</text><text x='50' y='235' fill='%23475569' font-family='Arial, sans-serif' font-size='11' font-weight='bold'>ENROLLMENT STATUS:</text><text x='180' y='235' fill='%2316a34a' font-family='Arial, sans-serif' font-size='11' font-weight='bold'>OFFICIALLY ENROLLED (REGULAR)</text><rect x='35' y='280' width='530' height='26' fill='%23003884'/><text x='50' y='297' fill='%23ffffff' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>COURSE CODE</text><text x='160' y='297' fill='%23ffffff' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>DESCRIPTIVE TITLE</text><text x='420' y='297' fill='%23ffffff' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>UNITS</text><text x='490' y='297' fill='%23ffffff' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>SECTION</text><rect x='35' y='306' width='530' height='26' fill='%23ffffff' stroke='%23f1f5f9'/><text x='50' y='323' fill='%231e293b' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>ENG 201</text><text x='160' y='323' fill='%23334155' font-family='Arial, sans-serif' font-size='10'>Advanced English Grammar</text><text x='430' y='323' fill='%231e293b' font-family='Arial, sans-serif' font-size='10'>3.0</text><text x='500' y='323' fill='%231e293b' font-family='Arial, sans-serif' font-size='10'>BAEL 2A</text><rect x='35' y='332' width='530' height='26' fill='%23f8fafc' stroke='%23f1f5f9'/><text x='50' y='349' fill='%231e293b' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>ENG 202</text><text x='160' y='349' fill='%23334155' font-family='Arial, sans-serif' font-size='10'>Introduction to Linguistics</text><text x='430' y='349' fill='%231e293b' font-family='Arial, sans-serif' font-size='10'>3.0</text><text x='500' y='349' fill='%231e293b' font-family='Arial, sans-serif' font-size='10'>BAEL 2A</text><rect x='35' y='358' width='530' height='26' fill='%23ffffff' stroke='%23f1f5f9'/><text x='50' y='375' fill='%231e293b' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>LIT 101</text><text x='160' y='375' fill='%23334155' font-family='Arial, sans-serif' font-size='10'>Philippine Literature</text><text x='430' y='375' fill='%231e293b' font-family='Arial, sans-serif' font-size='10'>3.0</text><text x='500' y='375' fill='%231e293b' font-family='Arial, sans-serif' font-size='10'>BAEL 2A</text><rect x='35' y='384' width='530' height='26' fill='%23f8fafc' stroke='%23f1f5f9'/><text x='50' y='401' fill='%231e293b' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>COMM 205</text><text x='160' y='401' fill='%23334155' font-family='Arial, sans-serif' font-size='10'>Speech &amp; Oral Communication</text><text x='430' y='401' fill='%231e293b' font-family='Arial, sans-serif' font-size='10'>3.0</text><text x='500' y='401' fill='%231e293b' font-family='Arial, sans-serif' font-size='10'>BAEL 2A</text><rect x='35' y='410' width='530' height='26' fill='%23ffffff' stroke='%23f1f5f9'/><text x='50' y='427' fill='%231e293b' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>GE 104</text><text x='160' y='427' fill='%23334155' font-family='Arial, sans-serif' font-size='10'>Readings in Philippine History</text><text x='430' y='427' fill='%231e293b' font-family='Arial, sans-serif' font-size='10'>3.0</text><text x='500' y='427' fill='%231e293b' font-family='Arial, sans-serif' font-size='10'>BAEL 2A</text><rect x='35' y='436' width='530' height='26' fill='%23f8fafc' stroke='%23f1f5f9'/><text x='50' y='453' fill='%231e293b' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>PE 3</text><text x='160' y='453' fill='%23334155' font-family='Arial, sans-serif' font-size='10'>Physical Education / Dance</text><text x='430' y='453' fill='%231e293b' font-family='Arial, sans-serif' font-size='10'>2.0</text><text x='500' y='453' fill='%231e293b' font-family='Arial, sans-serif' font-size='10'>BAEL 2A</text><rect x='35' y='462' width='530' height='26' fill='%23ffffff' stroke='%23f1f5f9'/><text x='50' y='479' fill='%231e293b' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>NSTP 2</text><text x='160' y='479' fill='%23334155' font-family='Arial, sans-serif' font-size='10'>Civic Welfare Training Service 2</text><text x='430' y='479' fill='%231e293b' font-family='Arial, sans-serif' font-size='10'>3.0</text><text x='500' y='479' fill='%231e293b' font-family='Arial, sans-serif' font-size='10'>BAEL 2A</text><rect x='35' y='495' width='530' height='30' fill='%23eff6ff' stroke='%23bfdbfe'/><text x='50' y='515' fill='%231e3a8a' font-family='Arial, sans-serif' font-size='11' font-weight='bold'>TOTAL ACADEMIC UNITS ENROLLED:</text><text x='430' y='515' fill='%231e3a8a' font-family='Arial, sans-serif' font-size='12' font-weight='bold'>20.0 Units</text><g transform='translate(360, 560)'><circle cx='80' cy='60' r='55' fill='none' stroke='%23dc2626' stroke-width='2' stroke-dasharray='4,2'/><circle cx='80' cy='60' r='48' fill='none' stroke='%23dc2626' stroke-width='1'/><text x='80' y='48' fill='%23dc2626' font-family='Arial, sans-serif' font-size='8' font-weight='bold' text-anchor='middle'>CAPIZ STATE UNIVERSITY</text><text x='80' y='62' fill='%23dc2626' font-family='Arial, sans-serif' font-size='10' font-weight='bold' text-anchor='middle'>OFFICIALLY</text><text x='80' y='74' fill='%23dc2626' font-family='Arial, sans-serif' font-size='10' font-weight='bold' text-anchor='middle'>VALIDATED</text><text x='80' y='86' fill='%23dc2626' font-family='Arial, sans-serif' font-size='7' font-weight='bold' text-anchor='middle'>UNIVERSITY REGISTRAR</text></g><line x1='50' y1='640' x2='220' y2='640' stroke='%23334155' stroke-width='1'/><text x='135' y='655' fill='%23334155' font-family='Arial, sans-serif' font-size='10' font-weight='bold' text-anchor='middle'>Registrar In-Charge Signature</text><rect x='35' y='710' width='530' height='40' fill='%23f1f5f9' rx='4'/><text x='50' y='726' fill='%2364748b' font-family='Arial, sans-serif' font-size='9'>System Verification Hash: CAPSU-RF-2026-09281745-ENR</text><text x='50' y='740' fill='%2364748b' font-family='Arial, sans-serif' font-size='9'>This document serves as the official Registration Form for scholarship compliance.</text></svg>",
+          "name": "Emilio_Registration_Form_RF.png",
+          "size": "145 KB",
+          "type": "image/svg+xml",
+          "status": "Verified",
+          "category": "RF",
+          "verified": true
+        },
+        {
+          "id": "f-11",
+          "data": "data:application/pdf;base64,JVBERi0xLjQKJcTl8uXrp/Og0MTGCjQgMCBvYmoKPDwgL0xlbmd0aCA1IDAgUiAvRmlsdGVyIC9GbGF0ZURlY29kZSA+PgpzdHJlYW0KeJzLSM3JyVcozy/KSVEEAELnBfUKZW5kc3RyZWFtCmVuZG9iago1IDAgb2JqCjE4CmVuZG9iagoxIDAgb2JqCjw8IC9UeXBlIC9DYXRhbG9nIC9QYWdlcyAyIDAgUiA+PgplbmRvYmoK",
+          "name": "Emilio_NCIP_Certificate.pdf",
+          "size": "1.8 MB",
+          "type": "application/pdf",
+          "status": "Pending",
+          "remarks": "NCIP seal validation in progress",
+          "category": "Proof of Income / Certificate of Indigency",
+          "verified": false
+        }
+      ]
+    },
+    {
+      "id": "sub-seed-4",
+      "studentId": "2022-CAPSU-0089",
+      "studentName": "Paul John N. Dela Cruz",
+      "studentAuthId": null,
+      "scholarshipType": "Internally-Funded (President - FLP)",
+      "status": "Incomplete",
+      "submittedAt": "2026-03-11T07:45:00+00:00",
+      "data": {
+        "sex": "Male",
+        "course": "BSOA",
+        "status": "Incomplete",
+        "section": "BSOA 4A",
+        "firstName": "Paul John",
+        "studentId": "2022-CAPSU-0089",
+        "yearLevel": "Fourth year",
+        "courseFull": "Bachelor of Science in Office Administration",
+        "familyName": "Dela Cruz",
+        "fatherName": "Federico Dela Cruz",
+        "livingWith": "Parents/Guardians",
+        "middleName": "N.",
+        "motherName": "Maria Dela Cruz",
+        "civilStatus": "Single",
+        "fundingType": "Internally-Funded",
+        "housingType": "Own house",
+        "submittedAt": "2026-03-11T07:45:00Z",
+        "academicYear": "A.Y. 2025-2026 - 2nd Semester",
+        "requirements": [
+          {
+            "name": "Certificate of Grades (COG)",
+            "status": "Verified"
+          },
+          {
+            "name": "Certificate of Registration (COR)",
+            "status": "Verified"
+          }
+        ],
+        "monthlyIncome": "Php10,001 - 20,000",
+        "workingStudent": "No",
+        "accessResources": [
+          "Personal Computer/Laptop",
+          "Internet Connection",
+          "Study space"
+        ],
+        "classifications": [
+          "Regular student (I do not belong to any of this group classification)"
+        ],
+        "firstGenCollege": "Yes",
+        "scholarshipType": "Internally-Funded (President - FLP)",
+        "fatherOccupation": "Tricycle Driver",
+        "motherOccupation": "Sari-sari Store Owner",
+        "guardianOccupation": "None",
+        "scholarshipCategory": "President - FLP",
+        "parentsEducationalAttainment": "High School Level"
+      },
+      "files": [
+        {
+          "id": "f-12",
+          "data": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='600' height='850' viewBox='0 0 600 850'><rect width='600' height='850' fill='%23ffffff'/><rect x='15' y='15' width='570' height='820' fill='none' stroke='%23003884' stroke-width='2'/><rect x='18' y='18' width='564' height='814' fill='none' stroke='%23cbd5e1' stroke-width='1'/><rect x='20' y='20' width='560' height='80' fill='%23003884'/><text x='300' y='50' fill='%23ffffff' font-family='Arial, sans-serif' font-size='15' font-weight='bold' text-anchor='middle'>CAPIZ STATE UNIVERSITY</text><text x='300' y='68' fill='%23fbbf24' font-family='Arial, sans-serif' font-size='12' font-weight='bold' text-anchor='middle'>OFFICIAL REPORT OF GRADES &amp; GWA</text><text x='300' y='86' fill='%23ffffff' font-family='Arial, sans-serif' font-size='10' text-anchor='middle'>Guidance Office &amp; Scholarship Evaluation Section</text><rect x='100' y='115' width='400' height='30' rx='6' fill='%23f0fdf4' stroke='%2322c55e'/><text x='300' y='135' fill='%2315803d' font-family='Arial, sans-serif' font-size='13' font-weight='bold' text-anchor='middle'>GENERAL WEIGHTED AVERAGE (GWA) CERTIFICATION</text><rect x='35' y='160' width='530' height='100' fill='%23f8fafc' stroke='%23cbd5e1' rx='4'/><text x='50' y='185' fill='%23475569' font-family='Arial, sans-serif' font-size='11' font-weight='bold'>APPLICANT NAME:</text><text x='170' y='185' fill='%230f172a' font-family='Arial, sans-serif' font-size='11' font-weight='bold'>SANTOS, ANNA MARIE A.</text><text x='50' y='210' fill='%23475569' font-family='Arial, sans-serif' font-size='11' font-weight='bold'>STUDENT NO.:</text><text x='170' y='210' fill='%23003884' font-family='Arial, sans-serif' font-size='11' font-weight='bold'>2024-CAPSU-0182</text><text x='330' y='185' fill='%23475569' font-family='Arial, sans-serif' font-size='11' font-weight='bold'>DEGREE PROGRAM:</text><text x='445' y='185' fill='%230f172a' font-family='Arial, sans-serif' font-size='11' font-weight='bold'>BAEL - 2A</text><text x='330' y='210' fill='%23475569' font-family='Arial, sans-serif' font-size='11' font-weight='bold'>EVALUATION PERIOD:</text><text x='445' y='210' fill='%230f172a' font-family='Arial, sans-serif' font-size='11' font-weight='bold'>1st Sem 2025-2026</text><text x='50' y='235' fill='%23475569' font-family='Arial, sans-serif' font-size='11' font-weight='bold'>SCHOLARSHIP STANDING:</text><text x='205' y='235' fill='%2316a34a' font-family='Arial, sans-serif' font-size='11' font-weight='bold'>EXCELLENT (ACADEMIC QUALIFIER)</text><rect x='35' y='280' width='530' height='26' fill='%23003884'/><text x='50' y='297' fill='%23ffffff' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>COURSE CODE</text><text x='160' y='297' fill='%23ffffff' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>COURSE TITLE</text><text x='380' y='297' fill='%23ffffff' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>UNITS</text><text x='440' y='297' fill='%23ffffff' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>FINAL GRADE</text><text x='515' y='297' fill='%23ffffff' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>REMARKS</text><rect x='35' y='306' width='530' height='26' fill='%23ffffff' stroke='%23f1f5f9'/><text x='50' y='323' fill='%231e293b' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>ENG 201</text><text x='160' y='323' fill='%23334155' font-family='Arial, sans-serif' font-size='10'>Advanced English Grammar</text><text x='390' y='323' fill='%231e293b' font-family='Arial, sans-serif' font-size='10'>3.0</text><text x='460' y='323' fill='%2316a34a' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>1.25</text><text x='515' y='323' fill='%2316a34a' font-family='Arial, sans-serif' font-size='10'>Passed</text><rect x='35' y='332' width='530' height='26' fill='%23f8fafc' stroke='%23f1f5f9'/><text x='50' y='349' fill='%231e293b' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>ENG 202</text><text x='160' y='349' fill='%23334155' font-family='Arial, sans-serif' font-size='10'>Introduction to Linguistics</text><text x='390' y='349' fill='%231e293b' font-family='Arial, sans-serif' font-size='10'>3.0</text><text x='460' y='349' fill='%2316a34a' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>1.50</text><text x='515' y='349' fill='%2316a34a' font-family='Arial, sans-serif' font-size='10'>Passed</text><rect x='35' y='358' width='530' height='26' fill='%23ffffff' stroke='%23f1f5f9'/><text x='50' y='375' fill='%231e293b' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>LIT 101</text><text x='160' y='375' fill='%23334155' font-family='Arial, sans-serif' font-size='10'>Philippine Literature</text><text x='390' y='375' fill='%231e293b' font-family='Arial, sans-serif' font-size='10'>3.0</text><text x='460' y='375' fill='%2316a34a' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>1.25</text><text x='515' y='375' fill='%2316a34a' font-family='Arial, sans-serif' font-size='10'>Passed</text><rect x='35' y='384' width='530' height='26' fill='%23f8fafc' stroke='%23f1f5f9'/><text x='50' y='401' fill='%231e293b' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>COMM 205</text><text x='160' y='401' fill='%23334155' font-family='Arial, sans-serif' font-size='10'>Speech &amp; Oral Communication</text><text x='390' y='401' fill='%231e293b' font-family='Arial, sans-serif' font-size='10'>3.0</text><text x='460' y='401' fill='%2316a34a' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>1.25</text><text x='515' y='401' fill='%2316a34a' font-family='Arial, sans-serif' font-size='10'>Passed</text><rect x='35' y='410' width='530' height='26' fill='%23ffffff' stroke='%23f1f5f9'/><text x='50' y='427' fill='%231e293b' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>GE 104</text><text x='160' y='427' fill='%23334155' font-family='Arial, sans-serif' font-size='10'>Readings in Philippine History</text><text x='390' y='427' fill='%231e293b' font-family='Arial, sans-serif' font-size='10'>3.0</text><text x='460' y='427' fill='%2316a34a' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>1.50</text><text x='515' y='427' fill='%2316a34a' font-family='Arial, sans-serif' font-size='10'>Passed</text><rect x='35' y='436' width='530' height='26' fill='%23f8fafc' stroke='%23f1f5f9'/><text x='50' y='453' fill='%231e293b' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>PE 3</text><text x='160' y='453' fill='%23334155' font-family='Arial, sans-serif' font-size='10'>Physical Education / Dance</text><text x='390' y='453' fill='%231e293b' font-family='Arial, sans-serif' font-size='10'>2.0</text><text x='460' y='453' fill='%2316a34a' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>1.00</text><text x='515' y='453' fill='%2316a34a' font-family='Arial, sans-serif' font-size='10'>Passed</text><rect x='35' y='480' width='530' height='60' rx='8' fill='%23ecfdf5' stroke='%2310b981' stroke-width='2'/><text x='50' y='505' fill='%23065f46' font-family='Arial, sans-serif' font-size='11' font-weight='bold'>COMPUTED GENERAL WEIGHTED AVERAGE (GWA):</text><text x='50' y='525' fill='%23047857' font-family='Arial, sans-serif' font-size='10'>Total Academic Units Credited: 20.0 Units</text><rect x='420' y='488' width='130' height='44' rx='6' fill='%2310b981'/><text x='485' y='518' fill='%23ffffff' font-family='Arial, sans-serif' font-size='22' font-weight='bold' text-anchor='middle'>1.35</text><g transform='translate(360, 570)'><circle cx='80' cy='60' r='55' fill='none' stroke='%23003884' stroke-width='2' stroke-dasharray='4,2'/><circle cx='80' cy='60' r='48' fill='none' stroke='%23003884' stroke-width='1'/><text x='80' y='48' fill='%23003884' font-family='Arial, sans-serif' font-size='8' font-weight='bold' text-anchor='middle'>CAPIZ STATE UNIVERSITY</text><text x='80' y='62' fill='%23003884' font-family='Arial, sans-serif' font-size='9' font-weight='bold' text-anchor='middle'>ACADEMIC RECORD</text><text x='80' y='74' fill='%23003884' font-family='Arial, sans-serif' font-size='10' font-weight='bold' text-anchor='middle'>VERIFIED</text><text x='80' y='86' fill='%23003884' font-family='Arial, sans-serif' font-size='7' font-weight='bold' text-anchor='middle'>DEAN OF INSTRUCTION</text></g><line x1='50' y1='650' x2='220' y2='650' stroke='%23334155' stroke-width='1'/><text x='135' y='665' fill='%23334155' font-family='Arial, sans-serif' font-size='10' font-weight='bold' text-anchor='middle'>College Dean Signature</text><rect x='35' y='720' width='530' height='40' fill='%23f1f5f9' rx='4'/><text x='50' y='736' fill='%2364748b' font-family='Arial, sans-serif' font-size='9'>Certification Code: CAPSU-GWA-2026-09281745-HONORS</text><text x='50' y='750' fill='%2364748b' font-family='Arial, sans-serif' font-size='9'>Official document for Guidance &amp; Counseling Scholarship Verification.</text></svg>",
+          "name": "DelaCruz_GWA_Report.png",
+          "size": "152 KB",
+          "type": "image/svg+xml",
+          "status": "Verified",
+          "category": "GWA",
+          "verified": true
+        },
+        {
+          "id": "f-13",
+          "data": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='600' height='850' viewBox='0 0 600 850'><rect width='600' height='850' fill='%23ffffff'/><rect x='15' y='15' width='570' height='820' fill='none' stroke='%23003884' stroke-width='2'/><rect x='18' y='18' width='564' height='814' fill='none' stroke='%23cbd5e1' stroke-width='1'/><rect x='20' y='20' width='560' height='80' fill='%23003884'/><text x='300' y='50' fill='%23ffffff' font-family='Arial, sans-serif' font-size='15' font-weight='bold' text-anchor='middle'>CAPIZ STATE UNIVERSITY</text><text x='300' y='68' fill='%23fbbf24' font-family='Arial, sans-serif' font-size='12' font-weight='bold' text-anchor='middle'>OFFICE OF THE UNIVERSITY REGISTRAR</text><text x='300' y='86' fill='%23ffffff' font-family='Arial, sans-serif' font-size='10' text-anchor='middle'>Roxas City Main Campus, Capiz, Philippines</text><rect x='120' y='115' width='360' height='30' rx='6' fill='%23eff6ff' stroke='%233b82f6'/><text x='300' y='135' fill='%231e3a8a' font-family='Arial, sans-serif' font-size='13' font-weight='bold' text-anchor='middle'>CERTIFICATE OF REGISTRATION (RF)</text><rect x='35' y='160' width='530' height='100' fill='%23f8fafc' stroke='%23cbd5e1' rx='4'/><text x='50' y='185' fill='%23475569' font-family='Arial, sans-serif' font-size='11' font-weight='bold'>STUDENT NAME:</text><text x='160' y='185' fill='%230f172a' font-family='Arial, sans-serif' font-size='11' font-weight='bold'>SANTOS, ANNA MARIE A.</text><text x='50' y='210' fill='%23475569' font-family='Arial, sans-serif' font-size='11' font-weight='bold'>STUDENT NO.:</text><text x='160' y='210' fill='%23003884' font-family='Arial, sans-serif' font-size='11' font-weight='bold'>2024-CAPSU-0182</text><text x='330' y='185' fill='%23475569' font-family='Arial, sans-serif' font-size='11' font-weight='bold'>COURSE / YEAR:</text><text x='435' y='185' fill='%230f172a' font-family='Arial, sans-serif' font-size='11' font-weight='bold'>BAEL - 2A</text><text x='330' y='210' fill='%23475569' font-family='Arial, sans-serif' font-size='11' font-weight='bold'>ACADEMIC YEAR:</text><text x='435' y='210' fill='%230f172a' font-family='Arial, sans-serif' font-size='11' font-weight='bold'>2025-2026 (1st Sem)</text><text x='50' y='235' fill='%23475569' font-family='Arial, sans-serif' font-size='11' font-weight='bold'>ENROLLMENT STATUS:</text><text x='180' y='235' fill='%2316a34a' font-family='Arial, sans-serif' font-size='11' font-weight='bold'>OFFICIALLY ENROLLED (REGULAR)</text><rect x='35' y='280' width='530' height='26' fill='%23003884'/><text x='50' y='297' fill='%23ffffff' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>COURSE CODE</text><text x='160' y='297' fill='%23ffffff' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>DESCRIPTIVE TITLE</text><text x='420' y='297' fill='%23ffffff' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>UNITS</text><text x='490' y='297' fill='%23ffffff' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>SECTION</text><rect x='35' y='306' width='530' height='26' fill='%23ffffff' stroke='%23f1f5f9'/><text x='50' y='323' fill='%231e293b' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>ENG 201</text><text x='160' y='323' fill='%23334155' font-family='Arial, sans-serif' font-size='10'>Advanced English Grammar</text><text x='430' y='323' fill='%231e293b' font-family='Arial, sans-serif' font-size='10'>3.0</text><text x='500' y='323' fill='%231e293b' font-family='Arial, sans-serif' font-size='10'>BAEL 2A</text><rect x='35' y='332' width='530' height='26' fill='%23f8fafc' stroke='%23f1f5f9'/><text x='50' y='349' fill='%231e293b' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>ENG 202</text><text x='160' y='349' fill='%23334155' font-family='Arial, sans-serif' font-size='10'>Introduction to Linguistics</text><text x='430' y='349' fill='%231e293b' font-family='Arial, sans-serif' font-size='10'>3.0</text><text x='500' y='349' fill='%231e293b' font-family='Arial, sans-serif' font-size='10'>BAEL 2A</text><rect x='35' y='358' width='530' height='26' fill='%23ffffff' stroke='%23f1f5f9'/><text x='50' y='375' fill='%231e293b' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>LIT 101</text><text x='160' y='375' fill='%23334155' font-family='Arial, sans-serif' font-size='10'>Philippine Literature</text><text x='430' y='375' fill='%231e293b' font-family='Arial, sans-serif' font-size='10'>3.0</text><text x='500' y='375' fill='%231e293b' font-family='Arial, sans-serif' font-size='10'>BAEL 2A</text><rect x='35' y='384' width='530' height='26' fill='%23f8fafc' stroke='%23f1f5f9'/><text x='50' y='401' fill='%231e293b' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>COMM 205</text><text x='160' y='401' fill='%23334155' font-family='Arial, sans-serif' font-size='10'>Speech &amp; Oral Communication</text><text x='430' y='401' fill='%231e293b' font-family='Arial, sans-serif' font-size='10'>3.0</text><text x='500' y='401' fill='%231e293b' font-family='Arial, sans-serif' font-size='10'>BAEL 2A</text><rect x='35' y='410' width='530' height='26' fill='%23ffffff' stroke='%23f1f5f9'/><text x='50' y='427' fill='%231e293b' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>GE 104</text><text x='160' y='427' fill='%23334155' font-family='Arial, sans-serif' font-size='10'>Readings in Philippine History</text><text x='430' y='427' fill='%231e293b' font-family='Arial, sans-serif' font-size='10'>3.0</text><text x='500' y='427' fill='%231e293b' font-family='Arial, sans-serif' font-size='10'>BAEL 2A</text><rect x='35' y='436' width='530' height='26' fill='%23f8fafc' stroke='%23f1f5f9'/><text x='50' y='453' fill='%231e293b' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>PE 3</text><text x='160' y='453' fill='%23334155' font-family='Arial, sans-serif' font-size='10'>Physical Education / Dance</text><text x='430' y='453' fill='%231e293b' font-family='Arial, sans-serif' font-size='10'>2.0</text><text x='500' y='453' fill='%231e293b' font-family='Arial, sans-serif' font-size='10'>BAEL 2A</text><rect x='35' y='462' width='530' height='26' fill='%23ffffff' stroke='%23f1f5f9'/><text x='50' y='479' fill='%231e293b' font-family='Arial, sans-serif' font-size='10' font-weight='bold'>NSTP 2</text><text x='160' y='479' fill='%23334155' font-family='Arial, sans-serif' font-size='10'>Civic Welfare Training Service 2</text><text x='430' y='479' fill='%231e293b' font-family='Arial, sans-serif' font-size='10'>3.0</text><text x='500' y='479' fill='%231e293b' font-family='Arial, sans-serif' font-size='10'>BAEL 2A</text><rect x='35' y='495' width='530' height='30' fill='%23eff6ff' stroke='%23bfdbfe'/><text x='50' y='515' fill='%231e3a8a' font-family='Arial, sans-serif' font-size='11' font-weight='bold'>TOTAL ACADEMIC UNITS ENROLLED:</text><text x='430' y='515' fill='%231e3a8a' font-family='Arial, sans-serif' font-size='12' font-weight='bold'>20.0 Units</text><g transform='translate(360, 560)'><circle cx='80' cy='60' r='55' fill='none' stroke='%23dc2626' stroke-width='2' stroke-dasharray='4,2'/><circle cx='80' cy='60' r='48' fill='none' stroke='%23dc2626' stroke-width='1'/><text x='80' y='48' fill='%23dc2626' font-family='Arial, sans-serif' font-size='8' font-weight='bold' text-anchor='middle'>CAPIZ STATE UNIVERSITY</text><text x='80' y='62' fill='%23dc2626' font-family='Arial, sans-serif' font-size='10' font-weight='bold' text-anchor='middle'>OFFICIALLY</text><text x='80' y='74' fill='%23dc2626' font-family='Arial, sans-serif' font-size='10' font-weight='bold' text-anchor='middle'>VALIDATED</text><text x='80' y='86' fill='%23dc2626' font-family='Arial, sans-serif' font-size='7' font-weight='bold' text-anchor='middle'>UNIVERSITY REGISTRAR</text></g><line x1='50' y1='640' x2='220' y2='640' stroke='%23334155' stroke-width='1'/><text x='135' y='655' fill='%23334155' font-family='Arial, sans-serif' font-size='10' font-weight='bold' text-anchor='middle'>Registrar In-Charge Signature</text><rect x='35' y='710' width='530' height='40' fill='%23f1f5f9' rx='4'/><text x='50' y='726' fill='%2364748b' font-family='Arial, sans-serif' font-size='9'>System Verification Hash: CAPSU-RF-2026-09281745-ENR</text><text x='50' y='740' fill='%2364748b' font-family='Arial, sans-serif' font-size='9'>This document serves as the official Registration Form for scholarship compliance.</text></svg>",
+          "name": "DelaCruz_RF_Document.png",
+          "size": "145 KB",
+          "type": "image/svg+xml",
+          "status": "Verified",
+          "category": "RF",
+          "verified": true
+        }
+      ]
+    },
+    {
+      "id": "sub-seed-5",
+      "studentId": "2023-CAPSU-0312",
+      "studentName": "Charlotte Alexis N. Tuvera",
+      "studentAuthId": null,
+      "scholarshipType": "Internally-Funded (Valedictorian)",
+      "status": "Incomplete",
+      "submittedAt": "2026-03-10T14:20:00+00:00",
+      "data": {
+        "sex": "Female",
+        "course": "BSCS",
+        "status": "Incomplete",
+        "section": "BSCS 3A",
+        "firstName": "Charlotte Alexis",
+        "studentId": "2023-CAPSU-0312",
+        "yearLevel": "Third year",
+        "courseFull": "Bachelor of Science in Computer Science",
+        "familyName": "Tuvera",
+        "fatherName": "Alexander Tuvera",
+        "livingWith": "Parents/Guardians",
+        "middleName": "N.",
+        "motherName": "Corazon Tuvera",
+        "civilStatus": "Single",
+        "fundingType": "Internally-Funded",
+        "housingType": "Own house",
+        "submittedAt": "2026-03-10T14:20:00Z",
+        "academicYear": "A.Y. 2025-2026 - 2nd Semester",
+        "requirements": [
+          {
+            "name": "Certificate of Grades (COG)",
+            "status": "Verified"
+          },
+          {
+            "name": "Certificate of Registration (COR)",
+            "status": "Verified"
+          }
+        ],
+        "monthlyIncome": "Php10,001 - 20,000",
+        "workingStudent": "No",
+        "accessResources": [
+          "Personal Computer/Laptop",
+          "Internet Connection",
+          "Study space",
+          "Textbooks and learning materials"
+        ],
+        "classifications": [
+          "Regular student (I do not belong to any of this group classification)"
+        ],
+        "firstGenCollege": "No",
+        "scholarshipType": "Internally-Funded (Valedictorian)",
+        "fatherOccupation": "Mechanic",
+        "motherOccupation": "Seamstress",
+        "guardianOccupation": "None",
+        "scholarshipCategory": "Valedictorian",
+        "parentsEducationalAttainment": "High school Graduate"
+      },
+      "files": [
+        {
+          "id": "f-14",
+          "data": "data:application/pdf;base64,JVBERi0xLjQKJcTl8uXrp/Og0MTGCjQgMCBvYmoKPDwgL0xlbmd0aCA1IDAgUiAvRmlsdGVyIC9GbGF0ZURlY29kZSA+PgpzdHJlYW0KeJzLSM3JyVcozy/KSVEEAELnBfUKZW5kc3RyZWFtCmVuZG9iago1IDAgb2JqCjE4CmVuZG9iagoxIDAgb2JqCjw8IC9UeXBlIC9DYXRhbG9nIC9QYWdlcyAyIDAgUiA+PgplbmRvYmoK",
+          "name": "Tuvera_Academic_COG.pdf",
+          "size": "1.3 MB",
+          "type": "application/pdf",
+          "status": "Verified",
+          "category": "Certificate of Grades (COG)",
+          "verified": true
+        },
+        {
+          "id": "f-15",
+          "data": "data:application/pdf;base64,JVBERi0xLjQKJcTl8uXrp/Og0MTGCjQgMCBvYmoKPDwgL0xlbmd0aCA1IDAgUiAvRmlsdGVyIC9GbGF0ZURlY29kZSA+PgpzdHJlYW0KeJzLSM3JyVcozy/KSVEEAELnBfUKZW5kc3RyZWFtCmVuZG9iago1IDAgb2JqCjE4CmVuZG9iagoxIDAgb2JqCjw8IC9UeXBlIC9DYXRhbG9nIC9QYWdlcyAyIDAgUiA+PgplbmRvYmoK",
+          "name": "Tuvera_COR_Current.pdf",
+          "size": "910 KB",
+          "type": "application/pdf",
+          "status": "Verified",
+          "category": "Certificate of Registration (COR)",
+          "verified": true
+        }
+      ]
+    },
+    {
+      "id": "sub-seed-6",
+      "studentId": "2023-CAPSU-0205",
+      "studentName": "Michael G. Burata",
+      "studentAuthId": null,
+      "scholarshipType": "Internally-Funded (Academic Full)",
+      "status": "Complete",
+      "submittedAt": "2026-03-10T11:00:00+00:00",
+      "data": {
+        "sex": "Male",
+        "course": "BSCS",
+        "status": "Complete",
+        "section": "BSCS 3A",
+        "firstName": "Michael",
+        "studentId": "2023-CAPSU-0205",
+        "yearLevel": "Third year",
+        "courseFull": "Bachelor of Science in Computer Science",
+        "familyName": "Burata",
+        "fatherName": "Gregorio Burata",
+        "livingWith": "Parents/Guardians",
+        "middleName": "G.",
+        "motherName": "Teresa Burata",
+        "civilStatus": "Single",
+        "fundingType": "Internally-Funded",
+        "housingType": "Own house",
+        "submittedAt": "2026-03-10T11:00:00Z",
+        "academicYear": "A.Y. 2025-2026 - 2nd Semester",
+        "requirements": [
+          {
+            "name": "Certificate of Grades (COG)",
+            "status": "Verified"
+          },
+          {
+            "name": "Certificate of Registration (COR)",
+            "status": "Verified"
+          },
+          {
+            "name": "Proof of Income / Certificate of Indigency",
+            "status": "Verified"
+          },
+          {
+            "name": "Certificate of Good Moral Character",
+            "status": "Verified"
+          }
+        ],
+        "monthlyIncome": "below Php10,000",
+        "workingStudent": "No",
+        "accessResources": [
+          "Personal Computer/Laptop",
+          "Internet Connection",
+          "Study space"
+        ],
+        "classifications": [
+          "Low income family/ Economically disadvantaged student"
+        ],
+        "firstGenCollege": "Yes",
+        "scholarshipType": "Internally-Funded (Academic Full)",
+        "fatherOccupation": "Carpenter",
+        "motherOccupation": "Barangay Health Worker",
+        "guardianOccupation": "None",
+        "scholarshipCategory": "Full",
+        "parentsEducationalAttainment": "High school Graduate"
+      },
+      "files": [
+        {
+          "id": "f-16",
+          "data": "data:application/pdf;base64,JVBERi0xLjQKJcTl8uXrp/Og0MTGCjQgMCBvYmoKPDwgL0xlbmd0aCA1IDAgUiAvRmlsdGVyIC9GbGF0ZURlY29kZSA+PgpzdHJlYW0KeJzLSM3JyVcozy/KSVEEAELnBfUKZW5kc3RyZWFtCmVuZG9iago1IDAgb2JqCjE4CmVuZG9iagoxIDAgb2JqCjw8IC9UeXBlIC9DYXRhbG9nIC9QYWdlcyAyIDAgUiA+PgplbmRvYmoK",
+          "name": "Burata_COG_GWA125.pdf",
+          "size": "1.6 MB",
+          "type": "application/pdf",
+          "status": "Verified",
+          "category": "Certificate of Grades (COG)",
+          "verified": true
+        },
+        {
+          "id": "f-17",
+          "data": "data:application/pdf;base64,JVBERi0xLjQKJcTl8uXrp/Og0MTGCjQgMCBvYmoKPDwgL0xlbmd0aCA1IDAgUiAvRmlsdGVyIC9GbGF0ZURlY29kZSA+PgpzdHJlYW0KeJzLSM3JyVcozy/KSVEEAELnBfUKZW5kc3RyZWFtCmVuZG9iago1IDAgb2JqCjE4CmVuZG9iagoxIDAgb2JqCjw8IC9UeXBlIC9DYXRhbG9nIC9QYWdlcyAyIDAgUiA+PgplbmRvYmoK",
+          "name": "Burata_COR_Official.pdf",
+          "size": "840 KB",
+          "type": "application/pdf",
+          "status": "Verified",
+          "category": "Certificate of Registration (COR)",
+          "verified": true
+        },
+        {
+          "id": "f-18",
+          "data": "data:application/pdf;base64,JVBERi0xLjQKJcTl8uXrp/Og0MTGCjQgMCBvYmoKPDwgL0xlbmd0aCA1IDAgUiAvRmlsdGVyIC9GbGF0ZURlY29kZSA+PgpzdHJlYW0KeJzLSM3JyVcozy/KSVEEAELnBfUKZW5kc3RyZWFtCmVuZG9iago1IDAgb2JqCjE4CmVuZG9iagoxIDAgb2JqCjw8IC9UeXBlIC9DYXRhbG9nIC9QYWdlcyAyIDAgUiA+PgplbmRvYmoK",
+          "name": "Burata_Indigency.pdf",
+          "size": "590 KB",
+          "type": "application/pdf",
+          "status": "Verified",
+          "category": "Proof of Income / Certificate of Indigency",
+          "verified": true
+        },
+        {
+          "id": "f-19",
+          "data": "data:application/pdf;base64,JVBERi0xLjQKJcTl8uXrp/Og0MTGCjQgMCBvYmoKPDwgL0xlbmd0aCA1IDAgUiAvRmlsdGVyIC9GbGF0ZURlY29kZSA+PgpzdHJlYW0KeJzLSM3JyVcozy/KSVEEAELnBfUKZW5kc3RyZWFtCmVuZG9iago1IDAgb2JqCjE4CmVuZG9iagoxIDAgb2JqCjw8IC9UeXBlIC9DYXRhbG9nIC9QYWdlcyAyIDAgUiA+PgplbmRvYmoK",
+          "name": "Burata_GoodMoral.pdf",
+          "size": "510 KB",
+          "type": "application/pdf",
+          "status": "Verified",
+          "category": "Certificate of Good Moral Character",
+          "verified": true
+        }
+      ]
+    },
+    {
+      "id": "sub-seed-7",
+      "studentId": "2023-CAPSU-0118",
+      "studentName": "Chery Joy M. Marcelino",
+      "studentAuthId": null,
+      "scholarshipType": "Externally-Funded (CHED - Tulong Dunong)",
+      "status": "Complete",
+      "submittedAt": "2026-03-10T09:10:00+00:00",
+      "data": {
+        "sex": "Female",
+        "course": "BSCS",
+        "status": "Complete",
+        "section": "BSCS 3A",
+        "firstName": "Chery Joy",
+        "studentId": "2023-CAPSU-0118",
+        "yearLevel": "Third year",
+        "courseFull": "Bachelor of Science in Computer Science",
+        "familyName": "Marcelino",
+        "fatherName": "Manuel Marcelino",
+        "livingWith": "Parents/Guardians",
+        "middleName": "M.",
+        "motherName": "Joy Marcelino",
+        "civilStatus": "Single",
+        "fundingType": "Externally-Funded",
+        "housingType": "Own house",
+        "submittedAt": "2026-03-10T09:10:00Z",
+        "academicYear": "A.Y. 2025-2026 - 2nd Semester",
+        "requirements": [
+          {
+            "name": "Certificate of Grades (COG)",
+            "status": "Verified"
+          },
+          {
+            "name": "Certificate of Registration (COR)",
+            "status": "Verified"
+          },
+          {
+            "name": "Proof of Income / Certificate of Indigency",
+            "status": "Verified"
+          }
+        ],
+        "monthlyIncome": "below Php10,000",
+        "workingStudent": "No",
+        "accessResources": [
+          "Personal Computer/Laptop",
+          "Study space"
+        ],
+        "classifications": [
+          "Low income family/ Economically disadvantaged student",
+          "First Generation student (Parents did not complete a college degree)"
+        ],
+        "firstGenCollege": "Yes",
+        "scholarshipType": "Externally-Funded (CHED - Tulong Dunong)",
+        "fatherOccupation": "Security Guard",
+        "motherOccupation": "Housewife",
+        "guardianOccupation": "None",
+        "scholarshipCategory": "Tulong Dunong",
+        "parentsEducationalAttainment": "High school Graduate"
+      },
+      "files": [
+        {
+          "id": "f-20",
+          "data": "data:application/pdf;base64,JVBERi0xLjQKJcTl8uXrp/Og0MTGCjQgMCBvYmoKPDwgL0xlbmd0aCA1IDAgUiAvRmlsdGVyIC9GbGF0ZURlY29kZSA+PgpzdHJlYW0KeJzLSM3JyVcozy/KSVEEAELnBfUKZW5kc3RyZWFtCmVuZG9iago1IDAgb2JqCjE4CmVuZG9iagoxIDAgb2JqCjw8IC9UeXBlIC9DYXRhbG9nIC9QYWdlcyAyIDAgUiA+PgplbmRvYmoK",
+          "name": "Marcelino_COG.pdf",
+          "size": "1.2 MB",
+          "type": "application/pdf",
+          "status": "Verified",
+          "category": "Certificate of Grades (COG)",
+          "verified": true
+        },
+        {
+          "id": "f-21",
+          "data": "data:application/pdf;base64,JVBERi0xLjQKJcTl8uXrp/Og0MTGCjQgMCBvYmoKPDwgL0xlbmd0aCA1IDAgUiAvRmlsdGVyIC9GbGF0ZURlY29kZSA+PgpzdHJlYW0KeJzLSM3JyVcozy/KSVEEAELnBfUKZW5kc3RyZWFtCmVuZG9iago1IDAgb2JqCjE4CmVuZG9iagoxIDAgb2JqCjw8IC9UeXBlIC9DYXRhbG9nIC9QYWdlcyAyIDAgUiA+PgplbmRvYmoK",
+          "name": "Marcelino_COR.pdf",
+          "size": "820 KB",
+          "type": "application/pdf",
+          "status": "Verified",
+          "category": "Certificate of Registration (COR)",
+          "verified": true
+        },
+        {
+          "id": "f-22",
+          "data": "data:application/pdf;base64,JVBERi0xLjQKJcTl8uXrp/Og0MTGCjQgMCBvYmoKPDwgL0xlbmd0aCA1IDAgUiAvRmlsdGVyIC9GbGF0ZURlY29kZSA+PgpzdHJlYW0KeJzLSM3JyVcozy/KSVEEAELnBfUKZW5kc3RyZWFtCmVuZG9iago1IDAgb2JqCjE4CmVuZG9iagoxIDAgb2JqCjw8IC9UeXBlIC9DYXRhbG9nIC9QYWdlcyAyIDAgUiA+PgplbmRvYmoK",
+          "name": "Marcelino_Indigency.pdf",
+          "size": "610 KB",
+          "type": "application/pdf",
+          "status": "Verified",
+          "category": "Proof of Income / Certificate of Indigency",
+          "verified": true
+        }
+      ]
+    },
+    {
+      "id": "sub-seed-8",
+      "studentId": "2024-CAPSU-0044",
+      "studentName": "Jessica Mae E. Dela Cruz",
+      "studentAuthId": null,
+      "scholarshipType": "Internally-Funded (Academic Partial)",
+      "status": "Complete",
+      "submittedAt": "2026-03-09T16:00:00+00:00",
+      "data": {
+        "sex": "Female",
+        "course": "BSCS",
+        "status": "Complete",
+        "section": "BSCS 2A",
+        "firstName": "Jessica Mae",
+        "studentId": "2024-CAPSU-0044",
+        "yearLevel": "Second year",
+        "courseFull": "Bachelor of Science in Computer Science",
+        "familyName": "Dela Cruz",
+        "fatherName": "Eduardo Dela Cruz",
+        "livingWith": "Parents/Guardians",
+        "middleName": "E.",
+        "motherName": "Milagros Dela Cruz",
+        "civilStatus": "Single",
+        "fundingType": "Internally-Funded",
+        "housingType": "Own house",
+        "submittedAt": "2026-03-09T16:00:00Z",
+        "academicYear": "A.Y. 2025-2026 - 2nd Semester",
+        "requirements": [
+          {
+            "name": "Certificate of Grades (COG)",
+            "status": "Verified"
+          },
+          {
+            "name": "Certificate of Registration (COR)",
+            "status": "Verified"
+          },
+          {
+            "name": "Certificate of Good Moral Character",
+            "status": "Verified"
+          }
+        ],
+        "monthlyIncome": "Php10,001 - 20,000",
+        "workingStudent": "No",
+        "accessResources": [
+          "Personal Computer/Laptop",
+          "Internet Connection",
+          "Study space"
+        ],
+        "classifications": [
+          "Regular student (I do not belong to any of this group classification)"
+        ],
+        "firstGenCollege": "No",
+        "scholarshipType": "Internally-Funded (Academic Partial)",
+        "fatherOccupation": "Electrician",
+        "motherOccupation": "Dressmaker",
+        "guardianOccupation": "None",
+        "scholarshipCategory": "Partial",
+        "parentsEducationalAttainment": "College Level"
+      },
+      "files": [
+        {
+          "id": "f-23",
+          "data": "data:application/pdf;base64,JVBERi0xLjQKJcTl8uXrp/Og0MTGCjQgMCBvYmoKPDwgL0xlbmd0aCA1IDAgUiAvRmlsdGVyIC9GbGF0ZURlY29kZSA+PgpzdHJlYW0KeJzLSM3JyVcozy/KSVEEAELnBfUKZW5kc3RyZWFtCmVuZG9iago1IDAgb2JqCjE4CmVuZG9iagoxIDAgb2JqCjw8IC9UeXBlIC9DYXRhbG9nIC9QYWdlcyAyIDAgUiA+PgplbmRvYmoK",
+          "name": "Jessica_COG_Official.pdf",
+          "size": "1.3 MB",
+          "type": "application/pdf",
+          "status": "Verified",
+          "category": "Certificate of Grades (COG)",
+          "verified": true
+        },
+        {
+          "id": "f-24",
+          "data": "data:application/pdf;base64,JVBERi0xLjQKJcTl8uXrp/Og0MTGCjQgMCBvYmoKPDwgL0xlbmd0aCA1IDAgUiAvRmlsdGVyIC9GbGF0ZURlY29kZSA+PgpzdHJlYW0KeJzLSM3JyVcozy/KSVEEAELnBfUKZW5kc3RyZWFtCmVuZG9iago1IDAgb2JqCjE4CmVuZG9iagoxIDAgb2JqCjw8IC9UeXBlIC9DYXRhbG9nIC9QYWdlcyAyIDAgUiA+PgplbmRvYmoK",
+          "name": "Jessica_COR_Form.pdf",
+          "size": "890 KB",
+          "type": "application/pdf",
+          "status": "Verified",
+          "category": "Certificate of Registration (COR)",
+          "verified": true
+        },
+        {
+          "id": "f-25",
+          "data": "data:application/pdf;base64,JVBERi0xLjQKJcTl8uXrp/Og0MTGCjQgMCBvYmoKPDwgL0xlbmd0aCA1IDAgUiAvRmlsdGVyIC9GbGF0ZURlY29kZSA+PgpzdHJlYW0KeJzLSM3JyVcozy/KSVEEAELnBfUKZW5kc3RyZWFtCmVuZG9iago1IDAgb2JqCjE4CmVuZG9iagoxIDAgb2JqCjw8IC9UeXBlIC9DYXRhbG9nIC9QYWdlcyAyIDAgUiA+PgplbmRvYmoK",
+          "name": "Jessica_Moral.pdf",
+          "size": "540 KB",
+          "type": "application/pdf",
+          "status": "Verified",
+          "category": "Certificate of Good Moral Character",
+          "verified": true
+        }
+      ]
+    },
+    {
+      "id": "sub-seed-9",
+      "studentId": "2025-CAPSU-0112",
+      "studentName": "Mark Josh P. Lorenzo",
+      "studentAuthId": null,
+      "scholarshipType": "Externally-Funded (Tertiary Education Subsidy - TES)",
+      "status": "Complete",
+      "submittedAt": "2026-03-09T14:30:00+00:00",
+      "data": {
+        "sex": "Male",
+        "course": "BSOA",
+        "status": "Complete",
+        "section": "BSOA 1A",
+        "firstName": "Mark Josh",
+        "studentId": "2025-CAPSU-0112",
+        "yearLevel": "First year",
+        "courseFull": "Bachelor of Science in Office Administration",
+        "familyName": "Lorenzo",
+        "fatherName": "Jose Lorenzo",
+        "livingWith": "Parents/Guardians",
+        "middleName": "P.",
+        "motherName": "Lina Lorenzo",
+        "civilStatus": "Single",
+        "fundingType": "Externally-Funded",
+        "housingType": "Own house",
+        "submittedAt": "2026-03-09T14:30:00Z",
+        "academicYear": "A.Y. 2025-2026 - 2nd Semester",
+        "requirements": [
+          {
+            "name": "Certificate of Grades (COG)",
+            "status": "Verified"
+          },
+          {
+            "name": "Certificate of Registration (COR)",
+            "status": "Verified"
+          },
+          {
+            "name": "Proof of Income / Certificate of Indigency",
+            "status": "Verified"
+          }
+        ],
+        "monthlyIncome": "below Php10,000",
+        "workingStudent": "No",
+        "accessResources": [
+          "Study space"
+        ],
+        "classifications": [
+          "Low income family/ Economically disadvantaged student",
+          "Member of 4Ps"
+        ],
+        "firstGenCollege": "Yes",
+        "scholarshipType": "Externally-Funded (Tertiary Education Subsidy - TES)",
+        "fatherOccupation": "Farmer",
+        "motherOccupation": "Housewife",
+        "guardianOccupation": "None",
+        "scholarshipCategory": "TES",
+        "parentsEducationalAttainment": "High School Level"
+      },
+      "files": [
+        {
+          "id": "f-26",
+          "data": "data:application/pdf;base64,JVBERi0xLjQKJcTl8uXrp/Og0MTGCjQgMCBvYmoKPDwgL0xlbmd0aCA1IDAgUiAvRmlsdGVyIC9GbGF0ZURlY29kZSA+PgpzdHJlYW0KeJzLSM3JyVcozy/KSVEEAELnBfUKZW5kc3RyZWFtCmVuZG9iago1IDAgb2JqCjE4CmVuZG9iagoxIDAgb2JqCjw8IC9UeXBlIC9DYXRhbG9nIC9QYWdlcyAyIDAgUiA+PgplbmRvYmoK",
+          "name": "Lorenzo_Grades_COG.pdf",
+          "size": "1.2 MB",
+          "type": "application/pdf",
+          "status": "Verified",
+          "category": "Certificate of Grades (COG)",
+          "verified": true
+        },
+        {
+          "id": "f-27",
+          "data": "data:application/pdf;base64,JVBERi0xLjQKJcTl8uXrp/Og0MTGCjQgMCBvYmoKPDwgL0xlbmd0aCA1IDAgUiAvRmlsdGVyIC9GbGF0ZURlY29kZSA+PgpzdHJlYW0KeJzLSM3JyVcozy/KSVEEAELnBfUKZW5kc3RyZWFtCmVuZG9iago1IDAgb2JqCjE4CmVuZG9iagoxIDAgb2JqCjw8IC9UeXBlIC9DYXRhbG9nIC9QYWdlcyAyIDAgUiA+PgplbmRvYmoK",
+          "name": "Lorenzo_COR.pdf",
+          "size": "810 KB",
+          "type": "application/pdf",
+          "status": "Verified",
+          "category": "Certificate of Registration (COR)",
+          "verified": true
+        },
+        {
+          "id": "f-28",
+          "data": "data:application/pdf;base64,JVBERi0xLjQKJcTl8uXrp/Og0MTGCjQgMCBvYmoKPDwgL0xlbmd0aCA1IDAgUiAvRmlsdGVyIC9GbGF0ZURlY29kZSA+PgpzdHJlYW0KeJzLSM3JyVcozy/KSVEEAELnBfUKZW5kc3RyZWFtCmVuZG9iago1IDAgb2JqCjE4CmVuZG9iagoxIDAgb2JqCjw8IC9UeXBlIC9DYXRhbG9nIC9QYWdlcyAyIDAgUiA+PgplbmRvYmoK",
+          "name": "Lorenzo_4Ps_Indigency.pdf",
+          "size": "750 KB",
+          "type": "application/pdf",
+          "status": "Verified",
+          "category": "Proof of Income / Certificate of Indigency",
+          "verified": true
+        }
+      ]
+    },
+    {
+      "id": "sub-seed-10",
+      "studentId": "2024-CAPSU-0098",
+      "studentName": "William George I. Diaz",
+      "studentAuthId": null,
+      "scholarshipType": "Internally-Funded (Academic Full)",
+      "status": "Complete",
+      "submittedAt": "2026-03-08T10:00:00+00:00",
+      "data": {
+        "sex": "Male",
+        "course": "BSFT",
+        "status": "Complete",
+        "section": "BSFT 2A",
+        "firstName": "William George",
+        "studentId": "2024-CAPSU-0098",
+        "yearLevel": "Second year",
+        "courseFull": "Bachelor of Science in Food Technology",
+        "familyName": "Diaz",
+        "fatherName": "William Diaz Sr.",
+        "livingWith": "Parents/Guardians",
+        "middleName": "I.",
+        "motherName": "Gloria Diaz",
+        "civilStatus": "Single",
+        "fundingType": "Internally-Funded",
+        "housingType": "Own house",
+        "submittedAt": "2026-03-08T10:00:00Z",
+        "academicYear": "A.Y. 2025-2026 - 2nd Semester",
+        "requirements": [
+          {
+            "name": "Certificate of Grades (COG)",
+            "status": "Verified"
+          },
+          {
+            "name": "Certificate of Registration (COR)",
+            "status": "Verified"
+          },
+          {
+            "name": "Proof of Income / Certificate of Indigency",
+            "status": "Verified"
+          }
+        ],
+        "monthlyIncome": "below Php10,000",
+        "workingStudent": "No",
+        "accessResources": [
+          "Personal Computer/Laptop",
+          "Study space"
+        ],
+        "classifications": [
+          "Low income family/ Economically disadvantaged student"
+        ],
+        "firstGenCollege": "Yes",
+        "scholarshipType": "Internally-Funded (Academic Full)",
+        "fatherOccupation": "Barangay Tanod",
+        "motherOccupation": "Vegetable Vendor",
+        "guardianOccupation": "None",
+        "scholarshipCategory": "Full",
+        "parentsEducationalAttainment": "High school Graduate"
+      },
+      "files": [
+        {
+          "id": "f-29",
+          "data": "data:application/pdf;base64,JVBERi0xLjQKJcTl8uXrp/Og0MTGCjQgMCBvYmoKPDwgL0xlbmd0aCA1IDAgUiAvRmlsdGVyIC9GbGF0ZURlY29kZSA+PgpzdHJlYW0KeJzLSM3JyVcozy/KSVEEAELnBfUKZW5kc3RyZWFtCmVuZG9iago1IDAgb2JqCjE4CmVuZG9iagoxIDAgb2JqCjw8IC9UeXBlIC9DYXRhbG9nIC9QYWdlcyAyIDAgUiA+PgplbmRvYmoK",
+          "name": "Diaz_COG_Official.pdf",
+          "size": "1.4 MB",
+          "type": "application/pdf",
+          "status": "Verified",
+          "category": "Certificate of Grades (COG)",
+          "verified": true
+        },
+        {
+          "id": "f-30",
+          "data": "data:application/pdf;base64,JVBERi0xLjQKJcTl8uXrp/Og0MTGCjQgMCBvYmoKPDwgL0xlbmd0aCA1IDAgUiAvRmlsdGVyIC9GbGF0ZURlY29kZSA+PgpzdHJlYW0KeJzLSM3JyVcozy/KSVEEAELnBfUKZW5kc3RyZWFtCmVuZG9iago1IDAgb2JqCjE4CmVuZG9iagoxIDAgb2JqCjw8IC9UeXBlIC9DYXRhbG9nIC9QYWdlcyAyIDAgUiA+PgplbmRvYmoK",
+          "name": "Diaz_COR_Semester.pdf",
+          "size": "920 KB",
+          "type": "application/pdf",
+          "status": "Verified",
+          "category": "Certificate of Registration (COR)",
+          "verified": true
+        },
+        {
+          "id": "f-31",
+          "data": "data:application/pdf;base64,JVBERi0xLjQKJcTl8uXrp/Og0MTGCjQgMCBvYmoKPDwgL0xlbmd0aCA1IDAgUiAvRmlsdGVyIC9GbGF0ZURlY29kZSA+PgpzdHJlYW0KeJzLSM3JyVcozy/KSVEEAELnBfUKZW5kc3RyZWFtCmVuZG9iago1IDAgb2JqCjE4CmVuZG9iagoxIDAgb2JqCjw8IC9UeXBlIC9DYXRhbG9nIC9QYWdlcyAyIDAgUiA+PgplbmRvYmoK",
+          "name": "Diaz_Barangay_Cert.pdf",
+          "size": "640 KB",
+          "type": "application/pdf",
+          "status": "Verified",
+          "category": "Proof of Income / Certificate of Indigency",
+          "verified": true
+        }
+      ]
+    }
+  ]
 }

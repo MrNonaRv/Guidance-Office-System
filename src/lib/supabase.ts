@@ -15,8 +15,13 @@ function normalizeSupabaseUrl(rawUrl: string): string {
   return trimmed;
 }
 
-const rawSupabaseUrl = (import.meta as any).env?.VITE_SUPABASE_URL || '';
-const rawSupabaseAnonKey = (import.meta as any).env?.VITE_SUPABASE_ANON_KEY || '';
+const rawSupabaseUrl = (typeof import.meta !== 'undefined' && (import.meta as any).env?.VITE_SUPABASE_URL) || 
+  (typeof process !== 'undefined' && process.env?.VITE_SUPABASE_URL) || 
+  'https://pcnoyxnfhxwbogekbazc.supabase.co';
+
+const rawSupabaseAnonKey = (typeof import.meta !== 'undefined' && (import.meta as any).env?.VITE_SUPABASE_ANON_KEY) || 
+  (typeof process !== 'undefined' && process.env?.VITE_SUPABASE_ANON_KEY) || 
+  'sb_publishable_HQ_Ru3eZ35IB_jWaOYgEyA_xEPhhqAD';
 
 const supabaseUrl = normalizeSupabaseUrl(rawSupabaseUrl);
 const supabaseAnonKey = (rawSupabaseAnonKey || '').trim();
@@ -69,16 +74,21 @@ export async function testSupabaseConnection(): Promise<{
   }
 
   try {
-    const { data: buckets, error: bucketErr } = await supabase.storage.listBuckets();
-    if (bucketErr) {
+    // Check direct bucket access first
+    const { data: testFiles, error: testErr } = await supabase.storage.from(BUCKET_NAME).list('', { limit: 1 });
+    const bucketAccessible = !testErr;
+
+    if (bucketAccessible) {
       return {
         configured: true,
         url: supabaseUrl,
-        success: false,
-        message: `Storage Error: ${bucketErr.message}`
+        success: true,
+        bucketExists: true,
+        message: `Connected successfully to Supabase! Bucket '${BUCKET_NAME}' is active and ready.`
       };
     }
 
+    const { data: buckets, error: bucketErr } = await supabase.storage.listBuckets();
     const hasBucket = buckets?.some(b => b.name === BUCKET_NAME);
     
     if (!hasBucket) {
@@ -106,7 +116,7 @@ export async function testSupabaseConnection(): Promise<{
       bucketExists: hasBucket,
       message: hasBucket 
         ? `Connected successfully to Supabase! Bucket '${BUCKET_NAME}' found.`
-        : `Connected to Supabase, but bucket '${BUCKET_NAME}' was not found. Auto-creation failed. Please create a public bucket named '${BUCKET_NAME}' manually in your Supabase Dashboard Storage section.`
+        : `Connected to Supabase, but bucket '${BUCKET_NAME}' was not found. Please create a public bucket named '${BUCKET_NAME}' in your Supabase Dashboard Storage section.`
     };
   } catch (err: any) {
     return {

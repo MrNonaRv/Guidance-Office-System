@@ -3,12 +3,28 @@ import { createServer as createViteServer } from 'vite';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { createClient } from '@supabase/supabase-js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
+
+const SUPABASE_URL = process.env.VITE_SUPABASE_URL || 'https://pcnoyxnfhxwbogekbazc.supabase.co';
+const SUPABASE_KEY = process.env.VITE_SUPABASE_ANON_KEY || 'sb_publishable_HQ_Ru3eZ35IB_jWaOYgEyA_xEPhhqAD';
+const supabase = (SUPABASE_URL && SUPABASE_KEY) ? createClient(SUPABASE_URL, SUPABASE_KEY) : null;
+
+function safeSupabase(fn: () => any) {
+  if (!supabase) return;
+  try {
+    Promise.resolve(fn()).catch((err) => {
+      console.warn('Supabase sync notice:', err?.message || err);
+    });
+  } catch (err) {
+    console.warn('Supabase invoke error:', err);
+  }
+}
 
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
@@ -170,6 +186,77 @@ function saveState() {
   }
 }
 
+async function loadStateFromSupabase() {
+  if (!supabase) return;
+  try {
+    const [ayRes, coursesRes, secRes, schRes, subRes] = await Promise.all([
+      supabase.from('academic_years').select('*').order('year', { ascending: false }),
+      supabase.from('courses').select('*'),
+      supabase.from('sections').select('*'),
+      supabase.from('scholarships').select('*'),
+      supabase.from('submissions').select('*').order('submitted_at', { ascending: false })
+    ]);
+
+    if (ayRes.data && ayRes.data.length > 0) {
+      state.academicYears = ayRes.data.map((ay: any) => ({
+        id: ay.id,
+        year: ay.year,
+        overallStatus: ay.overall_status || 'Active',
+        firstSemester: ay.first_semester || 'Active',
+        secondSemester: ay.second_semester || 'Inactive',
+        label: ay.label || `A.Y. ${ay.year}`,
+        updatedAt: ay.updated_at
+      }));
+    }
+    if (coursesRes.data && coursesRes.data.length > 0) {
+      state.courses = coursesRes.data.map((c: any) => ({
+        id: c.id,
+        code: c.code,
+        name: c.name,
+        department: c.department || '',
+        status: c.status || 'Active'
+      }));
+    }
+    if (secRes.data && secRes.data.length > 0) {
+      state.sections = secRes.data.map((s: any) => ({
+        id: s.id,
+        name: s.name,
+        course: s.course || null,
+        status: s.status || 'Active'
+      }));
+    }
+    if (schRes.data && schRes.data.length > 0) {
+      state.scholarships = schRes.data.map((s: any) => ({
+        id: s.id,
+        name: s.name,
+        type: s.type,
+        category: s.category,
+        status: s.status || 'Active',
+        description: s.description || '',
+        requirements: s.requirements || [],
+        slots: s.slots || 0,
+        deadline: s.deadline || ''
+      }));
+    }
+    if (subRes.data && subRes.data.length > 0) {
+      state.submissions = subRes.data.map((s: any) => ({
+        id: s.id,
+        studentId: s.student_id,
+        studentName: s.student_name,
+        studentAuthId: s.student_auth_id,
+        scholarshipType: s.scholarship_type,
+        status: s.status,
+        submittedAt: s.submitted_at,
+        data: s.data,
+        files: s.files
+      }));
+    }
+    saveState();
+  } catch (err) {
+    console.warn('Hydrating from Supabase notice:', err);
+  }
+}
+
 // Real-Time Server-Sent Events (SSE) Bus
 const sseClients = new Set<express.Response>();
 
@@ -312,6 +399,15 @@ app.post('/api/academic-years', (req, res) => {
   }
 
   saveState();
+  safeSupabase(() => supabase!.from('academic_years').upsert({
+    id: updatedItem.id,
+    year: updatedItem.year,
+    overall_status: updatedItem.overallStatus,
+    first_semester: updatedItem.firstSemester,
+    second_semester: updatedItem.secondSemester,
+    label: updatedItem.label,
+    updated_at: updatedItem.updatedAt
+  }, { onConflict: 'id' }));
   broadcast('ACADEMIC_YEARS_SYNC', state.academicYears);
   res.json({ success: true, item: updatedItem, list: state.academicYears, activeTerm: computeActiveTerm(state.academicYears) });
 });
@@ -320,6 +416,7 @@ app.delete('/api/academic-years/:id', (req, res) => {
   const { id } = req.params;
   state.academicYears = state.academicYears.filter(ay => ay.id !== id);
   saveState();
+  safeSupabase(() => supabase!.from('academic_years').delete().eq('id', id));
   broadcast('ACADEMIC_YEARS_SYNC', state.academicYears);
   res.json({ success: true, list: state.academicYears, activeTerm: computeActiveTerm(state.academicYears) });
 });
@@ -344,6 +441,13 @@ app.post('/api/courses', (req, res) => {
     state.courses.push(updated);
   }
   saveState();
+  safeSupabase(() => supabase!.from('courses').upsert({
+    id: updated.id,
+    code: updated.code,
+    name: updated.name,
+    department: updated.department || '',
+    status: updated.status || 'Active'
+  }, { onConflict: 'id' }));
   broadcast('COURSES_SYNC', state.courses);
   res.json({ success: true, item: updated, list: state.courses });
 });
@@ -352,6 +456,7 @@ app.delete('/api/courses/:id', (req, res) => {
   const { id } = req.params;
   state.courses = state.courses.filter(c => c.id !== id);
   saveState();
+  safeSupabase(() => supabase!.from('courses').delete().eq('id', id));
   broadcast('COURSES_SYNC', state.courses);
   res.json({ success: true, list: state.courses });
 });
@@ -376,6 +481,12 @@ app.post('/api/sections', (req, res) => {
     state.sections.push(updated);
   }
   saveState();
+  safeSupabase(() => supabase!.from('sections').upsert({
+    id: updated.id,
+    name: updated.name,
+    course: updated.course || null,
+    status: updated.status || 'Active'
+  }, { onConflict: 'id' }));
   broadcast('SECTIONS_SYNC', state.sections);
   res.json({ success: true, item: updated, list: state.sections });
 });
@@ -384,6 +495,7 @@ app.delete('/api/sections/:id', (req, res) => {
   const { id } = req.params;
   state.sections = state.sections.filter(s => s.id !== id);
   saveState();
+  safeSupabase(() => supabase!.from('sections').delete().eq('id', id));
   broadcast('SECTIONS_SYNC', state.sections);
   res.json({ success: true, list: state.sections });
 });
@@ -408,6 +520,17 @@ app.post('/api/scholarships', (req, res) => {
     state.scholarships.push(updated);
   }
   saveState();
+  safeSupabase(() => supabase!.from('scholarships').upsert({
+    id: updated.id,
+    name: updated.name,
+    type: updated.type,
+    category: updated.category,
+    status: updated.status || 'Active',
+    description: updated.description || '',
+    requirements: updated.requirements || [],
+    slots: updated.slots || 0,
+    deadline: updated.deadline || ''
+  }, { onConflict: 'id' }));
   broadcast('SCHOLARSHIPS_SYNC', state.scholarships);
   res.json({ success: true, item: updated, list: state.scholarships });
 });
@@ -416,6 +539,7 @@ app.delete('/api/scholarships/:id', (req, res) => {
   const { id } = req.params;
   state.scholarships = state.scholarships.filter(s => s.id !== id);
   saveState();
+  safeSupabase(() => supabase!.from('scholarships').delete().eq('id', id));
   broadcast('SCHOLARSHIPS_SYNC', state.scholarships);
   res.json({ success: true, list: state.scholarships });
 });
@@ -438,12 +562,40 @@ app.post('/api/submissions', (req, res) => {
     state.submissions.unshift(sub);
   }
   saveState();
+  safeSupabase(() => supabase!.from('submissions').upsert({
+    id: sub.id,
+    student_id: sub.studentId,
+    student_name: sub.studentName,
+    student_auth_id: sub.studentAuthId || null,
+    scholarship_type: sub.scholarshipType || '',
+    status: sub.status || 'Pending',
+    submitted_at: sub.submittedAt || new Date().toISOString(),
+    data: sub.data || {},
+    files: sub.files || []
+  }, { onConflict: 'id' }));
   broadcast('SUBMISSIONS_SYNC', state.submissions);
   res.json({ success: true, item: sub });
 });
 
+app.delete('/api/submissions/:id', (req, res) => {
+  const { id } = req.params;
+  state.submissions = state.submissions.filter(s => s.id !== id);
+  saveState();
+  safeSupabase(() => supabase!.from('submissions').delete().eq('id', id));
+  broadcast('SUBMISSIONS_SYNC', state.submissions);
+  res.json({ success: true, list: state.submissions });
+});
+
 // --- Server Startup & Vite Middlewares ---
 async function startServer() {
+  // Hydrate state from Supabase before serving requests
+  try {
+    await loadStateFromSupabase();
+    console.log(`Hydrated from Supabase: ${state.academicYears.length} academic years, ${state.courses.length} courses, ${state.sections.length} sections, ${state.scholarships.length} scholarships, ${state.submissions.length} submissions.`);
+  } catch (err) {
+    console.warn('Initial Supabase hydration warning:', err);
+  }
+
   if (process.env.NODE_ENV === 'production') {
     const distPath = path.resolve(__dirname, 'dist');
     app.use(express.static(distPath));

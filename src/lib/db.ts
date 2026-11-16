@@ -685,6 +685,14 @@ export const db = {
         window.dispatchEvent(new Event('scholarship_categories_updated'));
       }
       await scholarshipsDb.setItem(id, targetRecord);
+
+      // Multi-device backend sync (persists to Supabase & broadcasts to other clients)
+      fetch('/api/scholarships', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(targetRecord)
+      }).catch(e => console.warn("Backend sync notice:", e));
+
       if (firestoreDb) {
         setDoc(doc(firestoreDb, 'scholarships', id), cleanForFirestore(targetRecord), { merge: true })
           .catch(e => handleFirestoreError(e, OperationType.WRITE, `scholarships/${id}`));
@@ -706,6 +714,22 @@ export const db = {
     },
     async listAll(): Promise<Scholarship[]> {
       try {
+        // Multi-device sync: query backend server first
+        try {
+          const res = await fetch('/api/scholarships');
+          if (res.ok) {
+            const serverList = await res.json();
+            if (Array.isArray(serverList) && serverList.length > 0) {
+              memoryScholarships = serverList;
+              for (const item of serverList) {
+                await scholarshipsDb.setItem(item.id, item).catch(() => {});
+              }
+              notifyScholarshipListeners();
+              return [...memoryScholarships];
+            }
+          }
+        } catch {}
+
         let allItems: Scholarship[] = [];
         if (firestoreDb) {
           try {
@@ -762,6 +786,11 @@ export const db = {
         window.dispatchEvent(new Event('scholarship_categories_updated'));
       }
       scholarshipsDb.removeItem(id).catch(() => {});
+
+      // Multi-device backend sync
+      fetch(`/api/scholarships/${id}`, { method: 'DELETE' })
+        .catch(e => console.warn("Backend delete notice:", e));
+
       if (firestoreDb) {
         deleteDoc(doc(firestoreDb, 'scholarships', id))
           .catch(e => handleFirestoreError(e, OperationType.DELETE, `scholarships/${id}`));
@@ -806,6 +835,14 @@ export const db = {
       }
       notifySubmissionListeners();
       submissionsDb.setItem(id, sub).catch(() => {});
+
+      // Multi-device backend sync (persists to Supabase & broadcasts to other clients)
+      fetch('/api/submissions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(sub)
+      }).catch(e => console.warn("Backend sync notice:", e));
+
       if (firestoreDb) {
         setDoc(doc(firestoreDb, 'submissions', id), cleanForFirestore(sub), { merge: true })
           .catch(e => handleFirestoreError(e, OperationType.WRITE, `submissions/${id}`));
@@ -945,6 +982,27 @@ export const db = {
     },
     async listAll(): Promise<Submission[]> {
       try {
+        // Multi-device sync: query backend server first
+        try {
+          const res = await fetch('/api/submissions');
+          if (res.ok) {
+            const serverList = await res.json();
+            if (Array.isArray(serverList) && serverList.length > 0) {
+              const subMap = new Map<string, Submission>();
+              memorySubmissions.forEach(s => subMap.set(s.id, s));
+              serverList.forEach((s: Submission) => subMap.set(s.id, s));
+              memorySubmissions = Array.from(subMap.values()).sort(
+                (a, b) => new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime()
+              );
+              for (const item of serverList) {
+                await submissionsDb.setItem(item.id, item).catch(() => {});
+              }
+              notifySubmissionListeners();
+              return [...memorySubmissions];
+            }
+          }
+        } catch {}
+
         const keys = await submissionsDb.keys();
         if (keys.length > 0) {
           const subs: Submission[] = [];
@@ -1014,6 +1072,11 @@ export const db = {
       memorySubmissions = memorySubmissions.filter(s => s.id !== id);
       notifySubmissionListeners();
       submissionsDb.removeItem(id).catch(() => {});
+
+      // Multi-device backend sync
+      fetch(`/api/submissions/${id}`, { method: 'DELETE' })
+        .catch(e => console.warn("Backend delete notice:", e));
+
       if (firestoreDb) {
         deleteDoc(doc(firestoreDb, 'submissions', id))
           .catch(e => handleFirestoreError(e, OperationType.DELETE, `submissions/${id}`));
@@ -1049,6 +1112,14 @@ export const db = {
         memoryCourses.push(course);
       }
       await coursesDb.setItem(id, course);
+
+      // Multi-device backend sync (persists to Supabase & broadcasts)
+      fetch('/api/courses', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(course)
+      }).catch(e => console.warn("Backend sync notice:", e));
+
       if (firestoreDb) {
         setDoc(doc(firestoreDb, 'courses', id), cleanForFirestore(course), { merge: true })
           .catch(e => handleFirestoreError(e, OperationType.WRITE, `courses/${id}`));
@@ -1069,6 +1140,21 @@ export const db = {
     },
     async listAll(): Promise<Course[]> {
       try {
+        // Multi-device sync: query backend server first
+        try {
+          const res = await fetch('/api/courses');
+          if (res.ok) {
+            const serverList = await res.json();
+            if (Array.isArray(serverList) && serverList.length > 0) {
+              memoryCourses = serverList;
+              for (const item of serverList) {
+                await coursesDb.setItem(item.id, item).catch(() => {});
+              }
+              return [...memoryCourses];
+            }
+          }
+        } catch {}
+
         let allItems: Course[] = [];
         if (firestoreDb) {
           try {
@@ -1119,6 +1205,11 @@ export const db = {
     async delete(id: string): Promise<void> {
       memoryCourses = memoryCourses.filter(c => c.id !== id);
       coursesDb.removeItem(id).catch(() => {});
+
+      // Multi-device backend sync
+      fetch(`/api/courses/${id}`, { method: 'DELETE' })
+        .catch(e => console.warn("Backend delete notice:", e));
+
       if (firestoreDb) {
         deleteDoc(doc(firestoreDb, 'courses', id))
           .catch(e => handleFirestoreError(e, OperationType.DELETE, `courses/${id}`));
@@ -1374,6 +1465,14 @@ export const db = {
         memorySections.push(section);
       }
       await sectionsDb.setItem(id, section);
+
+      // Multi-device backend sync (persists to Supabase & broadcasts)
+      fetch('/api/sections', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(section)
+      }).catch(e => console.warn("Backend sync notice:", e));
+
       if (firestoreDb) {
         setDoc(doc(firestoreDb, 'sections', id), cleanForFirestore(section), { merge: true })
           .catch(e => handleFirestoreError(e, OperationType.WRITE, `sections/${id}`));
@@ -1394,6 +1493,21 @@ export const db = {
     },
     async listAll(): Promise<Section[]> {
       try {
+        // Multi-device sync: query backend server first
+        try {
+          const res = await fetch('/api/sections');
+          if (res.ok) {
+            const serverList = await res.json();
+            if (Array.isArray(serverList) && serverList.length > 0) {
+              memorySections = serverList;
+              for (const item of serverList) {
+                await sectionsDb.setItem(item.id, item).catch(() => {});
+              }
+              return [...memorySections];
+            }
+          }
+        } catch {}
+
         let allItems: Section[] = [];
         if (firestoreDb) {
           try {
@@ -1448,6 +1562,11 @@ export const db = {
     async delete(id: string): Promise<void> {
       memorySections = memorySections.filter(s => s.id !== id);
       sectionsDb.removeItem(id).catch(() => {});
+
+      // Multi-device backend sync
+      fetch(`/api/sections/${id}`, { method: 'DELETE' })
+        .catch(e => console.warn("Backend delete notice:", e));
+
       if (firestoreDb) {
         deleteDoc(doc(firestoreDb, 'sections', id))
           .catch(e => handleFirestoreError(e, OperationType.DELETE, `sections/${id}`));
