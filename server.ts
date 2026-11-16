@@ -74,7 +74,94 @@ interface SystemState {
     deadline?: string;
   }>;
   submissions: any[];
+  categories: any[];
 }
+
+const defaultCategories = [
+  {
+    id: 'internally-funded',
+    name: 'Internally-Funded',
+    subtypes: [
+      {
+        id: 'entrance',
+        name: 'Entrance',
+        allocations: [
+          { id: 'valedictorian', name: 'Valedictorian' },
+          { id: 'salutatorian', name: 'Salutatorian' }
+        ]
+      },
+      {
+        id: 'academic',
+        name: 'Academic',
+        allocations: [
+          { id: 'full', name: 'Full (1.00 - 1.25)' },
+          { id: 'partial', name: 'Partial (1.26 - 1.45)' },
+          { id: 'regional-acad', name: 'Regional' },
+          { id: 'national-acad', name: 'National' }
+        ]
+      },
+      {
+        id: 'socio-cultural',
+        name: 'Socio-cultural',
+        allocations: [
+          { id: 'sc-regional', name: 'Regional' },
+          { id: 'sc-national', name: 'National' }
+        ]
+      },
+      {
+        id: 'institutional',
+        name: 'Institutional',
+        allocations: [
+          { id: 'dep-faculty', name: 'Dependent of Faculty or Staff' },
+          { id: 'pres-ssc', name: 'President – SSC' },
+          { id: 'pres-flp', name: 'President – FLP' },
+          { id: 'editor-in-chief', name: 'Editor-in-Chief' },
+          { id: 'capsu-band', name: 'CAPSU Band / Chorale' },
+          { id: 'others', name: 'Others' }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'externally-funded',
+    name: 'Externally-Funded',
+    subtypes: [
+      {
+        id: 'ched',
+        name: 'CHED',
+        allocations: [
+          { id: 'anac-ip', name: 'ANAC – IP' },
+          { id: 'pag-ulikid', name: 'Pag – ulikid' },
+          { id: 'brgy-officials', name: 'Barangay (Legal dependents of Brgy. Officials)' },
+          { id: 'esgp-pa', name: 'ESGP – PA' },
+          { id: 'unifast', name: 'UniFast' },
+          { id: 'tes', name: 'Tertiary Education Subsidy (TES)' },
+          { id: 'congressional-district', name: 'Congressional District (specify)', hasSpecifyField: 'chedCongressionalDistrict' },
+          { id: 'one-town', name: 'One Town One Scholar (specify)', hasSpecifyField: 'chedOneTown' },
+          { id: 'tulong-dunong', name: 'Tulong Dunong (specify)', hasSpecifyField: 'chedTulongDunong' },
+          { id: 'ched-others', name: 'Others (specify)', hasSpecifyField: 'chedOthers' }
+        ]
+      },
+      {
+        id: 'merit',
+        name: 'Merit',
+        allocations: [
+          { id: 'vic', name: 'VIC' },
+          { id: 'capizeno-circle', name: 'Capizeño Circle' },
+          { id: 'dost', name: 'DOST' },
+          { id: 'grf', name: 'GRF' }
+        ]
+      },
+      {
+        id: 'lgu',
+        name: 'LGU',
+        allocations: [
+          { id: 'lgu-grant', name: 'LGU: Barangay, Municipality, Province (Landline) Contact person or issuing office:', hasSpecifyField: 'lguContact' }
+        ]
+      }
+    ]
+  }
+];
 
 const defaultInitialState: SystemState = {
   academicYears: [
@@ -155,7 +242,8 @@ const defaultInitialState: SystemState = {
       deadline: '2026-10-31'
     }
   ],
-  submissions: []
+  submissions: [],
+  categories: defaultCategories
 };
 
 // Load persistent state
@@ -169,7 +257,8 @@ try {
       courses: parsed.courses?.length ? parsed.courses : defaultInitialState.courses,
       sections: parsed.sections?.length ? parsed.sections : defaultInitialState.sections,
       scholarships: parsed.scholarships?.length ? parsed.scholarships : defaultInitialState.scholarships,
-      submissions: Array.isArray(parsed.submissions) ? parsed.submissions : []
+      submissions: Array.isArray(parsed.submissions) ? parsed.submissions : [],
+      categories: Array.isArray(parsed.categories) && parsed.categories.length > 0 ? parsed.categories : defaultCategories
     };
   } else {
     fs.writeFileSync(stateFilePath, JSON.stringify(state, null, 2), 'utf-8');
@@ -341,6 +430,7 @@ app.get('/api/sync/events', (req, res) => {
       courses: state.courses,
       sections: state.sections,
       scholarships: state.scholarships,
+      categories: state.categories,
       activeTerm: computeActiveTerm(state.academicYears)
     }
   })}\n\n`);
@@ -381,6 +471,7 @@ app.post('/api/academic-years', (req, res) => {
       }
       return item;
     });
+    safeSupabase(() => supabase!.from('academic_years').update({ overall_status: 'Inactive' }).neq('id', id));
   }
 
   const existingIdx = state.academicYears.findIndex(item => item.id === id || (item.year || '').trim() === trimmedYear);
@@ -542,6 +633,23 @@ app.delete('/api/scholarships/:id', (req, res) => {
   safeSupabase(() => supabase!.from('scholarships').delete().eq('id', id));
   broadcast('SCHOLARSHIPS_SYNC', state.scholarships);
   res.json({ success: true, list: state.scholarships });
+});
+
+// SCHOLARSHIP CATEGORIES & ALLOCATIONS
+app.get('/api/scholarship-categories', (req, res) => {
+  res.json(state.categories || defaultCategories);
+});
+
+app.post('/api/scholarship-categories', (req, res) => {
+  const cats = req.body;
+  if (Array.isArray(cats)) {
+    state.categories = cats;
+    saveState();
+    broadcast('CATEGORIES_SYNC', state.categories);
+    res.json({ success: true, list: state.categories });
+  } else {
+    res.status(400).json({ error: 'Invalid categories format' });
+  }
 });
 
 // SUBMISSIONS

@@ -1453,6 +1453,7 @@ export function StudentSubmissionForm() {
       setScholarshipStructure(getDynamicScholarshipStructure());
     };
     window.addEventListener('scholarship_categories_updated', handleUpdate);
+    (db as any).categories?.listAll?.().catch(() => {});
     return () => window.removeEventListener('scholarship_categories_updated', handleUpdate);
   }, []);
 
@@ -1482,10 +1483,24 @@ export function StudentSubmissionForm() {
 
     fetchCoursesAndSections();
 
+    const unsubCourses = db.courses.subscribe(list => {
+      if (list && list.length > 0) {
+        setCoursesList(list.map(c => c.code || c.name));
+      }
+    });
+
+    const unsubSections = db.sections.subscribe(list => {
+      if (list && list.length > 0) {
+        setSectionsList(Array.from(new Set(list.map(s => s.name))));
+      }
+    });
+
     window.addEventListener('courses_updated', fetchCoursesAndSections);
     window.addEventListener('sections_updated', fetchCoursesAndSections);
 
     return () => {
+      unsubCourses();
+      unsubSections();
       window.removeEventListener('courses_updated', fetchCoursesAndSections);
       window.removeEventListener('sections_updated', fetchCoursesAndSections);
     };

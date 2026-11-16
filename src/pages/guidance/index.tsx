@@ -1349,6 +1349,8 @@ export function GuidanceSettings() {
   // Scholarship Categories hierarchical state (matching reference image)
   const [categories, setCategories] = useState<ScholarshipCategoryItem[]>(() => {
     try {
+      const cached = (db as any).categories?.getCached?.();
+      if (Array.isArray(cached) && cached.length > 0) return cached;
       const saved = localStorage.getItem('capsu_scholarship_categories');
       if (saved) {
         const parsed = JSON.parse(saved);
@@ -1400,6 +1402,9 @@ export function GuidanceSettings() {
   const saveCategoriesState = (newCategories: ScholarshipCategoryItem[]) => {
     setCategories(newCategories);
     saveStoredScholarshipCategories(newCategories);
+    if ((db as any).categories?.save) {
+      (db as any).categories.save(newCategories);
+    }
   };
 
   // Active Category & Subtype
@@ -1540,8 +1545,11 @@ export function GuidanceSettings() {
     }
     const name = allocationForm.name.trim();
     const hasSpecifyField = allocationForm.hasSpecifyField;
+    const targetCatName = currentCategory?.name || 'Internally-Funded';
+    const targetSubTypeName = currentSubtype?.name || 'Institutional';
 
     if (editingAllocation) {
+      const oldName = editingAllocation.name;
       const updated = categories.map(c => {
         if (c.id === selectedCategoryId) {
           return {
@@ -1560,9 +1568,29 @@ export function GuidanceSettings() {
         return c;
       });
       saveCategoriesState(updated);
+
+      // Sync to db.scholarships
+      const match = scholarships.find(s => s.name === oldName || s.name === `${oldName} (${targetCatName})` || s.id === editingAllocation.id);
+      if (match) {
+        db.scholarships.update(match.id, {
+          name,
+          type: targetCatName,
+          category: targetSubTypeName
+        }).catch(console.warn);
+      } else {
+        db.scholarships.set(editingAllocation.id, {
+          id: editingAllocation.id,
+          name,
+          type: targetCatName,
+          category: targetSubTypeName,
+          status: 'Active',
+          description: `${targetSubTypeName} Allocation`
+        }).catch(console.warn);
+      }
     } else {
+      const allocId = `alloc-${Date.now()}`;
       const newAlloc: ScholarshipAllocationItem = {
-        id: `alloc-${Date.now()}`,
+        id: allocId,
         name,
         hasSpecifyField
       };
@@ -1585,23 +1613,20 @@ export function GuidanceSettings() {
       });
       saveCategoriesState(updated);
 
-      // Sync into db.scholarships for application forms
-      try {
-        await db.scholarships.create({
-          name: `${name} (${currentCategory?.name || 'Scholarship'})`,
-          type: currentCategory?.name || 'Internally-Funded',
-          category: currentSubtype?.name || 'Academic',
-          status: 'Active',
-          description: `${currentSubtype?.name || 'Scholarship'} Allocation`
-        });
-      } catch (err) {
-        console.error(err);
-      }
+      // Sync into db.scholarships
+      db.scholarships.set(allocId, {
+        id: allocId,
+        name: name,
+        type: targetCatName,
+        category: targetSubTypeName,
+        status: 'Active',
+        description: `${targetSubTypeName} Allocation`
+      }).catch(console.warn);
     }
     setShowAllocationModal(false);
   };
 
-  const handleDeleteAllocation = (allocId: string) => {
+  const handleDeleteAllocation = async (allocId: string) => {
     const alloc = currentAllocations.find(a => a.id === allocId);
     if (confirm(`Are you sure you want to delete "${alloc?.name || 'this'}" allocation?`)) {
       const updated = categories.map(c => {
@@ -1622,11 +1647,19 @@ export function GuidanceSettings() {
         return c;
       });
       saveCategoriesState(updated);
+
+      const allocName = alloc?.name;
+      const target = scholarships.find(s => s.id === allocId || (allocName && (s.name === allocName || s.name.startsWith(allocName))));
+      if (target) {
+        db.scholarships.delete(target.id).catch(console.warn);
+      } else {
+        db.scholarships.delete(allocId).catch(console.warn);
+      }
     }
   };
 
   // Legacy scholarships state for backward-compatibility
-  const [scholarships, setScholarships] = useState<any[]>([]);
+  const [scholarships, setScholarships] = useState<any[]>(() => db.scholarships.getCached());
   const [showScholarshipModal, setShowScholarshipModal] = useState(false);
   const [editingScholarship, setEditingScholarship] = useState<any>(null);
   const [scholarshipForm, setScholarshipForm] = useState({
@@ -1650,7 +1683,7 @@ export function GuidanceSettings() {
       if (editingScholarship) {
         const oldName = editingScholarship.name;
         await db.scholarships.update(editingScholarship.id, scholarshipForm);
-        setScholarships(scholarships.map(s => s.id === editingScholarship.id ? { ...s, ...scholarshipForm } : s));
+        setScholarships(db.scholarships.getCached());
 
         const updatedCategories = categories.map(cat => ({
           ...cat,
@@ -1661,8 +1694,8 @@ export function GuidanceSettings() {
         }));
         saveCategoriesState(updatedCategories);
       } else {
-        const newScholarship = await db.scholarships.create(scholarshipForm);
-        setScholarships([...scholarships, newScholarship || { id: `sch-${Date.now()}`, ...scholarshipForm }]);
+        await db.scholarships.create(scholarshipForm);
+        setScholarships(db.scholarships.getCached());
 
         // Also add to capsu_scholarship_categories hierarchy so it appears in student form & reports!
         const updatedCategories = categories.map(cat => {
@@ -1707,7 +1740,7 @@ export function GuidanceSettings() {
     const sToDelete = scholarships.find(s => s.id === id);
     if (confirm("Are you sure you want to delete this scholarship?")) {
       await db.scholarships.delete(id);
-      setScholarships(scholarships.filter(s => s.id !== id));
+      setScholarships(db.scholarships.getCached());
 
       if (sToDelete && sToDelete.name) {
         const updatedCategories = categories.map(cat => ({
@@ -1733,12 +1766,15 @@ export function GuidanceSettings() {
   });
 
   // Courses state (BSCS, BAEL, BSFT, BSOA)
-  const [courses, setCourses] = useState<any[]>([
-    { id: '1', code: 'BSCS', name: 'Bachelor of Science in Computer Science', department: 'College of Information & Communications Technology', status: 'Active' },
-    { id: '2', code: 'BAEL', name: 'Bachelor of Arts in English Language', department: 'College of Arts and Sciences', status: 'Active' },
-    { id: '3', code: 'BSFT', name: 'Bachelor of Science in Food Technology', department: 'College of Agriculture and Fisheries Technology', status: 'Active' },
-    { id: '4', code: 'BSOA', name: 'Bachelor of Science in Office Administration', department: 'College of Business and Management', status: 'Active' },
-  ]);
+  const [courses, setCourses] = useState<any[]>(() => {
+    const cached = db.courses.getCached();
+    return cached && cached.length > 0 ? cached : [
+      { id: '1', code: 'BSCS', name: 'Bachelor of Science in Computer Science', department: 'College of Information & Communications Technology', status: 'Active' },
+      { id: '2', code: 'BAEL', name: 'Bachelor of Arts in English Language', department: 'College of Arts and Sciences', status: 'Active' },
+      { id: '3', code: 'BSFT', name: 'Bachelor of Science in Food Technology', department: 'College of Agriculture and Fisheries Technology', status: 'Active' },
+      { id: '4', code: 'BSOA', name: 'Bachelor of Science in Office Administration', department: 'College of Business and Management', status: 'Active' },
+    ];
+  });
   const [showCourseModal, setShowCourseModal] = useState(false);
   const [editingCourse, setEditingCourse] = useState<any>(null);
   const [courseForm, setCourseForm] = useState({
@@ -1768,14 +1804,16 @@ export function GuidanceSettings() {
       db.academicYears.listAll(),
       db.sections.listAll(),
       db.scholarships.listAll(),
-      db.formRequirements.listAll()
-    ]).then(([coursesList, ayList, sectionsList, schs, reqs]) => {
+      db.formRequirements.listAll(),
+      (db as any).categories?.listAll?.()
+    ]).then(([coursesList, ayList, sectionsList, schs, reqs, catsList]) => {
       if (!isMounted) return;
       if (coursesList && coursesList.length > 0) setCourses(coursesList);
       if (ayList && ayList.length > 0) setAcademicYears(ayList);
       if (sectionsList && sectionsList.length > 0) setSections(sectionsList);
       if (schs && schs.length > 0) setScholarships(schs);
       if (reqs && reqs.length > 0) setFormFields(reqs);
+      if (catsList && Array.isArray(catsList) && catsList.length > 0) setCategories(catsList);
     }).catch(e => console.warn("Failed to load settings list:", e));
 
     const unsubAY = db.academicYears.subscribe(ayList => {
@@ -1784,15 +1822,33 @@ export function GuidanceSettings() {
     const unsubCourses = db.courses.subscribe(cList => {
       if (isMounted && cList && cList.length > 0) setCourses(cList);
     });
+    const unsubSections = db.sections.subscribe(sList => {
+      if (isMounted && sList && sList.length > 0) setSections(sList);
+    });
     const unsubSch = db.scholarships.subscribe(sList => {
       if (isMounted && sList && sList.length > 0) setScholarships(sList);
     });
+    const unsubCats = (db as any).categories?.subscribe?.((catsList: any[]) => {
+      if (isMounted && Array.isArray(catsList) && catsList.length > 0) setCategories(catsList);
+    });
+
+    const handleCatsUpdated = () => {
+      if (!isMounted) return;
+      const cached = (db as any).categories?.getCached?.();
+      if (Array.isArray(cached) && cached.length > 0) {
+        setCategories(cached);
+      }
+    };
+    window.addEventListener('scholarship_categories_updated', handleCatsUpdated);
 
     return () => {
       isMounted = false;
       unsubAY();
       unsubCourses();
+      unsubSections();
       unsubSch();
+      if (unsubCats) unsubCats();
+      window.removeEventListener('scholarship_categories_updated', handleCatsUpdated);
     };
   }, []);
 
@@ -1808,11 +1864,10 @@ export function GuidanceSettings() {
     try {
       if (editingAcademicYear) {
         await db.academicYears.update(editingAcademicYear.id, payload);
-        setAcademicYears(academicYears.map(ay => ay.id === editingAcademicYear.id ? { ...ay, ...payload } : ay));
       } else {
-        const newAY = await db.academicYears.create(payload);
-        setAcademicYears([newAY, ...academicYears]);
+        await db.academicYears.create(payload);
       }
+      setAcademicYears(db.academicYears.getCached());
       setShowAcademicYearModal(false);
     } catch (err: any) {
       alert(err.message || "This Academic Year already exists.");
@@ -1833,14 +1888,11 @@ export function GuidanceSettings() {
   const handleDeleteAcademicYear = async (id: string) => {
     if (confirm("Are you sure you want to delete this academic year?")) {
       await db.academicYears.delete(id);
-      setAcademicYears(academicYears.filter(ay => ay.id !== id));
+      setAcademicYears(db.academicYears.getCached());
     }
   };
 
   // Course Handlers
-  
-
-
   const handleSaveCourse = async () => {
     if (!courseForm.code.trim() || !courseForm.name.trim()) {
       alert("Please enter both Course Code (e.g. BSCS) and Degree Title.");
@@ -1849,11 +1901,10 @@ export function GuidanceSettings() {
     try {
       if (editingCourse) {
         await db.courses.update(editingCourse.id, courseForm);
-        setCourses(courses.map(c => c.id === editingCourse.id ? { ...c, ...courseForm } : c));
       } else {
-        const newCourse = await db.courses.create(courseForm);
-        setCourses([...courses, newCourse || { id: Date.now().toString(), ...courseForm }]);
+        await db.courses.create(courseForm);
       }
+      setCourses(db.courses.getCached());
       window.dispatchEvent(new Event('courses_updated'));
       setShowCourseModal(false);
     } catch (err: any) {
@@ -1875,7 +1926,7 @@ export function GuidanceSettings() {
   const handleDeleteCourse = async (id: string) => {
     if (confirm("Are you sure you want to delete this course?")) {
       await db.courses.delete(id);
-      setCourses(courses.filter(c => c.id !== id));
+      setCourses(db.courses.getCached());
       window.dispatchEvent(new Event('courses_updated'));
     }
   };
@@ -1897,11 +1948,10 @@ export function GuidanceSettings() {
     try {
       if (editingSection) {
         await db.sections.update(editingSection.id, payload);
-        setSections(sections.map(s => s.id === editingSection.id ? { ...s, ...payload } : s));
       } else {
-        const newSection = await db.sections.create(payload);
-        setSections([...sections, newSection]);
+        await db.sections.create(payload);
       }
+      setSections(db.sections.getCached());
       window.dispatchEvent(new Event('sections_updated'));
       setShowSectionModal(false);
     } catch (err: any) {
@@ -1920,7 +1970,7 @@ export function GuidanceSettings() {
   const handleDeleteSection = async (id: string) => {
     if (confirm("Are you sure you want to delete this section?")) {
       await db.sections.delete(id);
-      setSections(sections.filter(s => s.id !== id));
+      setSections(db.sections.getCached());
       window.dispatchEvent(new Event('sections_updated'));
     }
   };
