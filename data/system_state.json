@@ -1,22 +1,22 @@
 {
   "academicYears": [
     {
-      "id": "ay-2026-2027",
       "year": "2026-2027",
       "overallStatus": "Inactive",
       "firstSemester": "Active",
       "secondSemester": "Inactive",
-      "label": "A.Y. 2026-2027",
-      "updatedAt": "2026-11-15T20:03:20.166Z"
+      "id": "ay-2026-2027",
+      "updatedAt": "2026-11-16T22:03:54.638Z",
+      "label": "A.Y. 2026-2027"
     },
     {
-      "id": "ay-2025-2026",
       "year": "2025-2026",
       "overallStatus": "Active",
       "firstSemester": "Active",
       "secondSemester": "Inactive",
-      "label": "A.Y. 2025-2026",
-      "updatedAt": "2026-11-15T20:03:33.800Z"
+      "id": "ay-2025-2026",
+      "updatedAt": "2026-11-16T22:03:59.827Z",
+      "label": "A.Y. 2025-2026"
     },
     {
       "id": "ay-2024-2025",
@@ -60,19 +60,19 @@
   ],
   "sections": [
     {
-      "id": "sec-1",
+      "id": "sec-a",
       "name": "A"
     },
     {
-      "id": "sec-2",
+      "id": "sec-b",
       "name": "B"
     },
     {
-      "id": "sec-3",
+      "id": "sec-c",
       "name": "C"
     },
     {
-      "id": "sec-4",
+      "id": "sec-d",
       "name": "D"
     }
   ],

@@ -246,6 +246,97 @@ const defaultInitialState: SystemState = {
   categories: defaultCategories
 };
 
+function cleanAcademicYears(list: any[]): any[] {
+  if (!Array.isArray(list)) return [];
+  const map = new Map<string, any>();
+  for (const item of list) {
+    if (!item || !item.year) continue;
+    const yearKey = (item.year || '').trim();
+    if (!yearKey) continue;
+    const canonicalId = `ay-${yearKey.replace(/\s+/g, '-')}`;
+    const cleanItem = {
+      ...item,
+      id: canonicalId,
+      year: yearKey,
+      label: item.label || `A.Y. ${yearKey}`,
+      overallStatus: item.overallStatus || 'Inactive',
+      firstSemester: item.firstSemester || 'Active',
+      secondSemester: item.secondSemester || 'Inactive',
+      updatedAt: item.updatedAt || new Date().toISOString()
+    };
+    if (!map.has(yearKey)) {
+      map.set(yearKey, cleanItem);
+    } else {
+      const existing = map.get(yearKey)!;
+      const t1 = cleanItem.updatedAt ? new Date(cleanItem.updatedAt).getTime() : 0;
+      const t2 = existing.updatedAt ? new Date(existing.updatedAt).getTime() : 0;
+      if (cleanItem.overallStatus === 'Active' || t1 >= t2) {
+        map.set(yearKey, cleanItem);
+      }
+    }
+  }
+  const result = Array.from(map.values()).sort((a, b) => b.year.localeCompare(a.year));
+  let activeSeen = false;
+  return result.map(ay => {
+    if (ay.overallStatus === 'Active') {
+      if (!activeSeen) {
+        activeSeen = true;
+        return ay;
+      }
+      return { ...ay, overallStatus: 'Inactive' };
+    }
+    return ay;
+  });
+}
+
+function cleanCourses(list: any[]): any[] {
+  if (!Array.isArray(list)) return [];
+  const map = new Map<string, any>();
+  for (const c of list) {
+    if (!c || !c.code) continue;
+    const codeKey = (c.code || '').trim().toUpperCase();
+    if (!codeKey) continue;
+    const canonicalId = `course-${codeKey.toLowerCase().replace(/[^a-z0-9]/g, '-')}`;
+    const clean = {
+      ...c,
+      id: canonicalId,
+      code: codeKey,
+      name: (c.name || '').trim(),
+      department: (c.department || '').trim(),
+      status: c.status || 'Active'
+    };
+    if (!map.has(codeKey)) {
+      map.set(codeKey, clean);
+    } else {
+      const existing = map.get(codeKey)!;
+      if (clean.name.length > existing.name.length) {
+        map.set(codeKey, clean);
+      }
+    }
+  }
+  return Array.from(map.values());
+}
+
+function cleanSections(list: any[]): any[] {
+  if (!Array.isArray(list)) return [];
+  const map = new Map<string, any>();
+  for (const s of list) {
+    if (!s || !s.name) continue;
+    const nameKey = (s.name || '').trim().toUpperCase();
+    if (!nameKey || !/^[A-Z]+$/.test(nameKey)) continue;
+    const canonicalId = `sec-${nameKey.toLowerCase()}`;
+    const clean = {
+      ...s,
+      id: canonicalId,
+      name: nameKey
+    };
+    if (!map.has(nameKey)) {
+      map.set(nameKey, clean);
+    }
+  }
+  return Array.from(map.values()).sort((a, b) => a.name.localeCompare(b.name));
+}
+
 // Load persistent state
 let state: SystemState = { ...defaultInitialState };
 try {
@@ -253,9 +344,9 @@ try {
     const raw = fs.readFileSync(stateFilePath, 'utf-8');
     const parsed = JSON.parse(raw);
     state = {
-      academicYears: parsed.academicYears?.length ? parsed.academicYears : defaultInitialState.academicYears,
-      courses: parsed.courses?.length ? parsed.courses : defaultInitialState.courses,
-      sections: parsed.sections?.length ? parsed.sections : defaultInitialState.sections,
+      academicYears: cleanAcademicYears(parsed.academicYears?.length ? parsed.academicYears : defaultInitialState.academicYears),
+      courses: cleanCourses(parsed.courses?.length ? parsed.courses : defaultInitialState.courses),
+      sections: cleanSections(parsed.sections?.length ? parsed.sections : defaultInitialState.sections),
       scholarships: parsed.scholarships?.length ? parsed.scholarships : defaultInitialState.scholarships,
       submissions: Array.isArray(parsed.submissions) ? parsed.submissions : [],
       categories: Array.isArray(parsed.categories) && parsed.categories.length > 0 ? parsed.categories : defaultCategories
@@ -287,7 +378,7 @@ async function loadStateFromSupabase() {
     ]);
 
     if (ayRes.data && ayRes.data.length > 0) {
-      state.academicYears = ayRes.data.map((ay: any) => ({
+      state.academicYears = cleanAcademicYears(ayRes.data.map((ay: any) => ({
         id: ay.id,
         year: ay.year,
         overallStatus: ay.overall_status || 'Active',
@@ -295,24 +386,24 @@ async function loadStateFromSupabase() {
         secondSemester: ay.second_semester || 'Inactive',
         label: ay.label || `A.Y. ${ay.year}`,
         updatedAt: ay.updated_at
-      }));
+      })));
     }
     if (coursesRes.data && coursesRes.data.length > 0) {
-      state.courses = coursesRes.data.map((c: any) => ({
+      state.courses = cleanCourses(coursesRes.data.map((c: any) => ({
         id: c.id,
         code: c.code,
         name: c.name,
         department: c.department || '',
         status: c.status || 'Active'
-      }));
+      })));
     }
     if (secRes.data && secRes.data.length > 0) {
-      state.sections = secRes.data.map((s: any) => ({
+      state.sections = cleanSections(secRes.data.map((s: any) => ({
         id: s.id,
         name: s.name,
         course: s.course || null,
         status: s.status || 'Active'
-      }));
+      })));
     }
     if (schRes.data && schRes.data.length > 0) {
       state.scholarships = schRes.data.map((s: any) => ({
@@ -444,10 +535,12 @@ app.get('/api/sync/events', (req, res) => {
 
 // ACADEMIC YEARS
 app.get('/api/academic-years', (req, res) => {
+  state.academicYears = cleanAcademicYears(state.academicYears);
   res.json(state.academicYears);
 });
 
 app.get('/api/academic-years/active', (req, res) => {
+  state.academicYears = cleanAcademicYears(state.academicYears);
   res.json(computeActiveTerm(state.academicYears));
 });
 
@@ -457,39 +550,31 @@ app.post('/api/academic-years', (req, res) => {
     res.status(400).json({ error: 'Academic year is required' });
     return;
   }
-  const id = ay.id || `ay-${Date.now()}`;
   const trimmedYear = (ay.year || '').trim();
+  const canonicalId = `ay-${trimmedYear.replace(/\s+/g, '-')}`;
   const now = new Date().toISOString();
 
   const isCurrentActive = ay.overallStatus === 'Active';
 
-  // If this year is set to Active, deactivate other academic years to ensure one active year
-  if (isCurrentActive) {
-    state.academicYears = state.academicYears.map(item => {
-      if (item.id !== id && (item.year || '').trim() !== trimmedYear) {
-        return { ...item, overallStatus: 'Inactive' as const };
-      }
-      return item;
-    });
-    safeSupabase(() => supabase!.from('academic_years').update({ overall_status: 'Inactive' }).neq('id', id));
-  }
-
-  const existingIdx = state.academicYears.findIndex(item => item.id === id || (item.year || '').trim() === trimmedYear);
   const updatedItem = {
     ...ay,
-    id: existingIdx >= 0 ? state.academicYears[existingIdx].id : id,
+    id: canonicalId,
     year: trimmedYear,
     updatedAt: now,
     label: ay.label || `A.Y. ${trimmedYear}`
   };
 
-  if (existingIdx >= 0) {
-    state.academicYears[existingIdx] = updatedItem;
-  } else {
-    state.academicYears.unshift(updatedItem);
+  // Remove any previous record with the same year
+  let nextList = state.academicYears.filter(item => (item.year || '').trim() !== trimmedYear);
+  if (isCurrentActive) {
+    nextList = nextList.map(item => ({ ...item, overallStatus: 'Inactive' as const }));
+    safeSupabase(() => supabase!.from('academic_years').update({ overall_status: 'Inactive' }).neq('id', canonicalId));
   }
+  nextList.unshift(updatedItem);
 
+  state.academicYears = cleanAcademicYears(nextList);
   saveState();
+
   safeSupabase(() => supabase!.from('academic_years').upsert({
     id: updatedItem.id,
     year: updatedItem.year,
@@ -499,15 +584,17 @@ app.post('/api/academic-years', (req, res) => {
     label: updatedItem.label,
     updated_at: updatedItem.updatedAt
   }, { onConflict: 'id' }));
+
   broadcast('ACADEMIC_YEARS_SYNC', state.academicYears);
   res.json({ success: true, item: updatedItem, list: state.academicYears, activeTerm: computeActiveTerm(state.academicYears) });
 });
 
 app.delete('/api/academic-years/:id', (req, res) => {
   const { id } = req.params;
-  state.academicYears = state.academicYears.filter(ay => ay.id !== id);
+  const targetYear = id.replace(/^ay-/, '').trim();
+  state.academicYears = cleanAcademicYears(state.academicYears.filter(ay => ay.id !== id && (ay.year || '').trim() !== targetYear));
   saveState();
-  safeSupabase(() => supabase!.from('academic_years').delete().eq('id', id));
+  safeSupabase(() => supabase!.from('academic_years').delete().or(`id.eq.${id},year.eq.${targetYear}`));
   broadcast('ACADEMIC_YEARS_SYNC', state.academicYears);
   res.json({ success: true, list: state.academicYears, activeTerm: computeActiveTerm(state.academicYears) });
 });

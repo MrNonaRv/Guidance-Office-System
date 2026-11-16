@@ -1,9 +1,9 @@
 import { LayoutGrid, FileText, Bell, Mail, BarChart2, Settings, User, LogOut, Users, TrendingUp, BookOpen, Filter, Calendar, Award, GraduationCap, ImageIcon, Plus, Pen, Trash2, Paperclip, View, Eye, EyeOff, Menu, X, ChevronRight, Loader2, Cloud, CheckCircle2, AlertCircle, RefreshCw, Package, PackageOpen, FileSpreadsheet, Folder, Check, Sparkles } from 'lucide-react';
 import { cn, formatTimeAgo } from '../../lib/utils';
-import React, { useState, useEffect} from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 /* import { Award, LayoutGrid, TrendingUp, BookOpen, FileText, Bell, Mail, BarChart2, Settings, LogOut, Filter, View, User, Paperclip, Image as ImageIcon, Pen, Trash2, Calendar, GraduationCap, Users, Plus, } from 'lucide-react'; */
-import { db } from '../../lib/db';
+import { db, deduplicateAcademicYears, deduplicateCourses, deduplicateSections } from '../../lib/db';
 import { motion, AnimatePresence } from 'motion/react';
 import { StudentRecordModal } from '../../components/StudentRecordModal';
 import { testSupabaseConnection, isSupabaseConfigured, BUCKET_NAME } from '../../lib/supabase';
@@ -1018,6 +1018,8 @@ export function GuidanceSubmissions() {
   const [filterSemester, setFilterSemester] = useState('All semesters');
   const [coursesList, setCoursesList] = useState<any[]>(() => db.courses.getCached());
   const [academicYearsList, setAcademicYearsList] = useState<any[]>(() => db.academicYears.getCached());
+  const displayedAcademicYearsList = useMemo(() => deduplicateAcademicYears(academicYearsList), [academicYearsList]);
+  const displayedCoursesList = useMemo(() => deduplicateCourses(coursesList), [coursesList]);
 
   useEffect(() => {
     const autoOpenId = location.state?.autoOpenSubmissionId;
@@ -1138,7 +1140,7 @@ export function GuidanceSubmissions() {
                         className="w-full text-sm border border-gray-300 text-gray-600 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 outline-none bg-white"
                       >
                         <option>All academic years</option>
-                        {academicYearsList.map(ay => (
+                        {displayedAcademicYearsList.map(ay => (
                           <option key={ay.id} value={ay.year}>{ay.year}</option>
                         ))}
                       </select>
@@ -1756,6 +1758,7 @@ export function GuidanceSettings() {
   };
 
   const [academicYears, setAcademicYears] = useState<any[]>(() => db.academicYears.getCached());
+  const displayedAcademicYears = useMemo(() => deduplicateAcademicYears(academicYears), [academicYears]);
   const [showAcademicYearModal, setShowAcademicYearModal] = useState(false);
   const [editingAcademicYear, setEditingAcademicYear] = useState<any>(null);
   const [academicYearForm, setAcademicYearForm] = useState({
@@ -1775,6 +1778,7 @@ export function GuidanceSettings() {
       { id: '4', code: 'BSOA', name: 'Bachelor of Science in Office Administration', department: 'College of Business and Management', status: 'Active' },
     ];
   });
+  const displayedCourses = useMemo(() => deduplicateCourses(courses), [courses]);
   const [showCourseModal, setShowCourseModal] = useState(false);
   const [editingCourse, setEditingCourse] = useState<any>(null);
   const [courseForm, setCourseForm] = useState({
@@ -1783,6 +1787,7 @@ export function GuidanceSettings() {
 
   // Sections state
   const [sections, setSections] = useState<any[]>(() => db.sections.getCached());
+  const displayedSections = useMemo(() => deduplicateSections(sections), [sections]);
   const [showSectionModal, setShowSectionModal] = useState(false);
   const [editingSection, setEditingSection] = useState<any>(null);
   const [sectionForm, setSectionForm] = useState({
@@ -1853,13 +1858,17 @@ export function GuidanceSettings() {
   }, []);
 
   const handleSaveAcademicYear = async () => {
-    if (!academicYearForm.year.trim()) {
+    const cleanYear = academicYearForm.year.trim();
+    if (!cleanYear) {
       alert("Please specify the academic year (e.g. 2025-2026).");
       return;
     }
+    const canonicalId = `ay-${cleanYear.replace(/\s+/g, '-')}`;
     const payload = {
       ...academicYearForm,
-      label: `A.Y. ${academicYearForm.year}`
+      id: canonicalId,
+      year: cleanYear,
+      label: `A.Y. ${cleanYear}`
     };
     try {
       if (editingAcademicYear) {
@@ -1867,7 +1876,8 @@ export function GuidanceSettings() {
       } else {
         await db.academicYears.create(payload);
       }
-      setAcademicYears(db.academicYears.getCached());
+      const fresh = await db.academicYears.listAll();
+      setAcademicYears(fresh);
       setShowAcademicYearModal(false);
     } catch (err: any) {
       alert(err.message || "This Academic Year already exists.");
@@ -1888,7 +1898,8 @@ export function GuidanceSettings() {
   const handleDeleteAcademicYear = async (id: string) => {
     if (confirm("Are you sure you want to delete this academic year?")) {
       await db.academicYears.delete(id);
-      setAcademicYears(db.academicYears.getCached());
+      const fresh = await db.academicYears.listAll();
+      setAcademicYears(fresh);
     }
   };
 
@@ -1904,7 +1915,8 @@ export function GuidanceSettings() {
       } else {
         await db.courses.create(courseForm);
       }
-      setCourses(db.courses.getCached());
+      const fresh = await db.courses.listAll();
+      setCourses(fresh);
       window.dispatchEvent(new Event('courses_updated'));
       setShowCourseModal(false);
     } catch (err: any) {
@@ -1926,7 +1938,8 @@ export function GuidanceSettings() {
   const handleDeleteCourse = async (id: string) => {
     if (confirm("Are you sure you want to delete this course?")) {
       await db.courses.delete(id);
-      setCourses(db.courses.getCached());
+      const fresh = await db.courses.listAll();
+      setCourses(fresh);
       window.dispatchEvent(new Event('courses_updated'));
     }
   };
@@ -1951,7 +1964,8 @@ export function GuidanceSettings() {
       } else {
         await db.sections.create(payload);
       }
-      setSections(db.sections.getCached());
+      const fresh = await db.sections.listAll();
+      setSections(fresh);
       window.dispatchEvent(new Event('sections_updated'));
       setShowSectionModal(false);
     } catch (err: any) {
@@ -1970,7 +1984,8 @@ export function GuidanceSettings() {
   const handleDeleteSection = async (id: string) => {
     if (confirm("Are you sure you want to delete this section?")) {
       await db.sections.delete(id);
-      setSections(db.sections.getCached());
+      const fresh = await db.sections.listAll();
+      setSections(fresh);
       window.dispatchEvent(new Event('sections_updated'));
     }
   };
@@ -2318,7 +2333,7 @@ export function GuidanceSettings() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 text-sm">
-                {academicYears.map((ay, idx) => (
+                {displayedAcademicYears.map((ay, idx) => (
                   <tr key={ay.id || idx} className="hover:bg-blue-50/20 transition-colors">
                     <td className="py-4 px-8 font-bold text-gray-900">{ay.year}</td>
                     <td className="py-4 px-6 text-center">
@@ -2386,7 +2401,7 @@ export function GuidanceSettings() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 text-sm">
-                {courses.map((c, idx) => (
+                {displayedCourses.map((c, idx) => (
                   <tr key={c.id || idx} className="hover:bg-blue-50/20 transition-colors">
                     <td className="py-4 px-8 font-bold text-[#1864db]">{c.code}</td>
                     <td className="py-4 px-6 font-bold text-gray-900">{c.name}</td>
@@ -2424,7 +2439,7 @@ export function GuidanceSettings() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 text-sm">
-                {sections.map((s, idx) => (
+                {displayedSections.map((s, idx) => (
                   <tr key={s.id || idx} className="hover:bg-blue-50/20 transition-colors">
                     <td className="py-4 px-8 font-bold text-gray-900">{s.name}</td>
                     <td className="py-4 px-8 text-right space-x-3">

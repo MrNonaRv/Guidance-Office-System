@@ -242,6 +242,97 @@ let memoryNotifications: NotificationItem[] = [...defaultNotifications];
 let memoryCommunications: CommunicationItem[] = [];
 let memoryCategories: any[] = [];
 
+export function deduplicateAcademicYears(ays: AcademicYear[]): AcademicYear[] {
+  if (!Array.isArray(ays)) return [];
+  const map = new Map<string, AcademicYear>();
+  for (const ay of ays) {
+    if (!ay || !ay.year) continue;
+    const yearKey = (ay.year || '').trim();
+    if (!yearKey) continue;
+    const canonicalId = `ay-${yearKey.replace(/\s+/g, '-')}`;
+    const normalized: AcademicYear = {
+      ...ay,
+      id: canonicalId,
+      year: yearKey,
+      label: ay.label || `A.Y. ${yearKey}`,
+      overallStatus: ay.overallStatus || 'Inactive',
+      firstSemester: ay.firstSemester || 'Active',
+      secondSemester: ay.secondSemester || 'Inactive',
+      updatedAt: ay.updatedAt || new Date().toISOString()
+    };
+    if (!map.has(yearKey)) {
+      map.set(yearKey, normalized);
+    } else {
+      const existing = map.get(yearKey)!;
+      const t1 = normalized.updatedAt ? new Date(normalized.updatedAt).getTime() : 0;
+      const t2 = existing.updatedAt ? new Date(existing.updatedAt).getTime() : 0;
+      if (normalized.overallStatus === 'Active' || t1 >= t2) {
+        map.set(yearKey, normalized);
+      }
+    }
+  }
+  const result = Array.from(map.values()).sort((a, b) => b.year.localeCompare(a.year));
+  let activeSeen = false;
+  return result.map(item => {
+    if (item.overallStatus === 'Active') {
+      if (!activeSeen) {
+        activeSeen = true;
+        return item;
+      }
+      return { ...item, overallStatus: 'Inactive' as const };
+    }
+    return item;
+  });
+}
+
+export function deduplicateCourses(courses: Course[]): Course[] {
+  if (!Array.isArray(courses)) return [];
+  const map = new Map<string, Course>();
+  for (const c of courses) {
+    if (!c || !c.code) continue;
+    const codeKey = (c.code || '').trim().toUpperCase();
+    if (!codeKey) continue;
+    const canonicalId = `course-${codeKey.toLowerCase().replace(/[^a-z0-9]/g, '-')}`;
+    const normalized: Course = {
+      ...c,
+      id: canonicalId,
+      code: codeKey,
+      name: (c.name || '').trim(),
+      department: (c.department || '').trim(),
+      status: c.status || 'Active'
+    };
+    if (!map.has(codeKey)) {
+      map.set(codeKey, normalized);
+    } else {
+      const existing = map.get(codeKey)!;
+      if (normalized.name.length > existing.name.length) {
+        map.set(codeKey, normalized);
+      }
+    }
+  }
+  return Array.from(map.values());
+}
+
+export function deduplicateSections(sections: Section[]): Section[] {
+  if (!Array.isArray(sections)) return [];
+  const map = new Map<string, Section>();
+  for (const s of sections) {
+    if (!s || !s.name) continue;
+    const nameKey = (s.name || '').trim().toUpperCase();
+    if (!nameKey || !/^[A-Z]+$/.test(nameKey)) continue;
+    const canonicalId = `sec-${nameKey.toLowerCase()}`;
+    const normalized: Section = {
+      ...s,
+      id: canonicalId,
+      name: nameKey
+    };
+    if (!map.has(nameKey)) {
+      map.set(nameKey, normalized);
+    }
+  }
+  return Array.from(map.values()).sort((a, b) => a.name.localeCompare(b.name));
+}
+
 // Listeners
 const submissionListeners = new Set<(subs: Submission[]) => void>();
 const notificationListeners = new Set<(notifs: NotificationItem[]) => void>();
@@ -275,13 +366,13 @@ if (syncChannel) {
         memoryScholarships = data;
         notifyScholarshipListeners();
       } else if (type === 'ACADEMIC_YEARS_SYNC' && Array.isArray(data)) {
-        memoryAcademicYears = data;
+        memoryAcademicYears = deduplicateAcademicYears(data);
         notifyAcademicYearListeners();
       } else if (type === 'COURSES_SYNC' && Array.isArray(data)) {
-        memoryCourses = data;
+        memoryCourses = deduplicateCourses(data);
         notifyCourseListeners();
       } else if (type === 'SECTIONS_SYNC' && Array.isArray(data)) {
-        memorySections = data;
+        memorySections = deduplicateSections(data);
         notifySectionListeners();
       } else if (type === 'CATEGORIES_SYNC' && Array.isArray(data)) {
         memoryCategories = data;
@@ -305,18 +396,21 @@ if (typeof window !== 'undefined' && 'EventSource' in window) {
           const { type, data } = JSON.parse(event.data);
           if (type === 'INIT') {
             if (Array.isArray(data?.academicYears) && data.academicYears.length > 0) {
-              memoryAcademicYears = data.academicYears;
-              data.academicYears.forEach((ay: AcademicYear) => academicYearsDb.setItem(ay.id, ay).catch(() => {}));
+              const deduped = deduplicateAcademicYears(data.academicYears);
+              memoryAcademicYears = deduped;
+              deduped.forEach((ay: AcademicYear) => academicYearsDb.setItem(ay.id, ay).catch(() => {}));
               notifyAcademicYearListeners();
             }
             if (Array.isArray(data?.courses) && data.courses.length > 0) {
-              memoryCourses = data.courses;
-              data.courses.forEach((c: Course) => coursesDb.setItem(c.id, c).catch(() => {}));
+              const deduped = deduplicateCourses(data.courses);
+              memoryCourses = deduped;
+              deduped.forEach((c: Course) => coursesDb.setItem(c.id, c).catch(() => {}));
               notifyCourseListeners();
             }
             if (Array.isArray(data?.sections) && data.sections.length > 0) {
-              memorySections = data.sections;
-              data.sections.forEach((s: Section) => sectionsDb.setItem(s.id, s).catch(() => {}));
+              const deduped = deduplicateSections(data.sections);
+              memorySections = deduped;
+              deduped.forEach((s: Section) => sectionsDb.setItem(s.id, s).catch(() => {}));
               notifySectionListeners();
             }
             if (Array.isArray(data?.scholarships) && data.scholarships.length > 0) {
@@ -329,16 +423,19 @@ if (typeof window !== 'undefined' && 'EventSource' in window) {
               notifyCategoryListeners(data.categories);
             }
           } else if (type === 'ACADEMIC_YEARS_SYNC' && Array.isArray(data)) {
-            memoryAcademicYears = data;
-            data.forEach((ay: AcademicYear) => academicYearsDb.setItem(ay.id, ay).catch(() => {}));
+            const deduped = deduplicateAcademicYears(data);
+            memoryAcademicYears = deduped;
+            deduped.forEach((ay: AcademicYear) => academicYearsDb.setItem(ay.id, ay).catch(() => {}));
             notifyAcademicYearListeners();
           } else if (type === 'COURSES_SYNC' && Array.isArray(data)) {
-            memoryCourses = data;
-            data.forEach((c: Course) => coursesDb.setItem(c.id, c).catch(() => {}));
+            const deduped = deduplicateCourses(data);
+            memoryCourses = deduped;
+            deduped.forEach((c: Course) => coursesDb.setItem(c.id, c).catch(() => {}));
             notifyCourseListeners();
           } else if (type === 'SECTIONS_SYNC' && Array.isArray(data)) {
-            memorySections = data;
-            data.forEach((s: Section) => sectionsDb.setItem(s.id, s).catch(() => {}));
+            const deduped = deduplicateSections(data);
+            memorySections = deduped;
+            deduped.forEach((s: Section) => sectionsDb.setItem(s.id, s).catch(() => {}));
             notifySectionListeners();
           } else if (type === 'SCHOLARSHIPS_SYNC' && Array.isArray(data)) {
             memoryScholarships = data;
@@ -373,6 +470,7 @@ if (typeof window !== 'undefined' && 'EventSource' in window) {
 }
 
 function notifyAcademicYearListeners() {
+  memoryAcademicYears = deduplicateAcademicYears(memoryAcademicYears);
   academicYearListeners.forEach(cb => {
     try { cb([...memoryAcademicYears]); } catch (e) { console.error(e); }
   });
@@ -387,6 +485,7 @@ function notifyAcademicYearListeners() {
 }
 
 function notifyCourseListeners() {
+  memoryCourses = deduplicateCourses(memoryCourses);
   courseListeners.forEach(cb => {
     try { cb([...memoryCourses]); } catch (e) { console.error(e); }
   });
@@ -401,6 +500,7 @@ function notifyCourseListeners() {
 }
 
 function notifySectionListeners() {
+  memorySections = deduplicateSections(memorySections);
   sectionListeners.forEach(cb => {
     try { cb([...memorySections]); } catch (e) { console.error(e); }
   });
@@ -539,10 +639,6 @@ function notifyScholarshipListeners() {
 // Real-Time Firestore Synchronization using onSnapshot
 let unsubscribeSubmissions: (() => void) | null = null;
 let unsubscribeNotifications: (() => void) | null = null;
-let unsubscribeScholarships: (() => void) | null = null;
-let unsubscribeCourses: (() => void) | null = null;
-let unsubscribeAcademicYears: (() => void) | null = null;
-let unsubscribeSections: (() => void) | null = null;
 
 function setupRealtimeListeners() {
   if (!firestoreDb || isFirestoreQuotaExceeded) return;
@@ -550,10 +646,6 @@ function setupRealtimeListeners() {
   // Clean up any existing listeners
   if (unsubscribeSubmissions) { try { unsubscribeSubmissions(); } catch (e) { /* ignore */ } unsubscribeSubmissions = null; }
   if (unsubscribeNotifications) { try { unsubscribeNotifications(); } catch (e) { /* ignore */ } unsubscribeNotifications = null; }
-  if (unsubscribeScholarships) { try { unsubscribeScholarships(); } catch (e) { /* ignore */ } unsubscribeScholarships = null; }
-  if (unsubscribeCourses) { try { unsubscribeCourses(); } catch (e) { /* ignore */ } unsubscribeCourses = null; }
-  if (unsubscribeAcademicYears) { try { unsubscribeAcademicYears(); } catch (e) { /* ignore */ } unsubscribeAcademicYears = null; }
-  if (unsubscribeSections) { try { unsubscribeSections(); } catch (e) { /* ignore */ } unsubscribeSections = null; }
 
   try {
     unsubscribeSubmissions = onSnapshot(collection(firestoreDb, 'submissions'), (snap) => {
@@ -572,7 +664,6 @@ function setupRealtimeListeners() {
             if (local && local.files && s.files) {
               const mergedFiles = s.files.map(rf => {
                 const lf = local.files?.find(f => f.id === rf.id || f.category === rf.category || f.name === rf.name);
-                // If local has real base64/url data and remote is missing or empty, retain local
                 if (lf && lf.data && (!rf.data || rf.data.length < lf.data.length)) {
                   return { ...rf, data: lf.data };
                 }
@@ -603,7 +694,6 @@ function setupRealtimeListeners() {
           remoteNotifs.push(docSnap.data() as NotificationItem);
         });
         
-        // Merge remote notifications with local memory to ensure nothing is lost
         const notifMap = new Map<string, NotificationItem>();
         memoryNotifications.forEach(n => notifMap.set(n.id, n));
         remoteNotifs.forEach(n => notifMap.set(n.id, n));
@@ -615,83 +705,6 @@ function setupRealtimeListeners() {
     }, (err) => {
       handleFirestoreError(err, OperationType.GET, 'notifications');
     });
-
-    unsubscribeScholarships = onSnapshot(collection(firestoreDb, 'scholarships'), (snap) => {
-      if (!snap.empty) {
-        const remoteScholarships: Scholarship[] = [];
-        snap.forEach(docSnap => {
-          remoteScholarships.push(docSnap.data() as Scholarship);
-        });
-        if (remoteScholarships.length > 0) {
-          memoryScholarships = remoteScholarships;
-          Promise.all(remoteScholarships.map(s => scholarshipsDb.setItem(s.id, s))).catch(() => {});
-          notifyScholarshipListeners();
-          if (typeof window !== 'undefined') {
-            window.dispatchEvent(new Event('scholarships_updated'));
-          }
-        }
-      }
-    }, (err) => {
-      handleFirestoreError(err, OperationType.GET, 'scholarships');
-    });
-
-    unsubscribeCourses = onSnapshot(collection(firestoreDb, 'courses'), (snap) => {
-      if (!snap.empty) {
-        const remoteCourses: Course[] = [];
-        snap.forEach(d => remoteCourses.push(d.data() as Course));
-        if (remoteCourses.length > 0) {
-          const map = new Map<string, Course>();
-          memoryCourses.forEach(c => map.set(c.id, c));
-          remoteCourses.forEach(c => map.set(c.id, c));
-          memoryCourses = Array.from(map.values());
-          Promise.all(remoteCourses.map(c => coursesDb.setItem(c.id, c))).catch(() => {});
-          if (typeof window !== 'undefined') {
-            window.dispatchEvent(new Event('courses_updated'));
-          }
-        }
-      }
-    }, (err) => {
-      handleFirestoreError(err, OperationType.GET, 'courses');
-    });
-
-    unsubscribeAcademicYears = onSnapshot(collection(firestoreDb, 'academicYears'), (snap) => {
-      if (!snap.empty) {
-        const remoteAys: AcademicYear[] = [];
-        snap.forEach(d => remoteAys.push(d.data() as AcademicYear));
-        if (remoteAys.length > 0) {
-          const map = new Map<string, AcademicYear>();
-          memoryAcademicYears.forEach(ay => map.set(ay.id, ay));
-          remoteAys.forEach(ay => map.set(ay.id, ay));
-          memoryAcademicYears = Array.from(map.values());
-          Promise.all(remoteAys.map(ay => academicYearsDb.setItem(ay.id, ay))).catch(() => {});
-          notifyAcademicYearListeners();
-          if (typeof window !== 'undefined') {
-            window.dispatchEvent(new Event('academic_years_updated'));
-          }
-        }
-      }
-    }, (err) => {
-      handleFirestoreError(err, OperationType.GET, 'academicYears');
-    });
-
-    unsubscribeSections = onSnapshot(collection(firestoreDb, 'sections'), (snap) => {
-      if (!snap.empty) {
-        const remoteSections: Section[] = [];
-        snap.forEach(d => remoteSections.push(d.data() as Section));
-        if (remoteSections.length > 0) {
-          const map = new Map<string, Section>();
-          memorySections.forEach(s => map.set(s.id, s));
-          remoteSections.forEach(s => map.set(s.id, s));
-          memorySections = Array.from(map.values());
-          Promise.all(remoteSections.map(s => sectionsDb.setItem(s.id, s))).catch(() => {});
-          if (typeof window !== 'undefined') {
-            window.dispatchEvent(new Event('sections_updated'));
-          }
-        }
-      }
-    }, (err) => {
-      handleFirestoreError(err, OperationType.GET, 'sections');
-    });
   } catch (err) {
     console.warn("Realtime Firestore setup notice:", err);
   }
@@ -702,7 +715,7 @@ setupRealtimeListeners();
 
 // Re-verify listeners if auth state changes without disconnecting public Firestore listeners
 onAuthStateChanged(auth, () => {
-  if (!unsubscribeSubmissions || !unsubscribeNotifications || !unsubscribeScholarships || !unsubscribeCourses || !unsubscribeAcademicYears || !unsubscribeSections) {
+  if (!unsubscribeSubmissions || !unsubscribeNotifications) {
     setupRealtimeListeners();
   }
 });
@@ -1160,34 +1173,36 @@ export const db = {
 
   courses: {
     getCached(): Course[] {
-      return [...memoryCourses];
+      return deduplicateCourses(memoryCourses);
     },
     subscribe(callback: (courses: Course[]) => void): () => void {
       courseListeners.add(callback);
-      callback([...memoryCourses]);
+      callback(deduplicateCourses(memoryCourses));
       return () => { courseListeners.delete(callback); };
     },
     async get(id: string): Promise<Course | null> {
-      const mem = memoryCourses.find(c => c.id === id);
+      const list = deduplicateCourses(memoryCourses);
+      const mem = list.find(c => c.id === id || c.code.toLowerCase() === id.toLowerCase());
       if (mem) return mem;
       return await coursesDb.getItem(id);
     },
     async set(id: string, course: Course): Promise<void> {
       const trimmedCode = (course.code || '').trim().toUpperCase();
-      const duplicate = memoryCourses.find(c => c.id !== id && (c.code || '').trim().toUpperCase() === trimmedCode);
-      if (duplicate) {
-        throw new Error("This Course already exists.");
-      }
+      const canonicalId = `course-${trimmedCode.toLowerCase().replace(/[^a-z0-9]/g, '-')}`;
+      course.id = canonicalId;
       course.code = trimmedCode;
       course.name = (course.name || '').trim();
-      const idx = memoryCourses.findIndex(c => c.id === id);
-      if (idx >= 0) {
-        memoryCourses[idx] = course;
-      } else {
-        memoryCourses.push(course);
-      }
+      course.status = course.status || 'Active';
+
+      const nextList = memoryCourses.filter(c => (c.code || '').trim().toUpperCase() !== trimmedCode);
+      nextList.push(course);
+
+      memoryCourses = deduplicateCourses(nextList);
       notifyCourseListeners();
-      await coursesDb.setItem(id, course);
+      await coursesDb.setItem(canonicalId, course);
+      if (id && id !== canonicalId) {
+        await coursesDb.removeItem(id).catch(() => {});
+      }
 
       // Multi-device backend sync (persists to Supabase & broadcasts)
       fetch('/api/courses', {
@@ -1195,23 +1210,28 @@ export const db = {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(course)
       }).catch(e => console.warn("Backend sync notice:", e));
-
-      if (firestoreDb) {
-        setDoc(doc(firestoreDb, 'courses', id), cleanForFirestore(course), { merge: true })
-          .catch(e => handleFirestoreError(e, OperationType.WRITE, `courses/${id}`));
-      }
     },
     async create(course: Omit<Course, 'id'> & { id?: string }): Promise<Course> {
-      const id = course.id || `course-${course.code.toLowerCase().replace(/\s+/g, '-')}-${Date.now()}`;
-      const newCourse: Course = { ...course, id };
-      await this.set(id, newCourse);
+      const trimmedCode = (course.code || '').trim().toUpperCase();
+      const canonicalId = `course-${trimmedCode.toLowerCase().replace(/[^a-z0-9]/g, '-')}`;
+      const newCourse: Course = { ...course, id: canonicalId, code: trimmedCode };
+      await this.set(canonicalId, newCourse);
       return newCourse;
     },
     async update(id: string, course: Partial<Course>): Promise<Course | null> {
       const existing = await this.get(id);
-      if (!existing) return null;
-      const updated = { ...existing, ...course, id };
-      await this.set(id, updated);
+      const code = (course.code || existing?.code || '').trim().toUpperCase();
+      const canonicalId = code ? `course-${code.toLowerCase().replace(/[^a-z0-9]/g, '-')}` : id;
+      const updated: Course = {
+        ...(existing || { code, name: '', status: 'Active' as const }),
+        ...course,
+        id: canonicalId,
+        code
+      };
+      await this.set(canonicalId, updated);
+      if (id && id !== canonicalId) {
+        await coursesDb.removeItem(id).catch(() => {});
+      }
       return updated;
     },
     async listAll(): Promise<Course[]> {
@@ -1222,8 +1242,16 @@ export const db = {
           if (res.ok) {
             const serverList = await res.json();
             if (Array.isArray(serverList) && serverList.length > 0) {
-              memoryCourses = serverList;
-              for (const item of serverList) {
+              const deduped = deduplicateCourses(serverList);
+              memoryCourses = deduped;
+              const existingKeys = await coursesDb.keys();
+              const validIds = new Set(deduped.map(c => c.id));
+              for (const k of existingKeys) {
+                if (!validIds.has(k)) {
+                  await coursesDb.removeItem(k).catch(() => {});
+                }
+              }
+              for (const item of deduped) {
                 await coursesDb.setItem(item.id, item).catch(() => {});
               }
               notifyCourseListeners();
@@ -1232,16 +1260,8 @@ export const db = {
           }
         } catch {}
 
-        let allItems: Course[] = [];
-        if (firestoreDb) {
-          try {
-            const snap = await getDocs(collection(firestoreDb, 'courses'));
-            if (!snap.empty) {
-              snap.forEach(d => allItems.push(d.data() as Course));
-            }
-          } catch (e) {}
-        }
         const keys = await coursesDb.keys();
+        let allItems: Course[] = [];
         for (const key of keys) {
           const item = await coursesDb.getItem(key);
           if (item) allItems.push(item);
@@ -1249,136 +1269,102 @@ export const db = {
         if (allItems.length === 0) {
           allItems = [...defaultCourses];
         }
-
-        const map = new Map<string, Course>();
-        for (const c of allItems) {
-          const codeKey = (c.code || '').trim().toUpperCase();
-          if (!codeKey) continue;
-          if (!map.has(codeKey)) {
-            map.set(codeKey, c);
-          } else {
-            const existing = map.get(codeKey)!;
-            if ((c.name || '').length > (existing.name || '').length) {
-              map.set(codeKey, c);
-            }
-            if (c.id !== existing.id) {
-              coursesDb.removeItem(c.id).catch(() => {});
-              if (firestoreDb) {
-                deleteDoc(doc(firestoreDb, 'courses', c.id)).catch(() => {});
-              }
-            }
-          }
-        }
-        memoryCourses = Array.from(map.values());
-        for (const c of memoryCourses) {
-          await coursesDb.setItem(c.id, c);
-        }
+        memoryCourses = deduplicateCourses(allItems);
         notifyCourseListeners();
         return [...memoryCourses];
       } catch (e) {
         console.warn("Courses list fetch notice:", e);
       }
-      return [...memoryCourses];
+      return deduplicateCourses(memoryCourses);
     },
     async delete(id: string): Promise<void> {
-      memoryCourses = memoryCourses.filter(c => c.id !== id);
+      const targetCode = id.replace(/^course-/, '').toUpperCase();
+      memoryCourses = deduplicateCourses(memoryCourses.filter(c => c.id !== id && (c.code || '').toUpperCase() !== targetCode));
       notifyCourseListeners();
-      coursesDb.removeItem(id).catch(() => {});
+      await coursesDb.removeItem(id).catch(() => {});
 
-      // Multi-device backend sync
       fetch(`/api/courses/${id}`, { method: 'DELETE' })
         .catch(e => console.warn("Backend delete notice:", e));
-
-      if (firestoreDb) {
-        deleteDoc(doc(firestoreDb, 'courses', id))
-          .catch(e => handleFirestoreError(e, OperationType.DELETE, `courses/${id}`));
-      }
     }
   },
 
   academicYears: {
     getCached(): AcademicYear[] {
-      return [...memoryAcademicYears];
+      return deduplicateAcademicYears(memoryAcademicYears);
     },
     subscribe(callback: (ays: AcademicYear[]) => void): () => void {
       academicYearListeners.add(callback);
-      callback([...memoryAcademicYears]);
+      callback(deduplicateAcademicYears(memoryAcademicYears));
       return () => { academicYearListeners.delete(callback); };
     },
     async get(id: string): Promise<AcademicYear | null> {
-      const mem = memoryAcademicYears.find(a => a.id === id);
-      if (mem) return mem;
+      const list = deduplicateAcademicYears(memoryAcademicYears);
+      const match = list.find(a => a.id === id || (a.year || '').trim() === id.replace(/^ay-/, '').trim());
+      if (match) return match;
       return await academicYearsDb.getItem(id);
     },
     async set(id: string, ay: AcademicYear): Promise<void> {
       const trimmedYear = (ay.year || '').trim();
-      const duplicate = memoryAcademicYears.find(a => a.id !== id && (a.year || '').trim() === trimmedYear);
-      if (duplicate) {
-        id = duplicate.id;
-      }
-      ay.id = id;
-      ay.year = trimmedYear;
-      ay.updatedAt = ay.updatedAt || new Date().toISOString();
-      if (!ay.label) {
-        ay.label = `A.Y. ${trimmedYear}`;
-      }
+      const canonicalId = `ay-${trimmedYear.replace(/\s+/g, '-')}`;
+      const now = ay.updatedAt || new Date().toISOString();
+      const isCurrentActive = ay.overallStatus === 'Active';
 
-      if (ay.overallStatus === 'Active') {
-        memoryAcademicYears = memoryAcademicYears.map(item => {
-          if (item.id !== id && (item.year || '').trim() !== trimmedYear) {
-            return { ...item, overallStatus: 'Inactive' as const };
-          }
-          return item;
-        });
-      }
+      const record: AcademicYear = {
+        ...ay,
+        id: canonicalId,
+        year: trimmedYear,
+        updatedAt: now,
+        label: ay.label || `A.Y. ${trimmedYear}`
+      };
 
-      const idx = memoryAcademicYears.findIndex(a => a.id === id);
-      if (idx >= 0) {
-        memoryAcademicYears[idx] = { ...memoryAcademicYears[idx], ...ay };
-      } else {
-        memoryAcademicYears.unshift(ay);
+      let nextList = memoryAcademicYears.filter(a => (a.year || '').trim() !== trimmedYear);
+      if (isCurrentActive) {
+        nextList = nextList.map(item => ({ ...item, overallStatus: 'Inactive' as const }));
       }
-      await academicYearsDb.setItem(id, ay);
+      nextList.unshift(record);
+
+      memoryAcademicYears = deduplicateAcademicYears(nextList);
       notifyAcademicYearListeners();
 
-      // Multi-device backend sync
+      await academicYearsDb.setItem(canonicalId, record).catch(() => {});
+      if (id && id !== canonicalId) {
+        await academicYearsDb.removeItem(id).catch(() => {});
+      }
+
       fetch('/api/academic-years', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(ay)
+        body: JSON.stringify(record)
       }).catch(e => console.warn("Backend sync notice:", e));
-
-      if (firestoreDb) {
-        setDoc(doc(firestoreDb, 'academicYears', id), cleanForFirestore(ay), { merge: true })
-          .catch(e => handleFirestoreError(e, OperationType.WRITE, `academicYears/${id}`));
-      }
     },
     async create(ay: Omit<AcademicYear, 'id'> & { id?: string }): Promise<AcademicYear> {
-      const id = ay.id || `ay-${Date.now()}`;
-      const newAy: AcademicYear = { ...ay, id, updatedAt: new Date().toISOString() };
-      if (newAy.isDefault || newAy.overallStatus === 'Active') {
-        for (const item of memoryAcademicYears) {
-          if (item.id !== id && item.overallStatus === 'Active') {
-            await this.update(item.id, { overallStatus: 'Inactive' });
-          }
-        }
-      }
-      await this.set(id, newAy);
+      const trimmedYear = (ay.year || '').trim();
+      const canonicalId = `ay-${trimmedYear.replace(/\s+/g, '-')}`;
+      const newAy: AcademicYear = {
+        ...ay,
+        id: canonicalId,
+        year: trimmedYear,
+        updatedAt: new Date().toISOString()
+      };
+      await this.set(canonicalId, newAy);
       return newAy;
     },
     async update(id: string, ay: Partial<AcademicYear>): Promise<AcademicYear | null> {
       const existing = await this.get(id);
-      if (!existing) return null;
-      if (ay.isDefault || ay.overallStatus === 'Active') {
-        for (const item of memoryAcademicYears) {
-          if (item.id !== id && item.overallStatus === 'Active') {
-            await this.set(item.id, { ...item, overallStatus: 'Inactive' });
-          }
-        }
+      const targetYear = (ay.year || existing?.year || '').trim();
+      const canonicalId = targetYear ? `ay-${targetYear.replace(/\s+/g, '-')}` : id;
+      const merged: AcademicYear = {
+        ...(existing || { year: targetYear, overallStatus: 'Inactive', firstSemester: 'Active', secondSemester: 'Inactive', label: `A.Y. ${targetYear}` }),
+        ...ay,
+        id: canonicalId,
+        year: targetYear,
+        updatedAt: new Date().toISOString()
+      };
+      await this.set(canonicalId, merged);
+      if (id && id !== canonicalId) {
+        await academicYearsDb.removeItem(id).catch(() => {});
       }
-      const updated: AcademicYear = { ...existing, ...ay, id, updatedAt: new Date().toISOString() };
-      await this.set(id, updated);
-      return updated;
+      return merged;
     },
     async setDefault(id: string): Promise<void> {
       for (const item of memoryAcademicYears) {
@@ -1387,34 +1373,32 @@ export const db = {
     },
     async listAll(): Promise<AcademicYear[]> {
       try {
-        // Multi-device sync: query backend server first
         try {
           const res = await fetch('/api/academic-years');
           if (res.ok) {
             const serverList = await res.json();
             if (Array.isArray(serverList) && serverList.length > 0) {
-              memoryAcademicYears = serverList;
-              for (const item of serverList) {
+              const deduped = deduplicateAcademicYears(serverList);
+              memoryAcademicYears = deduped;
+              // Clean out localforage keys that don't match the canonical list
+              const existingKeys = await academicYearsDb.keys();
+              const validIds = new Set(deduped.map(item => item.id));
+              for (const k of existingKeys) {
+                if (!validIds.has(k)) {
+                  await academicYearsDb.removeItem(k).catch(() => {});
+                }
+              }
+              for (const item of deduped) {
                 await academicYearsDb.setItem(item.id, item).catch(() => {});
               }
               notifyAcademicYearListeners();
-              return [...memoryAcademicYears].sort((a, b) => b.year.localeCompare(a.year));
+              return [...memoryAcademicYears];
             }
           }
         } catch {}
 
-        let allItems: AcademicYear[] = [];
-        if (firestoreDb && !isFirestoreQuotaExceeded) {
-          try {
-            const snap = await getDocs(collection(firestoreDb, 'academicYears'));
-            if (!snap.empty) {
-              snap.forEach(d => allItems.push(d.data() as AcademicYear));
-            }
-          } catch (e) {
-            handleFirestoreError(e, OperationType.GET, 'academicYears');
-          }
-        }
         const keys = await academicYearsDb.keys();
+        let allItems: AcademicYear[] = [];
         for (const key of keys) {
           const item = await academicYearsDb.getItem(key) as AcademicYear | null;
           if (item) allItems.push(item);
@@ -1422,34 +1406,17 @@ export const db = {
         if (allItems.length === 0) {
           allItems = [...defaultAcademicYears];
         }
-
-        const map = new Map<string, AcademicYear>();
-        for (const ay of allItems) {
-          const yearKey = (ay.year || '').trim();
-          if (!yearKey) continue;
-          if (!map.has(yearKey)) {
-            map.set(yearKey, ay);
-          } else {
-            const existing = map.get(yearKey)!;
-            const ayTime = ay.updatedAt ? new Date(ay.updatedAt).getTime() : 0;
-            const existingTime = existing.updatedAt ? new Date(existing.updatedAt).getTime() : 0;
-            if (ayTime >= existingTime) {
-              map.set(yearKey, ay);
-            }
-          }
-        }
-        memoryAcademicYears = Array.from(map.values());
-        for (const ay of memoryAcademicYears) {
-          await academicYearsDb.setItem(ay.id, ay).catch(() => {});
-        }
-        return [...memoryAcademicYears].sort((a, b) => b.year.localeCompare(a.year));
+        memoryAcademicYears = deduplicateAcademicYears(allItems);
+        notifyAcademicYearListeners();
+        return [...memoryAcademicYears];
       } catch (e) {
         console.warn("AcademicYears list fetch notice:", e);
       }
-      return [...memoryAcademicYears].sort((a, b) => b.year.localeCompare(a.year));
+      return deduplicateAcademicYears(memoryAcademicYears);
     },
     async getDefault(): Promise<AcademicYear | null> {
-      return memoryAcademicYears.find(a => a.isDefault) || memoryAcademicYears.find(a => a.status === 'Active') || memoryAcademicYears[0] || null;
+      const list = deduplicateAcademicYears(memoryAcademicYears);
+      return list.find(a => a.isDefault) || list.find(a => a.overallStatus === 'Active') || list[0] || null;
     },
     async getActiveTerm(): Promise<{ year: string; label: string; firstActive: boolean; secondActive: boolean; hasActive: boolean }> {
       try {
@@ -1473,7 +1440,7 @@ export const db = {
         }
 
         if (target) {
-          const isOverallActive = target.overallStatus === 'Active' || target.status === 'Active';
+          const isOverallActive = target.overallStatus === 'Active';
           const firstActive = isOverallActive && target.firstSemester === 'Active';
           const secondActive = isOverallActive && target.secondSemester === 'Active';
           const hasActive = isOverallActive && (firstActive || secondActive);
@@ -1507,85 +1474,91 @@ export const db = {
       };
     },
     async delete(id: string): Promise<void> {
-      memoryAcademicYears = memoryAcademicYears.filter(a => a.id !== id);
+      const targetYear = id.replace(/^ay-/, '').trim();
+      memoryAcademicYears = deduplicateAcademicYears(memoryAcademicYears.filter(a => a.id !== id && (a.year || '').trim() !== targetYear));
       await academicYearsDb.removeItem(id).catch(() => {});
+      if (id !== `ay-${targetYear}`) {
+        await academicYearsDb.removeItem(`ay-${targetYear}`).catch(() => {});
+      }
       notifyAcademicYearListeners();
 
       fetch(`/api/academic-years/${id}`, { method: 'DELETE' })
         .catch(e => console.warn("Backend delete notice:", e));
-
-      if (firestoreDb) {
-        deleteDoc(doc(firestoreDb, 'academicYears', id))
-          .catch(e => handleFirestoreError(e, OperationType.DELETE, `academicYears/${id}`));
-      }
     }
   },
 
   sections: {
     getCached(): Section[] {
-      return [...memorySections];
+      return deduplicateSections(memorySections);
     },
     subscribe(callback: (sections: Section[]) => void): () => void {
       sectionListeners.add(callback);
-      callback([...memorySections]);
+      callback(deduplicateSections(memorySections));
       return () => { sectionListeners.delete(callback); };
     },
     async get(id: string): Promise<Section | null> {
-      const mem = memorySections.find(s => s.id === id);
+      const list = deduplicateSections(memorySections);
+      const mem = list.find(s => s.id === id || s.name.toUpperCase() === id.toUpperCase());
       if (mem) return mem;
       return await sectionsDb.getItem(id);
     },
     async set(id: string, section: Section): Promise<void> {
       const trimmedName = (section.name || '').trim().toUpperCase();
-      const duplicate = memorySections.find(s => s.id !== id && (s.name || '').trim().toUpperCase() === trimmedName);
-      if (duplicate) {
-        throw new Error("This Section already exists.");
-      }
+      const canonicalId = `sec-${trimmedName.toLowerCase()}`;
+      section.id = canonicalId;
       section.name = trimmedName;
-      const idx = memorySections.findIndex(s => s.id === id);
-      if (idx >= 0) {
-        memorySections[idx] = section;
-      } else {
-        memorySections.push(section);
-      }
-      notifySectionListeners();
-      await sectionsDb.setItem(id, section);
 
-      // Multi-device backend sync (persists to Supabase & broadcasts)
+      const nextList = memorySections.filter(s => (s.name || '').trim().toUpperCase() !== trimmedName);
+      nextList.push(section);
+
+      memorySections = deduplicateSections(nextList);
+      notifySectionListeners();
+      await sectionsDb.setItem(canonicalId, section);
+      if (id && id !== canonicalId) {
+        await sectionsDb.removeItem(id).catch(() => {});
+      }
+
       fetch('/api/sections', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(section)
       }).catch(e => console.warn("Backend sync notice:", e));
-
-      if (firestoreDb) {
-        setDoc(doc(firestoreDb, 'sections', id), cleanForFirestore(section), { merge: true })
-          .catch(e => handleFirestoreError(e, OperationType.WRITE, `sections/${id}`));
-      }
     },
     async create(section: Omit<Section, 'id'> & { id?: string }): Promise<Section> {
-      const id = section.id || `sec-${Date.now()}`;
-      const newSec: Section = { ...section, id };
-      await this.set(id, newSec);
+      const trimmedName = (section.name || '').trim().toUpperCase();
+      const canonicalId = `sec-${trimmedName.toLowerCase()}`;
+      const newSec: Section = { ...section, id: canonicalId, name: trimmedName };
+      await this.set(canonicalId, newSec);
       return newSec;
     },
     async update(id: string, section: Partial<Section>): Promise<Section | null> {
       const existing = await this.get(id);
-      if (!existing) return null;
-      const updated = { ...existing, ...section, id };
-      await this.set(id, updated);
+      const cleanName = (section.name || existing?.name || '').trim().toUpperCase();
+      const canonicalId = cleanName ? `sec-${cleanName.toLowerCase()}` : id;
+      const updated = { ...existing, ...section, id: canonicalId, name: cleanName };
+      await this.set(canonicalId, updated);
+      if (id && id !== canonicalId) {
+        await sectionsDb.removeItem(id).catch(() => {});
+      }
       return updated;
     },
     async listAll(): Promise<Section[]> {
       try {
-        // Multi-device sync: query backend server first
         try {
           const res = await fetch('/api/sections');
           if (res.ok) {
             const serverList = await res.json();
             if (Array.isArray(serverList) && serverList.length > 0) {
-              memorySections = serverList;
-              for (const item of serverList) {
+              const deduped = deduplicateSections(serverList);
+              memorySections = deduped;
+              const existingKeys = await sectionsDb.keys();
+              const validIds = new Set(deduped.map(s => s.id));
+              for (const k of existingKeys) {
+                if (!validIds.has(k)) {
+                  await sectionsDb.removeItem(k).catch(() => {});
+                }
+              }
+              for (const item of deduped) {
                 await sectionsDb.setItem(item.id, item).catch(() => {});
               }
               notifySectionListeners();
@@ -1594,16 +1567,8 @@ export const db = {
           }
         } catch {}
 
-        let allItems: Section[] = [];
-        if (firestoreDb) {
-          try {
-            const snap = await getDocs(collection(firestoreDb, 'sections'));
-            if (!snap.empty) {
-              snap.forEach(d => allItems.push(d.data() as Section));
-            }
-          } catch (e) {}
-        }
         const keys = await sectionsDb.keys();
+        let allItems: Section[] = [];
         for (const key of keys) {
           const item = await sectionsDb.getItem(key);
           if (item) allItems.push(item);
@@ -1611,54 +1576,22 @@ export const db = {
         if (allItems.length === 0) {
           allItems = [...defaultSections];
         }
-
-        const map = new Map<string, Section>();
-        for (const s of allItems) {
-          const rawName = (s.name || '').trim();
-          const nameKey = rawName.toUpperCase();
-          if (!nameKey || /\d/.test(nameKey) || !/^[A-Z]+$/.test(nameKey)) {
-            sectionsDb.removeItem(s.id).catch(() => {});
-            if (firestoreDb) {
-              deleteDoc(doc(firestoreDb, 'sections', s.id)).catch(() => {});
-            }
-            continue;
-          }
-          if (!map.has(nameKey)) {
-            map.set(nameKey, s);
-          } else {
-            const existing = map.get(nameKey)!;
-            if (s.id !== existing.id) {
-              sectionsDb.removeItem(s.id).catch(() => {});
-              if (firestoreDb) {
-                deleteDoc(doc(firestoreDb, 'sections', s.id)).catch(() => {});
-              }
-            }
-          }
-        }
-        memorySections = Array.from(map.values());
-        for (const s of memorySections) {
-          await sectionsDb.setItem(s.id, s);
-        }
+        memorySections = deduplicateSections(allItems);
         notifySectionListeners();
         return [...memorySections];
       } catch (e) {
         console.warn("Sections list fetch notice:", e);
       }
-      return [...memorySections];
+      return deduplicateSections(memorySections);
     },
     async delete(id: string): Promise<void> {
-      memorySections = memorySections.filter(s => s.id !== id);
+      const targetName = id.replace(/^sec-/, '').toUpperCase();
+      memorySections = deduplicateSections(memorySections.filter(s => s.id !== id && (s.name || '').toUpperCase() !== targetName));
       notifySectionListeners();
-      sectionsDb.removeItem(id).catch(() => {});
+      await sectionsDb.removeItem(id).catch(() => {});
 
-      // Multi-device backend sync
       fetch(`/api/sections/${id}`, { method: 'DELETE' })
         .catch(e => console.warn("Backend delete notice:", e));
-
-      if (firestoreDb) {
-        deleteDoc(doc(firestoreDb, 'sections', id))
-          .catch(e => handleFirestoreError(e, OperationType.DELETE, `sections/${id}`));
-      }
     }
   },
 
