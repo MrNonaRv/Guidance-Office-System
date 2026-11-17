@@ -3,6 +3,7 @@ import { doc, getDoc, setDoc, deleteDoc, collection, getDocs, onSnapshot } from 
 import { onAuthStateChanged } from 'firebase/auth';
 import { firestoreDb, auth } from './firebase';
 import { Course, AcademicYear, defaultCourses, defaultAcademicYears, defaultScholarships, ScholarshipItem } from '../types';
+import { INITIAL_SCHOLARSHIP_CATEGORIES } from './scholarshipCategories';
 import { defaultSubmissions, defaultNotifications, dummyBase64Pdf, dummyBase64Photo2x2, dummyBase64StudentId, dummyBase64Signature } from './defaultData';
 import { parseNotificationDate } from './utils';
 import { getSupabase, subscribeToSyncChannel, broadcastSyncEvent, safeSupabase, getClientId } from './supabase';
@@ -241,7 +242,7 @@ let memoryFormRequirements: FormRequirement[] = [...defaultFormRequirements];
 let memoryFiles: SystemFile[] = [...defaultSystemFiles];
 let memoryNotifications: NotificationItem[] = [...defaultNotifications];
 let memoryCommunications: CommunicationItem[] = [];
-let memoryCategories: any[] = [];
+let memoryCategories: any[] = [...INITIAL_SCHOLARSHIP_CATEGORIES];
 
 export function deduplicateAcademicYears(ays: AcademicYear[]): AcademicYear[] {
   if (!Array.isArray(ays)) return [];
@@ -1942,9 +1943,12 @@ export const db = {
       if (memoryCategories && memoryCategories.length > 0) return [...memoryCategories];
       try {
         const saved = localStorage.getItem('capsu_scholarship_categories');
-        if (saved) return JSON.parse(saved);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        }
       } catch (e) {}
-      return [];
+      return [...INITIAL_SCHOLARSHIP_CATEGORIES];
     },
     subscribe(callback: (cats: any[]) => void): () => void {
       categoryListeners.add(callback);

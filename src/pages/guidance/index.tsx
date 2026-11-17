@@ -1820,7 +1820,7 @@ export function GuidanceSettings() {
         if (Array.isArray(sectionsList)) setSections(sectionsList);
         if (Array.isArray(schs)) setScholarships(schs);
         if (Array.isArray(reqs)) setFormFields(reqs);
-        if (Array.isArray(catsList)) setCategories(catsList);
+        if (Array.isArray(catsList) && catsList.length > 0) setCategories(catsList);
       }).catch(e => console.warn("Failed to load settings list:", e));
     };
 
@@ -1839,7 +1839,7 @@ export function GuidanceSettings() {
       if (isMounted && Array.isArray(sList)) setScholarships(sList);
     });
     const unsubCats = (db as any).categories?.subscribe?.((catsList: any[]) => {
-      if (isMounted && Array.isArray(catsList)) setCategories(catsList);
+      if (isMounted && Array.isArray(catsList) && catsList.length > 0) setCategories(catsList);
     });
 
     const handleCatsUpdated = () => {

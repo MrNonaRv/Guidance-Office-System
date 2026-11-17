@@ -85,9 +85,10 @@ export const ScholarshipCategorySection = ({
         {formData.scholarshipFundType && (
           <div className="space-y-6">
             {(formData.scholarshipFundType === 'Internal' ? scholarshipStructure.Internal : scholarshipStructure.External).map((group: any) => {
-              const isCurrentCategoryGroup = formData.scholarshipSubCategory === group.subCategory;
-              const groupSelections = isCurrentCategoryGroup ? (formData.selectedScholarships || []) : [];
-              const isGroupFull = groupSelections.length >= 2;
+              const allSelections = Array.isArray(formData.selectedScholarships) ? formData.selectedScholarships : [];
+              const groupOptionIds = (group.options || []).map((o: any) => o.id);
+              const groupSelections = allSelections.filter((id: string) => groupOptionIds.includes(id));
+              const isGroupFull = allSelections.length >= 2;
 
               return (
                 <div
@@ -98,27 +99,27 @@ export const ScholarshipCategorySection = ({
                     <div>
                       <div className="flex items-center gap-2">
                         <h4 className="font-bold text-sm text-[#0f2e60]">{group.title}</h4>
-                        {isCurrentCategoryGroup && groupSelections.length > 0 && (
+                        {groupSelections.length > 0 && (
                           <span className={`px-2 py-0.5 rounded-full text-[11px] font-bold ${
                             isGroupFull ? 'bg-emerald-100 text-emerald-800' : 'bg-blue-100 text-blue-800'
                           }`}>
-                            {groupSelections.length} of 2 Selected {isGroupFull ? '(Max)' : ''}
+                            {groupSelections.length} Selected
                           </span>
                         )}
                       </div>
                     </div>
 
-                    {isCurrentCategoryGroup && groupSelections.length > 0 && (
+                    {allSelections.length > 0 && (
                       <span className="text-[11px] text-gray-500 italic">
-                        {2 - groupSelections.length === 1 ? '1 more scholarship may be added in this category' : 'Maximum 2 scholarships selected'}
+                        {2 - allSelections.length === 1 ? '1 more scholarship may be added' : 'Maximum 2 scholarships selected'}
                       </span>
                     )}
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {group.options.map((opt: any) => {
-                      const isSelected = isCurrentCategoryGroup && groupSelections.includes(opt.id);
-                      const allocationIndex = isSelected ? groupSelections.indexOf(opt.id) + 1 : null;
+                      const isSelected = allSelections.includes(opt.id);
+                      const allocationIndex = isSelected ? allSelections.indexOf(opt.id) + 1 : null;
                       const fundType = formData.scholarshipFundType as 'Internal' | 'External';
 
                       return (
@@ -127,23 +128,28 @@ export const ScholarshipCategorySection = ({
                           className={`p-3 rounded-lg border transition-all w-full ${
                             isSelected
                               ? 'border-blue-600 bg-blue-50/90 shadow-xs'
-                              : isCurrentCategoryGroup && isGroupFull
+                              : isGroupFull
                               ? 'border-gray-200 bg-gray-50/60 opacity-60'
                               : 'border-gray-200 bg-white hover:border-blue-200 hover:bg-gray-50/50'
                           }`}
                         >
-                          <label className="flex flex-col gap-2 cursor-pointer">
+                          <div className="flex items-start gap-2.5">
                             <div className="pt-0.5">
                               <input
                                 type="checkbox"
+                                id={`scholarship-${opt.id}`}
                                 name={`scholarship-${opt.id}`}
                                 checked={isSelected}
                                 onChange={() => handleScholarshipToggle(group.subCategory, opt.id, fundType)}
-                                className="w-4 h-4 text-blue-600 rounded-sm border-gray-400 focus:ring-blue-500 cursor-pointer"
+                                disabled={!isSelected && isGroupFull}
+                                className="w-4 h-4 text-blue-600 rounded-sm border-gray-400 focus:ring-blue-500 cursor-pointer disabled:cursor-not-allowed"
                               />
                             </div>
                             <div className="flex-1 min-w-0">
-                              <div className="flex items-center justify-between gap-1">
+                              <label
+                                htmlFor={`scholarship-${opt.id}`}
+                                className="flex items-center justify-between gap-1 cursor-pointer select-none"
+                              >
                                 <span className={`text-[13px] font-semibold ${isSelected ? 'text-[#1e3a8a] font-bold' : 'text-[#0f2e60]'}`}>
                                   {opt.label}
                                 </span>
@@ -152,11 +158,11 @@ export const ScholarshipCategorySection = ({
                                     #{allocationIndex}
                                   </span>
                                 )}
-                              </div>
+                              </label>
 
                               {/* Inline details for specified fields */}
                               {isSelected && opt.hasSpecifyField === 'internalCategoryOthers' && (
-                                <div className="mt-2">
+                                <div className="mt-2" onClick={(e) => e.stopPropagation()}>
                                   <label className="block text-[11px] font-semibold text-gray-600 mb-1">Please specify:</label>
                                   <input
                                     type="text"
@@ -170,7 +176,7 @@ export const ScholarshipCategorySection = ({
                               )}
 
                               {isSelected && opt.hasSpecifyField === 'chedCongressionalDistrict' && (
-                                <div className="mt-2">
+                                <div className="mt-2" onClick={(e) => e.stopPropagation()}>
                                   <label className="block text-[11px] font-semibold text-gray-600 mb-1">Specify District:</label>
                                   <input
                                     type="text"
@@ -184,7 +190,7 @@ export const ScholarshipCategorySection = ({
                               )}
 
                               {isSelected && opt.hasSpecifyField === 'chedOneTown' && (
-                                <div className="mt-2">
+                                <div className="mt-2" onClick={(e) => e.stopPropagation()}>
                                   <label className="block text-[11px] font-semibold text-gray-600 mb-1">Specify Town/Municipality:</label>
                                   <input
                                     type="text"
@@ -198,7 +204,7 @@ export const ScholarshipCategorySection = ({
                               )}
 
                               {isSelected && opt.hasSpecifyField === 'chedTulongDunong' && (
-                                <div className="mt-2">
+                                <div className="mt-2" onClick={(e) => e.stopPropagation()}>
                                   <label className="block text-[11px] font-semibold text-gray-600 mb-1">Specify Details:</label>
                                   <input
                                     type="text"
@@ -212,7 +218,7 @@ export const ScholarshipCategorySection = ({
                               )}
 
                               {isSelected && opt.hasSpecifyField === 'chedOthers' && (
-                                <div className="mt-2">
+                                <div className="mt-2" onClick={(e) => e.stopPropagation()}>
                                   <label className="block text-[11px] font-semibold text-gray-600 mb-1">Specify CHED Program:</label>
                                   <input
                                     type="text"
@@ -226,7 +232,7 @@ export const ScholarshipCategorySection = ({
                               )}
 
                               {isSelected && opt.hasSpecifyField === 'meritChedAndOthers' && (
-                                <div className="mt-2">
+                                <div className="mt-2" onClick={(e) => e.stopPropagation()}>
                                   <label className="block text-[11px] font-semibold text-gray-600 mb-1">Specify Program:</label>
                                   <input
                                     type="text"
@@ -239,8 +245,8 @@ export const ScholarshipCategorySection = ({
                                 </div>
                               )}
 
-                                                            {isSelected && opt.hasSpecifyField === 'lguContact' && (
-                                <div className="mt-2">
+                              {isSelected && opt.hasSpecifyField === 'lguContact' && (
+                                <div className="mt-2" onClick={(e) => e.stopPropagation()}>
                                   <label className="block text-[11px] font-semibold text-gray-600 mb-1">Barangay, Municipality, Province (Landline) Contact person or issuing office:</label>
                                   <input
                                     type="text"
@@ -253,8 +259,8 @@ export const ScholarshipCategorySection = ({
                                 </div>
                               )}
 
-{isSelected && opt.hasSpecifyField === 'dswdFields' && (
-                                <div className="mt-2 space-y-2 pt-1">
+                              {isSelected && opt.hasSpecifyField === 'dswdFields' && (
+                                <div className="mt-2 space-y-2 pt-1" onClick={(e) => e.stopPropagation()}>
                                   <div>
                                     <label className="block text-[10px] font-semibold text-gray-600">Municipality:</label>
                                     <input
@@ -291,7 +297,7 @@ export const ScholarshipCategorySection = ({
                                 </div>
                               )}
                             </div>
-                          </label>
+                          </div>
                         </div>
                       );
                     })}

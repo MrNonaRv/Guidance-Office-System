@@ -1822,25 +1822,24 @@ export function StudentSubmissionForm() {
   const handleScholarshipToggle = (subCat: string, optionId: string, fundType: 'Internal' | 'External') => {
     setFormData(prev => {
       const prevSelected = Array.isArray(prev.selectedScholarships) ? prev.selectedScholarships : [];
-      const isSameCategory = prev.scholarshipSubCategory === subCat && prev.scholarshipFundType === fundType;
+      const isSameFundType = prev.scholarshipFundType === fundType;
 
       let newSelected: string[] = [];
 
-      if (!isSameCategory) {
-        // Different category selected: switch category and initialize with the clicked scholarship
+      if (!isSameFundType) {
+        // If clicking an option in a different fund type, switch fund type and select this option
         newSelected = [optionId];
       } else {
-        // Same category
         if (prevSelected.includes(optionId)) {
-          // Deselect
+          // Deselect cleanly without affecting others
           newSelected = prevSelected.filter(id => id !== optionId);
         } else {
-          // Check limit: max 2
+          // Check limit: maximum 2 scholarships allowed across the selected fund type
           if (prevSelected.length >= 2) {
             setValidationWarning({
               title: 'Maximum 2 Scholarships Allowed',
               details: [
-                `You have already selected 2 scholarships under ${subCat}.`,
+                'You have already selected 2 scholarships.',
                 'To choose a different scholarship, please uncheck one of your selected options first.'
               ]
             });
@@ -1850,8 +1849,8 @@ export function StudentSubmissionForm() {
         }
       }
 
-      const activeFundType = newSelected.length > 0 ? fundType : prev.scholarshipFundType || fundType;
-      const activeSubCat = newSelected.length > 0 ? subCat : (isSameCategory ? prev.scholarshipSubCategory : '');
+      const activeFundType = fundType;
+      const activeSubCat = newSelected.length > 0 ? subCat : '';
       const unifiedString = newSelected.join(', ');
 
       return {
@@ -1861,8 +1860,8 @@ export function StudentSubmissionForm() {
         selectedScholarships: newSelected,
         internalCategory: activeFundType === 'Internal' ? unifiedString : '',
         externalCategory: activeFundType === 'External' ? unifiedString : '',
-        meritSubCat: activeFundType === 'External' && activeSubCat === 'Merit' ? unifiedString : '',
-        chedSubCategory: activeFundType === 'External' && activeSubCat === 'CHED' ? unifiedString : ''
+        meritSubCat: activeFundType === 'External' ? unifiedString : '',
+        chedSubCategory: activeFundType === 'External' ? unifiedString : ''
       };
     });
 
