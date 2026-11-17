@@ -816,11 +816,9 @@ export function StudentDashboard() {
     });
     window.addEventListener('academic_years_updated', fetchActiveTerm);
     window.addEventListener('focus', fetchActiveTerm);
-    const interval = setInterval(fetchActiveTerm, 4000);
     return () => {
       isMounted = false;
       unsubscribe();
-      clearInterval(interval);
       window.removeEventListener('academic_years_updated', fetchActiveTerm);
       window.removeEventListener('focus', fetchActiveTerm);
     };

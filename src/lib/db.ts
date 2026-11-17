@@ -931,7 +931,7 @@ export const db = {
             for (const item of mapped) {
               await scholarshipsDb.setItem(item.id, item).catch(() => {});
             }
-            notifyScholarshipListeners();
+            notifyLocalScholarshipListeners();
             return [...memoryScholarships];
           }
         }
@@ -946,7 +946,7 @@ export const db = {
               for (const item of serverList) {
                 await scholarshipsDb.setItem(item.id, item).catch(() => {});
               }
-              notifyScholarshipListeners();
+              notifyLocalScholarshipListeners();
               return [...memoryScholarships];
             }
           }
@@ -990,7 +990,7 @@ export const db = {
         for (const s of memoryScholarships) {
           await scholarshipsDb.setItem(s.id, s);
         }
-        notifyScholarshipListeners();
+        notifyLocalScholarshipListeners();
         return [...memoryScholarships];
       } catch (e) {
         console.warn("Scholarships list fetch notice:", e);
@@ -1467,7 +1467,7 @@ export const db = {
             for (const item of deduped) {
               await coursesDb.setItem(item.id, item).catch(() => {});
             }
-            notifyCourseListeners();
+            notifyLocalCourseListeners();
             return [...memoryCourses];
           }
         }
@@ -1490,7 +1490,7 @@ export const db = {
               for (const item of deduped) {
                 await coursesDb.setItem(item.id, item).catch(() => {});
               }
-              notifyCourseListeners();
+              notifyLocalCourseListeners();
               return [...memoryCourses];
             }
           }
@@ -1506,7 +1506,7 @@ export const db = {
           allItems = [...defaultCourses];
         }
         memoryCourses = deduplicateCourses(allItems);
-        notifyCourseListeners();
+        notifyLocalCourseListeners();
         return [...memoryCourses];
       } catch (e) {
         console.warn("Courses list fetch notice:", e);
@@ -1670,7 +1670,7 @@ export const db = {
             for (const item of deduped) {
               await academicYearsDb.setItem(item.id, item).catch(() => {});
             }
-            notifyAcademicYearListeners();
+            notifyLocalAcademicYearListeners();
             return [...memoryAcademicYears];
           }
         }
@@ -1693,7 +1693,7 @@ export const db = {
               for (const item of deduped) {
                 await academicYearsDb.setItem(item.id, item).catch(() => {});
               }
-              notifyAcademicYearListeners();
+              notifyLocalAcademicYearListeners();
               return [...memoryAcademicYears];
             }
           }
@@ -1710,7 +1710,7 @@ export const db = {
           allItems = [...defaultAcademicYears];
         }
         memoryAcademicYears = deduplicateAcademicYears(allItems);
-        notifyAcademicYearListeners();
+        notifyLocalAcademicYearListeners();
         return [...memoryAcademicYears];
       } catch (e) {
         console.warn("AcademicYears list fetch notice:", e);
@@ -1723,7 +1723,8 @@ export const db = {
     },
     async getActiveTerm(): Promise<{ year: string; label: string; firstActive: boolean; secondActive: boolean; hasActive: boolean }> {
       try {
-        const list = await this.listAll();
+        const cached = this.getCached();
+        const list = cached.length > 0 ? cached : await this.listAll();
         let target = list.find(ay => ay.overallStatus === 'Active');
         if (!target) {
           target = list.find(ay => ay.firstSemester === 'Active' || ay.secondSemester === 'Active');
@@ -1877,7 +1878,7 @@ export const db = {
             for (const item of deduped) {
               await sectionsDb.setItem(item.id, item).catch(() => {});
             }
-            notifySectionListeners();
+            notifyLocalSectionListeners();
             return [...memorySections];
           }
         }
@@ -1900,7 +1901,7 @@ export const db = {
               for (const item of deduped) {
                 await sectionsDb.setItem(item.id, item).catch(() => {});
               }
-              notifySectionListeners();
+              notifyLocalSectionListeners();
               return [...memorySections];
             }
           }
@@ -1916,7 +1917,7 @@ export const db = {
           allItems = [...defaultSections];
         }
         memorySections = deduplicateSections(allItems);
-        notifySectionListeners();
+        notifyLocalSectionListeners();
         return [...memorySections];
       } catch (e) {
         console.warn("Sections list fetch notice:", e);
@@ -1965,7 +1966,7 @@ export const db = {
           const list = await res.json();
           if (Array.isArray(list) && list.length > 0) {
             memoryCategories = list;
-            notifyCategoryListeners(list);
+            notifyLocalCategoryListeners(list);
             return list;
           }
         }
