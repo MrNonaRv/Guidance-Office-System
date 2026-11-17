@@ -1459,24 +1459,28 @@ export function StudentSubmissionForm() {
 
   const [coursesList, setCoursesList] = useState<string[]>(() => {
     const cached = db.courses.getCached?.() || [];
-    return cached.length > 0 ? cached.map(c => c.code || c.name) : ['BSCS', 'BSOA', 'BSFT', 'BAEL'];
+    const active = cached.filter(c => (c.status || 'Active') === 'Active');
+    return active.length > 0 ? active.map(c => c.code || c.name) : ['BSCS', 'BSOA', 'BSFT', 'BAEL'];
   });
   const [sectionsList, setSectionsList] = useState<string[]>(() => {
     const cached = db.sections.getCached?.() || [];
-    return cached.length > 0 ? cached.map(s => s.name) : ['A', 'B', 'C'];
+    const active = cached.filter(s => (s.status || 'Active') === 'Active');
+    return active.length > 0 ? Array.from(new Set(active.map(s => s.name))) : ['A', 'B', 'C'];
   });
 
   useEffect(() => {
     const fetchCoursesAndSections = () => {
       db.courses.listAll().then(list => {
-        if (list && list.length > 0) {
-          setCoursesList(list.map(c => c.code || c.name));
+        if (Array.isArray(list)) {
+          const active = list.filter(c => (c.status || 'Active') === 'Active');
+          setCoursesList(active.length > 0 ? active.map(c => c.code || c.name) : ['BSCS', 'BSOA', 'BSFT', 'BAEL']);
         }
       }).catch(() => {});
 
       db.sections.listAll().then(list => {
-        if (list && list.length > 0) {
-          setSectionsList(Array.from(new Set(list.map(s => s.name))));
+        if (Array.isArray(list)) {
+          const active = list.filter(s => (s.status || 'Active') === 'Active');
+          setSectionsList(active.length > 0 ? Array.from(new Set(active.map(s => s.name))) : ['A', 'B', 'C']);
         }
       }).catch(() => {});
     };
@@ -1484,14 +1488,16 @@ export function StudentSubmissionForm() {
     fetchCoursesAndSections();
 
     const unsubCourses = db.courses.subscribe(list => {
-      if (list && list.length > 0) {
-        setCoursesList(list.map(c => c.code || c.name));
+      if (Array.isArray(list)) {
+        const active = list.filter(c => (c.status || 'Active') === 'Active');
+        setCoursesList(active.length > 0 ? active.map(c => c.code || c.name) : ['BSCS', 'BSOA', 'BSFT', 'BAEL']);
       }
     });
 
     const unsubSections = db.sections.subscribe(list => {
-      if (list && list.length > 0) {
-        setSectionsList(Array.from(new Set(list.map(s => s.name))));
+      if (Array.isArray(list)) {
+        const active = list.filter(s => (s.status || 'Active') === 'Active');
+        setSectionsList(active.length > 0 ? Array.from(new Set(active.map(s => s.name))) : ['A', 'B', 'C']);
       }
     });
 

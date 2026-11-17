@@ -5,7 +5,7 @@ import { firestoreDb, auth } from './firebase';
 import { Course, AcademicYear, defaultCourses, defaultAcademicYears, defaultScholarships, ScholarshipItem } from '../types';
 import { defaultSubmissions, defaultNotifications, dummyBase64Pdf, dummyBase64Photo2x2, dummyBase64StudentId, dummyBase64Signature } from './defaultData';
 import { parseNotificationDate } from './utils';
-import { getSupabase, subscribeToSyncChannel, broadcastSyncEvent } from './supabase';
+import { getSupabase, subscribeToSyncChannel, broadcastSyncEvent, safeSupabase, getClientId } from './supabase';
 
 export enum OperationType {
   CREATE = 'create',
@@ -343,6 +343,94 @@ const courseListeners = new Set<(courses: Course[]) => void>();
 const sectionListeners = new Set<(sections: Section[]) => void>();
 const categoryListeners = new Set<(categories: any[]) => void>();
 
+// Local notification helpers (notifies UI listeners without bouncing back to channels)
+function notifyLocalAcademicYearListeners() {
+  memoryAcademicYears = deduplicateAcademicYears(memoryAcademicYears);
+  academicYearListeners.forEach(cb => {
+    try { cb([...memoryAcademicYears]); } catch (e) { console.error(e); }
+  });
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new Event('academic_years_updated'));
+  }
+}
+
+function notifyLocalCourseListeners() {
+  memoryCourses = deduplicateCourses(memoryCourses);
+  courseListeners.forEach(cb => {
+    try { cb([...memoryCourses]); } catch (e) { console.error(e); }
+  });
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new Event('courses_updated'));
+  }
+}
+
+function notifyLocalSectionListeners() {
+  memorySections = deduplicateSections(memorySections);
+  sectionListeners.forEach(cb => {
+    try { cb([...memorySections]); } catch (e) { console.error(e); }
+  });
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new Event('sections_updated'));
+  }
+}
+
+function notifyLocalCategoryListeners(cats?: any[]) {
+  const list = cats || memoryCategories;
+  categoryListeners.forEach(cb => {
+    try { cb(list); } catch (e) { console.error(e); }
+  });
+  if (typeof window !== 'undefined') {
+    try {
+      localStorage.setItem('capsu_scholarship_categories', JSON.stringify(list));
+    } catch (e) {}
+    window.dispatchEvent(new Event('scholarship_categories_updated'));
+  }
+}
+
+function notifyLocalSubmissionListeners() {
+  submissionListeners.forEach(cb => {
+    try { cb([...memorySubmissions]); } catch (e) { console.error(e); }
+  });
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new Event('submissions_updated'));
+  }
+}
+
+function notifyLocalScholarshipListeners() {
+  scholarshipListeners.forEach(cb => {
+    try { cb([...memoryScholarships]); } catch (e) { console.error(e); }
+  });
+  if (typeof window !== 'undefined') {
+    (window as any).__db_scholarships_cache__ = memoryScholarships;
+    try {
+      localStorage.setItem('capsu_db_scholarships_cache', JSON.stringify(memoryScholarships));
+    } catch (e) {}
+    window.dispatchEvent(new Event('scholarships_updated'));
+    window.dispatchEvent(new Event('scholarship_categories_updated'));
+  }
+}
+
+function sortNotifications(notifs: NotificationItem[]): NotificationItem[] {
+  if (!Array.isArray(notifs)) return [];
+  return [...notifs].filter(Boolean).sort((a, b) => {
+    if (!a || !b) return 0;
+    const dateA = parseNotificationDate(a.timestamp, a.createdAt || a.id);
+    const dateB = parseNotificationDate(b.timestamp, b.createdAt || b.id);
+    const timeA = dateA ? dateA.getTime() : 0;
+    const timeB = dateB ? dateB.getTime() : 0;
+    return timeB - timeA;
+  });
+}
+
+function notifyLocalNotificationListeners() {
+  notificationListeners.forEach(cb => {
+    try { cb([...memoryNotifications]); } catch (e) { console.error(e); }
+  });
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new Event('notifications_updated'));
+  }
+}
+
 // Browser cross-tab synchronization channel
 const syncChannel = typeof window !== 'undefined' && 'BroadcastChannel' in window
   ? new BroadcastChannel('capsu_scholarship_sync_bus')
@@ -351,7 +439,9 @@ const syncChannel = typeof window !== 'undefined' && 'BroadcastChannel' in windo
 if (syncChannel) {
   syncChannel.onmessage = (event) => {
     try {
-      const { type, data } = event.data || {};
+      const { type, data, senderId } = event.data || {};
+      if (senderId && senderId === getClientId()) return;
+
       if (type === 'SUBMISSIONS_SYNC' && Array.isArray(data)) {
         const subMap = new Map<string, Submission>();
         memorySubmissions.forEach(s => subMap.set(s.id, s));
@@ -359,25 +449,31 @@ if (syncChannel) {
         memorySubmissions = Array.from(subMap.values()).sort(
           (a, b) => new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime()
         );
-        submissionListeners.forEach(cb => { try { cb([...memorySubmissions]); } catch (e) { console.error(e); } });
+        data.forEach((s: Submission) => submissionsDb.setItem(s.id, s).catch(() => {}));
+        notifyLocalSubmissionListeners();
       } else if (type === 'NOTIFICATIONS_SYNC' && Array.isArray(data)) {
         memoryNotifications = sortNotifications(data);
-        notificationListeners.forEach(cb => { try { cb([...memoryNotifications]); } catch (e) { console.error(e); } });
+        data.forEach((n: NotificationItem) => notificationsDb.setItem(n.id, n).catch(() => {}));
+        notifyLocalNotificationListeners();
       } else if (type === 'SCHOLARSHIPS_SYNC' && Array.isArray(data)) {
         memoryScholarships = data;
-        notifyScholarshipListeners();
+        data.forEach((s: Scholarship) => scholarshipsDb.setItem(s.id, s).catch(() => {}));
+        notifyLocalScholarshipListeners();
       } else if (type === 'ACADEMIC_YEARS_SYNC' && Array.isArray(data)) {
         memoryAcademicYears = deduplicateAcademicYears(data);
-        notifyAcademicYearListeners();
+        memoryAcademicYears.forEach((ay: AcademicYear) => academicYearsDb.setItem(ay.id, ay).catch(() => {}));
+        notifyLocalAcademicYearListeners();
       } else if (type === 'COURSES_SYNC' && Array.isArray(data)) {
         memoryCourses = deduplicateCourses(data);
-        notifyCourseListeners();
+        memoryCourses.forEach((c: Course) => coursesDb.setItem(c.id, c).catch(() => {}));
+        notifyLocalCourseListeners();
       } else if (type === 'SECTIONS_SYNC' && Array.isArray(data)) {
         memorySections = deduplicateSections(data);
-        notifySectionListeners();
+        memorySections.forEach((s: Section) => sectionsDb.setItem(s.id, s).catch(() => {}));
+        notifyLocalSectionListeners();
       } else if (type === 'CATEGORIES_SYNC' && Array.isArray(data)) {
         memoryCategories = data;
-        notifyCategoryListeners(data);
+        notifyLocalCategoryListeners(data);
       }
     } catch (err) {
       console.warn("Cross-tab sync handling error:", err);
@@ -394,29 +490,24 @@ if (typeof window !== 'undefined') {
           const deduped = deduplicateAcademicYears(data);
           memoryAcademicYears = deduped;
           deduped.forEach((ay: AcademicYear) => academicYearsDb.setItem(ay.id, ay).catch(() => {}));
-          notifyAcademicYearListeners();
-          window.dispatchEvent(new Event('academic_years_updated'));
+          notifyLocalAcademicYearListeners();
         } else if (type === 'COURSES_SYNC' && Array.isArray(data)) {
           const deduped = deduplicateCourses(data);
           memoryCourses = deduped;
           deduped.forEach((c: Course) => coursesDb.setItem(c.id, c).catch(() => {}));
-          notifyCourseListeners();
-          window.dispatchEvent(new Event('courses_updated'));
+          notifyLocalCourseListeners();
         } else if (type === 'SECTIONS_SYNC' && Array.isArray(data)) {
           const deduped = deduplicateSections(data);
           memorySections = deduped;
           deduped.forEach((s: Section) => sectionsDb.setItem(s.id, s).catch(() => {}));
-          notifySectionListeners();
-          window.dispatchEvent(new Event('sections_updated'));
+          notifyLocalSectionListeners();
         } else if (type === 'SCHOLARSHIPS_SYNC' && Array.isArray(data)) {
           memoryScholarships = data;
           data.forEach((s: Scholarship) => scholarshipsDb.setItem(s.id, s).catch(() => {}));
-          notifyScholarshipListeners();
-          window.dispatchEvent(new Event('scholarships_updated'));
+          notifyLocalScholarshipListeners();
         } else if (type === 'CATEGORIES_SYNC' && Array.isArray(data)) {
           memoryCategories = data;
-          notifyCategoryListeners(data);
-          window.dispatchEvent(new Event('scholarship_categories_updated'));
+          notifyLocalCategoryListeners(data);
         } else if (type === 'SUBMISSIONS_SYNC' && Array.isArray(data)) {
           const subMap = new Map<string, Submission>();
           memorySubmissions.forEach(s => subMap.set(s.id, s));
@@ -424,8 +515,8 @@ if (typeof window !== 'undefined') {
           memorySubmissions = Array.from(subMap.values()).sort(
             (a, b) => new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime()
           );
-          notifySubmissionListeners();
-          window.dispatchEvent(new Event('submissions_updated'));
+          data.forEach((s: Submission) => submissionsDb.setItem(s.id, s).catch(() => {}));
+          notifyLocalSubmissionListeners();
         }
       } catch (err) {
         console.warn("Supabase Realtime event processing error:", err);
@@ -451,51 +542,51 @@ if (typeof window !== 'undefined' && 'EventSource' in window) {
               const deduped = deduplicateAcademicYears(data.academicYears);
               memoryAcademicYears = deduped;
               deduped.forEach((ay: AcademicYear) => academicYearsDb.setItem(ay.id, ay).catch(() => {}));
-              notifyAcademicYearListeners();
+              notifyLocalAcademicYearListeners();
             }
             if (Array.isArray(data?.courses) && data.courses.length > 0) {
               const deduped = deduplicateCourses(data.courses);
               memoryCourses = deduped;
               deduped.forEach((c: Course) => coursesDb.setItem(c.id, c).catch(() => {}));
-              notifyCourseListeners();
+              notifyLocalCourseListeners();
             }
             if (Array.isArray(data?.sections) && data.sections.length > 0) {
               const deduped = deduplicateSections(data.sections);
               memorySections = deduped;
               deduped.forEach((s: Section) => sectionsDb.setItem(s.id, s).catch(() => {}));
-              notifySectionListeners();
+              notifyLocalSectionListeners();
             }
             if (Array.isArray(data?.scholarships) && data.scholarships.length > 0) {
               memoryScholarships = data.scholarships;
               data.scholarships.forEach((s: Scholarship) => scholarshipsDb.setItem(s.id, s).catch(() => {}));
-              notifyScholarshipListeners();
+              notifyLocalScholarshipListeners();
             }
             if (Array.isArray(data?.categories) && data.categories.length > 0) {
               memoryCategories = data.categories;
-              notifyCategoryListeners(data.categories);
+              notifyLocalCategoryListeners(data.categories);
             }
           } else if (type === 'ACADEMIC_YEARS_SYNC' && Array.isArray(data)) {
             const deduped = deduplicateAcademicYears(data);
             memoryAcademicYears = deduped;
             deduped.forEach((ay: AcademicYear) => academicYearsDb.setItem(ay.id, ay).catch(() => {}));
-            notifyAcademicYearListeners();
+            notifyLocalAcademicYearListeners();
           } else if (type === 'COURSES_SYNC' && Array.isArray(data)) {
             const deduped = deduplicateCourses(data);
             memoryCourses = deduped;
             deduped.forEach((c: Course) => coursesDb.setItem(c.id, c).catch(() => {}));
-            notifyCourseListeners();
+            notifyLocalCourseListeners();
           } else if (type === 'SECTIONS_SYNC' && Array.isArray(data)) {
             const deduped = deduplicateSections(data);
             memorySections = deduped;
             deduped.forEach((s: Section) => sectionsDb.setItem(s.id, s).catch(() => {}));
-            notifySectionListeners();
+            notifyLocalSectionListeners();
           } else if (type === 'SCHOLARSHIPS_SYNC' && Array.isArray(data)) {
             memoryScholarships = data;
             data.forEach((s: Scholarship) => scholarshipsDb.setItem(s.id, s).catch(() => {}));
-            notifyScholarshipListeners();
+            notifyLocalScholarshipListeners();
           } else if (type === 'CATEGORIES_SYNC' && Array.isArray(data)) {
             memoryCategories = data;
-            notifyCategoryListeners(data);
+            notifyLocalCategoryListeners(data);
           } else if (type === 'SUBMISSIONS_SYNC' && Array.isArray(data)) {
             const subMap = new Map<string, Submission>();
             memorySubmissions.forEach(s => subMap.set(s.id, s));
@@ -503,7 +594,8 @@ if (typeof window !== 'undefined' && 'EventSource' in window) {
             memorySubmissions = Array.from(subMap.values()).sort(
               (a, b) => new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime()
             );
-            notifySubmissionListeners();
+            data.forEach((s: Submission) => submissionsDb.setItem(s.id, s).catch(() => {}));
+            notifyLocalSubmissionListeners();
           }
         } catch (err) {
           console.warn("SSE parse error:", err);
@@ -522,100 +614,58 @@ if (typeof window !== 'undefined' && 'EventSource' in window) {
 }
 
 function notifyAcademicYearListeners() {
-  memoryAcademicYears = deduplicateAcademicYears(memoryAcademicYears);
-  academicYearListeners.forEach(cb => {
-    try { cb([...memoryAcademicYears]); } catch (e) { console.error(e); }
-  });
-  if (typeof window !== 'undefined') {
-    window.dispatchEvent(new Event('academic_years_updated'));
-  }
+  notifyLocalAcademicYearListeners();
   if (syncChannel) {
     try {
-      syncChannel.postMessage({ type: 'ACADEMIC_YEARS_SYNC', data: memoryAcademicYears });
+      syncChannel.postMessage({ type: 'ACADEMIC_YEARS_SYNC', data: memoryAcademicYears, senderId: getClientId() });
     } catch (e) {}
   }
 }
 
 function notifyCourseListeners() {
-  memoryCourses = deduplicateCourses(memoryCourses);
-  courseListeners.forEach(cb => {
-    try { cb([...memoryCourses]); } catch (e) { console.error(e); }
-  });
-  if (typeof window !== 'undefined') {
-    window.dispatchEvent(new Event('courses_updated'));
-  }
+  notifyLocalCourseListeners();
   if (syncChannel) {
     try {
-      syncChannel.postMessage({ type: 'COURSES_SYNC', data: memoryCourses });
+      syncChannel.postMessage({ type: 'COURSES_SYNC', data: memoryCourses, senderId: getClientId() });
     } catch (e) {}
   }
 }
 
 function notifySectionListeners() {
-  memorySections = deduplicateSections(memorySections);
-  sectionListeners.forEach(cb => {
-    try { cb([...memorySections]); } catch (e) { console.error(e); }
-  });
-  if (typeof window !== 'undefined') {
-    window.dispatchEvent(new Event('sections_updated'));
-  }
+  notifyLocalSectionListeners();
   if (syncChannel) {
     try {
-      syncChannel.postMessage({ type: 'SECTIONS_SYNC', data: memorySections });
+      syncChannel.postMessage({ type: 'SECTIONS_SYNC', data: memorySections, senderId: getClientId() });
     } catch (e) {}
   }
 }
 
 function notifyCategoryListeners(cats?: any[]) {
   const list = cats || memoryCategories;
-  categoryListeners.forEach(cb => {
-    try { cb(list); } catch (e) { console.error(e); }
-  });
-  if (typeof window !== 'undefined') {
-    try {
-      localStorage.setItem('capsu_scholarship_categories', JSON.stringify(list));
-    } catch (e) {}
-    window.dispatchEvent(new Event('scholarship_categories_updated'));
-  }
+  notifyLocalCategoryListeners(list);
   if (syncChannel) {
     try {
-      syncChannel.postMessage({ type: 'CATEGORIES_SYNC', data: list });
+      syncChannel.postMessage({ type: 'CATEGORIES_SYNC', data: list, senderId: getClientId() });
     } catch (e) {}
   }
 }
 
 function notifySubmissionListeners() {
-  submissionListeners.forEach(cb => {
-    try { cb([...memorySubmissions]); } catch (e) { console.error(e); }
-  });
+  notifyLocalSubmissionListeners();
   if (syncChannel) {
     try {
-      syncChannel.postMessage({ type: 'SUBMISSIONS_SYNC', data: memorySubmissions });
+      syncChannel.postMessage({ type: 'SUBMISSIONS_SYNC', data: memorySubmissions, senderId: getClientId() });
     } catch (e) {
       console.warn("Broadcast post error:", e);
     }
   }
 }
 
-function sortNotifications(notifs: NotificationItem[]): NotificationItem[] {
-  if (!Array.isArray(notifs)) return [];
-  return [...notifs].filter(Boolean).sort((a, b) => {
-    if (!a || !b) return 0;
-    const dateA = parseNotificationDate(a.timestamp, a.createdAt || a.id);
-    const dateB = parseNotificationDate(b.timestamp, b.createdAt || b.id);
-    const timeA = dateA ? dateA.getTime() : 0;
-    const timeB = dateB ? dateB.getTime() : 0;
-    return timeB - timeA;
-  });
-}
-
 function notifyNotificationListeners() {
-  notificationListeners.forEach(cb => {
-    try { cb([...memoryNotifications]); } catch (e) { console.error(e); }
-  });
+  notifyLocalNotificationListeners();
   if (syncChannel) {
     try {
-      syncChannel.postMessage({ type: 'NOTIFICATIONS_SYNC', data: memoryNotifications });
+      syncChannel.postMessage({ type: 'NOTIFICATIONS_SYNC', data: memoryNotifications, senderId: getClientId() });
     } catch (e) {
       console.warn("Broadcast post error:", e);
     }
@@ -623,20 +673,10 @@ function notifyNotificationListeners() {
 }
 
 function notifyScholarshipListeners() {
-  scholarshipListeners.forEach(cb => {
-    try { cb([...memoryScholarships]); } catch (e) { console.error(e); }
-  });
-  if (typeof window !== 'undefined') {
-    (window as any).__db_scholarships_cache__ = memoryScholarships;
-    try {
-      localStorage.setItem('capsu_db_scholarships_cache', JSON.stringify(memoryScholarships));
-    } catch (e) {}
-    window.dispatchEvent(new Event('scholarships_updated'));
-    window.dispatchEvent(new Event('scholarship_categories_updated'));
-  }
+  notifyLocalScholarshipListeners();
   if (syncChannel) {
     try {
-      syncChannel.postMessage({ type: 'SCHOLARSHIPS_SYNC', data: memoryScholarships });
+      syncChannel.postMessage({ type: 'SCHOLARSHIPS_SYNC', data: memoryScholarships, senderId: getClientId() });
     } catch (e) {
       console.warn("Broadcast post error:", e);
     }
@@ -825,6 +865,23 @@ export const db = {
       }
       await scholarshipsDb.setItem(id, targetRecord);
 
+      // Direct Supabase upsert
+      safeSupabase(supabase => {
+        supabase.from('scholarships').upsert({
+          id: targetRecord.id,
+          name: targetRecord.name,
+          type: targetRecord.type,
+          category: targetRecord.category,
+          status: targetRecord.status || 'Active',
+          description: targetRecord.description || '',
+          requirements: targetRecord.requirements || [],
+          slots: targetRecord.slots || 0,
+          deadline: targetRecord.deadline || ''
+        }, { onConflict: 'id' });
+      });
+
+      broadcastSyncEvent('SCHOLARSHIPS_SYNC', memoryScholarships).catch(() => {});
+
       // Multi-device backend sync (persists to Supabase & broadcasts to other clients)
       fetch('/api/scholarships', {
         method: 'POST',
@@ -853,7 +910,32 @@ export const db = {
     },
     async listAll(): Promise<Scholarship[]> {
       try {
-        // Multi-device sync: query backend server first
+        // 1. Direct Supabase Query
+        const supabase = getSupabase();
+        if (supabase) {
+          const { data, error } = await supabase.from('scholarships').select('*');
+          if (!error && Array.isArray(data) && data.length > 0) {
+            const mapped: Scholarship[] = data.map((s: any) => ({
+              id: s.id,
+              name: s.name,
+              type: s.type,
+              category: s.category,
+              status: s.status || 'Active',
+              description: s.description || '',
+              requirements: Array.isArray(s.requirements) ? s.requirements : [],
+              slots: s.slots || 0,
+              deadline: s.deadline || ''
+            }));
+            memoryScholarships = mapped;
+            for (const item of mapped) {
+              await scholarshipsDb.setItem(item.id, item).catch(() => {});
+            }
+            notifyScholarshipListeners();
+            return [...memoryScholarships];
+          }
+        }
+
+        // 2. Fallback to backend server API
         try {
           const res = await fetch('/api/scholarships');
           if (res.ok) {
@@ -926,6 +1008,12 @@ export const db = {
       }
       scholarshipsDb.removeItem(id).catch(() => {});
 
+      // Direct Supabase delete
+      safeSupabase(supabase => {
+        supabase.from('scholarships').delete().eq('id', id);
+      });
+      broadcastSyncEvent('SCHOLARSHIPS_SYNC', memoryScholarships).catch(() => {});
+
       // Multi-device backend sync
       fetch(`/api/scholarships/${id}`, { method: 'DELETE' })
         .catch(e => console.warn("Backend delete notice:", e));
@@ -974,6 +1062,23 @@ export const db = {
       }
       notifySubmissionListeners();
       submissionsDb.setItem(id, sub).catch(() => {});
+
+      // Direct Supabase upsert
+      safeSupabase(supabase => {
+        supabase.from('submissions').upsert({
+          id: sub.id,
+          student_id: sub.studentId,
+          student_name: sub.studentName,
+          student_auth_id: sub.studentAuthId || null,
+          scholarship_type: sub.scholarshipType,
+          status: sub.status,
+          submitted_at: sub.submittedAt,
+          data: sub.data || {},
+          files: sub.files || []
+        }, { onConflict: 'id' });
+      });
+
+      broadcastSyncEvent('SUBMISSIONS_SYNC', memorySubmissions).catch(() => {});
 
       // Multi-device backend sync (persists to Supabase & broadcasts to other clients)
       fetch('/api/submissions', {
@@ -1121,7 +1226,37 @@ export const db = {
     },
     async listAll(): Promise<Submission[]> {
       try {
-        // Multi-device sync: query backend server first
+        // 1. Direct Supabase Query
+        const supabase = getSupabase();
+        if (supabase) {
+          const { data, error } = await supabase.from('submissions').select('*').order('submitted_at', { ascending: false });
+          if (!error && Array.isArray(data) && data.length > 0) {
+            const mapped: Submission[] = data.map((s: any) => ({
+              id: s.id,
+              studentId: s.student_id,
+              studentName: s.student_name,
+              studentAuthId: s.student_auth_id || undefined,
+              scholarshipType: s.scholarship_type,
+              status: s.status,
+              submittedAt: s.submitted_at,
+              data: s.data || {},
+              files: Array.isArray(s.files) ? s.files : []
+            }));
+            const subMap = new Map<string, Submission>();
+            memorySubmissions.forEach(s => subMap.set(s.id, s));
+            mapped.forEach(s => subMap.set(s.id, s));
+            memorySubmissions = Array.from(subMap.values()).sort(
+              (a, b) => new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime()
+            );
+            for (const item of mapped) {
+              await submissionsDb.setItem(item.id, item).catch(() => {});
+            }
+            notifySubmissionListeners();
+            return [...memorySubmissions];
+          }
+        }
+
+        // 2. Fallback to backend server API
         try {
           const res = await fetch('/api/submissions');
           if (res.ok) {
@@ -1212,6 +1347,12 @@ export const db = {
       notifySubmissionListeners();
       submissionsDb.removeItem(id).catch(() => {});
 
+      // Direct Supabase delete
+      safeSupabase(supabase => {
+        supabase.from('submissions').delete().eq('id', id);
+      });
+      broadcastSyncEvent('SUBMISSIONS_SYNC', memorySubmissions).catch(() => {});
+
       // Multi-device backend sync
       fetch(`/api/submissions/${id}`, { method: 'DELETE' })
         .catch(e => console.warn("Backend delete notice:", e));
@@ -1257,16 +1398,15 @@ export const db = {
       }
 
       // Direct Supabase upsert
-      const supabase = getSupabase();
-      if (supabase) {
+      safeSupabase(supabase => {
         supabase.from('courses').upsert({
           id: course.id,
           code: course.code,
           name: course.name,
           department: course.department || '',
           status: course.status || 'Active'
-        }, { onConflict: 'id' }).catch(() => {});
-      }
+        }, { onConflict: 'id' });
+      });
 
       broadcastSyncEvent('COURSES_SYNC', memoryCourses).catch(() => {});
 
@@ -1378,10 +1518,9 @@ export const db = {
       notifyCourseListeners();
       await coursesDb.removeItem(id).catch(() => {});
 
-      const supabase = getSupabase();
-      if (supabase) {
-        supabase.from('courses').delete().or(`id.eq.${id},code.eq.${targetCode}`).catch(() => {});
-      }
+      safeSupabase(supabase => {
+        supabase.from('courses').delete().or(`id.eq.${id},code.eq.${targetCode}`);
+      });
       broadcastSyncEvent('COURSES_SYNC', memoryCourses).catch(() => {});
 
       fetch(`/api/courses/${id}`, { method: 'DELETE' })
@@ -1432,11 +1571,18 @@ export const db = {
         await academicYearsDb.removeItem(id).catch(() => {});
       }
 
+      if (isCurrentActive) {
+        for (const item of nextList) {
+          if (item.id !== canonicalId) {
+            await academicYearsDb.setItem(item.id, item).catch(() => {});
+          }
+        }
+      }
+
       // Direct Supabase Write (Central Realtime Database)
-      const supabase = getSupabase();
-      if (supabase) {
+      safeSupabase(supabase => {
         if (isCurrentActive) {
-          supabase.from('academic_years').update({ overall_status: 'Inactive' }).neq('id', canonicalId).catch(() => {});
+          supabase.from('academic_years').update({ overall_status: 'Inactive' }).neq('id', canonicalId);
         }
         supabase.from('academic_years').upsert({
           id: record.id,
@@ -1446,8 +1592,8 @@ export const db = {
           second_semester: record.secondSemester,
           label: record.label,
           updated_at: record.updatedAt
-        }, { onConflict: 'id' }).catch(() => {});
-      }
+        }, { onConflict: 'id' });
+      });
 
       // Multi-device realtime broadcast over Supabase
       broadcastSyncEvent('ACADEMIC_YEARS_SYNC', memoryAcademicYears).catch(() => {});
@@ -1626,10 +1772,9 @@ export const db = {
       }
       notifyAcademicYearListeners();
 
-      const supabase = getSupabase();
-      if (supabase) {
-        supabase.from('academic_years').delete().or(`id.eq.${id},year.eq.${targetYear}`).catch(() => {});
-      }
+      safeSupabase(supabase => {
+        supabase.from('academic_years').delete().or(`id.eq.${id},year.eq.${targetYear}`);
+      });
       broadcastSyncEvent('ACADEMIC_YEARS_SYNC', memoryAcademicYears).catch(() => {});
 
       fetch(`/api/academic-years/${id}`, { method: 'DELETE' })
@@ -1668,6 +1813,18 @@ export const db = {
         await sectionsDb.removeItem(id).catch(() => {});
       }
 
+      // Direct Supabase upsert
+      safeSupabase(supabase => {
+        supabase.from('sections').upsert({
+          id: section.id,
+          name: section.name,
+          course: section.course || null,
+          status: section.status || 'Active'
+        }, { onConflict: 'id' });
+      });
+
+      broadcastSyncEvent('SECTIONS_SYNC', memorySections).catch(() => {});
+
       fetch('/api/sections', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -1694,6 +1851,35 @@ export const db = {
     },
     async listAll(): Promise<Section[]> {
       try {
+        // 1. Direct Supabase Query
+        const supabase = getSupabase();
+        if (supabase) {
+          const { data, error } = await supabase.from('sections').select('*');
+          if (!error && Array.isArray(data) && data.length > 0) {
+            const mapped: Section[] = data.map((s: any) => ({
+              id: s.id,
+              name: s.name,
+              course: s.course || '',
+              status: s.status || 'Active'
+            }));
+            const deduped = deduplicateSections(mapped);
+            memorySections = deduped;
+            const existingKeys = await sectionsDb.keys();
+            const validIds = new Set(deduped.map(s => s.id));
+            for (const k of existingKeys) {
+              if (!validIds.has(k)) {
+                await sectionsDb.removeItem(k).catch(() => {});
+              }
+            }
+            for (const item of deduped) {
+              await sectionsDb.setItem(item.id, item).catch(() => {});
+            }
+            notifySectionListeners();
+            return [...memorySections];
+          }
+        }
+
+        // 2. Fallback to backend server API
         try {
           const res = await fetch('/api/sections');
           if (res.ok) {
@@ -1740,6 +1926,12 @@ export const db = {
       notifySectionListeners();
       await sectionsDb.removeItem(id).catch(() => {});
 
+      // Direct Supabase delete
+      safeSupabase(supabase => {
+        supabase.from('sections').delete().or(`id.eq.${id},name.eq.${targetName}`);
+      });
+      broadcastSyncEvent('SECTIONS_SYNC', memorySections).catch(() => {});
+
       fetch(`/api/sections/${id}`, { method: 'DELETE' })
         .catch(e => console.warn("Backend delete notice:", e));
     }
@@ -1779,6 +1971,7 @@ export const db = {
     async save(categories: any[]): Promise<void> {
       memoryCategories = categories;
       notifyCategoryListeners(categories);
+      broadcastSyncEvent('CATEGORIES_SYNC', categories).catch(() => {});
       fetch('/api/scholarship-categories', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

@@ -1804,37 +1804,42 @@ export function GuidanceSettings() {
 
   useEffect(() => {
     let isMounted = true;
-    Promise.all([
-      db.courses.listAll(),
-      db.academicYears.listAll(),
-      db.sections.listAll(),
-      db.scholarships.listAll(),
-      db.formRequirements.listAll(),
-      (db as any).categories?.listAll?.()
-    ]).then(([coursesList, ayList, sectionsList, schs, reqs, catsList]) => {
-      if (!isMounted) return;
-      if (coursesList && coursesList.length > 0) setCourses(coursesList);
-      if (ayList && ayList.length > 0) setAcademicYears(ayList);
-      if (sectionsList && sectionsList.length > 0) setSections(sectionsList);
-      if (schs && schs.length > 0) setScholarships(schs);
-      if (reqs && reqs.length > 0) setFormFields(reqs);
-      if (catsList && Array.isArray(catsList) && catsList.length > 0) setCategories(catsList);
-    }).catch(e => console.warn("Failed to load settings list:", e));
+
+    const fetchAllSettings = () => {
+      Promise.all([
+        db.courses.listAll(),
+        db.academicYears.listAll(),
+        db.sections.listAll(),
+        db.scholarships.listAll(),
+        db.formRequirements.listAll(),
+        (db as any).categories?.listAll?.()
+      ]).then(([coursesList, ayList, sectionsList, schs, reqs, catsList]) => {
+        if (!isMounted) return;
+        if (Array.isArray(coursesList)) setCourses(coursesList);
+        if (Array.isArray(ayList)) setAcademicYears(ayList);
+        if (Array.isArray(sectionsList)) setSections(sectionsList);
+        if (Array.isArray(schs)) setScholarships(schs);
+        if (Array.isArray(reqs)) setFormFields(reqs);
+        if (Array.isArray(catsList)) setCategories(catsList);
+      }).catch(e => console.warn("Failed to load settings list:", e));
+    };
+
+    fetchAllSettings();
 
     const unsubAY = db.academicYears.subscribe(ayList => {
-      if (isMounted && ayList && ayList.length > 0) setAcademicYears(ayList);
+      if (isMounted && Array.isArray(ayList)) setAcademicYears(ayList);
     });
     const unsubCourses = db.courses.subscribe(cList => {
-      if (isMounted && cList && cList.length > 0) setCourses(cList);
+      if (isMounted && Array.isArray(cList)) setCourses(cList);
     });
     const unsubSections = db.sections.subscribe(sList => {
-      if (isMounted && sList && sList.length > 0) setSections(sList);
+      if (isMounted && Array.isArray(sList)) setSections(sList);
     });
     const unsubSch = db.scholarships.subscribe(sList => {
-      if (isMounted && sList && sList.length > 0) setScholarships(sList);
+      if (isMounted && Array.isArray(sList)) setScholarships(sList);
     });
     const unsubCats = (db as any).categories?.subscribe?.((catsList: any[]) => {
-      if (isMounted && Array.isArray(catsList) && catsList.length > 0) setCategories(catsList);
+      if (isMounted && Array.isArray(catsList)) setCategories(catsList);
     });
 
     const handleCatsUpdated = () => {
@@ -1844,7 +1849,12 @@ export function GuidanceSettings() {
         setCategories(cached);
       }
     };
+
     window.addEventListener('scholarship_categories_updated', handleCatsUpdated);
+    window.addEventListener('academic_years_updated', fetchAllSettings);
+    window.addEventListener('courses_updated', fetchAllSettings);
+    window.addEventListener('sections_updated', fetchAllSettings);
+    window.addEventListener('scholarships_updated', fetchAllSettings);
 
     return () => {
       isMounted = false;
@@ -1854,6 +1864,10 @@ export function GuidanceSettings() {
       unsubSch();
       if (unsubCats) unsubCats();
       window.removeEventListener('scholarship_categories_updated', handleCatsUpdated);
+      window.removeEventListener('academic_years_updated', fetchAllSettings);
+      window.removeEventListener('courses_updated', fetchAllSettings);
+      window.removeEventListener('sections_updated', fetchAllSettings);
+      window.removeEventListener('scholarships_updated', fetchAllSettings);
     };
   }, []);
 

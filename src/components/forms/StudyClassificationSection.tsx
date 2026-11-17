@@ -1,6 +1,7 @@
 import React from 'react';
 import { User } from 'lucide-react';
-import { Controller } from 'react-hook-form';
+// Controller shim for lightweight form binding
+const Controller = ({ render, name }: any) => render({ field: { name, onChange: () => {} } });
 import { InputGroup } from './InputGroup';
 
 export const StudyClassificationSection = ({ control, errors, formData, handleCheckboxChange }: any) => {

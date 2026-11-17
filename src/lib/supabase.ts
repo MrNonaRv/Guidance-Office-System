@@ -195,7 +195,36 @@ export async function uploadBase64ToSupabase(
 }
 
 let realtimeSyncChannel: any = null;
+let isChannelSubscribed = false;
 const syncEventListeners = new Set<(event: string, payload: any) => void>();
+
+/**
+ * Returns a persistent unique ID for the current client tab to prevent echo loops.
+ */
+export function getClientId(): string {
+  if (typeof window === 'undefined') return 'server';
+  const win = window as any;
+  if (!win.__capsu_client_id__) {
+    win.__capsu_client_id__ = `client_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+  }
+  return win.__capsu_client_id__;
+}
+
+/**
+ * Safely executes a Supabase query or mutation with error boundary wrapping.
+ * Prevents runtime crashes from Thenable/PostgrestFilterBuilder discrepancies.
+ */
+export function safeSupabase(fn: (client: SupabaseClient) => any): void {
+  const supabase = getSupabase();
+  if (!supabase) return;
+  try {
+    Promise.resolve(fn(supabase)).catch((err) => {
+      console.warn('Supabase operation notice:', err?.message || err);
+    });
+  } catch (err) {
+    console.warn('Supabase invoke error:', err);
+  }
+}
 
 /**
  * Gets or initializes the shared Supabase Realtime channel across all client devices.
@@ -206,13 +235,21 @@ export function getSupabaseSyncChannel() {
   if (!realtimeSyncChannel) {
     realtimeSyncChannel = supabase.channel('capsu_sync', {
       config: {
-        broadcast: { ack: true }
+        broadcast: { ack: false, self: false }
       }
     });
 
     realtimeSyncChannel.on('broadcast', { event: '*' }, (data: any) => {
       const eventName = data.event;
-      const payload = data.payload?.data !== undefined ? data.payload.data : (data.payload || data);
+      const rawPayload = data.payload || {};
+      const senderId = rawPayload.senderId;
+
+      // Ignore echoes from self
+      if (senderId && senderId === getClientId()) {
+        return;
+      }
+
+      const payload = rawPayload.data !== undefined ? rawPayload.data : rawPayload;
       syncEventListeners.forEach(listener => {
         try {
           listener(eventName, payload);
@@ -222,7 +259,13 @@ export function getSupabaseSyncChannel() {
       });
     });
 
-    realtimeSyncChannel.subscribe();
+    realtimeSyncChannel.subscribe((status: string) => {
+      if (status === 'SUBSCRIBED') {
+        isChannelSubscribed = true;
+      } else if (status === 'CLOSED' || status === 'CHANNEL_ERROR') {
+        isChannelSubscribed = false;
+      }
+    });
   }
   return realtimeSyncChannel;
 }
@@ -248,7 +291,11 @@ export async function broadcastSyncEvent(event: string, payload: any): Promise<v
       await channel.send({
         type: 'broadcast',
         event,
-        payload: { data: payload }
+        payload: {
+          data: payload,
+          senderId: getClientId(),
+          timestamp: Date.now()
+        }
       });
     }
   } catch (err) {
