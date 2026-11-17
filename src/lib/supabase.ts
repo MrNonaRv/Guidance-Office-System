@@ -214,15 +214,14 @@ export function getClientId(): string {
  * Safely executes a Supabase query or mutation with error boundary wrapping.
  * Prevents runtime crashes from Thenable/PostgrestFilterBuilder discrepancies.
  */
-export function safeSupabase(fn: (client: SupabaseClient) => any): void {
+export async function safeSupabase(fn: (client: SupabaseClient) => any): Promise<any> {
   const supabase = getSupabase();
-  if (!supabase) return;
+  if (!supabase) return null;
   try {
-    Promise.resolve(fn(supabase)).catch((err) => {
-      console.warn('Supabase operation notice:', err?.message || err);
-    });
-  } catch (err) {
-    console.warn('Supabase invoke error:', err);
+    return await Promise.resolve(fn(supabase));
+  } catch (err: any) {
+    console.warn('Supabase operation notice:', err?.message || err);
+    return null;
   }
 }
 

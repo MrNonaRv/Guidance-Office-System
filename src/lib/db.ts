@@ -1399,8 +1399,8 @@ export const db = {
       }
 
       // Direct Supabase upsert
-      safeSupabase(supabase => {
-        supabase.from('courses').upsert({
+      await safeSupabase(supabase => {
+        return supabase.from('courses').upsert({
           id: course.id,
           code: course.code,
           name: course.name,
@@ -1519,8 +1519,8 @@ export const db = {
       notifyCourseListeners();
       await coursesDb.removeItem(id).catch(() => {});
 
-      safeSupabase(supabase => {
-        supabase.from('courses').delete().or(`id.eq.${id},code.eq.${targetCode}`);
+      await safeSupabase(supabase => {
+        return supabase.from('courses').delete().or(`id.eq.${id},code.eq.${targetCode}`);
       });
       broadcastSyncEvent('COURSES_SYNC', memoryCourses).catch(() => {});
 
@@ -1581,11 +1581,13 @@ export const db = {
       }
 
       // Direct Supabase Write (Central Realtime Database)
-      safeSupabase(supabase => {
-        if (isCurrentActive) {
-          supabase.from('academic_years').update({ overall_status: 'Inactive' }).neq('id', canonicalId);
-        }
-        supabase.from('academic_years').upsert({
+      if (isCurrentActive) {
+        await safeSupabase(supabase => {
+          return supabase.from('academic_years').update({ overall_status: 'Inactive' }).neq('id', canonicalId);
+        });
+      }
+      await safeSupabase(supabase => {
+        return supabase.from('academic_years').upsert({
           id: record.id,
           year: record.year,
           overall_status: record.overallStatus,
@@ -1650,9 +1652,9 @@ export const db = {
             const mapped: AcademicYear[] = data.map((row: any) => ({
               id: row.id,
               year: row.year,
-              overallStatus: row.overall_status || 'Inactive',
-              firstSemester: row.first_semester || 'Inactive',
-              secondSemester: row.second_semester || 'Inactive',
+              overallStatus: (row.overall_status === 'Active' || row.overall_status === 'active') ? 'Active' : 'Inactive',
+              firstSemester: (row.first_semester === 'Active' || row.first_semester === 'active') ? 'Active' : 'Inactive',
+              secondSemester: (row.second_semester === 'Active' || row.second_semester === 'active') ? 'Active' : 'Inactive',
               label: row.label || `A.Y. ${row.year}`,
               updatedAt: row.updated_at
             }));
@@ -1773,8 +1775,8 @@ export const db = {
       }
       notifyAcademicYearListeners();
 
-      safeSupabase(supabase => {
-        supabase.from('academic_years').delete().or(`id.eq.${id},year.eq.${targetYear}`);
+      await safeSupabase(supabase => {
+        return supabase.from('academic_years').delete().or(`id.eq.${id},year.eq.${targetYear}`);
       });
       broadcastSyncEvent('ACADEMIC_YEARS_SYNC', memoryAcademicYears).catch(() => {});
 
@@ -1815,8 +1817,8 @@ export const db = {
       }
 
       // Direct Supabase upsert
-      safeSupabase(supabase => {
-        supabase.from('sections').upsert({
+      await safeSupabase(supabase => {
+        return supabase.from('sections').upsert({
           id: section.id,
           name: section.name,
           course: section.course || null,
@@ -1928,8 +1930,8 @@ export const db = {
       await sectionsDb.removeItem(id).catch(() => {});
 
       // Direct Supabase delete
-      safeSupabase(supabase => {
-        supabase.from('sections').delete().or(`id.eq.${id},name.eq.${targetName}`);
+      await safeSupabase(supabase => {
+        return supabase.from('sections').delete().or(`id.eq.${id},name.eq.${targetName}`);
       });
       broadcastSyncEvent('SECTIONS_SYNC', memorySections).catch(() => {});
 

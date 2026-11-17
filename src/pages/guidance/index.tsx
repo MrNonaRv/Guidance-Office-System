@@ -4,6 +4,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 /* import { Award, LayoutGrid, TrendingUp, BookOpen, FileText, Bell, Mail, BarChart2, Settings, LogOut, Filter, View, User, Paperclip, Image as ImageIcon, Pen, Trash2, Calendar, GraduationCap, Users, Plus, } from 'lucide-react'; */
 import { db, deduplicateAcademicYears, deduplicateCourses, deduplicateSections } from '../../lib/db';
+import { AcademicYear } from '../../types';
 import { motion, AnimatePresence } from 'motion/react';
 import { StudentRecordModal } from '../../components/StudentRecordModal';
 import { testSupabaseConnection, isSupabaseConfigured, BUCKET_NAME } from '../../lib/supabase';
@@ -1871,6 +1872,38 @@ export function GuidanceSettings() {
     };
   }, []);
 
+  const handleToggleAcademicYearStatus = async (ay: any, field: 'overallStatus' | 'firstSemester' | 'secondSemester') => {
+    try {
+      const currentVal = ay[field] || (field === 'secondSemester' ? 'Inactive' : 'Active');
+      const newVal = currentVal === 'Active' ? 'Inactive' : 'Active';
+      const updated: AcademicYear = {
+        ...ay,
+        [field]: newVal
+      };
+      
+      // Optimistic instant UI update
+      setAcademicYears(prev => {
+        let next = prev.map(item => {
+          if (item.id === ay.id || (item.year || '').trim() === (ay.year || '').trim()) {
+            return updated;
+          }
+          if (field === 'overallStatus' && newVal === 'Active') {
+            return { ...item, overallStatus: 'Inactive' as const };
+          }
+          return item;
+        });
+        return deduplicateAcademicYears(next);
+      });
+
+      await db.academicYears.update(ay.id, updated);
+      const fresh = await db.academicYears.listAll();
+      setAcademicYears(fresh);
+      window.dispatchEvent(new Event('academic_years_updated'));
+    } catch (err: any) {
+      console.warn("Status toggle error:", err);
+    }
+  };
+
   const handleSaveAcademicYear = async () => {
     const cleanYear = academicYearForm.year.trim();
     if (!cleanYear) {
@@ -1878,13 +1911,24 @@ export function GuidanceSettings() {
       return;
     }
     const canonicalId = `ay-${cleanYear.replace(/\s+/g, '-')}`;
-    const payload = {
+    const payload: AcademicYear = {
       ...academicYearForm,
       id: canonicalId,
       year: cleanYear,
       label: `A.Y. ${cleanYear}`
     };
     try {
+      // Optimistic instant update
+      setAcademicYears(prev => {
+        let next = prev.filter(item => item.id !== canonicalId && (item.year || '').trim() !== cleanYear);
+        if (payload.overallStatus === 'Active') {
+          next = next.map(item => ({ ...item, overallStatus: 'Inactive' as const }));
+        }
+        next.unshift(payload);
+        return deduplicateAcademicYears(next);
+      });
+      setShowAcademicYearModal(false);
+
       if (editingAcademicYear) {
         await db.academicYears.update(editingAcademicYear.id, payload);
       } else {
@@ -1892,7 +1936,7 @@ export function GuidanceSettings() {
       }
       const fresh = await db.academicYears.listAll();
       setAcademicYears(fresh);
-      setShowAcademicYearModal(false);
+      window.dispatchEvent(new Event('academic_years_updated'));
     } catch (err: any) {
       alert(err.message || "This Academic Year already exists.");
     }
@@ -1911,9 +1955,12 @@ export function GuidanceSettings() {
 
   const handleDeleteAcademicYear = async (id: string) => {
     if (confirm("Are you sure you want to delete this academic year?")) {
+      const targetYear = id.replace(/^ay-/, '').trim();
+      setAcademicYears(prev => prev.filter(a => a.id !== id && (a.year || '').trim() !== targetYear));
       await db.academicYears.delete(id);
       const fresh = await db.academicYears.listAll();
       setAcademicYears(fresh);
+      window.dispatchEvent(new Event('academic_years_updated'));
     }
   };
 
@@ -1924,6 +1971,7 @@ export function GuidanceSettings() {
       return;
     }
     try {
+      setShowCourseModal(false);
       if (editingCourse) {
         await db.courses.update(editingCourse.id, courseForm);
       } else {
@@ -1932,7 +1980,6 @@ export function GuidanceSettings() {
       const fresh = await db.courses.listAll();
       setCourses(fresh);
       window.dispatchEvent(new Event('courses_updated'));
-      setShowCourseModal(false);
     } catch (err: any) {
       alert(err.message || "This Course already exists.");
     }
@@ -1951,6 +1998,7 @@ export function GuidanceSettings() {
 
   const handleDeleteCourse = async (id: string) => {
     if (confirm("Are you sure you want to delete this course?")) {
+      setCourses(prev => prev.filter(c => c.id !== id));
       await db.courses.delete(id);
       const fresh = await db.courses.listAll();
       setCourses(fresh);
@@ -1973,6 +2021,7 @@ export function GuidanceSettings() {
       name: cleanName
     };
     try {
+      setShowSectionModal(false);
       if (editingSection) {
         await db.sections.update(editingSection.id, payload);
       } else {
@@ -1981,7 +2030,6 @@ export function GuidanceSettings() {
       const fresh = await db.sections.listAll();
       setSections(fresh);
       window.dispatchEvent(new Event('sections_updated'));
-      setShowSectionModal(false);
     } catch (err: any) {
       alert(err.message || "This Section already exists.");
     }
@@ -1997,6 +2045,7 @@ export function GuidanceSettings() {
 
   const handleDeleteSection = async (id: string) => {
     if (confirm("Are you sure you want to delete this section?")) {
+      setSections(prev => prev.filter(s => s.id !== id));
       await db.sections.delete(id);
       const fresh = await db.sections.listAll();
       setSections(fresh);
@@ -2351,34 +2400,49 @@ export function GuidanceSettings() {
                   <tr key={ay.id || idx} className="hover:bg-blue-50/20 transition-colors">
                     <td className="py-4 px-8 font-bold text-gray-900">{ay.year}</td>
                     <td className="py-4 px-6 text-center">
-                      <span className={cn(
-                        "inline-block w-28 py-1 rounded-full text-xs font-semibold text-center",
-                        (ay.overallStatus || 'Active') === 'Active'
-                          ? "bg-[#bbf7d0] text-[#15803d]"
-                          : "bg-[#fecaca] text-[#dc2626]"
-                      )}>
+                      <button
+                        type="button"
+                        onClick={() => handleToggleAcademicYearStatus(ay, 'overallStatus')}
+                        className={cn(
+                          "inline-block w-28 py-1 rounded-full text-xs font-semibold text-center cursor-pointer hover:opacity-85 active:scale-95 transition-all select-none",
+                          (ay.overallStatus || 'Active') === 'Active'
+                            ? "bg-[#bbf7d0] text-[#15803d]"
+                            : "bg-[#fecaca] text-[#dc2626]"
+                        )}
+                        title="Click to toggle Overall Status (Active / Inactive)"
+                      >
                         {ay.overallStatus || 'Active'}
-                      </span>
+                      </button>
                     </td>
                     <td className="py-4 px-6 text-center">
-                      <span className={cn(
-                        "inline-block w-28 py-1 rounded-full text-xs font-semibold text-center",
-                        (ay.firstSemester || 'Active') === 'Active'
-                          ? "bg-[#bbf7d0] text-[#15803d]"
-                          : "bg-[#fecaca] text-[#dc2626]"
-                      )}>
+                      <button
+                        type="button"
+                        onClick={() => handleToggleAcademicYearStatus(ay, 'firstSemester')}
+                        className={cn(
+                          "inline-block w-28 py-1 rounded-full text-xs font-semibold text-center cursor-pointer hover:opacity-85 active:scale-95 transition-all select-none",
+                          (ay.firstSemester || 'Active') === 'Active'
+                            ? "bg-[#bbf7d0] text-[#15803d]"
+                            : "bg-[#fecaca] text-[#dc2626]"
+                        )}
+                        title="Click to toggle 1st Semester (Active / Inactive)"
+                      >
                         {ay.firstSemester || 'Active'}
-                      </span>
+                      </button>
                     </td>
                     <td className="py-4 px-6 text-center">
-                      <span className={cn(
-                        "inline-block w-28 py-1 rounded-full text-xs font-semibold text-center",
-                        (ay.secondSemester || 'Inactive') === 'Active'
-                          ? "bg-[#bbf7d0] text-[#15803d]"
-                          : "bg-[#fecaca] text-[#dc2626]"
-                      )}>
+                      <button
+                        type="button"
+                        onClick={() => handleToggleAcademicYearStatus(ay, 'secondSemester')}
+                        className={cn(
+                          "inline-block w-28 py-1 rounded-full text-xs font-semibold text-center cursor-pointer hover:opacity-85 active:scale-95 transition-all select-none",
+                          (ay.secondSemester || 'Inactive') === 'Active'
+                            ? "bg-[#bbf7d0] text-[#15803d]"
+                            : "bg-[#fecaca] text-[#dc2626]"
+                        )}
+                        title="Click to toggle 2nd Semester (Active / Inactive)"
+                      >
                         {ay.secondSemester || 'Inactive'}
-                      </span>
+                      </button>
                     </td>
                     <td className="py-4 px-8 text-right space-x-3">
                       <button
