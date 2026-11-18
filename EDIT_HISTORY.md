@@ -1,9 +1,25 @@
 # System Edit & Update History Log
 
-**Last Updated:** November 10, 2026  
+**Last Updated:** November 18, 2026  
 **System:** Web-Based Scholarship Submission Alert System (CAPSU Mambusao Satellite College)
 
 > **Maintenance Note:** Whenever updates, refactorings, new features, or bug fixes are made to the system in the future, please record them in this file under a new dated entry.
+
+---
+
+## [November 18, 2026 - Update 10] — Optional Suffix Field Implementation
+
+### 1. Form UI & Label Updates
+- **Input Tag & Label**: Removed the mandatory indicator (`*` red asterisk) and `required` attribute from the `suffix` field in both `src/pages/student/index.tsx` and `src/components/forms/PersonalInfoSection.tsx`.
+- **Placeholder & Label**: Updated label to `"Suffix (Optional)"` and placeholder to `"e.g. Jr., III (Optional)"` so students know they can safely leave it blank.
+
+### 2. Validation Adjustment
+- **Manual Validation**: Removed the empty check for `suffix` in `src/pages/student/index.tsx` so leaving the field blank will not block submission or trigger `"This field is required. Write N/A if not applicable"`.
+- **Zod Schema**: Updated `suffix` in `src/lib/schema.ts` to `z.string().nullish().default('')` to accept empty strings, null, or undefined values gracefully.
+
+### 3. Backend & Storage Compatibility
+- Submissions store form responses in JSON format, which gracefully supports empty strings and nulls without throwing database errors.
+- Verified TypeScript compilation (`tsc --noEmit`) passes with 0 errors.
 
 ---
 

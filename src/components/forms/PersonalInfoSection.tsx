@@ -40,7 +40,7 @@ export const PersonalInfoSection = ({ control, errors, handlePhotoUpload, formDa
             <Controller name="familyName" control={control} render={({ field }) => <InputGroup label="Last Name" {...field} required placeholder="e.g. Dela Cruz" error={errors.familyName?.message || errors.familyName} />} />
             <Controller name="firstName" control={control} render={({ field }) => <InputGroup label="First Name" {...field} required placeholder="e.g. Juan" error={errors.firstName?.message || errors.firstName} />} />
             <Controller name="middleName" control={control} render={({ field }) => <InputGroup label="Middle Name" {...field} required placeholder="e.g. Santos" error={errors.middleName?.message || errors.middleName} />} />
-            <Controller name="suffix" control={control} render={({ field }) => <InputGroup label="Suffix" {...field} required placeholder="e.g. Jr. or N/A" error={errors.suffix?.message || errors.suffix} />} />
+            <Controller name="suffix" control={control} render={({ field }) => <InputGroup label="Suffix (Optional)" {...field} placeholder="e.g. Jr., III (Optional)" error={errors.suffix?.message || errors.suffix} />} />
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-2 gap-2 sm:gap-4">
             <Controller name="birthdate" control={control} render={({ field }) => (

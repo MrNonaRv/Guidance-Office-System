@@ -2020,10 +2020,6 @@ export function StudentSubmissionForm() {
       newErrors.middleName = 'This field is required';
       missingLabels.push('Middle Name');
     }
-    if (!formData.suffix || !formData.suffix.trim()) {
-      newErrors.suffix = 'This field is required. Write N/A if not applicable';
-      missingLabels.push('Suffix (e.g. Jr. or N/A)');
-    }
     if (!formData.birthdate) {
       newErrors.birthdate = 'Please select a date';
       missingLabels.push('Birthdate');
@@ -2769,12 +2765,11 @@ export function StudentSubmissionForm() {
                     error={errors.middleName}
                   />
                   <InputGroup 
-                    label="Suffix" 
+                    label="Suffix (Optional)" 
                     name="suffix" 
                     value={formData.suffix} 
                     onChange={handleChange} 
-                    required
-                    placeholder="e.g. Jr. or N/A"
+                    placeholder="e.g. Jr., III (Optional)"
                     error={errors.suffix}
                   />
                 </div>

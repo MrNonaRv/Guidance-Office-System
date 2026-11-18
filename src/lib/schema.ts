@@ -6,7 +6,7 @@ export const scholarshipFormSchema = z.object({
   familyName: z.string().min(1, 'This field is required'),
   firstName: z.string().min(1, 'This field is required'),
   middleName: z.string().min(1, 'This field is required'),
-  suffix: z.string().min(1, 'This field is required. Write N/A if not applicable'),
+  suffix: z.string().nullish().default(''),
   birthdate: z.string().min(1, 'Please select a date'),
   age: z.string().min(1, 'This field is required'),
   sex: z.string().min(1, 'Please select an option'),
