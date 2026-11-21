@@ -1013,6 +1013,7 @@ export function GuidanceSubmissions() {
   
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState(location.state?.filterStatus || 'All status');
+  const [filterYearLevel, setFilterYearLevel] = useState('All year levels');
   const [filterCourse, setFilterCourse] = useState('All courses');
   const [filterDate, setFilterDate] = useState('');
   const [filterAcademicYear, setFilterAcademicYear] = useState('All academic years');
@@ -1071,11 +1072,28 @@ export function GuidanceSubmissions() {
     const matchesSearch = studentFullName.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesStatus = filterStatus === 'All status' || s.status === filterStatus;
     const subCourse = s.data?.course || s.answers?.course || (s.scholarshipType.includes('BS') || s.scholarshipType.includes('BA') ? s.scholarshipType.split(' ')[0] : '');
+    const subYearLevel = (s.data?.yearLevel || s.answers?.yearLevel || '').toLowerCase();
+    const matchesYearLevel = filterYearLevel === 'All year levels' || (() => {
+      const target = filterYearLevel.toLowerCase();
+      if (target.includes('1st') || target.includes('first') || target.includes('1')) {
+        return subYearLevel.includes('1') || subYearLevel.includes('first');
+      }
+      if (target.includes('2nd') || target.includes('second') || target.includes('2')) {
+        return subYearLevel.includes('2') || subYearLevel.includes('second');
+      }
+      if (target.includes('3rd') || target.includes('third') || target.includes('3')) {
+        return subYearLevel.includes('3') || subYearLevel.includes('third');
+      }
+      if (target.includes('4th') || target.includes('fourth') || target.includes('4')) {
+        return subYearLevel.includes('4') || subYearLevel.includes('fourth');
+      }
+      return subYearLevel.includes(target);
+    })();
     const matchesCourse = filterCourse === 'All courses' || subCourse === filterCourse || s.scholarshipType.includes(filterCourse);
     const matchesDate = !filterDate || (s.submittedAt && s.submittedAt.startsWith(filterDate));
     const matchesAcademicYear = filterAcademicYear === 'All academic years' || s.data?.academicYear === filterAcademicYear;
     const matchesSemester = filterSemester === 'All semesters' || s.data?.semester === filterSemester;
-    return matchesSearch && matchesStatus && matchesCourse && matchesDate && matchesAcademicYear && matchesSemester;
+    return matchesSearch && matchesStatus && matchesYearLevel && matchesCourse && matchesDate && matchesAcademicYear && matchesSemester;
   });
   
   return (
@@ -1121,6 +1139,20 @@ export function GuidanceSubmissions() {
                       </select>
                     </div>
                     <div>
+                      <label className="block text-sm font-bold text-gray-900 mb-1.5">By Year Level</label>
+                      <select 
+                        value={filterYearLevel}
+                        onChange={(e) => setFilterYearLevel(e.target.value)}
+                        className="w-full text-sm border border-gray-300 text-gray-600 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 outline-none bg-white"
+                      >
+                        <option>All year levels</option>
+                        <option>1st Year</option>
+                        <option>2nd Year</option>
+                        <option>3rd Year</option>
+                        <option>4th Year</option>
+                      </select>
+                    </div>
+                    <div>
                       <label className="block text-sm font-bold text-gray-900 mb-1.5">By Course</label>
                       <select 
                         value={filterCourse}
@@ -1158,7 +1190,7 @@ export function GuidanceSubmissions() {
                     </div>
                     <div className="flex justify-between items-center gap-2 pt-3 mt-1">
                       <button 
-                        onClick={() => { setFilterStatus('All status'); setFilterCourse('All courses'); setFilterDate(''); setFilterAcademicYear('All academic years'); setFilterSemester('All semesters'); setFilterOpen(false); }} 
+                        onClick={() => { setFilterStatus('All status'); setFilterYearLevel('All year levels'); setFilterCourse('All courses'); setFilterDate(''); setFilterAcademicYear('All academic years'); setFilterSemester('All semesters'); setFilterOpen(false); }} 
                         className="px-6 py-2 text-sm text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 hover:text-gray-900 font-semibold transition-all duration-300 flex-1"
                       >
                         Reset
@@ -1173,10 +1205,11 @@ export function GuidanceSubmissions() {
         </div>
 
         <div className="overflow-x-auto border-t border-gray-200">
-          <table className="w-full text-center border-collapse min-w-[650px]">
+          <table className="w-full text-center border-collapse min-w-[700px]">
             <thead>
               <tr className="bg-[#f0f2f5] text-gray-600 text-[11px] font-bold uppercase tracking-widest border-b border-gray-200">
                 <th className="py-4 px-6 text-center w-1/4">Student</th>
+                <th className="py-4 px-6 w-1/6">Year Level</th>
                 <th className="py-4 px-6 w-1/5">Course</th>
                 <th className="py-4 px-6 w-1/5">Date</th>
                 <th className="py-4 px-6 w-1/6">Status</th>
@@ -1186,7 +1219,7 @@ export function GuidanceSubmissions() {
             <tbody className="divide-y divide-gray-100">
               {filteredSubmissions.length === 0 && (
                 <tr>
-                  <td colSpan={5} className="p-12 text-center text-gray-500">No submissions found matching your filters.</td>
+                  <td colSpan={6} className="p-12 text-center text-gray-500">No submissions found matching your filters.</td>
                 </tr>
               )}
               {filteredSubmissions.map(s => (
@@ -1198,6 +1231,9 @@ export function GuidanceSubmissions() {
                       </div>
                       <span className="text-sm font-medium text-gray-800 text-left">{s.studentName}</span>
                     </div>
+                  </td>
+                  <td className="py-4 px-6 text-sm text-gray-700 font-medium text-center">
+                    {s.data?.yearLevel || s.answers?.yearLevel || 'N/A'}
                   </td>
                   <td className="py-4 px-6 text-sm text-gray-700 font-medium text-center">
                     {/* Inferring course from scholarshipType for demo, or extracting from answers */}
