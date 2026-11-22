@@ -2004,11 +2004,25 @@ export const db = {
     },
     async listAll(): Promise<any[]> {
       try {
+        const supabase = getSupabase();
+        if (supabase) {
+          const { data, error } = await supabase.from('scholarship_categories').select('*').limit(1);
+          if (!error && data && data.length > 0 && data[0].categories) {
+            memoryCategories = data[0].categories;
+            localStorage.setItem('capsu_scholarship_categories', JSON.stringify(memoryCategories));
+            notifyLocalCategoryListeners(memoryCategories);
+            return memoryCategories;
+          }
+        }
+      } catch (e) {}
+
+      try {
         const res = await fetch('/api/scholarship-categories');
         if (res.ok) {
           const list = await res.json();
           if (Array.isArray(list) && list.length > 0) {
             memoryCategories = list;
+            localStorage.setItem('capsu_scholarship_categories', JSON.stringify(memoryCategories));
             notifyLocalCategoryListeners(list);
             return list;
           }
@@ -2020,8 +2034,18 @@ export const db = {
     },
     async save(categories: any[]): Promise<void> {
       memoryCategories = categories;
+      localStorage.setItem('capsu_scholarship_categories', JSON.stringify(categories));
       notifyCategoryListeners(categories);
       broadcastSyncEvent('CATEGORIES_SYNC', categories).catch(() => {});
+
+      safeSupabase(supabase => {
+        supabase.from('scholarship_categories').upsert({
+          id: 'main_categories',
+          categories: categories,
+          updated_at: new Date().toISOString()
+        }, { onConflict: 'id' });
+      });
+
       fetch('/api/scholarship-categories', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

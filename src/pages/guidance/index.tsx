@@ -1411,6 +1411,38 @@ export function GuidanceSettings() {
     return INITIAL_SCHOLARSHIP_CATEGORIES;
   });
 
+  useEffect(() => {
+    if ((db as any).categories?.listAll) {
+      (db as any).categories.listAll().then((list: any[]) => {
+        if (Array.isArray(list) && list.length > 0) {
+          setCategories(list);
+        }
+      }).catch(() => {});
+    }
+
+    if ((db as any).categories?.subscribe) {
+      const unsub = (db as any).categories.subscribe((list: any[]) => {
+        if (Array.isArray(list) && list.length > 0) {
+          setCategories(list);
+        }
+      });
+      return unsub;
+    }
+  }, []);
+
+  useEffect(() => {
+    const handleUpdate = () => {
+      try {
+        const cached = (db as any).categories?.getCached?.();
+        if (Array.isArray(cached) && cached.length > 0) {
+          setCategories(cached);
+        }
+      } catch (e) {}
+    };
+    window.addEventListener('scholarship_categories_updated', handleUpdate);
+    return () => window.removeEventListener('scholarship_categories_updated', handleUpdate);
+  }, []);
+
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>('internally-funded');
   const [selectedSubtypeId, setSelectedSubtypeId] = useState<string>('entrance');
 

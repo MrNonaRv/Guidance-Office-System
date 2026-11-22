@@ -369,12 +369,13 @@ function saveState() {
 async function loadStateFromSupabase() {
   if (!supabase) return;
   try {
-    const [ayRes, coursesRes, secRes, schRes, subRes] = await Promise.all([
+    const [ayRes, coursesRes, secRes, schRes, subRes, catRes] = await Promise.all([
       supabase.from('academic_years').select('*').order('year', { ascending: false }),
       supabase.from('courses').select('*'),
       supabase.from('sections').select('*'),
       supabase.from('scholarships').select('*'),
-      supabase.from('submissions').select('*').order('submitted_at', { ascending: false })
+      supabase.from('submissions').select('*').order('submitted_at', { ascending: false }),
+      supabase.from('scholarship_categories').select('*').limit(1)
     ]);
 
     if (ayRes.data && ayRes.data.length > 0) {
@@ -430,6 +431,9 @@ async function loadStateFromSupabase() {
         data: s.data,
         files: s.files
       }));
+    }
+    if (catRes.data && catRes.data.length > 0 && catRes.data[0].categories) {
+      state.categories = catRes.data[0].categories;
     }
     saveState();
   } catch (err) {
@@ -732,6 +736,13 @@ app.post('/api/scholarship-categories', (req, res) => {
   if (Array.isArray(cats)) {
     state.categories = cats;
     saveState();
+    safeSupabase(async () => {
+      await supabase!.from('scholarship_categories').upsert({
+        id: 'main_categories',
+        categories: state.categories,
+        updated_at: new Date().toISOString()
+      }, { onConflict: 'id' });
+    });
     broadcast('CATEGORIES_SYNC', state.categories);
     res.json({ success: true, list: state.categories });
   } else {
