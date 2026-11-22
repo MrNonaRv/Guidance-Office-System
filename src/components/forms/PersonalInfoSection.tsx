@@ -79,7 +79,7 @@ export const PersonalInfoSection = ({ control, errors, handlePhotoUpload, formDa
                   <InputGroup
                     label="Street"
                     {...field}
-                    required
+                    required={formData?.municipality !== 'Others'}
                     placeholder="Street / Sitio / Purok"
                     error={errors.street?.message || errors.street}
                   />
@@ -122,7 +122,7 @@ export const PersonalInfoSection = ({ control, errors, handlePhotoUpload, formDa
                     <InputGroup
                       label="Province"
                       {...field}
-                      required
+                      required={false}
                       placeholder="e.g. Iloilo"
                       error={errors.province?.message || errors.province}
                     />
@@ -135,7 +135,7 @@ export const PersonalInfoSection = ({ control, errors, handlePhotoUpload, formDa
                     <InputGroup
                       label="Postal Code"
                       {...field}
-                      required
+                      required={false}
                       placeholder="e.g. 5800"
                       error={errors.postalCode?.message || errors.postalCode}
                     />

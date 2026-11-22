@@ -218,56 +218,6 @@ export function getDynamicScholarshipStructure(): ScholarshipStructure {
   const internalGroups: ScholarshipSubCategoryGroup[] = mapSubtypes(internalCat?.subtypes || []);
   const externalGroups: ScholarshipSubCategoryGroup[] = mapSubtypes(externalCat?.subtypes || []);
 
-  // Safely merge any supplementary scholarships from localStorage cache
-  // WITHOUT overwriting or deleting any existing category groups or options!
-  if (typeof window !== 'undefined') {
-    try {
-      const cacheStr = localStorage.getItem('capsu_db_scholarships_cache');
-      if (cacheStr) {
-        const parsed = JSON.parse(cacheStr);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          parsed.forEach((s: any) => {
-            if (s.status === 'Inactive') return;
-            const typeStr = (s.type || '').toLowerCase();
-            const isInternal = typeStr.includes('internal') || typeStr.includes('internally');
-            const targetGroups = isInternal ? internalGroups : externalGroups;
-            const subCatName = s.category || (isInternal ? 'Institutional' : 'CHED');
-
-            let group = targetGroups.find(g => g.subCategory.toLowerCase() === subCatName.toLowerCase());
-            if (!group) {
-              group = {
-                subCategory: subCatName,
-                title: subCatName,
-                description: '',
-                options: []
-              };
-              targetGroups.push(group);
-            }
-
-            const alreadyExists = group.options.some(o => o.name.toLowerCase() === (s.name || '').toLowerCase());
-            if (!alreadyExists && s.name) {
-              const lowerName = s.name.toLowerCase();
-              let specifyField: ScholarshipOption['hasSpecifyField'] = undefined;
-              if (lowerName.includes('congressional')) specifyField = 'chedCongressionalDistrict';
-              else if (lowerName.includes('one town')) specifyField = 'chedOneTown';
-              else if (lowerName.includes('tulong dunong')) specifyField = 'chedTulongDunong';
-              else if (lowerName.includes('lgu')) specifyField = 'lguContact';
-              else if (lowerName.includes('dswd')) specifyField = 'dswdFields';
-              else if (lowerName.includes('others')) specifyField = isInternal ? 'internalCategoryOthers' : 'chedOthers';
-
-              group.options.push({
-                id: s.name,
-                name: s.name,
-                label: s.name,
-                hasSpecifyField: specifyField
-              });
-            }
-          });
-        }
-      }
-    } catch (e) {}
-  }
-
   return {
     Internal: internalGroups.length > 0 ? internalGroups : [{ subCategory: 'Institutional', title: 'Institutional', options: [] }],
     External: externalGroups.length > 0 ? externalGroups : [{ subCategory: 'CHED', title: 'CHED', options: [] }]

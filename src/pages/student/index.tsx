@@ -2058,25 +2058,27 @@ export function StudentSubmissionForm() {
     }
 
     // Address
-    if (!formData.street || !formData.street.trim()) {
-      newErrors.street = 'This field is required';
-      missingLabels.push('Street Address');
+    if (formData.municipality !== 'Others') {
+      if (!formData.street || !formData.street.trim()) {
+        newErrors.street = 'This field is required';
+        missingLabels.push('Street Address');
+      }
+      if (!formData.province || !formData.province.trim()) {
+        newErrors.province = 'This field is required';
+        missingLabels.push('Province');
+      }
+      if (!formData.postalCode || !formData.postalCode.trim()) {
+        newErrors.postalCode = 'This field is required';
+        missingLabels.push('Postal Code');
+      }
+      if (!formData.barangay) {
+        newErrors.barangay = 'Please select an option';
+        missingLabels.push('Barangay');
+      }
     }
     if (!formData.municipality) {
       newErrors.municipality = 'Please select an option';
       missingLabels.push('Municipality');
-    }
-    if (formData.municipality !== 'Others' && !formData.barangay) {
-      newErrors.barangay = 'Please select an option';
-      missingLabels.push('Barangay');
-    }
-    if (!formData.province || !formData.province.trim()) {
-      newErrors.province = 'This field is required';
-      missingLabels.push('Province');
-    }
-    if (!formData.postalCode || !formData.postalCode.trim()) {
-      newErrors.postalCode = 'This field is required';
-      missingLabels.push('Postal Code');
     }
     if (formData.municipality === 'Others' && (!formData.outsideCapizAddress || !formData.outsideCapizAddress.trim())) {
       newErrors.outsideCapizAddress = 'This field is required';
