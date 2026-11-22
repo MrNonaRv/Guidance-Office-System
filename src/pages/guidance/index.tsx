@@ -1952,7 +1952,20 @@ export function GuidanceSettings() {
         ...ay,
         [field]: newVal
       };
+      if ((field === 'firstSemester' || field === 'secondSemester') && newVal === 'Active') {
+        updated.overallStatus = 'Active';
+      }
+      if (field === 'overallStatus' && newVal === 'Active') {
+        if (updated.firstSemester !== 'Active' && updated.secondSemester !== 'Active') {
+          updated.firstSemester = 'Active';
+        }
+      }
+      if (field === 'overallStatus' && newVal === 'Inactive') {
+        updated.firstSemester = 'Inactive';
+        updated.secondSemester = 'Inactive';
+      }
       await db.academicYears.update(ay.id, updated);
+      setAcademicYears(db.academicYears.getCached());
     } catch (err: any) {
       console.warn("Status toggle error:", err);
     }
@@ -1978,6 +1991,7 @@ export function GuidanceSettings() {
       } else {
         await db.academicYears.create(payload);
       }
+      setAcademicYears(db.academicYears.getCached());
     } catch (err: any) {
       alert(err.message || "This Academic Year already exists.");
     }
@@ -1997,6 +2011,7 @@ export function GuidanceSettings() {
   const handleDeleteAcademicYear = async (id: string) => {
     if (confirm("Are you sure you want to delete this academic year?")) {
       await db.academicYears.delete(id);
+      setAcademicYears(db.academicYears.getCached());
     }
   };
 

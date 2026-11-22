@@ -791,12 +791,14 @@ export function StudentDashboard() {
   const [existingSubmission, setExistingSubmission] = useState<any>(null);
   const [previewDoc, setPreviewDoc] = useState<any>(null);
 
-  const [activeTermInfo, setActiveTermInfo] = useState<any>({
-    year: '2025-2026',
-    label: 'No Active Term/Semester',
-    firstActive: false,
-    secondActive: false,
-    hasActive: false
+  const [activeTermInfo, setActiveTermInfo] = useState<any>(() => {
+    return (db.academicYears as any).getCachedActiveTerm?.() || {
+      year: '2026-2027',
+      label: 'A.Y. 2026-2027 | 1st & 2nd Semester',
+      firstActive: true,
+      secondActive: true,
+      hasActive: true
+    };
   });
 
   useEffect(() => {
@@ -987,7 +989,7 @@ export function StudentDashboard() {
       const saved = await db.submissions.saveStudentFiles(targetIdentifier, newFiles, {
         studentName: existingSubmission?.studentName || `${effectiveUser?.firstName || ''} ${effectiveUser?.lastName || ''}`.trim() || 'Student',
         scholarshipType: existingSubmission?.scholarshipType || 'CAPSU Scholarship Program',
-        academicYear: activeTermInfo.year || '2025-2026'
+        academicYear: activeTermInfo.year || '2026-2027'
       });
 
       if (saved) {
@@ -1066,7 +1068,7 @@ export function StudentDashboard() {
           <div className="p-5 sm:p-6 md:px-12 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 min-h-[100px]">
             <div className="flex-1 min-w-0">
               <h3 className={cn("text-lg sm:text-xl md:text-[22px] font-bold leading-snug", availableSemesters.includes('1st') ? "text-[#0c2340]" : "text-[#6b7280]")}>
-                1st Semester <span className={cn("underline underline-offset-[6px] decoration-2", availableSemesters.includes('1st') ? "text-[#0c2340]" : "text-[#9ca3af]")}>({activeTermInfo.year || '2025-2026'})</span>
+                1st Semester <span className={cn("underline underline-offset-[6px] decoration-2", availableSemesters.includes('1st') ? "text-[#0c2340]" : "text-[#9ca3af]")}>({activeTermInfo.year || '2026-2027'})</span>
               </h3>
               <p className="text-gray-500 mt-1 text-xs sm:text-sm md:text-base leading-relaxed">
                 Upload the required documents <span className="italic font-medium font-serif text-gray-500">(for current students)</span>
@@ -1171,7 +1173,7 @@ export function StudentDashboard() {
           <div className="p-5 sm:p-6 md:px-12 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 min-h-[100px]">
             <div className="flex-1 min-w-0">
               <h3 className={cn("text-lg sm:text-xl md:text-[22px] font-bold leading-snug", availableSemesters.includes('2nd') ? "text-[#0c2340]" : "text-[#6b7280]")}>
-                2nd Semester <span className={cn("underline underline-offset-[6px] decoration-2", availableSemesters.includes('2nd') ? "text-[#0c2340]" : "text-[#9ca3af]")}>({activeTermInfo.year || '2025-2026'})</span>
+                2nd Semester <span className={cn("underline underline-offset-[6px] decoration-2", availableSemesters.includes('2nd') ? "text-[#0c2340]" : "text-[#9ca3af]")}>({activeTermInfo.year || '2026-2027'})</span>
               </h3>
               <p className="text-gray-500 mt-1 text-xs sm:text-sm md:text-base leading-relaxed">
                 Upload the required documents <span className="italic font-medium font-serif text-gray-500">(for current students)</span>
@@ -1416,12 +1418,14 @@ export function StudentSubmissionForm() {
   } | null>(null);
   const [previewFile, setPreviewFile] = useState<any | null>(null);
 
-  const [activeTermInfo, setActiveTermInfo] = useState<any>({
-    year: '2025-2026',
-    label: 'A.Y. 2025-2026 - 1st Semester',
-    firstActive: true,
-    secondActive: false,
-    hasActive: true
+  const [activeTermInfo, setActiveTermInfo] = useState<any>(() => {
+    return (db.academicYears as any).getCachedActiveTerm?.() || {
+      year: '2026-2027',
+      label: 'A.Y. 2026-2027 | 1st & 2nd Semester',
+      firstActive: true,
+      secondActive: true,
+      hasActive: true
+    };
   });
 
   useEffect(() => {
@@ -2385,7 +2389,7 @@ export function StudentSubmissionForm() {
         submittedAt: new Date().toISOString(),
         data: {
           ...formData,
-          academicYear: formData.academicYear || activeTermInfo.label || 'A.Y. 2025-2026 - 1st Semester',
+          academicYear: formData.academicYear || activeTermInfo.label || 'A.Y. 2026-2027 | 1st & 2nd Semester',
           scholarshipProgram,
           selectedScholarships: formattedScholarship.items,
           scholarshipSubCategory: formattedScholarship.category,

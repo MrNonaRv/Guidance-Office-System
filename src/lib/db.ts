@@ -1852,10 +1852,47 @@ export const db = {
       const list = deduplicateAcademicYears(memoryAcademicYears);
       return list.find(a => a.isDefault) || list.find(a => a.overallStatus === 'Active') || list[0] || null;
     },
+    getCachedActiveTerm(): { year: string; label: string; firstActive: boolean; secondActive: boolean; hasActive: boolean } {
+      const list = this.getCached();
+      let target = list.find(ay => ay.overallStatus === 'Active');
+      if (!target) {
+        target = list.find(ay => ay.firstSemester === 'Active' || ay.secondSemester === 'Active');
+      }
+      if (!target && list.length > 0) {
+        target = list[0];
+      }
+      if (target) {
+        const isOverallActive = target.overallStatus === 'Active';
+        const firstActive = (isOverallActive || target.firstSemester === 'Active') && target.firstSemester === 'Active';
+        const secondActive = (isOverallActive || target.secondSemester === 'Active') && target.secondSemester === 'Active';
+        const hasActive = firstActive || secondActive;
+        let label = `A.Y. ${target.year}`;
+        if (firstActive && secondActive) {
+          label = `A.Y. ${target.year} | 1st & 2nd Semester`;
+        } else if (firstActive) {
+          label = `A.Y. ${target.year} | 1st Semester`;
+        } else if (secondActive) {
+          label = `A.Y. ${target.year} | 2nd Semester`;
+        }
+        return {
+          year: target.year,
+          label,
+          firstActive,
+          secondActive,
+          hasActive
+        };
+      }
+      return {
+        year: '2026-2027',
+        label: 'A.Y. 2026-2027 | 1st & 2nd Semester',
+        firstActive: true,
+        secondActive: true,
+        hasActive: true
+      };
+    },
     async getActiveTerm(): Promise<{ year: string; label: string; firstActive: boolean; secondActive: boolean; hasActive: boolean }> {
       try {
-        const cached = this.getCached();
-        const list = cached.length > 0 ? cached : await this.listAll();
+        const list = await this.listAll().catch(() => this.getCached());
         let target = list.find(ay => ay.overallStatus === 'Active');
         if (!target) {
           target = list.find(ay => ay.firstSemester === 'Active' || ay.secondSemester === 'Active');
@@ -1866,18 +1903,16 @@ export const db = {
 
         if (target) {
           const isOverallActive = target.overallStatus === 'Active';
-          const firstActive = isOverallActive && target.firstSemester === 'Active';
-          const secondActive = isOverallActive && target.secondSemester === 'Active';
-          const hasActive = isOverallActive && (firstActive || secondActive);
+          const firstActive = (isOverallActive || target.firstSemester === 'Active') && target.firstSemester === 'Active';
+          const secondActive = (isOverallActive || target.secondSemester === 'Active') && target.secondSemester === 'Active';
+          const hasActive = firstActive || secondActive;
           let label = `A.Y. ${target.year}`;
-          if (isOverallActive) {
-            if (firstActive && secondActive) {
-              label = `A.Y. ${target.year} | 1st & 2nd Semester`;
-            } else if (firstActive) {
-              label = `A.Y. ${target.year} | 1st Semester`;
-            } else if (secondActive) {
-              label = `A.Y. ${target.year} | 2nd Semester`;
-            }
+          if (firstActive && secondActive) {
+            label = `A.Y. ${target.year} | 1st & 2nd Semester`;
+          } else if (firstActive) {
+            label = `A.Y. ${target.year} | 1st Semester`;
+          } else if (secondActive) {
+            label = `A.Y. ${target.year} | 2nd Semester`;
           }
           return {
             year: target.year,
@@ -1890,13 +1925,7 @@ export const db = {
       } catch (e) {
         console.warn("Error getting active term:", e);
       }
-      return {
-        year: '2025-2026',
-        label: 'No Active Term/Semester',
-        firstActive: false,
-        secondActive: false,
-        hasActive: false
-      };
+      return this.getCachedActiveTerm();
     },
     async delete(id: string): Promise<void> {
       const targetYear = id.replace(/^ay-/, '').trim();
