@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { db } from '../../lib/db';
+import { db, normalizeYearLevel } from '../../lib/db';
 import { 
   ChevronDown, 
   Filter, 
@@ -25,7 +25,7 @@ import {
   scholarshipDataMapping, 
   initialBreakdownData 
 } from './reportsData';
-import { getDynamicScholarshipHierarchy, formatScholarshipAllocations } from '../../lib/scholarshipCategories';
+import { getDynamicScholarshipHierarchy, formatScholarshipAllocations, cleanAllocationName } from '../../lib/scholarshipCategories';
 
 export function GuidanceReports() {
   const [selectedCourse, setSelectedCourse] = useState<string>('All courses');
@@ -76,13 +76,13 @@ export function GuidanceReports() {
             return {
               id: s.id || `sub-${idx}`,
               studentId: s.studentId || `2025-CAPSU-${1000 + idx}`,
-              student: s.studentName || `${formData.firstName || 'Student'} ${formData.familyName || ''}`.trim(),
-              yearLevel: formData.yearLevel || '1st year',
+              student: s.studentName || `${formData.firstName || 'Student'} ${formData.middleName ? formData.middleName + ' ' : ''}${formData.familyName || ''}`.trim(),
+              yearLevel: normalizeYearLevel(formData.yearLevel || s.answers?.yearLevel),
               course: courseCode,
               courseFull: courseCode === 'BSCS' ? 'Bachelor of Science in Computer Science' : courseCode === 'BAEL' ? 'Bachelor of Arts in English Language' : courseCode === 'BSFT' ? 'Bachelor of Science in Food Technology' : 'Bachelor of Science in Office Administration',
               category: (formatted.fundType === 'Internally-Funded' ? 'Internally-Funded' : 'Externally-Funded') as 'Internally-Funded' | 'Externally-Funded',
               subType: formatted.category,
-              allocation: formatted.displayItems[0] || formData.scholarshipCategory || s.scholarshipType || 'Pag-Ulikid',
+              allocation: cleanAllocationName(formatted.displayItems.join(', ') || formData.scholarshipCategory || s.scholarshipType || 'Pag-Ulikid'),
               gender: (formData.sex === 'Male' || formData.gender === 'Male') ? 'Male' : 'Female',
               email: formData.email || `${formData.firstName?.toLowerCase() || 'student'}@capsu.edu.ph`,
               phone: formData.contactNo || '+63 912 345 6789',
@@ -174,13 +174,33 @@ export function GuidanceReports() {
   };
 
   const filteredBreakdown = allBreakdownData.filter(item => {
-    const matchCategory = selectedCategory === 'Category' || item.category === selectedCategory;
-    const matchSubType = selectedSubType === 'Sub Type' || item.subType === selectedSubType;
-    const matchAllocation = selectedAllocation === 'Scholarship Allocation' || item.allocation === selectedAllocation;
+    const norm = (str: string) => (str || '').toLowerCase().replace(/[-–—\s()]/g, '');
+
+    const matchCategory = selectedCategory === 'Category' || 
+      item.category === selectedCategory || 
+      norm(item.category) === norm(selectedCategory);
+
+    const matchSubType = selectedSubType === 'Sub Type' || 
+      item.subType === selectedSubType || 
+      norm(item.subType) === norm(selectedSubType) ||
+      norm(item.subType).includes(norm(selectedSubType)) ||
+      norm(selectedSubType).includes(norm(item.subType));
+
+    const matchAllocation = selectedAllocation === 'Scholarship Allocation' || 
+      item.allocation === selectedAllocation ||
+      norm(item.allocation) === norm(selectedAllocation) ||
+      norm(item.allocation).includes(norm(selectedAllocation)) ||
+      norm(selectedAllocation).includes(norm(item.allocation)) ||
+      (item.data && (item.data.selectedScholarships || []).some((s: string) => 
+        norm(s) === norm(selectedAllocation) || norm(s).includes(norm(selectedAllocation)) || norm(selectedAllocation).includes(norm(s))
+      )) ||
+      (item.data && norm(item.data.scholarshipType || '').includes(norm(selectedAllocation)));
+
     const matchSearch = !searchQuery || 
       item.student.toLowerCase().includes(searchQuery.toLowerCase()) ||
       item.course.toLowerCase().includes(searchQuery.toLowerCase()) ||
       item.allocation.toLowerCase().includes(searchQuery.toLowerCase());
+
     return matchCategory && matchSubType && matchAllocation && matchSearch;
   }).sort((a, b) => a.student.localeCompare(b.student));
 

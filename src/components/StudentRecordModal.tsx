@@ -115,7 +115,7 @@ export function StudentRecordModal({
 
           const is2ndSem = selectedSemester === '2nd Semester';
 
-          // Filter for the requested semester AND academic year
+          // Filter for the requested semester AND academic year with fallbacks
           let filtered = uniqueFiles.filter(f => {
             if (!isRFDocument(f) && !isGWADocument(f)) return false;
             
@@ -124,11 +124,22 @@ export function StudentRecordModal({
             const matchesSemester = is2ndSem ? has2ndTag : !has2ndTag;
             
             // Academic Year check
-            const docAY = f.academicYear || currentAY || '';
-            const matchesAY = docAY === selectedAcademicYear;
+            const docAY = (f.academicYear || currentAY || '').replace(/[^0-9-]/g, '');
+            const selAY = (selectedAcademicYear || '').replace(/[^0-9-]/g, '');
+            const matchesAY = !selAY || !docAY || docAY === selAY || docAY.includes(selAY) || selAY.includes(docAY);
             
             return matchesSemester && matchesAY;
           });
+
+          // Fallback 1: If strict academic year match returned nothing, try matching semester only
+          if (filtered.length === 0) {
+            filtered = uniqueFiles.filter(f => {
+              if (!isRFDocument(f) && !isGWADocument(f)) return false;
+              const has2ndTag = is2ndSemesterDoc(f);
+              return is2ndSem ? has2ndTag : !has2ndTag;
+            });
+          }
+
           setSemesterFiles(filtered);
         } catch (err) {
           console.error("Failed to fetch semester files", err);

@@ -233,7 +233,23 @@ function cleanForFirestore(obj: any, currentDepth = 0): any {
 // -------------------------------------------------------------
 // High-Performance In-Memory Cache & Event Notification Layer
 // -------------------------------------------------------------
-let memorySubmissions: Submission[] = [...defaultSubmissions];
+export function normalizeYearLevel(yl: string | undefined | null): string {
+  if (!yl) return '1st Year';
+  const s = String(yl).trim().toLowerCase();
+  if (s.includes('1') || s.includes('first')) return '1st Year';
+  if (s.includes('2') || s.includes('second')) return '2nd Year';
+  if (s.includes('3') || s.includes('third')) return '3rd Year';
+  if (s.includes('4') || s.includes('fourth')) return '4th Year';
+  return String(yl);
+}
+
+let memorySubmissions: Submission[] = defaultSubmissions.map(s => ({
+  ...s,
+  data: {
+    ...(s.data || {}),
+    yearLevel: normalizeYearLevel(s.data?.yearLevel)
+  }
+}));
 let memoryScholarships: Scholarship[] = [...defaultScholarships];
 let memoryCourses: Course[] = [...defaultCourses];
 let memoryAcademicYears: AcademicYear[] = [...defaultAcademicYears];
@@ -1143,10 +1159,12 @@ export const db = {
     async saveStudentFiles(
       studentIdentifier: string,
       filesToSave: SubmissionFile[],
-      meta?: { studentName?: string; scholarshipType?: string; academicYear?: string }
+      meta?: { studentName?: string; scholarshipType?: string; academicYear?: string; email?: string }
     ): Promise<Submission> {
       const all = await this.listAll();
       const norm = (studentIdentifier || '').trim().toLowerCase();
+      const metaName = (meta?.studentName || '').trim().toLowerCase();
+      const metaEmail = (meta?.email || '').trim().toLowerCase();
       
       let target = all.find(s => {
         const sId = (s.studentId || '').trim().toLowerCase();
@@ -1154,7 +1172,15 @@ export const db = {
         const sEmail = (s.data?.email || '').trim().toLowerCase();
         const sDataId = (s.data?.studentId || '').trim().toLowerCase();
         const sName = (s.studentName || '').trim().toLowerCase();
-        return s.id === studentIdentifier || sId === norm || sAuth === norm || sEmail === norm || sDataId === norm || sName === norm;
+        
+        return s.id === studentIdentifier || 
+               sId === norm || 
+               sAuth === norm || 
+               sEmail === norm || 
+               sDataId === norm || 
+               sName === norm ||
+               (metaName && sName === metaName) ||
+               (metaEmail && (sEmail === metaEmail || sId === metaEmail));
       });
 
       const now = new Date().toISOString();
@@ -1204,17 +1230,23 @@ export const db = {
         return updated;
       } else {
         const newId = `sub-${Date.now()}`;
+        const nameParts = (meta?.studentName || 'Student Applicant').split(' ');
+        const firstName = nameParts[0] || 'Student';
+        const familyName = nameParts.length > 1 ? nameParts[nameParts.length - 1] : '';
+
         const newSub: Submission = {
           id: newId,
           studentId: studentIdentifier,
           studentName: meta?.studentName || 'Student Applicant',
-          scholarshipType: meta?.scholarshipType || 'Institutional Scholarship',
+          scholarshipType: meta?.scholarshipType || 'CAPSU Scholarship Program',
           status: 'Pending',
           submittedAt: now,
           data: {
             studentId: studentIdentifier,
-            familyName: meta?.studentName?.split(' ').pop() || '',
-            firstName: meta?.studentName?.split(' ')[0] || '',
+            firstName,
+            familyName,
+            course: 'BSCS',
+            yearLevel: '1st Year',
             academicYear: meta?.academicYear || 'A.Y. 2025-2026',
             submittedAt: now
           },
@@ -1232,17 +1264,23 @@ export const db = {
         if (supabase) {
           const { data, error } = await supabase.from('submissions').select('*').order('submitted_at', { ascending: false });
           if (!error && Array.isArray(data) && data.length > 0) {
-            const mapped: Submission[] = data.map((s: any) => ({
-              id: s.id,
-              studentId: s.student_id,
-              studentName: s.student_name,
-              studentAuthId: s.student_auth_id || undefined,
-              scholarshipType: s.scholarship_type,
-              status: s.status,
-              submittedAt: s.submitted_at,
-              data: s.data || {},
-              files: Array.isArray(s.files) ? s.files : []
-            }));
+            const mapped: Submission[] = data.map((s: any) => {
+              const subData = s.data || {};
+              if (subData.yearLevel) {
+                subData.yearLevel = normalizeYearLevel(subData.yearLevel);
+              }
+              return {
+                id: s.id,
+                studentId: s.student_id,
+                studentName: s.student_name,
+                studentAuthId: s.student_auth_id || undefined,
+                scholarshipType: s.scholarship_type,
+                status: s.status,
+                submittedAt: s.submitted_at,
+                data: subData,
+                files: Array.isArray(s.files) ? s.files : []
+              };
+            });
             const subMap = new Map<string, Submission>();
             memorySubmissions.forEach(s => subMap.set(s.id, s));
             mapped.forEach(s => subMap.set(s.id, s));
@@ -1265,7 +1303,12 @@ export const db = {
             if (Array.isArray(serverList) && serverList.length > 0) {
               const subMap = new Map<string, Submission>();
               memorySubmissions.forEach(s => subMap.set(s.id, s));
-              serverList.forEach((s: Submission) => subMap.set(s.id, s));
+              serverList.forEach((s: Submission) => {
+                if (s.data?.yearLevel) {
+                  s.data.yearLevel = normalizeYearLevel(s.data.yearLevel);
+                }
+                subMap.set(s.id, s);
+              });
               memorySubmissions = Array.from(subMap.values()).sort(
                 (a, b) => new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime()
               );

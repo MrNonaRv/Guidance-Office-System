@@ -429,3 +429,27 @@ export function formatScholarshipAllocations(data: {
     count: selected.length
   };
 }
+
+export function cleanAllocationName(raw: string): string {
+  if (!raw) return 'Pag-Ulikid';
+  let cleaned = raw.trim();
+  if (cleaned.includes('—')) {
+    const parts = cleaned.split('—');
+    cleaned = parts[parts.length - 1].trim();
+  }
+  const match = cleaned.match(/\(([^)]+)\)/g);
+  if (match && match.length > 0) {
+    const lastMatch = match[match.length - 1];
+    let inner = lastMatch.replace(/[()]/g, '').trim();
+    if (inner.includes(' - ')) {
+      const subParts = inner.split(' - ');
+      inner = subParts[subParts.length - 1].trim();
+    }
+    cleaned = inner;
+  } else if (cleaned.includes(' - ')) {
+    const parts = cleaned.split(' - ');
+    cleaned = parts[parts.length - 1].trim();
+  }
+  return cleaned || raw;
+}
+

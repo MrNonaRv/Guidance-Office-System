@@ -3,7 +3,7 @@ import { cn, formatTimeAgo } from '../../lib/utils';
 import React, { useState, useEffect, useMemo } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 /* import { Award, LayoutGrid, TrendingUp, BookOpen, FileText, Bell, Mail, BarChart2, Settings, LogOut, Filter, View, User, Paperclip, Image as ImageIcon, Pen, Trash2, Calendar, GraduationCap, Users, Plus, } from 'lucide-react'; */
-import { db, deduplicateAcademicYears, deduplicateCourses, deduplicateSections } from '../../lib/db';
+import { db, deduplicateAcademicYears, deduplicateCourses, deduplicateSections, normalizeYearLevel } from '../../lib/db';
 import { AcademicYear } from '../../types';
 import { motion, AnimatePresence } from 'motion/react';
 import { StudentRecordModal } from '../../components/StudentRecordModal';
@@ -774,7 +774,7 @@ export function GuidanceDashboard() {
 
   const displaySubmissions = submissions
     .map(s => ({
-      studentName: s.studentName || `${s.data?.firstName || ''} ${s.data?.familyName || ''}`.trim() || 'New Applicant',
+      studentName: s.studentName || `${s.data?.firstName || ''} ${s.data?.middleName ? s.data.middleName + ' ' : ''}${s.data?.familyName || ''}`.trim() || 'New Applicant',
       course: s.data?.course || s.answers?.course || 'BSCS',
       date: s.submittedAt ? new Date(s.submittedAt).toLocaleDateString('en-US', { month: 'long', day: '2-digit', year: 'numeric' }) : 'Unknown Date',
       status: s.status || 'Incomplete'
@@ -1068,7 +1068,7 @@ export function GuidanceSubmissions() {
   };
 
   const filteredSubmissions = submissions.filter(s => {
-    const studentFullName = s.studentName || `${s.data?.firstName || ''} ${s.data?.familyName || ''}`.trim();
+    const studentFullName = s.studentName || `${s.data?.firstName || ''} ${s.data?.middleName ? s.data.middleName + ' ' : ''}${s.data?.familyName || ''}`.trim();
     const matchesSearch = studentFullName.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesStatus = filterStatus === 'All status' || s.status === filterStatus;
     const subCourse = s.data?.course || s.answers?.course || (s.scholarshipType.includes('BS') || s.scholarshipType.includes('BA') ? s.scholarshipType.split(' ')[0] : '');
@@ -1233,7 +1233,7 @@ export function GuidanceSubmissions() {
                     </div>
                   </td>
                   <td className="py-4 px-6 text-sm text-gray-700 font-medium text-center">
-                    {s.data?.yearLevel || s.answers?.yearLevel || 'N/A'}
+                    {normalizeYearLevel(s.data?.yearLevel || s.answers?.yearLevel)}
                   </td>
                   <td className="py-4 px-6 text-sm text-gray-700 font-medium text-center">
                     {/* Inferring course from scholarshipType for demo, or extracting from answers */}

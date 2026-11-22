@@ -2368,7 +2368,7 @@ export function StudentSubmissionForm() {
       const sessionStr = localStorage.getItem('studentUser');
       const user = sessionStr ? JSON.parse(sessionStr) : null;
       const effectiveStudentId = user?.email || user?.id || auth.currentUser?.email || auth.currentUser?.uid || formData.email || `STU-${Date.now()}`;
-      const effectiveStudentName = `${formData.firstName} ${formData.familyName}`.trim() || `${user?.firstName || ''} ${user?.lastName || ''}`.trim() || auth.currentUser?.displayName || 'Anonymous Student';
+      const effectiveStudentName = `${formData.firstName || ''} ${formData.middleName ? formData.middleName + ' ' : ''}${formData.familyName || ''}`.trim() || `${user?.firstName || ''} ${user?.middleName ? user.middleName + ' ' : ''}${user?.lastName || ''}`.trim() || auth.currentUser?.displayName || 'Anonymous Student';
 
       const formattedScholarship = formatScholarshipAllocations(formData);
       const scholarshipProgram = formattedScholarship.fullLabel;
@@ -2390,6 +2390,7 @@ export function StudentSubmissionForm() {
           scholarshipFundType: formData.scholarshipFundType || (formattedScholarship.fundType.includes('Internal') ? 'Internal' : 'External'),
           email: formData.email || user?.email || auth.currentUser?.email || '',
           firstName: formData.firstName || user?.firstName || '',
+          middleName: formData.middleName || user?.middleName || '',
           familyName: formData.familyName || user?.lastName || ''
         },
         files: files.map((f: any) => ({

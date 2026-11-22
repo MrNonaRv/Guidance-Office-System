@@ -33,7 +33,7 @@ import {
 import { cn } from '../../lib/utils';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { db } from '../../lib/db';
-import { formatScholarshipAllocations } from '../../lib/scholarshipCategories';
+import { formatScholarshipAllocations, cleanAllocationName } from '../../lib/scholarshipCategories';
 import { getCachedGmailToken, requestGmailToken, sendGmailMessage } from '../../lib/gmailService';
 import { firestoreDb } from '../../lib/firebase';
 import { collection, getDocs } from 'firebase/firestore';
@@ -126,7 +126,7 @@ export function GuidanceResponses() {
       unsub = db.submissions.subscribe(subs => {
         if (subs) {
           const uniqueStudents = Array.from(new Map(subs.map(s => {
-            const name = s.studentName || `${s.data?.firstName || ''} ${s.data?.familyName || ''}`.trim() || 'Scholar';
+            const name = s.studentName || `${s.data?.firstName || ''} ${s.data?.middleName ? s.data.middleName + ' ' : ''}${s.data?.familyName || ''}`.trim() || 'Scholar';
             const authId = (s as any).studentAuthId || s.studentId;
             let derivedEmail = 'student@gmail.com';
             if (name && name !== 'Scholar') {
@@ -143,7 +143,7 @@ export function GuidanceResponses() {
             const formatted = formatScholarshipAllocations(formData);
             const category = formatted.fundType;
             const subType = formatted.category;
-            let allocation = formatted.displayItems[0] || s.data?.scholarshipProgram || (s.data?.selectedScholarships?.join(' - ')) || s.scholarshipType || 'Scholarship';
+            let allocation = cleanAllocationName(formatted.displayItems.join(', ') || s.data?.scholarshipProgram || (s.data?.selectedScholarships?.join(' - ')) || s.scholarshipType || 'Scholarship');
 
             return [
               s.studentId || s.id, 
@@ -453,15 +453,31 @@ Capiz State University – Mambusao Satellite College`
   // Filtered Students
   const filteredStudents = useMemo(() => {
     return studentList.filter(student => {
+      const norm = (str: string) => (str || '').toLowerCase().replace(/[-–—\s()]/g, '');
+
       const matchSearch = !searchQuery || 
         student.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         student.studentId.toLowerCase().includes(searchQuery.toLowerCase()) ||
         student.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
         student.allocation.toLowerCase().includes(searchQuery.toLowerCase()) ||
         student.subType.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchCategory = selectedCategory === 'Category' || student.category === selectedCategory;
-      const matchSubType = selectedSubType === 'Sub Type' || student.subType === selectedSubType;
-      const matchAllocation = selectedAllocation === 'Scholarship Allocation' || student.allocation === selectedAllocation;
+
+      const matchCategory = selectedCategory === 'Category' || 
+        student.category === selectedCategory || 
+        norm(student.category) === norm(selectedCategory);
+
+      const matchSubType = selectedSubType === 'Sub Type' || 
+        student.subType === selectedSubType || 
+        norm(student.subType) === norm(selectedSubType) ||
+        norm(student.subType).includes(norm(selectedSubType)) ||
+        norm(selectedSubType).includes(norm(student.subType));
+
+      const matchAllocation = selectedAllocation === 'Scholarship Allocation' || 
+        student.allocation === selectedAllocation ||
+        norm(student.allocation) === norm(selectedAllocation) ||
+        norm(student.allocation).includes(norm(selectedAllocation)) ||
+        norm(selectedAllocation).includes(norm(student.allocation));
+
       return matchSearch && matchCategory && matchSubType && matchAllocation;
     });
   }, [studentList, searchQuery, selectedCategory, selectedSubType, selectedAllocation]);
