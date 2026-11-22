@@ -1643,13 +1643,13 @@ export function GuidanceSettings() {
       // Sync to db.scholarships
       const match = scholarships.find(s => s.name === oldName || s.name === `${oldName} (${targetCatName})` || s.id === editingAllocation.id);
       if (match) {
-        db.scholarships.update(match.id, {
+        await db.scholarships.update(match.id, {
           name,
           type: targetCatName,
           category: targetSubTypeName
         }).catch(console.warn);
       } else {
-        db.scholarships.set(editingAllocation.id, {
+        await db.scholarships.set(editingAllocation.id, {
           id: editingAllocation.id,
           name,
           type: targetCatName,
@@ -1658,6 +1658,7 @@ export function GuidanceSettings() {
           description: `${targetSubTypeName} Allocation`
         }).catch(console.warn);
       }
+      setScholarships(db.scholarships.getCached());
     } else {
       const allocId = `alloc-${Date.now()}`;
       const newAlloc: ScholarshipAllocationItem = {
@@ -1685,7 +1686,7 @@ export function GuidanceSettings() {
       saveCategoriesState(updated);
 
       // Sync into db.scholarships
-      db.scholarships.set(allocId, {
+      await db.scholarships.set(allocId, {
         id: allocId,
         name: name,
         type: targetCatName,
@@ -1693,6 +1694,7 @@ export function GuidanceSettings() {
         status: 'Active',
         description: `${targetSubTypeName} Allocation`
       }).catch(console.warn);
+      setScholarships(db.scholarships.getCached());
     }
     setShowAllocationModal(false);
   };
@@ -1722,10 +1724,11 @@ export function GuidanceSettings() {
       const allocName = alloc?.name;
       const target = scholarships.find(s => s.id === allocId || (allocName && (s.name === allocName || s.name.startsWith(allocName))));
       if (target) {
-        db.scholarships.delete(target.id).catch(console.warn);
+        await db.scholarships.delete(target.id).catch(console.warn);
       } else {
-        db.scholarships.delete(allocId).catch(console.warn);
+        await db.scholarships.delete(allocId).catch(console.warn);
       }
+      setScholarships(db.scholarships.getCached());
     }
   };
 

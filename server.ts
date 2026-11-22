@@ -407,7 +407,11 @@ async function loadStateFromSupabase() {
       })));
     }
     if (schRes.data && schRes.data.length > 0) {
-      state.scholarships = schRes.data.map((s: any) => ({
+      const configRow = schRes.data.find((s: any) => s.id === '__categories_config__');
+      if (configRow && Array.isArray(configRow.requirements) && configRow.requirements.length > 0) {
+        state.categories = configRow.requirements;
+      }
+      state.scholarships = schRes.data.filter((s: any) => s.id !== '__categories_config__').map((s: any) => ({
         id: s.id,
         name: s.name,
         type: s.type,
@@ -684,7 +688,7 @@ app.delete('/api/sections/:id', (req, res) => {
 
 // SCHOLARSHIPS
 app.get('/api/scholarships', (req, res) => {
-  res.json(state.scholarships);
+  res.json(state.scholarships.filter(s => s.id !== '__categories_config__'));
 });
 
 app.post('/api/scholarships', (req, res) => {
@@ -736,6 +740,16 @@ app.post('/api/scholarship-categories', (req, res) => {
   if (Array.isArray(cats)) {
     state.categories = cats;
     saveState();
+    safeSupabase(async () => {
+      await supabase!.from('scholarships').upsert({
+        id: '__categories_config__',
+        name: 'SYSTEM_CATEGORIES_CONFIG',
+        type: 'CONFIG',
+        category: 'CONFIG',
+        status: 'System',
+        requirements: state.categories
+      }, { onConflict: 'id' });
+    });
     safeSupabase(async () => {
       await supabase!.from('scholarship_categories').upsert({
         id: 'main_categories',

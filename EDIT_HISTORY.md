@@ -1,9 +1,26 @@
 # System Edit & Update History Log
 
-**Last Updated:** November 18, 2026  
+**Last Updated:** November 22, 2026  
 **System:** Web-Based Scholarship Submission Alert System (CAPSU Mambusao Satellite College)
 
 > **Maintenance Note:** Whenever updates, refactorings, new features, or bug fixes are made to the system in the future, please record them in this file under a new dated entry.
+
+---
+
+## [November 22, 2026 - Update 11] — Fix Scholarship Persistence & Category Synchronization
+
+### 1. Root Cause Identification
+- When adding a scholarship or allocation in the Admin Settings, `db.categories.getCached()` initialized in-memory categories with `INITIAL_SCHOLARSHIP_CATEGORIES` before checking `localStorage`. On page refresh, `listAll()` fell back to defaults and overwrote `localStorage` with initial values, wiping out newly created scholarships.
+- Supabase did not have a dedicated `scholarship_categories` table in its public schema, causing category upserts to fail silently without cloud persistence.
+- Supabase upsert and delete promises in `db.scholarships.set` and `db.scholarships.delete` lacked `return` statements and `await`, leaving operations unhandled upon immediate page refreshes.
+
+### 2. Solutions Implemented
+- **Supabase Cloud Persistence**: Stored and synced the full scholarship category hierarchy inside a dedicated configuration record (`id: '__categories_config__'`) in the existing `scholarships` table, backed by JSONB storage.
+- **LocalStorage & Cache Protection**: Updated `getInitialCategories()` and `getCached()` to always check `localStorage` (`capsu_scholarship_categories`) first so cached additions are never overwritten by static defaults on refresh.
+- **Bi-directional Merging**: Added `mergeScholarshipsIntoCategories()` to merge any database scholarships into the category hierarchy whenever scholarships are fetched or synced.
+- **Awaited Supabase Calls**: Ensured all `safeSupabase` queries for scholarships, categories, and submissions are properly awaited with explicit promise returns.
+- **Clean Filtering**: Filtered out `__categories_config__` from regular scholarship queries, reports, and API responses so internal configuration records remain hidden from UI tables.
+- **Verification**: Verified zero TypeScript errors (`tsc --noEmit`) and completed a full Vite production build.
 
 ---
 

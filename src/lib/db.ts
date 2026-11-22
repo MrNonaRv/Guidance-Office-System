@@ -258,7 +258,20 @@ let memoryFormRequirements: FormRequirement[] = [...defaultFormRequirements];
 let memoryFiles: SystemFile[] = [...defaultSystemFiles];
 let memoryNotifications: NotificationItem[] = [...defaultNotifications];
 let memoryCommunications: CommunicationItem[] = [];
-let memoryCategories: any[] = [...INITIAL_SCHOLARSHIP_CATEGORIES];
+function getInitialCategories(): any[] {
+  if (typeof window !== 'undefined') {
+    try {
+      const saved = localStorage.getItem('capsu_scholarship_categories');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch (e) {}
+  }
+  return [...INITIAL_SCHOLARSHIP_CATEGORIES];
+}
+
+let memoryCategories: any[] = getInitialCategories();
 
 export function deduplicateAcademicYears(ays: AcademicYear[]): AcademicYear[] {
   if (!Array.isArray(ays)) return [];
@@ -829,6 +842,51 @@ onAuthStateChanged(auth, () => {
   }
 });
 
+export function mergeScholarshipsIntoCategories(scholarships: Scholarship[], currentCats: any[]): any[] {
+  if (!Array.isArray(currentCats) || currentCats.length === 0) return currentCats;
+  let changed = false;
+  const updated = currentCats.map(cat => ({
+    ...cat,
+    subtypes: (cat.subtypes || []).map((sub: any) => ({
+      ...sub,
+      allocations: [...(sub.allocations || [])]
+    }))
+  }));
+
+  for (const s of scholarships) {
+    if (!s || !s.name || s.id === '__categories_config__') continue;
+    const sName = s.name.trim();
+    const isInternal = (s.type || '').toLowerCase().includes('internal');
+    const targetCat = updated.find(c => isInternal ? c.name.toLowerCase().includes('internal') : c.name.toLowerCase().includes('external')) || updated[0];
+    if (!targetCat) continue;
+
+    // Check if already in any subtype in this category
+    const exists = (targetCat.subtypes || []).some((sub: any) =>
+      (sub.allocations || []).some((a: any) => (a.name || '').trim().toLowerCase() === sName.toLowerCase())
+    );
+    if (!exists) {
+      const subName = (s.category || '').trim().toLowerCase();
+      let targetSub = (targetCat.subtypes || []).find((sub: any) =>
+        sub.name.toLowerCase() === subName || subName.includes(sub.name.toLowerCase()) || sub.name.toLowerCase().includes(subName)
+      );
+      if (!targetSub && targetCat.subtypes && targetCat.subtypes.length > 0) {
+        targetSub = targetCat.subtypes.find((sub: any) =>
+          isInternal ? sub.name.toLowerCase().includes('institutional') : sub.name.toLowerCase().includes('ched')
+        ) || targetCat.subtypes[0];
+      }
+      if (targetSub) {
+        targetSub.allocations.push({
+          id: s.id || `alloc-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+          name: sName
+        });
+        changed = true;
+      }
+    }
+  }
+
+  return changed ? updated : currentCats;
+}
+
 export const db = {
   scholarships: {
     getCached(): Scholarship[] {
@@ -883,8 +941,8 @@ export const db = {
       await scholarshipsDb.setItem(id, targetRecord);
 
       // Direct Supabase upsert
-      safeSupabase(supabase => {
-        supabase.from('scholarships').upsert({
+      await safeSupabase(async supabase => {
+        return await supabase.from('scholarships').upsert({
           id: targetRecord.id,
           name: targetRecord.name,
           type: targetRecord.type,
@@ -932,7 +990,19 @@ export const db = {
         if (supabase) {
           const { data, error } = await supabase.from('scholarships').select('*');
           if (!error && Array.isArray(data) && data.length > 0) {
-            const mapped: Scholarship[] = data.map((s: any) => ({
+            const configRow = data.find((s: any) => s.id === '__categories_config__');
+            if (configRow && Array.isArray(configRow.requirements) && configRow.requirements.length > 0) {
+              memoryCategories = configRow.requirements;
+              if (typeof window !== 'undefined') {
+                try {
+                  localStorage.setItem('capsu_scholarship_categories', JSON.stringify(memoryCategories));
+                } catch (e) {}
+              }
+              notifyLocalCategoryListeners(memoryCategories);
+            }
+
+            const actualRows = data.filter((s: any) => s.id !== '__categories_config__');
+            const mapped: Scholarship[] = actualRows.map((s: any) => ({
               id: s.id,
               name: s.name,
               type: s.type,
@@ -947,6 +1017,16 @@ export const db = {
             for (const item of mapped) {
               await scholarshipsDb.setItem(item.id, item).catch(() => {});
             }
+
+            // Merge any supplementary scholarships into categories
+            memoryCategories = mergeScholarshipsIntoCategories(mapped, memoryCategories);
+            if (typeof window !== 'undefined') {
+              try {
+                localStorage.setItem('capsu_scholarship_categories', JSON.stringify(memoryCategories));
+              } catch (e) {}
+            }
+            notifyLocalCategoryListeners(memoryCategories);
+
             notifyLocalScholarshipListeners();
             return [...memoryScholarships];
           }
@@ -958,10 +1038,18 @@ export const db = {
           if (res.ok) {
             const serverList = await res.json();
             if (Array.isArray(serverList) && serverList.length > 0) {
-              memoryScholarships = serverList;
-              for (const item of serverList) {
+              const actualRows = serverList.filter((s: any) => s.id !== '__categories_config__');
+              memoryScholarships = actualRows;
+              for (const item of actualRows) {
                 await scholarshipsDb.setItem(item.id, item).catch(() => {});
               }
+              memoryCategories = mergeScholarshipsIntoCategories(actualRows, memoryCategories);
+              if (typeof window !== 'undefined') {
+                try {
+                  localStorage.setItem('capsu_scholarship_categories', JSON.stringify(memoryCategories));
+                } catch (e) {}
+              }
+              notifyLocalCategoryListeners(memoryCategories);
               notifyLocalScholarshipListeners();
               return [...memoryScholarships];
             }
@@ -1026,8 +1114,8 @@ export const db = {
       scholarshipsDb.removeItem(id).catch(() => {});
 
       // Direct Supabase delete
-      safeSupabase(supabase => {
-        supabase.from('scholarships').delete().eq('id', id);
+      await safeSupabase(async supabase => {
+        return await supabase.from('scholarships').delete().eq('id', id);
       });
       broadcastSyncEvent('SCHOLARSHIPS_SYNC', memoryScholarships).catch(() => {});
 
@@ -1081,8 +1169,8 @@ export const db = {
       submissionsDb.setItem(id, sub).catch(() => {});
 
       // Direct Supabase upsert
-      safeSupabase(supabase => {
-        supabase.from('submissions').upsert({
+      await safeSupabase(async supabase => {
+        return await supabase.from('submissions').upsert({
           id: sub.id,
           student_id: sub.studentId,
           student_name: sub.studentName,
@@ -1392,8 +1480,8 @@ export const db = {
       submissionsDb.removeItem(id).catch(() => {});
 
       // Direct Supabase delete
-      safeSupabase(supabase => {
-        supabase.from('submissions').delete().eq('id', id);
+      await safeSupabase(async supabase => {
+        return await supabase.from('submissions').delete().eq('id', id);
       });
       broadcastSyncEvent('SUBMISSIONS_SYNC', memorySubmissions).catch(() => {});
 
@@ -1986,14 +2074,19 @@ export const db = {
 
   categories: {
     getCached(): any[] {
-      if (memoryCategories && memoryCategories.length > 0) return [...memoryCategories];
       try {
-        const saved = localStorage.getItem('capsu_scholarship_categories');
-        if (saved) {
-          const parsed = JSON.parse(saved);
-          if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        if (typeof window !== 'undefined') {
+          const saved = localStorage.getItem('capsu_scholarship_categories');
+          if (saved) {
+            const parsed = JSON.parse(saved);
+            if (Array.isArray(parsed) && parsed.length > 0) {
+              memoryCategories = parsed;
+              return parsed;
+            }
+          }
         }
       } catch (e) {}
+      if (memoryCategories && memoryCategories.length > 0) return [...memoryCategories];
       return [...INITIAL_SCHOLARSHIP_CATEGORIES];
     },
     subscribe(callback: (cats: any[]) => void): () => void {
@@ -2006,10 +2099,28 @@ export const db = {
       try {
         const supabase = getSupabase();
         if (supabase) {
-          const { data, error } = await supabase.from('scholarship_categories').select('*').limit(1);
-          if (!error && data && data.length > 0 && data[0].categories) {
-            memoryCategories = data[0].categories;
-            localStorage.setItem('capsu_scholarship_categories', JSON.stringify(memoryCategories));
+          // Check config row in scholarships table
+          const { data, error } = await supabase.from('scholarships').select('*').eq('id', '__categories_config__').maybeSingle();
+          if (!error && data && Array.isArray(data.requirements) && data.requirements.length > 0) {
+            memoryCategories = data.requirements;
+            if (typeof window !== 'undefined') {
+              try {
+                localStorage.setItem('capsu_scholarship_categories', JSON.stringify(memoryCategories));
+              } catch (e) {}
+            }
+            notifyLocalCategoryListeners(memoryCategories);
+            return memoryCategories;
+          }
+
+          // Fallback to scholarship_categories table if created
+          const catRes = await supabase.from('scholarship_categories').select('*').limit(1);
+          if (!catRes.error && catRes.data && catRes.data.length > 0 && catRes.data[0].categories) {
+            memoryCategories = catRes.data[0].categories;
+            if (typeof window !== 'undefined') {
+              try {
+                localStorage.setItem('capsu_scholarship_categories', JSON.stringify(memoryCategories));
+              } catch (e) {}
+            }
             notifyLocalCategoryListeners(memoryCategories);
             return memoryCategories;
           }
@@ -2022,7 +2133,11 @@ export const db = {
           const list = await res.json();
           if (Array.isArray(list) && list.length > 0) {
             memoryCategories = list;
-            localStorage.setItem('capsu_scholarship_categories', JSON.stringify(memoryCategories));
+            if (typeof window !== 'undefined') {
+              try {
+                localStorage.setItem('capsu_scholarship_categories', JSON.stringify(memoryCategories));
+              } catch (e) {}
+            }
             notifyLocalCategoryListeners(list);
             return list;
           }
@@ -2034,12 +2149,28 @@ export const db = {
     },
     async save(categories: any[]): Promise<void> {
       memoryCategories = categories;
-      localStorage.setItem('capsu_scholarship_categories', JSON.stringify(categories));
+      if (typeof window !== 'undefined') {
+        try {
+          localStorage.setItem('capsu_scholarship_categories', JSON.stringify(categories));
+        } catch (e) {}
+      }
       notifyCategoryListeners(categories);
       broadcastSyncEvent('CATEGORIES_SYNC', categories).catch(() => {});
 
+      // Persist to Supabase scholarships config row (central database)
+      await safeSupabase(async supabase => {
+        return await supabase.from('scholarships').upsert({
+          id: '__categories_config__',
+          name: 'SYSTEM_CATEGORIES_CONFIG',
+          type: 'CONFIG',
+          category: 'CONFIG',
+          status: 'System',
+          requirements: categories
+        }, { onConflict: 'id' });
+      });
+
       safeSupabase(supabase => {
-        supabase.from('scholarship_categories').upsert({
+        return supabase.from('scholarship_categories').upsert({
           id: 'main_categories',
           categories: categories,
           updated_at: new Date().toISOString()
