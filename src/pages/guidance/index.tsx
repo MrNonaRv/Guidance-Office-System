@@ -1750,10 +1750,19 @@ export function GuidanceSettings() {
     const targetCatName = isInternal ? 'Internally-Funded' : 'Externally-Funded';
     const targetSubTypeName = isInternal ? 'Institutional' : 'CHED';
 
+    const scholarshipPayload = {
+      name: sName,
+      type: targetCatName,
+      category: targetSubTypeName,
+      status: scholarshipForm.status,
+      description: scholarshipForm.description,
+      fundingType: scholarshipForm.fundingType
+    };
+
     try {
       if (editingScholarship) {
         const oldName = editingScholarship.name;
-        await db.scholarships.update(editingScholarship.id, scholarshipForm);
+        await db.scholarships.update(editingScholarship.id, scholarshipPayload);
         setScholarships(db.scholarships.getCached());
 
         const updatedCategories = categories.map(cat => ({
@@ -1765,7 +1774,7 @@ export function GuidanceSettings() {
         }));
         saveCategoriesState(updatedCategories);
       } else {
-        await db.scholarships.create(scholarshipForm);
+        await db.scholarships.create(scholarshipPayload);
         setScholarships(db.scholarships.getCached());
 
         // Also add to capsu_scholarship_categories hierarchy so it appears in student form & reports!
