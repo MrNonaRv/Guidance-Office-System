@@ -2772,11 +2772,11 @@ export function StudentSubmissionForm() {
                     error={errors.middleName}
                   />
                   <InputGroup 
-                    label="Suffix (Optional)" 
+                    label="Suffix (if applicable)" 
                     name="suffix" 
                     value={formData.suffix} 
                     onChange={handleChange} 
-                    placeholder="e.g. Jr., III (Optional)"
+                    placeholder="e.g. Jr., III (if applicable)"
                     error={errors.suffix}
                   />
                 </div>
